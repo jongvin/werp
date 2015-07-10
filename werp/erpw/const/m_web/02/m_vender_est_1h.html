@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_vender_est_h.html					-->
+<!-- 2. 유형(시나리오): showmodal에서 추가및 삭제 								-->
+<!-- 3. 기 능 정 의   : 견적내역 저장																-->
+<!-- 4. 변 경 이 력   :  박두현  작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 비교현장선택  </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+
+var is_ds_1_addr = 'm_vender_est_detail_1q.jsp?arg_date='
+var is_tr_1_addr = '/const/m_web/02/m_vender_est_detail_1tr.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID = is_ds_1_addr + is_estimateyymm +
+			"&arg_seq=" + is_estimateseq +
+			"&arg_vender=" + is_sbcr_code
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("no_seq");
+} 
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+var ls_temp
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+          ll_dup = f_dup_chk("ds_1","cmp_dept_code")
+          if (ll_dup > 0) {
+             alert("동일현장은 선택할수 없습니다\n 삭제하신후 저장하십시요")
+             ds_1.RowPosition = ll_dup
+             return
+          }   
+	       tr_1.Post()
+	    }
+   } 
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+
+	array = result.split("@");
+	gs_home = array[0]                  // 0: 홈 디렉토리
+   is_estimateyymm =  array[1] 
+   is_estimateseq = array[2]
+   is_sbcr_code = array[3] 
+   is_sbcr_name = array[4] 
+   is_title = array[5] 
+   is_update = array[6] 
+   tx_name.value = is_title + ' (' + is_sbcr_name + ')'
+   if (is_update == 'r') {
+      bt_save.style.visibility='hidden'
+   }      
+	tr_1.Action = gs_home + is_tr_1_addr 
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</script>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=tr_1 event=OnSuccess()>
+btnquery_onclick()
+</script>
+
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_cmp_dept_code_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<BR>    
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT:20px; WIDTH: 300px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_query type="button" value="조회" 
+		style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=btnquery_onclick()>
+	<input id=bt_save type="button" value="저장" 
+		style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=btnsave_onclick()>
+	<input id=bt_close type="button" value="닫기" 
+		style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=Button_close_onclick()>
+</DIV>
+<INPUT id=tx_name
+      style="Z-INDEX:100; COLOR: #ff0080;  BORDER-RIGHT: 0px; BORDER-TOP: 0px;BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; LEFT: 310px; WIDTH: 600px; POSITION: absolute; TOP: 7px; HEIGHT: 20px" tab_index=-1 size=100 >
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 30px; HEIGHT: 93%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	 <param name="MultiRowSelect"   value="-1">
+   <param name="ViewSummary"    value=1>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE='
+		  <C> Name="순번" ID=estimatedetailseq Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=30 </C>
+		  <C> Name="현장명" ID=long_name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=170 </C>
+		  <C> Name="명칭" ID=name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=190 
+		  			SumText="합 계"  SumColor=Black SumBgColor=Pink  </C> 
+		  <C> Name="규격" ID=ssize Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=150 </C> 
+		  <C> Name="단위" ID=unitcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=45 </C> 
+		  <C> Name="수량" ID=qty Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=60 
+		  		SumText=@sum   SumColor=Black SumBgColor=Pink  </C> 
+		  <G> Name="견적" HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+		  <C> Name="단가" ID=unitprice HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=75 </C> 
+		  <C> Name="금액" ID=comp_amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=85 
+		  		SumText=@sum   SumColor=Black SumBgColor=Pink </C></G>
+		  <G> Name="조정" HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+		  <C> Name="단가" ID=chgprice HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=75 </C> 
+		  <C> Name="금액" ID=comp_chgamt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=85 
+		  		SumText=@sum  SumColor=Black SumBgColor=Pink </C></G>
+	   '>
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

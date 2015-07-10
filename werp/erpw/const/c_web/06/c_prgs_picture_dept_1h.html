@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_prgs_picture_dept_1h.html 	-->
+<!-- 2. 유형(시나리오): 조감도 및 현장 사진											-->
+<!-- 3. 기 능 정 의   : 현장 사진 (현장별 조회)               	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var id_date
+var gs_home = parent.frames['security'].gs_home.value
+var is_dept_search_addr = gs_home + '/comm_search/z_dept_find_1h.html'
+var is_ds_1_addr = 'c_prgs_picture_query_1q.jsp?arg_dept_code='         
+var is_dept_code = ""
+var is_dept_name = ""
+var is_url_addr = ""
+var il_pic_sel = 16
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_start_date=" + em_select_yymm.text
+ds_1.SyncLoad=true
+ds_1.Reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+
+// parent.frames['main_ct'].window.close()     
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+	btnquery_onclick()
+}     
+
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+
+   btnquery_onclick()
+}   
+//-------------------------------------------------------------------------------
+function click_show(arg_addr,arg_text)                  //그림을 클릭하였을경우  
+//--------------------------------------------------------------------------------
+{
+   ls_temp = arg_addr
+
+   if (ls_temp.substr(ls_temp.length - 9,5) == 'blank') 
+       return  
+
+   if (ls_temp.substr(ls_temp.length - 3,3) == 'wmv') 
+      window.open(ls_temp,'','')
+   else   
+      window.showModalDialog("c_picture_detail_1h.html",ls_temp+"@" + arg_text,"dialogWidth:900px;dialogHeight:700px");
+    
+//   window.open(ls_temp,'','')
+//   if (ls_temp.substr(ls_temp.length - 3,3) == 'wmv') {
+//      wmv_show.style.visibility="visible"
+//      document.links[0].href=ls_temp
+//      alert(document.links[0].href)
+//      window.open(ls_temp,'','')
+//   }
+//   else   
+//      wmv_show.style.visibility="hidden"
+}   
+//--------------------------------------------------------------------------------
+function f_timer_loop(arg_i)
+//-------------------------------------------------------------------------------
+{
+   var i=0,j=0
+   for (i=0;i<=arg_i; i++)
+     j++
+   
+}
+   
+//-------------------------------------------------------------------------------
+function function_show(arg_row)                  //그림을 여러장 보여주기  
+//--------------------------------------------------------------------------------
+{
+   
+   if (arg_row < 1 ) return;
+   
+  
+ if (ccom_pic_sel.CodeValue == '04') {
+	 if (ls_blank.src) document.images['pic_4_1'].src = ls_blank.src; pic_4_1.style.cursor='arrow';
+	 if (ls_blank.src) document.images['pic_4_2'].src = ls_blank.src; pic_4_2.style.cursor='arrow';
+	 if (ls_blank.src) document.images['pic_4_3'].src = ls_blank.src; pic_4_3.style.cursor='arrow';
+	 if (ls_blank.src) document.images['pic_4_4'].src = ls_blank.src; pic_4_4.style.cursor='arrow';
+	 tx_4_1.value=""
+	 tx_4_2.value=""
+	 tx_4_3.value=""
+	 tx_4_4.value=""
+ }
+ if (ccom_pic_sel.CodeValue == '04') {
+	 if (ls_blank.src) document.images['pic_1_1'].src = ls_blank.src;pic_1_1.style.cursor='arrow'; 
+	 tx_1_1.value=""
+  }
+  
+  f_timer_loop(1000000)  
+//  alert("aa")
+   ll_row = arg_row
+   var j = 0
+   var i=0
+   for (i=ll_row; i <= ds_1.CountRow; i++) {
+       j = j + 1
+
+       if (ccom_pic_sel.CodeValue == '04') {
+          if (j > 4) break;
+       }
+       
+       if (ccom_pic_sel.CodeValue == '01') {
+          if (j > 1) break;
+       }
+       
+       ls_temp_temp   = is_url_addr + ds_1.NameValue(i,"url")
+       eval( 'j_' +j+ ' = new Image()' )
+		 eval( 'j_' +j+ '.src = ls_temp_temp')
+       ls_memo   = ds_1.NameValue(i,"memo")
+       switch (ccom_pic_sel.CodeValue) {
+              case "04":
+                    switch (j) {
+                        case 1: if (j_1.src) document.images.pic_4_1.src = j_1.src; tx_4_1.value=ls_memo; pic_4_1.style.cursor='hand'; break;
+                        case 2: if (j_2.src) document.images.pic_4_2.src = j_2.src; tx_4_2.value=ls_memo; pic_4_2.style.cursor='hand'; break;
+                        case 3: if (j_3.src) document.images.pic_4_3.src = j_3.src; tx_4_3.value=ls_memo; pic_4_3.style.cursor='hand'; break;
+                        case 4: if (j_4.src) document.images.pic_4_4.src = j_4.src; tx_4_4.value=ls_memo; pic_4_4.style.cursor='hand'; break;
+                     }              
+                         break;
+              case "01":
+                    switch (j) {
+                        case 1: if (j_1.src) document.images.pic_1_1.src = j_1.src; tx_1_1.value=ls_memo; break;
+                     }              
+                         break;
+
+       }
+    }  
+}   
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  ls_blank  = new Image();
+  ls_blank.src= "../../../image/icon/blank.gif"
+
+  ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='02'") // url + home
+
+ if (ll_cnt == 0) 
+    alert("SYSTEM 정보가 설치 되어있지 않습니다")
+  is_url_addr = ds_select.NameValue(1,"select_2")
+
+   top.frames['main_title'].mouse_over() 
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	dept_name.value = is_dept_name
+  	id_date = f_sysdate()
+   em_select_yymm.text = id_date.substr(0,7) 
+   btnquery_onclick()
+        show_4.style.visibility="visible"
+        show_1.style.visibility="hidden"
+
+    ccom_pic_sel.Index = 0;
+}
+</SCRIPT>
+
+<script language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+if  (kcode == 13) select_yymm()
+</script>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>   
+<script language=JavaScript for=ccom_pic_sel event=onSelChange()>
+  il_pic_sel = ccom_pic_sel.CodeValue
+  if (ccom_pic_sel.CodeValue == '04') {
+        show_4.style.visibility="visible"
+        show_1.style.visibility="hidden"
+  }
+  if (ccom_pic_sel.CodeValue == '01') {
+        show_4.style.visibility="hidden"
+        show_1.style.visibility="visible"
+  }
+  function_show(ds_1.RowPosition)
+  
+        
+</SCRIPT>
+     	
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+   if (row < 1) return
+   function_show(row)
+//   ds_1.NameValue(row,"temp_url") = is_url_addr + ds_1.NameValue(row,"url")
+//   ls_temp = ds_1.NameValue(row,"temp_url")
+//
+//   if (ls_temp.substr(ls_temp.length - 3,3) == 'wmv') {
+//      wmv_show.style.visibility="visible"
+//      document.links[0].href=ls_temp
+//   }
+//   else   
+//      wmv_show.style.visibility="hidden"
+
+</SCRIPT> 
+</HEAD>
+<BODY   style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1)  oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message(tr_1) : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+ <comment id="__NSID__"><Object id=ds_sysdate
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_prgs_picture_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<!--InputFile Component-->
+<comment id="__NSID__"><object id="if_1" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object></comment> <script> __ws__(__NSID__);</script>
+	
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+						<input type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+         </tr>                 
+      </table>
+</DIV>      
+    
+<LABEL id=Label_1 
+        style="LEFT: 280px; POSITION: absolute; TOP: 9px">년월:</LABEL>
+
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+       style="Z-INDEX: 100; LEFT: 330px; WIDTH: 57px; POSITION: absolute; TOP: 7px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Text" VALUE="____-__">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="6">
+	    <PARAM NAME="Format" VALUE="0000-00">
+       <param name=ClipMode       value=false>
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	    
+	    
+<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+					if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()" 
+       style=" LEFT: 390px; WIDTH: 20px; POSITION: absolute; TOP: 7px; HEIGHT:20px">
+	    
+<DIV id=div_pic_sel
+      style="Z-INDEX: 105; LEFT: 865px; WIDTH: 138px; POSITION: absolute; TOP: 3px; HEIGHT: 18px">
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+                         <td width="40%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                              <div align="right">사진장수</div></td>
+                        <td width="60%"> 
+					              <comment id="__NSID__"><OBJECT id=ccom_pic_sel width=80px 
+					                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					                      <param name=Index     value=0>
+					       	        <param name=Data     value="04^04 장,01^1 장"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+        </tr>
+      </table>
+</div>        
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 4px; WIDTH: 280px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='날 자' ID=yymmdd  Mask='XXXX-XX-XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name='메 모'  ID=memo    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=160 </C>
+	  ">
+<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=wmv_show style="FONT-SIZE:24px; Z-INDEX: 100; LEFT: 500px; WIDTH: 200px; POSITION: absolute; TOP: 250px; HEIGHT: 20px ;VISIBILITY: hidden;">
+	
+<A  HREF='/werp/erpw/install/ADE_setup.exe' >동영상자료 보기</A><BR>  
+</DIV>
+
+
+
+<DIV id=show_4 style="FONT-SIZE:12px; Z-INDEX: 130; LEFT: 285px; WIDTH: 720px; POSITION: absolute; TOP: 30px; HEIGHT: 95% ;VISIBILITY: hidden;">
+       <table cellspacing="10" width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="" NAME="pic_4_1" onclick=click_show(document.pic_4_1.src,tx_4_1.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 240px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_1 size=45 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr ><td>
+				          <IMG SRC="" NAME="pic_4_2" onclick=click_show(document.pic_4_2.src,tx_4_2.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 240px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_2 size=45></td></tr></table></TD> 
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="" NAME="pic_4_3" onclick=click_show(document.pic_4_3.src,tx_4_3.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 240px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_3 size=45></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="" NAME="pic_4_4" onclick=click_show(document.pic_4_4.src,tx_4_4.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 240px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_4 size=45></td></tr></table></TD> 
+         </tr>                 
+      </table>
+</DIV>
+
+<DIV id=show_1 style="FONT-SIZE:12px; Z-INDEX: 130; LEFT: 285px; WIDTH: 720px; POSITION: absolute; TOP: 30px; HEIGHT: 95% ;VISIBILITY: hidden;">
+       <table cellspacing="10" width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="" NAME="pic_1_1" onclick=click_show(document.pic_1_1.src,tx_1_1.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 680px; HEIGHT: 550px; cursor: hand; " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_1_1 size=95></td></tr></table></TD> 
+         </tr>                 
+      </table>
+</DIV>
+
+
+
+
+
+</BODY></HTML>
+
+
+
+
+
+
+

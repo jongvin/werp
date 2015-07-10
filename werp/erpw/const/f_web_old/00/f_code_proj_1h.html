@@ -1,0 +1,547 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_code_proj_1h.html 		                       	-->
+<!-- 2. 유형(시나리오): 조회및 입력			 	    	        					-->
+<!-- 3. 기 능 정 의   : 자금청구총괄표출력조건                   			-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//------------------------------------------------------------------------
+function rd_a_onclick()                       //총괄표
+//------------------------------------------------------------------------
+{
+  rb_1.checked=true
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_b_onclick()                       //외주비공종별내역서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=true
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_c_onclick()                       //외주비업체별내역서 
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=true
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_d_onclick()                       //자재비청구내역서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=true
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_e_onclick()                       //자재비발주별내역서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=true
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_f_onclick()                       //예비비전도금청구서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=true
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_g_onclick()                       //미지급전도금청구서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=true
+  rb_8.checked=false
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_h_onclick()                       //예비비전도금정산서
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=true
+  rb_9.checked=false
+}
+//------------------------------------------------------------------------
+function rd_i_onclick()                       //일용노무비지급명세서 
+//------------------------------------------------------------------------
+{
+  rb_1.checked=false
+  rb_2.checked=false
+  rb_3.checked=false
+  rb_4.checked=false
+  rb_5.checked=false
+  rb_6.checked=false
+  rb_7.checked=false
+  rb_8.checked=false
+  rb_9.checked=true
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   
+  	ll_cnt = f_ds_select_q("ds_select", "select b.comp_name select_1 " +
+												" from z_code_dept a, z_code_comp b " +
+												"where a.comp_code = b.comp_code(+) " +
+												"  and a.dept_code = '" + is_dept_code + "' " +
+												"  and b.comp_code is not null ")
+	is_comp_name = ds_select.NameValue(1,"select_1")
+   var arg_temp
+   arg_temp ="const_rpt/f_web/05r/"        // 현장용자금총괄표보고서 디렉토리
+   if (rb_1.checked) {
+       arg_temp = arg_temp + "f_tot_req"    // 보고서명 
+//		is_s_from_dt 	= '2005.05.01' 
+//		is_m_from_dt 	= '2005.05.01'
+//		is_m_to_dt 		= '2005.05.31'  
+//		is_f_from_dt 	= '2005.05.01'
+//		is_f_to_dt 		= '2005.05.31'  
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+				                   "&RptParams=" + is_s_from_dt + 
+				                   "&RptParams=" + is_m_from_dt +
+				                   "&RptParams=" + is_m_to_dt +
+				                   "&RptParams=" + is_f_from_dt +
+				                   "&RptParams=" + is_f_to_dt +
+				                   "&RptParams=" + is_dept_name +
+				                   "&RptParams=" + is_comp_name
+   } 
+   if (rb_2.checked) {
+       arg_temp = arg_temp + "s_wbs_list"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_s_from_dt +
+				                   "&RptParams=" + is_dept_name +
+				                   "&RptParams=" + is_comp_name
+ 	}
+   if (rb_3.checked) {
+       arg_temp = arg_temp + "s_sbcr_list"    // 보고서명 
+//			is_s_from_dt 	= '2005.05.01'
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_s_from_dt +
+				                   "&RptParams=" + is_dept_name +
+				                   "&RptParams=" + is_comp_name
+ 	}	
+   if (rb_4.checked) {
+       arg_temp = arg_temp + "m_req_list"    // 보고서명 
+//		is_m_from_dt 	= '2005.05.01'
+//		is_m_to_dt 		= '2005.05.31'  
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+				                   "&RptParams=" + is_m_from_dt +
+				                   "&RptParams=" + is_m_to_dt +
+				                   "&RptParams=" + is_dept_name +
+				                   "&RptParams=" + is_comp_name
+   } 
+   if (rb_5.checked) {
+       arg_temp = arg_temp + "m_order_req"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+				                   "&RptParams=" + is_m_from_dt +
+				                   "&RptParams=" + is_m_to_dt +
+				                   "&RptParams=" + is_dept_name +
+				                   "&RptParams=" + is_comp_name
+   } 
+   if (rb_6.checked) {
+	    arg_temp = arg_temp + "f_preamt_req"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_f_from_dt +
+				                   "&RptParams=" + is_comp_name +
+								   "&RptParams=" + sel_class.value
+   } 
+   if (rb_7.checked) {
+       arg_temp = arg_temp + "f_nopay_req"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_f_from_dt +
+				                   "&RptParams=" + is_comp_name
+   } 
+   if (rb_8.checked) {
+       arg_temp = arg_temp + "f_request"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_f_from_dt +
+				                   "&RptParams=" + is_comp_name
+   } 
+   if (rb_9.checked) {
+       arg_temp = arg_temp + "l_labor_monthly"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                         "&RptParams=" + is_l_yymm + 
+		                         "&RptParams=" + is_dept_name
+   } 
+//   alert(arg_temp)
+   f_crystal_report(arg_temp)   //보고서 호출
+
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+ } 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	dept_name.value 		= is_dept_name
+   rb_1.checked=true
+
+// 각 분야별 검색조건일자 셋팅
+   em_s_yymm.text 	= is_work_date.substr(0,7)
+   em_from_dt.text 	= is_work_date.substr(0,7) + ".01"
+   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_work_date + "')),'yyyy.mm.dd') select_1 from dual ")
+   em_to_dt.text 		= ds_end_dt.NameValue(1,"select_1")
+   em_f_yymm.text 	= is_work_date.substr(0,7)
+   em_l_yymm.text 	= is_work_date.substr(0,7)
+// 각 분야별 검색조건일자 변수에 셋팅
+   is_s_from_dt 	= is_work_date.substr(0,7) + ".01"
+   is_s_to_dt  	= ds_end_dt.NameValue(1,"select_1").substr(0,10)
+   is_m_from_dt 	= is_work_date.substr(0,7) + ".01"
+   is_m_to_dt  	= ds_end_dt.NameValue(1,"select_1").substr(0,10)
+   is_f_from_dt 	= is_work_date.substr(0,7) + ".01"
+   is_f_to_dt  	= ds_end_dt.NameValue(1,"select_1").substr(0,10)
+
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_s_yymm event=onKillFocus()>
+   if (em_s_yymm.Modified){ 
+	   is_s_from_dt = em_s_yymm.text.substr(0,4) + "." + em_s_yymm.text.substr(4,2) + ".01"
+	   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_s_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_s_to_dt = ds_end_dt.NameValue(1,"select_1")
+	   em_from_dt.text		= is_s_from_dt
+	   em_to_dt.text       	= is_s_to_dt
+	   em_f_yymm.text      	= is_s_from_dt
+	   em_l_yymm.text      	= is_s_from_dt
+	   is_m_from_dt   	   = is_s_from_dt  
+	   is_m_to_dt     	   = is_s_to_dt    
+	   is_f_from_dt   	   = is_s_from_dt  
+	   is_f_to_dt     	   = is_s_to_dt
+	   is_l_yymm				= is_s_from_dt    
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_s_yymm event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   is_s_from_dt 	= em_s_yymm.text.substr(0,4) + "." + em_s_yymm.text.substr(4,2) + ".01"
+	   ll_cnt  			= f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_s_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_s_to_dt 		= ds_end_dt.NameValue(1,"select_1")
+	   em_from_dt.text		= is_s_from_dt
+	   em_to_dt.text       	= is_s_to_dt
+	   em_f_yymm.text      	= is_s_from_dt
+	   em_l_yymm.text      	= is_s_from_dt
+	   is_m_from_dt   	   = is_s_from_dt  
+	   is_m_to_dt     	   = is_s_to_dt    
+	   is_f_from_dt   	   = is_s_from_dt  
+	   is_f_to_dt     	   = is_s_to_dt
+	   is_l_yymm				= is_s_from_dt    
+	}          
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_from_dt event=onKillFocus()>
+   if (em_s_yymm.Modified){ 
+	   is_m_from_dt = em_from_dt.text.substr(0,4) + "." + em_from_dt.text.substr(4,2) + "." + em_from_dt.text.substr(6,2)
+	   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_m_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_m_to_dt = ds_end_dt.NameValue(1,"select_1")
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_from_dt event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   is_m_from_dt = em_from_dt.text.substr(0,4) + "." + em_from_dt.text.substr(4,2) + "." + em_from_dt.text.substr(6,2)
+	   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_m_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_m_to_dt = ds_end_dt.NameValue(1,"select_1")
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_to_dt event=onKillFocus()>
+   if (em_s_yymm.Modified){ 
+	   is_m_to_dt = em_to_dt.text.substr(0,4) + "." + em_to_dt.text.substr(4,2) + "." + em_to_dt.text.substr(6,2)
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_to_dt event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   is_m_to_dt = em_to_dt.text.substr(0,4) + "." + em_to_dt.text.substr(4,2) + "." + em_to_dt.text.substr(6,2)
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_f_yymm event=onKillFocus()>
+   if (em_f_yymm.Modified){ 
+	   is_f_from_dt = em_f_yymm.text.substr(0,4) + "." + em_f_yymm.text.substr(4,2) + ".01"
+	   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_m_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_f_to_dt = ds_end_dt.NameValue(1,"select_1")
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_f_yymm event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){
+	   is_f_from_dt = em_f_yymm.text.substr(0,4) + "." + em_f_yymm.text.substr(4,2) + ".01"
+	   ll_cnt  = f_ds_select_q("ds_end_dt", " select to_char(last_day(to_date('" + is_m_from_dt + "')),'yyyy.mm.dd') select_1 from dual ")
+	   is_f_to_dt = ds_end_dt.NameValue(1,"select_1")
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_l_yymm event=onKillFocus()>
+   if (em_l_yymm.Modified){
+	   is_l_yymm = em_l_yymm.text.substr(0,4) + "." + em_l_yymm.text.substr(4,2) + ".01"
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_l_yymm event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   is_l_yymm = em_l_yymm.text.substr(0,4) + "." + em_l_yymm.text.substr(4,2) + ".01"
+	}
+</SCRIPT>        	
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_select
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_end_dt
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=hdept_page_1 
+	style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" > 
+		<td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+		<div align="right">현장명</div></td>
+		<td >
+		<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+		<input id=dept_name_button type="button_query" value=" 검색" 
+		style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=dept_code_find()>
+	</tr>                 
+	</table>
+</DIV>      
+<DIV id=hdept_page_1
+style="Z-INDEX: 111; LEFT: 4px; WIDTH: 450px; POSITION: absolute; TOP: 50px; HEIGHT: 30%;FONT-SIZE: 12px" >
+	<table width="100%" height="100%" BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" >
+	<td Width="20%" BGCOLOR="#BBE0F4" style="COLOR: #8080C0" colspan=2> 
+		<div align="right">외주</div></td>
+	<td Width="10%" BGCOLOR="#E9F5F5" style="COLOR: #FF8080" colspan=1> 
+		<div align="right">년월</div></td>
+	</td>
+	<td Width="70%" colspan=7> 
+		<comment id="__NSID__"><OBJECT id=em_s_yymm tabIndex=9 
+		style="WIDTH: 85px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="MaxLength" VALUE="6">
+		<PARAM NAME="Format" VALUE="YYYY.MM">
+		<PARAM NAME="PromptChar" VALUE="">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white" >
+	<td Width="20%" BGCOLOR="#BBE0F4" style="COLOR: #8080C0" colspan=2> 
+		<div align="right">자재</div></td>
+	<td Width="10%" BGCOLOR="#E9F5F5" style="COLOR: #FF8080" colspan=1> 
+		<div align="right">from</div></td>
+	</td>
+	<td Width="30%" colspan=3> 
+		<comment id="__NSID__"><OBJECT id=em_from_dt tabIndex=9 
+		style="WIDTH: 85px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="MaxLength" VALUE="8">
+		<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+		<PARAM NAME="PromptChar" VALUE="">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	<td Width="10%" BGCOLOR="#E9F5F5" style="COLOR: #FF8080" colspan=1> 
+		<div align="right">to</div></td>
+	</td>
+	<td Width="30%" colspan=3> 
+		<comment id="__NSID__"><OBJECT id=em_to_dt tabIndex=9 
+		style="WIDTH: 85px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="MaxLength" VALUE="8">
+		<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+		<PARAM NAME="PromptChar" VALUE="">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white" >
+	<td Width="20%" BGCOLOR="#BBE0F4" style="COLOR: #8080C0" colspan=2> 
+		<div align="right">전도금</div></td>
+	<td Width="10%" BGCOLOR="#E9F5F5" style="COLOR: #FF8080" colspan=1> 
+		<div align="right">년월</div></td>
+	</td>
+	<td Width="70%" colspan=7> 
+		<comment id="__NSID__"><OBJECT id=em_f_yymm tabIndex=9 
+		style="WIDTH: 85px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="MaxLength" VALUE="6">
+		<PARAM NAME="Format" VALUE="YYYY.MM">
+		<PARAM NAME="PromptChar" VALUE="">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white" >
+	<td Width="20%" BGCOLOR="#BBE0F4" style="COLOR: #8080C0" colspan=2> 
+		<div align="right">노무</div></td>
+	<td Width="10%" BGCOLOR="#E9F5F5" style="COLOR: #FF8080" colspan=1> 
+		<div align="right">년월</div></td>
+	</td>
+	<td Width="70%" colspan=7> 
+		<comment id="__NSID__"><OBJECT id=em_l_yymm tabIndex=9 
+		style="WIDTH: 85px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="MaxLength" VALUE="6">
+		<PARAM NAME="Format" VALUE="YYYY.MM">
+		<PARAM NAME="PromptChar" VALUE="">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	</table>
+</DIV>
+<DIV id=hdept_page_1
+style="Z-INDEX: 111; LEFT: 600px; WIDTH: 400px; POSITION: absolute; TOP: 50px; HEIGHT: 15%;FONT-SIZE: 12px" >
+	<table width="100%" height="100%" BORDER="0" CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" >
+	<td > 
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_1 type="radio" value="1" defaultChecked=true onclick="rd_a_onclick()">&nbsp;총괄표 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_2 type="radio" value="2" onclick="rd_b_onclick()">&nbsp;외주비공종별내역서 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_3 type="radio" value="3" onclick="rd_c_onclick()">&nbsp;외주비 내역서(현금/어음) &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_4 type="radio" value="4" onclick="rd_d_onclick()">&nbsp;자재비 내역서(현금/어음) &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_5 type="radio" value="5" onclick="rd_e_onclick()">&nbsp;자재비발주별내역서 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_6 type="radio" value="6" onclick="rd_f_onclick()">&nbsp;예비비전도금청구서&nbsp;
+		<SELECT id=sel_class style="Font-Size:9pt;">
+			<OPTION value="1">수시</OPTION>
+			<OPTION value="2" selected>정기</OPTION>
+		</SELECT>
+	</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_7 type="radio" value="7" onclick="rd_g_onclick()">&nbsp;미지급전도금청구서 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_8 type="radio" value="8" onclick="rd_h_onclick()">&nbsp;예비비전도금정산서 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	<tr BGCOLOR="white" >
+	<td > 
+		<input id=rb_9 type="radio" value="9" onclick="rd_i_onclick()">&nbsp;일용노무비지급명세서 &nbsp;&nbsp;&nbsp;</td>	
+	</td></tr>
+	</table>
+</DIV>
+</BODY></HTML>

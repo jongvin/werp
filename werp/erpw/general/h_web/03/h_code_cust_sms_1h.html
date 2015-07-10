@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_code_cust_sms_1h.html								-->
+<!-- 2. 유형(시나리오): 고객 SMS 발송(분양)								-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   :  유영채 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 개인별 SMS 발송 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_mail = '/werp/erpw/zmis/z_mail_to_1q.jsp'
+var is_tr_mail = '/werp/erpw/zmis/z_mail_to_1tr.jsp'
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	ds_mail.DataID = is_ds_mail
+
+
+        		ds_mail.SyncLoad = true
+        		ds_mail.reset()
+
+}
+
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 발송
+//---------------------------------------------------------------------------
+{
+  var arg_cmd, cust_phone
+
+  cust_phone = tx_cust_phone.value
+
+  if (cust_phone.length  < 1 ) {
+	  alert('수신 전화번호가 없습니다.	');
+	  return;
+  }
+
+
+  tr_mail.Action = is_tr_mail
+  tr_mail.Post()
+}
+	
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+       window.returnValue = ''
+	   window.close();
+
+	
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+
+	btnquery_onclick()
+	ds_mail.AddRow()
+
+	array = result.split("@");
+	gs_home = array[0]                  // 0: 홈 디렉토리 
+   tx_cust_name.value = array[1]
+   tx_cust_phone.value = array[2]
+	
+	
+	tx_sender_name.value = '월드건설'
+	tx_comp_phone.value = '02-3779-0300'
+	tx_sms_message.value = ' -월드건설-'
+	
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+
+}
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+<script language=JavaScript for=tr_mail event=OnSuccess()>
+	alert('SMS 전송완료')
+ </script>
+
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_mail event=OnFail()>
+ alert("Error Code(tr_mail) : " + tr_mail.ErrorCode + "\n" + "Error Message :sms전송실패/ " + tr_mail.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_mail event=OnLoadError()>
+  alert("Error Code(ds_mail) : " + ds_mail.ErrorCode + "\n" + "Error Message : " + ds_mail.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnFail()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_mail
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_mail
+            style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+            classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+        	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+        	<PARAM NAME="KeyValue" VALUE="JSP(I:z_mail_to_1tr=ds_mail)">
+        	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<BR>    
+
+<input type="button" value="발송" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 265px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=btnsave_onclick()>
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 310px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+         
+<DIV id=grid_page_1 
+      style="Z-INDEX: 111; LEFT: 20px; WIDTH: 340px; POSITION: absolute; TOP: 35px; HEIGHT: 260px;FONT-SIZE: 12px" >
+   <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      <tr BGCOLOR="white" > 
+          <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">발송자성명</div></td>
+          <td > 
+              <INPUT id=tx_sender_name  MAXLENGTH=20> </td>
+	  </tr>
+      <tr BGCOLOR="white" > 
+          <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+              <div align="right">연락처</div></td>
+		   <td>
+               <INPUT id=tx_comp_phone  MAXLENGTH=20> </td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+              <div align="right">수신자성명</div></td>
+          <td> 
+              <INPUT id=tx_cust_name MAXLENGTH=20> </td>
+       </tr>
+      <tr BGCOLOR="white" > 
+		  <td BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+              <div align="right">연락처</div></td>
+		   <td>
+               <INPUT id=tx_cust_phone  MAXLENGTH=20> </td>
+      </tr>	  
+	  <tr BGCOLOR="white"> 
+          <td BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+              <div align="right">메세지</div></td>
+          <td >
+			      <TEXTAREA id=tx_sms_message rows=5  cols=16  MAXLENGTH=80></TEXTAREA></td>
+	   </tr>
+    </table>
+</DIV>    
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_mail">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=sender_id Ctrl=tx_sender_name Param=value Enable=enable</C>
+	   <C>Col=tran_callback Ctrl=tx_comp_phone Param=value Enable=enable</C>
+	   <C>Col=tran_id Ctrl=tx_cust_name Param=value Enable=enable</C>
+	   <C>Col=tran_phone Ctrl=tx_cust_phone Param=value Enable=enable</C>
+	   <C>Col=tran_msg Ctrl=tx_sms_message Param=value Enable=enable</C>
+          ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

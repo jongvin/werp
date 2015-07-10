@@ -1,0 +1,312 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_mis_region_query_1h.html.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 용지 접수현황 				  	  								-->
+<!-- 4. 변 경 이 력   : 박두현  작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_ds_1_addr = gs_home + '/const/g_web/03/g_mis_ord_result_query_1q.jsp?arg_work_year='
+var is_ds_1_addr = new Array(5)
+is_ds_1_addr[1] = 'g_mis_region_01_1q.jsp?arg_work_year=' 
+is_ds_1_addr[2] = 'g_mis_region_02_1q.jsp?arg_work_year=' 
+is_ds_1_addr[3] = 'g_mis_region_03_1q.jsp?arg_work_year=' 
+is_ds_1_addr[4] = 'g_mis_region_04_1q.jsp?arg_work_year=' 
+var il_nindex=1
+var is_work_year
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+  tab_changed_settime()
+}
+//------------------------------------------------------------------------
+function btnquery_retrieve_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr[tb_1.ActiveIndex] + is_work_year
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//---------------------------------------------------------------------
+function tab_changed_settime()    // tab이 변경되었을경우 혹 늦게 화면이 뜨는것을 방지하기위하여.
+//---------------------------------------------------------------------
+{
+       gd_1.DataID=''
+       gd_2.DataID=''
+       gd_3.DataID=''
+       gd_4.DataID=''
+       rds_1.DataID=''
+       rds_2.DataID=''
+       rds_3.DataID=''
+       rds_4.DataID=''
+       btnquery_retrieve_onclick()
+   eval("rds_" + il_nindex + ".DataID='ds_1'")    
+   eval("rds_" + il_nindex + ".Reset()")    
+   eval("gd_" + il_nindex + ".ReDraw=false")    
+   eval("gd_" + il_nindex + ".DataID='rds_" + il_nindex + "'")
+   eval("gd_" + il_nindex + ".ReDraw=true")  
+}
+//-------------------------------------------------------------------------------
+function select_year()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_year = em_select_year.text + '.01.01'
+   ds_1.ClearData()
+
+   btnquery_onclick()
+}   
+//----------------------------------------------------------------
+function excel_down()                      //엑셀 내리기 
+//----------------------------------------------------------------
+{
+	var temp_1
+	if (tb_1.ActiveIndex == 1) {
+   	temp_1 = '접수및 처리'
+	   gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+	}   
+	if (tb_1.ActiveIndex == 2) {
+   	temp_1 = '물건종류'
+	   gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+	}   
+	if (tb_1.ActiveIndex == 3) {
+   	temp_1 = '물건소재'
+	   gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+	}   
+	if (tb_1.ActiveIndex == 3) {
+   	temp_1 = '정보제공'
+	   gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+	}   
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+  	em_select_year.text = is_work_date.substr(0,4)
+	select_year()
+	
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_year event=onKillFocus()>
+   if (em_select_year.Modified){ 
+	   select_year()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_year event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_year()
+	}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  il_nindex = nIndex
+  setTimeout('tab_changed_settime()', 1)
+ }             
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=GroupExpr    value="type:gubun:detail_name,mm,cnt:per">
+      <param name=SubsumExpr value="type">
+</object>
+<object id=rds_2 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=GroupExpr    value="detail_name,mm,cnt:per">
+      <param name=SubsumExpr value="total">
+</object>
+<object id=rds_3 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=GroupExpr    value="detail_name,mm,cnt:per">
+      <param name=SubsumExpr value="total">
+</object>
+<object id=rds_4 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=GroupExpr    value="type:detail_name,mm,cnt:per">
+      <param name=SubsumExpr value="total,1:type">
+</object>
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 400px; WIDTH: 160px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">해당년도</div></td>
+          	 <td width="63%" >
+			       <OBJECT id=em_select_year style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="4">
+						    <PARAM NAME="Format" VALUE="YYYY">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_year.text = result.substr(0,4);} ; select_year()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>         	
+         </tr>
+      </table>
+</DIV>      
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 800px; WIDTH: 80px; POSITION: absolute; TOP: 12px; HEIGHT: 10px">
+    <LABEL id=Label_1  
+        	style=" WIDTH: 100px; font-size:12px; ">[단위:억원,%]
+    </LABEL>
+</DIV>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 900px; POSITION: absolute; WIDTH: 300px; TOP: 7px;  height:20px">
+	<input id=button_driver type="button" value="&nbsp;엑셀내리기" 
+	          style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid; "   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	           "  onclick=excel_down()>	
+</DIV>      
+<OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 1px; WIDTH: 300px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title='접수및처리'</T>
+    <T>divid=tab_page_2 title='물건종류'</T>
+    <T>divid=tab_page_3 title='물건소재'</T>
+    <T>divid=tab_page_4 title='정보제공'</T>
+    ">
+</OBJECT>
+   <DIV id=tab_page_1 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 28px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <OBJECT id=gd_1 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='타입' ID=type  Width=60  EditStyle=Combo Data='1:조사결과,2:현장조사'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 suppress=2   SubSumText={decode(CurLevel,1,' ',decode(CurLevel,2,'소계 ','소계'))}  
+                                              SubBgColor={decode(CurLevel,1,'#FFFFFF',decode(CurLevel,2,'#ffff99','#ffff99'))} </FC> 
+              <FC> Name='구분' ID=detail_name  Width=80   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     
+                                   SubSumText={decode(CurLevel,1,'소계',decode(CurLevel,2,'  ',' '))} 
+                                               SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))}  SumColor=Black </FC>  
+              <R>   
+                  <G> name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK                                                                                                              
+                     <C>ID=cnt_$$  name=건수 value={decode(cnt_$$,0,'',cnt_$$)} Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                     <C>ID=per_$$  name=비율 value={decode(per_$$,0,'',per_$$)} dec=1 Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                  </G>
+              </R>   
+           ">
+      </OBJECT>
+	 </DIV>	
+   <DIV id=tab_page_2 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 28px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <OBJECT id=gd_2 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='구  분' ID=detail_name  Width=60   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 suppress=1   SubSumText={decode(CurLevel,1,' ',decode(CurLevel,2,'소계 ','소계'))}  
+                                              SubBgColor={decode(CurLevel,1,'#FFFFFF',decode(CurLevel,2,'#ffff99','#ffff99'))} </FC> 
+              <R>   
+                  <G> name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK                                                                                                              
+                     <C>ID=cnt_$$  name=건수 value={decode(cnt_$$,0,'',cnt_$$)} Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                     <C>ID=per_$$  name=비율 value={decode(per_$$,0,'',per_$$)} dec=1 Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                  </G>
+              </R>   
+           ">
+      </OBJECT>
+	 </DIV>	
+   <DIV id=tab_page_3 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 28px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <OBJECT id=gd_3 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='구  분' ID=detail_name  Width=60   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 suppress=1   SubSumText={decode(CurLevel,1,' ',decode(CurLevel,2,'소계 ','소계'))}  
+                                              SubBgColor={decode(CurLevel,1,'#FFFFFF',decode(CurLevel,2,'#ffff99','#ffff99'))} </FC> 
+              <R>   
+                  <G> name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK                                                                                                              
+                     <C>ID=cnt_$$  name=건수 value={decode(cnt_$$,0,'',cnt_$$)} Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                     <C>ID=per_$$  name=비율 value={decode(per_$$,0,'',per_$$)} dec=1 Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffff99'))} </C>             
+                  </G>
+              </R>   
+           ">
+      </OBJECT>
+	 </DIV>	
+   <DIV id=tab_page_4 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 28px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <OBJECT id=gd_4 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='타입' ID=type  Width=60  EditStyle=Combo Data='1:내부,2:외부'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 suppress=2   SubSumText={decode(CurLevel,1,' ',decode(CurLevel,2,'소계 ','합계'))}  
+                                              SubBgColor={decode(CurLevel,1,'#FFFFFF',decode(CurLevel,2,'#ffff99','#ffccff'))} </FC> 
+              <FC> Name='구분' ID=detail_name  Width=80   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     
+                                   SubSumText={decode(CurLevel,1,'소계',decode(CurLevel,2,'  ',' '))} 
+                                               SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffccff'))}  SumColor=Black </FC>  
+              <R>   
+                  <G> name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK                                                                                                              
+                     <C>ID=cnt_$$  name=건수 value={decode(cnt_$$,0,'',cnt_$$)} Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffccff'))} </C>             
+                     <C>ID=per_$$  name=비율 value={decode(per_$$,0,'',per_$$)} dec=1 Edit='Numeric' width=35 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                 SumText=@sum SumColor=Black SumColor=Black SubBgColor={decode(CurLevel,1,'#ffff99',decode(CurLevel,2,'#ffff99','#ffccff'))} </C>             
+                  </G>
+              </R>   
+           ">
+      </OBJECT>
+	 </DIV>	
+</BODY></HTML>

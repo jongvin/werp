@@ -1,0 +1,123 @@
+Select
+	(
+		case
+			When NAME Is Null Then
+				'총계'
+			When REG_NO = Lag(REG_NO) Over ( Order By RN) Then
+				''
+			Else
+				NAME
+		End
+	) NAME_SUPRESS,
+	(
+		case
+			When REG_NO = Lag(REG_NO) Over ( Order By RN) Then
+				''
+			Else
+				REG_NO
+		End
+	) REG_NO_SUPRESS,
+	(
+		case
+			When OCCU_CODE Is Null And NAME Is Not Null Then
+				'개인별계('||NAME||')'
+			When REG_NO = Lag(REG_NO) Over ( Order By RN) And OCCU_CODE = Lag(OCCU_CODE) Over ( Order By RN) Then
+				''
+			Else
+				OCCU_NAME
+		End
+	) OCCU_NAME_SUPRESS,
+	(
+		case
+			When PAY_SUM_T Is Null And OCCU_CODE Is Not Null Then
+				'직종계('||OCCU_NAME||')'
+			Else
+				SF_DateToString(PAY_SUM_T)
+		End
+	) PAY_SUM_T,
+	AMT
+From
+	(
+		Select
+			NAME,
+			REG_NO,
+			OCCU_CODE,
+			OCCU_NAME,
+			PAY_SUM_T,
+			AMT,
+			ROWNUM RN
+		From
+			(
+				Select
+					a.NAME,
+					a.REG_NO,
+					b.OCCU_CODE,
+					c.OCCU_NAME,
+					b.PAY_SUM_T,
+					Sum(b.AMT) AMT
+				From	TAC_L_LABOR a,
+						TAC_L_PER_PAY_SUM b,
+						TAC_L_OCCU_CODE c
+				Where	a.PROJ_CODE = b.PROJ_CODE
+				And		a.MAN_SEQ = b.MAN_SEQ
+				And		b.OCCU_CODE = c.OCCU_CODE
+				Group by Grouping sets
+				(
+					(a.NAME,
+					a.REG_NO,
+					b.OCCU_CODE,
+					c.OCCU_NAME,
+					b.PAY_SUM_T),
+					(a.NAME,
+					a.REG_NO,
+					b.OCCU_CODE,
+					c.OCCU_NAME),
+					(a.NAME,
+					a.REG_NO
+					),
+					(1)
+				)
+			)
+	)
+Order By
+	RN
+	
+NAME_SUPRESS	REG_NO_SUPRESS	OCCU_NAME_SUPRESS	PAY_SUM_T	AMT
+강동원	7405011234567	e	2004-01-15	240000
+			직종계(e)	240000
+		개인별계(강동원)		240000
+역도산	7703021234567	b	2004-01-15	300000
+			직종계(b)	300000
+		개인별계(역도산)		300000
+이정재	7502011234567	c	2004-01-15	330000
+			2004-01-31	330000
+			직종계(c)	660000
+		개인별계(이정재)		660000
+차승원	7605011234567	d	2004-01-15	360000
+			2004-01-31	360000
+			직종계(d)	720000
+		개인별계(차승원)		720000
+홍길동	4209171536418	a	2003-06-30	1800000
+			2003-07-31	1800000
+			2003-08-31	1800000
+			2003-09-30	1800000
+			2004-11-30	660000
+			2004-12-31	110000
+			직종계(a)	7970000
+		b	2004-01-31	450000
+			2004-07-31	100000
+			2004-08-31	100000
+			2004-09-30	100000
+			2004-10-30	100000
+			2004-11-30	200000
+			직종계(b)	1050000
+		e	2004-11-30	600000
+			직종계(e)	600000
+		개인별계(홍길동)		9620000
+홍길동	7701011234567	a	2004-01-15	270000
+			2004-01-31	270000
+			2004-02-28	270000
+			2004-03-31	270000
+			직종계(a)	1080000
+		개인별계(홍길동)		1080000
+총계				12620000

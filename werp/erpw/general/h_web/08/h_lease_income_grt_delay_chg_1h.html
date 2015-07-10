@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_income_master_delay_chg_1h.html								-->
+<!-- 2. 유형(시나리오):분양수입금에서 연체료/할인료 변경시 처리 						-->
+<!-- 3. 기 능 정 의   : 변경 할인료/연체료를 사용자로부터 입력받는다							-->
+<!-- 4. 변 경 이 력   :  임종빈 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<TITLE> 연체료/할인료 변경(재계산)</TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_confirm_check = 'no'
+var ls_dept_code, ls_sell_code,ls_cont_date ,ls_cont_seq,ls_degree_code,ls_degree_seq ,ls_receipt_date ,ls_daily_seq ,ls_delay_amt , ls_discount_amt
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  
+  ds_spcall.DataID = 'h_lease_income_grt_delay_recalc.jsp?arg_dept_code=' + ls_dept_code + 
+                                                                           '&arg_sell_code=' + ls_sell_code +
+	                                                                        '&arg_cont_date=' + ls_cont_date + 
+																									'&arg_cont_seq=' + ls_cont_seq + 
+																									'&arg_degree_code=' + ls_degree_code + 
+	                                                                        '&arg_degree_seq=' + ls_degree_seq + 
+																									'&arg_receipt_date=' + ls_receipt_date +
+	                                                                        '&arg_daily_seq=' + ls_daily_seq +
+							                                                      '&arg_delay_amt=' + em_delay_amt.text +
+																									'&arg_discount_amt=' + em_discount_amt.text
+   //alert(ds_spcall.dataid)
+	ds_spcall.SyncLoad = true
+	ds_spcall.reset()
+ 
+ ls_return = 'calc'
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+
+ array = result.split("@");
+ 
+   ls_dept_code      = array[0]
+	ls_sell_code       = array[1]
+	ls_cont_date          = array[2]
+   ls_cont_seq           = array[3]
+	ls_degree_code = array[4]
+	ls_degree_seq   = array[5]
+	ls_receipt_date   = array[6]
+	ls_daily_seq       = array[7]
+	ls_delay_amt      = array[8]
+	ls_discount_amt = array[9]
+
+ em_delay_amt.text = ls_delay_amt
+ em_discount_amt.text = ls_discount_amt
+ 
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<input type="button" value="확 인" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 205px; POSITION: absolute; TOP: 13px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 255px; POSITION: absolute; TOP: 13px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+
+
+<DIV id=input_form style="LEFT: 10px; WIDTH: 300px; POSITION: absolute; TOP: 50px; HEIGHT: 60px; BACKGROUND-COLOR: #FFFFFF">
+	<table width="100%"  height="100%" BORDER="3"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	   <tr BGCOLOR="white" > 
+			<td width="40%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2 > 
+				<div align="right">변경연체료</div></td>
+			<td width="60%" colspan=2 > 
+              <comment id="__NSID__"><OBJECT id=em_delay_amt   tabIndex=2 "
+	                 style="WIDTH: 120px" 
+		              classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					      <PARAM NAME="PromptChar" VALUE="">
+							<PARAM NAME="Alignment" VALUE="1">
+                      <param name=Numeric value=true>
+                      <param name=ClipMode       value=true>
+							 <param name=IsComma                value=true>
+                      <param name=SelectAll       value=true>
+                      <param name=MaxDecimalPlace   value=0></object></comment> <script> __ws__(__NSID__);</script></td>
+					
+			
+     	</tr>          
+      <tr BGCOLOR="white" > 
+			<td width="40%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2 > 
+				<div align="right">변경할인료</div></td>
+			<td width="60%" colspan=2 > 
+              <comment id="__NSID__"><OBJECT id=em_discount_amt   tabIndex=2 "
+	                 style="WIDTH: 120px" 
+		              classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					      <PARAM NAME="PromptChar" VALUE="">
+							<PARAM NAME="Alignment" VALUE="1">
+                      <param name=Numeric value=true>
+                      <param name=ClipMode       value=true>
+							 <param name=IsComma                value=true>
+                      <param name=SelectAll       value=true>
+                      <param name=MaxDecimalPlace   value=0></object></comment> <script> __ws__(__NSID__);</script></td>
+					
+			
+     	</tr>      
+	</table>
+</div>
+
+</BODY></HTML>

@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_suggest_grade_1h.html 					   -->
+<!-- 2. 유형(시나리오): 제안등급 등록											-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :	1차평가자 평가								  			-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<TITLE> 제안등급 등록 </TITLE>
+<SCRIPT language=JavaScript>
+var gs_home
+//var is_ds_1_addr = 'p_eval_suggest_grade_1q.jsp?arg_eval_code='
+var is_confirm_check
+var is_fir_present_yn
+var is_eval_code
+var is_eval_year
+var is_eval_degree
+var is_self
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+  if (is_eval_code == '01'){			//MBO
+	  ll_cnt = f_ds_select_q("ds_select","select fir_suggest_grade   select_1 " +
+	  												 "  from p_eval_mbo_list " +
+	  												 " where eval_code = '" + is_eval_code + "' " +
+	  												 "   and eval_year = '" + is_eval_year + "' " +
+	  												 "   and eval_degree = '" + is_eval_degree + "' " +
+	  												 "   and self_evaluator = '" + is_self + "' ")
+     ccom_suggest_grade.CodeValue = ds_select.NameValue(1,"select_1")	  												 
+  }				
+  else if (is_eval_code == '02'){		//월드진단(공통역량)
+	  ll_cnt = f_ds_select_q("ds_select","select fir_suggest_grade   select_1 " +
+	  												 "  from p_eval_world_list " +
+	  												 " where eval_code = '" + is_eval_code + "' " +
+	  												 "   and eval_degree = '" + is_eval_degree + "' " +
+	  												 "   and self_evaluator = '" + is_self + "' ")
+     ccom_suggest_grade.CodeValue = ds_select.NameValue(1,"select_1")     
+  }
+  else if (is_eval_code == '04'){		//수습평가
+	  ll_cnt = f_ds_select_q("ds_select","select fir_suggest_grade   select_1 " +
+	  												 "  from p_eval_probation " +
+	  												 " where eval_code = '" + is_eval_code + "' " +
+	  												 "   and eval_degree = '" + is_eval_degree + "' " +
+	  												 "   and self_evaluator = '" + is_self + "' ")
+     ccom_suggest_grade.CodeValue = ds_select.NameValue(1,"select_1")     
+  }								 								 
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ 	window.returnValue = "";
+ 	window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //저장
+//--------------------------------------------------------------------
+{
+  	is_confirm_check = 'yes'
+  	
+   if (is_eval_code == '01'){	//MBO
+		arg_cmd = " update p_eval_mbo_list		" + 
+			  		 "    set fir_suggest_grade = '" + ccom_suggest_grade.CodeValue +"' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_year = '" + is_eval_year + "' " +
+			  		 "    and eval_degree = '" + is_eval_degree + "' " +
+			  		 "    and self_evaluator = '" + is_self + "' " 
+	}
+	else if(is_eval_code == '02'){	//월드진단(공통역량)				
+		arg_cmd = " update p_eval_world_list		" + 
+			  		 "    set fir_suggest_grade = '" + ccom_suggest_grade.CodeValue +"' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_degree = '" + is_eval_degree + "' " +
+			  		 "    and self_evaluator = '" + is_self + "' " 
+	}		  		 
+	else if(is_eval_code == '04'){	//수습평가
+		arg_cmd = " update p_eval_probation		" + 
+			  		 "    set fir_suggest_grade = '" + ccom_suggest_grade.CodeValue +"' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_degree = '" + is_eval_degree + "' " +
+			  		 "    and self_evaluator = '" + is_self + "' " 
+	}
+	
+	f_update_sql(arg_cmd)
+  	
+  	window.returnValue = is_confirm_check
+  	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ 	var result;
+ 	var array = new Array();
+ 	result = window.dialogArguments;
+ 	
+ 	array = result.split("@");
+
+ 	is_fir_present_yn = array[0]
+ 	is_eval_code 		= array[1]
+ 	is_eval_degree 	= array[2]
+ 	is_self 				= array[3]	
+ 	is_eval_year 		= is_eval_degree.substr(0,4) + '.01.01'
+ 	
+ 	if (is_fir_present_yn == 'Y'){
+ 		ccom_suggest_grade.Enable=false
+ 		bt_confirm_yn.style.visibility = "hidden"
+ 	}
+ 	
+ 	if (result == "") return
+ 	
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  	if (is_confirm_check == 'no')
+  	    window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code ds_update: " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<OBJECT id=ds_select
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>    
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 10px">
+    <LABEL id=Label_1  
+        	style="LEFT: 20px; WIDTH: 380px; Color:Red; font-size:12px; ">&nbsp;IC:혁신창조자&nbsp;&nbsp;PE:으뜸&nbsp;&nbsp;EE:월등&nbsp;&nbsp;GA:잘함&nbsp;&nbsp;GM:계발필요&nbsp;&nbsp;NG:미흡
+    </LABEL>
+</DIV>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 5px; WIDTH: 200; POSITION: absolute; TOP: 35px; HEIGHT: 28px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      	<tr BGCOLOR="white"> 
+				<td width="45%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+					<div align="right">제안등급</div></td>
+				<td >
+					<OBJECT id=ccom_suggest_grade width=100px
+                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		          <param name=Data     value="1^IC,2^PE,3^EE,4^GA,5^GM,6^NG">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+			</tr>         
+      </table>
+</DIV> 
+
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 240px; WIDTH: 50px; POSITION: absolute; TOP: 38px; HEIGHT: 20px">
+	<input id=bt_confirm_yn type="button" value="&nbsp;저&nbsp;장&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=Button_confirm_onclick()>   
+</div>
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 310px; WIDTH: 50px; POSITION: absolute; TOP: 38px; HEIGHT: 20px">
+	<input id=bt_close_yn type="button" value="&nbsp;닫&nbsp;기&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=Button_close_onclick()>
+</div>
+</BODY></HTML>

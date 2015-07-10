@@ -1,0 +1,340 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_dept_code_approve_1h.html				-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					-->
+<!-- 3. 기 능 정 의   : 현장코드승인 프로세스  	  				-->
+<!-- 4. 변 경 이 력   : 김 동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_user = top.frames['security'].user_id.value
+var is_user_name = top.frames['security'].gs_name.value
+var is_ds_1_addr = gs_home + '/const/r_web/01/z_dept_code_approve_1q.jsp?arg_class='
+var is_tr_1_addr = gs_home + '/const/r_web/01/z_dept_code_approve_1tr.jsp'
+var is_ds_seq_addr = gs_home + '/const/y_web/00/y_spec_unq_no_1q.jsp'                 // seq_no구하기 
+var is_format_1              
+var is_format_2              
+var is_class = "1"
+is_format_1 ="<C> Name='요청일자' ID=request_dt Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Color=#CC0066  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 </C> " +
+	  "<C> Name='현장코드' ID=dept_code Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 </C> " +
+	  "<C> Name='현 장 명' ID=long_name  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=300 </C> " +
+	  "<C> Name='현장약명' ID=short_name Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=120 </C> " +
+	  "<C> Name='사업장코드' ID=comp_code Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=70 </C> " +
+	  "<C> Name='승인구분' ID=approve_class Edit=None Align=Center EditStyle=Combo Data='1:요청,2:승인' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> " +
+	  "<C> Name='부서구분' ID=dept_proj_tag Edit=None Align=Center EditStyle=Combo Data='P:현장,H:부서' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> " +
+	  "<C> Name='수주코드' ID=receive_code Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=100 </C> " 
+	  
+is_format_2 = "<C> Name='승인일자' ID=create_dt Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Color=#CC0066  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 </C> " +
+	  "<C> Name='현장코드' ID=dept_code Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 </C> " +
+	  "<C> Name='현 장 명' ID=long_name  Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=300 </C> " +
+	  "<C> Name='현장약명' ID=short_name Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=120 </C> " +
+	  "<C> Name='사업장코드' ID=comp_code Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=70 </C> " +
+	  "<C> Name='승인구분' ID=approve_class Edit=None Align=Center EditStyle=Combo Data='1:요청,2:승인' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> " +
+	  "<C> Name='부서구분' ID=dept_proj_tag Edit=None Align=Center EditStyle=Combo Data='P:현장,H:부서' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> " +
+	  "<C> Name='수주코드' ID=receive_code Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=100 </C> " 
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_class
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	if (is_class == "1") {
+		ds_1.SortExpr = "-request_dt" 
+	}
+	else {
+		ds_1.SortExpr = "-create_dt"
+	}
+	ds_1.Sort();
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+//	gd_1.SetColumn("vat");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	 ds_seq.SyncLoad=true;             // seq no 구하기
+ 	 ds_seq.reset()
+ 	 ds_1.NameValue(ds_1.RowPosition,"spec_unq_num") = ds_seq.NameValue(1,"nextval")
+ 	 ds_1.NameValue(ds_1.RowPosition,'dept_proj_tag') = 'H'
+ 	 ds_1.NameValue(ds_1.RowPosition,'request_dt') = is_work_date
+ 	 ds_1.NameValue(ds_1.RowPosition,'approve_class') = '1'
+ 	 ds_1.NameValue(ds_1.RowPosition,'comp_code') = '10'
+ 	 
+	 Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if (is_class != "1") return
+	
+	ds_1.AddRow()
+	init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (is_class != "1") return
+
+	ds_1.InsertRow(ds_1.RowPosition)
+	init_move()
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if (is_class != "1") return
+	
+	if (ds_1.NameValue(ds_1.RowPosition,'dept_proj_tag') == 'P') {
+		alert('현장코드는 요청취소 버튼으로 삭제할 수 있습니다...')
+		return
+	}
+
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	  for (i=ds_1.CountRow ;i >0 ;i--)
+	  {
+	     if (ds_1.RowMark(i) == 1)
+	            ds_1.DeleteRow(i)
+	 }   
+	 ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	} 
+	else
+	  ds_1.DeleteRow(ds_1.RowPosition)  
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_chk=0
+
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+     		tr_1.Post()
+	   }
+ 	} 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------
+function gd_1_request()                   //요청자료조회
+//----------------------------------------------------------------
+{
+		is_class = "1"
+	   gd_1.format = is_format_1             
+	   bt_sungin.style.visibility="visible"	
+	btnquery_onclick()
+}
+//----------------------------------------------------------------
+function gd_1_approve()                   //승인자료조회
+//----------------------------------------------------------------
+{
+		is_class = "2"
+	   gd_1.format = is_format_2             
+	   bt_sungin.style.visibility="hidden"	
+	   	
+	btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+}     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//-------------------------------------------------------------------------------
+function sp_call()                  //Stored Procedure Call 
+//--------------------------------------------------------------------------------
+{
+	var li_unq_num,ls_dept_tag,ls_comp_code,ll_cnt,ls_dept_code
+	
+	if (is_class != "1") {            //승인자료를 조회하고 있을경우 
+		alert("요청자료만 승인처리 가능합니다")
+		return
+	}
+	ll_row = ds_1.RowPosition
+	if (ll_row < 1) {
+		alert("승인할 자료를 선택하시오")
+		return
+	}
+	if ( ds_1.NameValue(ll_row,'dept_proj_tag') == 'H') {
+		ls_dept_code = ds_1.NameValue(ll_row,"dept_code")
+		ll_cnt = f_select_q("select nvl(count(*),0) select_1 from z_code_dept where dept_code = '" + ls_dept_code + "'")
+		if (ds_select.NameValue(ds_select.RowPosition,'select_1') > 0 ) {
+			alert('이미 존재하는 부서코드입니다.(부서코드를 수정한 후 승인하십시오)')
+			return
+		}
+	}
+		
+	li_unq_num = ds_1.NameValue(ll_row,"spec_unq_num")
+	ls_dept_tag    = ds_1.NameValue(ll_row,"dept_proj_tag")
+	ls_comp_code   = ds_1.NameValue(ll_row,'comp_code')
+	if  (confirm("승인처리를 계속하시겠습니까?(승인 후 취소불가)")) {
+		ds_spcall.DataID = 'y_sp_z_dept_code_approve.jsp?arg_unq_num=' + li_unq_num +
+		                                           '&arg_dept_tag=' + ls_dept_tag  + '&arg_comp_code=' + ls_comp_code 
+		ds_spcall.SyncLoad = true
+		ds_spcall.reset()
+		btnquery_onclick()
+		alert("정상처리되었습니다...")
+	}
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	
+  	ds_seq.DataID = is_ds_seq_addr                       // SEQ NO 의 DATAID
+	tr_1.Action = is_tr_1_addr 
+	gd_1.format = is_format_1 
+	ADE_Radio_1.CodeValue = '1'
+	btnquery_onclick()
+ 
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError() >
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+<script language=JavaScript for=ADE_Radio_1 event=OnSelChange()>
+
+	if (ADE_Radio_1.CodeValue == '1'){
+		gd_1_request()
+	}
+	else {
+		gd_1_approve()
+	}
+
+</script>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:z_dept_code_approve_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<div class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="20px">
+		<TD class=td_green>
+			<table border="0" cellspacing="0" cellpadding="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="28px" class=font_green_bold>구분</td>
+					<td>
+						<comment id="__NSID__"><OBJECT id=ADE_Radio_1  classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0
+							style="Z-INDEX: 107; width: 150px; height: 20px;" VIEWASTEXT>
+								<PARAM NAME="Format" VALUE="1^요청자료,2^승인자료">
+								<PARAM NAME="Cols" VALUE="2">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*">&nbsp;</td>
+					<td align="right">
+						<input id=bt_sungin type="button" value="승인처리" onclick=sp_call() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>
+	<TR height="*">
+		<TD>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 102; width: 100%; height: 100%;" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AutoInsert" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</TD>
+	</TR>
+</TABLE></DIV>
+</BODY></HTML>

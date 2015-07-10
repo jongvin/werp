@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_order_wbs_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 발주 공종 코드 등록 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+var gs_home = parent.frames['security'].gs_home.value
+var is_ds_1_addr = gs_home + '/const/s_web/99/s_order_wbs_1q.jsp'
+var is_ds_2_addr = gs_home + '/const/s_web/99/s_order_wbs_1q.jsp'
+var is_tr_1_addr = gs_home + '/const/s_web/99/s_order_wbs_1tr.jsp'
+var il_bef_row
+var il_seq
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_1.SyncLoad=true
+ds_2.SyncLoad=true
+ds_1.reset()
+ds_2.reset()   
+
+}
+//-----------------------------------------------------------------
+function init_move()                 //초기값 셋팅(추가및 삽입에서 사용)
+//-----------------------------------------------------------------
+{
+ if (ds_2.RowPosition > 1) {
+     ds_1.NameValue(ds_1.RowPosition,"llevel") = ds_1.NameValue(ds_1.RowPosition - 1,"llevel")
+     ds_1.NameValue(ds_1.RowPosition,"order_wbs_code") = ds_1.NameValue(ds_1.RowPosition - 1,"order_wbs_code")
+ }    
+}     
+
+//-----------------------------------------------------------------
+function btnadd_onclick()                 //추가
+//-----------------------------------------------------------------
+{
+  ds_1.AddRow()
+  ds_2.AddRow()
+  if  (ds_1.CountRow == 1)
+      il_seq = 0
+  else 
+      il_seq = ds_1.NameValue(ds_1.RowPosition - 1,"seq")   
+      
+ il_seq = il_seq + 100       
+ ds_1.NameValue(ds_1.RowPosition,"seq") = il_seq 
+
+ ds_2.RowPosition = ds_1.RowPosition
+ init_move()
+}
+//--------------------------------------------------------------------
+function btninsert_onclick()             // 삽입
+//--------------------------------------------------------------------
+{
+ if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+   btnadd_onclick()
+   return
+ }  
+  
+ ll_to_seq = ds_1.NameValue(ds_1.RowPosition,"seq") 
+ 
+ ds_2.RowPosition = ds_1.RowPosition
+ ds_1.InsertRow(ds_1.RowPosition)
+ ds_2.InsertRow(ds_2.RowPosition)
+ if  (ds_1.RowPosition == 1)                 //삽입버튼을 누른후에 처음으로 row가 갔을경우
+     ll_from_seq = 0 
+ else 
+     ll_from_seq = ds_1.NameValue(ds_1.RowPosition - 1,"seq")
+
+ ll_incre = (ll_to_seq - ll_from_seq) / 2
+ ll_incre = parseInt(ll_incre)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+ if (ll_incre == 0)                           //더이상 순번을 자동으로 메겨줄수 없슴
+    alert("순번을 수정하여 입력하십시요")
+ ll_incre = ll_from_seq + ll_incre
+ ds_1.NameValue(ds_1.RowPosition,"seq") = ll_incre 
+
+
+ ds_2.RowPosition = ds_1.RowPosition
+ init_move()
+}
+//---------------------------------------------------------------------------
+function btndelete_onclick()             //삭제
+//----------------------------------------------------------------------------
+{
+ 
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_1.CountRow ;i >0 ;i--)
+     {
+        if (ds_1.RowMark(i) == 1){
+               ds_1.DeleteRow(i)
+               ds_2.DeleteRow(i)
+         }      
+    }   
+     ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+    ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)}
+  else {
+  	 ds_2.RowPosition = ds_1.RowPosition      // ds_1을 삭제하면 rowchaned에서 번호가 -1됨으로 미리 보관
+     ds_1.DeleteRow(ds_1.RowPosition)
+     ds_2.DeleteRow(ds_2.RowPosition)
+    }   
+ }
+//-----------------------------------------------------------------
+function btnsave_onclick()               // 저장
+//------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+  }      
+}
+//-----------------------------------------------------------------
+function btncancel_onclick()               //취소 
+//------------------------------------------------------------------
+{
+  ds_1.Undo(ds_1.RowPosition)
+  ds_2.Undo(ds_1.RowPosition)
+}
+ 
+//--------------------------------------------------------------- 
+function btnexit_onclick(ls_arg)           //종료
+//---------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+parent.frames['main_ct'].location.href(ls_arg)
+parent.frames['main_title'].div_r.style.visibility="hidden"             
+parent.frames['main_title'].div_u.style.visibility="hidden"             
+
+// parent.frames['main_ct'].window.close()     
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+ds_1.DataID = is_ds_1_addr
+ds_2.DataID = is_ds_2_addr
+tr_1.Action = is_tr_1_addr
+btnquery_onclick()
+
+}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnRButtonDown(row,colid,xpos,ypos)>
+
+</script>
+
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else{    
+        ds_1.RowPosition++
+        ds_2.RowPosition++
+    }    
+}
+</SCRIPT>
+<SCRIPT language=JavaScript event="OnColumnChanged(row, colid)" for=ds_1>
+ds_2.NameValue(row,colid) = ds_1.NameValue(row,colid)
+
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnDblClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+if (row < 1)  return
+ds_2.RowPosition = ds_1.RowPosition
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_2 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_order_wbs_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 2px; WIDTH: 235px; POSITION: absolute; TOP: 10px; HEIGHT: 103%"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="name">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="llevel">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_2">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT>
+<OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 237px; WIDTH: 775px; POSITION: absolute; TOP: 10px; HEIGHT: 103%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	 <param name="MultiRowSelect"   value="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <FC> Name='1' ID=tree_1 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='1','■','')} Width=11</FC>	   
+	   <FC> Name='2' ID=tree_2 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='2','■','')}  Width=11</FC>	   
+	   <FC> Name='3' ID=tree_3 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='3','■','')}  Width=11</FC>	   
+	   <FC> Name='4' ID=tree_4 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='4','■','')}  Width=11</FC>	   
+	   <FC> Name='5' ID=tree_5 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='5','■','')}  Width=11</FC>	   
+	   <FC> Name='6' ID=tree_6 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='6','■','')}  Width=11</FC>	   
+	   <FC> Name='7' ID=tree_7 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='7','■','')}  Width=11</FC>	   
+	   <FC> Name='8' ID=tree_8 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='8','■','')}  Width=11</FC>	   
+	   <FC> Name='9' ID=tree_9 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='9','■','')}  Width=11</FC>	   
+	   <FC> Name='*' ID=tree_10 Color=red Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Value={if(llevel='10','■','')}  Width=11</FC>	   
+	   <C> Name=레벨 ID=llevel  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=30 </C>&#13;&#10;&#9; 
+	   <C> Name=공종코드 ID=order_wbs_code  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>&#13;&#10;&#9; 
+	   <C> Name='공 종 명 ' ID=name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=220 </C>
+	   <C> Name='비  고  ' ID=note  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=220 </C>
+	   ">&#13;&#10;&#9; 
+ 	</OBJECT>
+
+</BODY></HTML>

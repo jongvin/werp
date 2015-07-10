@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : m_stock_find_1h.html 					-->
+<!-- 2. 유형(시나리오): 조회							-->
+<!-- 3. 기 능 정 의   : 재고찾기(잉여자재) 	                                        -->
+<!-- 4. 변 경 이 력   : 김동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE>재고 내역 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_input_find_21q.jsp?arg_dept_code='                        //품의 목록 
+var is_ds_2_addr = 'm_input_find_22q.jsp?arg_dept_code='                        //품의 목록 
+var is_tr_1_addr = ''
+var is_tr_2_addr = ''
+var is_ds_seq_addr = gs_home + '/const/m_web/00/m_spec_unq_no_1q.jsp'                 // seq_no구하기 
+var is_dept_code = '',is_sbcr_code,is_inouttypecode
+var id_date
+var ii_seq,is_tag='1'
+var is_confirm_check = 'no'
+var is_format_1 = " <C> Name='입고일자' ID=yymmdd Align=Center Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C> " +
+	               " <C> Name='자재명' ID=name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=180 </C>                 " +
+	               " <C> Name='규격' ID=ssize Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=150 </C>                  " +
+	               " <C> Name='단위' ID=unitcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=35 </C>   " +
+	               " <G> Name='재고' HeadBgColor=#BBE0F4  HeadColor=BLACK   >                                                                                 " +
+	               " <C> Name='수량' ID=noout_qty Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>               " +
+	               " <C> Name='단가' ID=unitprice Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>               " +
+	               " <C> Name='금액' ID=amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=80 </C></G>                 " +
+	               " <C> Name='출고수량' ID=input_qty HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>                                   " +
+	               " <C> Name='출고' ID=comp_chk EditStyle=CheckBox HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=30 </C>                     " +
+	               " <C> Name='투입내역' ID=spec_name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=200 </C>          " 
+var is_format_2 = " <C> Name='입고일자' ID=yymmdd Align=Center Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C> " +
+	               " <C> Name='자재명' ID=name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=180 </C>                 " +
+	               " <C> Name='규격' ID=ssize Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=150 </C>                  " +
+	               " <C> Name='단위' ID=unitcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=35 </C>   " +
+	               " <C> Name='재고수량' ID=noout_qty Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>               " +
+	               " <C> Name='단가' ID=unitprice Edit=None  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=70 </C>                                   " +
+	               " <C> Name='잔존금액' ID=amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=80 </C></G>                 " +
+	               " <C> Name='출고수량' ID=input_qty HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>                                   " +
+	               " <C> Name='출고금액' ID=input_amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2  Width=70 </C>                                   " +
+	               " <C> Name='출고' ID=comp_chk EditStyle=CheckBox HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=30 </C>                     " 
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	if (is_tag == '2') {
+	   gd_1.format = is_format_2 
+		ds_1.DataID = is_ds_2_addr + is_dept_code + '&arg_date=' + id_date
+	}
+	else {
+	   gd_1.format = is_format_1 
+		ds_1.DataID = is_ds_1_addr + is_dept_code + '&arg_tag=' + is_tag + '&arg_date=' + id_date
+	}
+	ds_1.SyncLoad=true
+	ds_1.reset()
+	alert(ds_1.DataID)
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return="",li_seq,li_detail_seq
+	var ls_mtrcode,ls_ditag,ll_output_unq_num,ld_qty,ld_amt,ld_unitprice,ll_chk
+	var ll_input_unq_num,ll_output_unq_num
+	var ls_rentChk,ls_Sql;
+
+
+	if (is_tag == '2') { //가설재의 경우 상각여부 체크함
+		ll_cnt = 0;
+		for (i=1 ; i <= ds_1.CountRow ;i++) {
+			if (ds_1.NameValue(i,"comp_chk") == 'T' && ds_1.NameValue(i,"proc_yn") == 'Y') {
+				ll_cnt = ll_cnt + 1;
+				if (parseInt(ds_1.NameValue(i,"input_qty")) != ds_1.NameValue(i,"input_qty")) {
+					alert("수량은 정수만 입력할수 있습니다.")
+					return;
+				}
+			}
+		}
+	}
+
+	for (i=1 ; i <= ds_1.CountRow ;i++) {
+		if (ds_1.NameValue(i,"comp_chk") == 'T') {
+			ls_mtrcode	     = ds_1.NameValue(i,"mtrcode")
+			if (is_tag == '2') {
+				ls_ditag          = '2'
+			} else {
+				ls_ditag          = ds_1.NameValue(i,"ditag")
+			}
+			ld_qty               = ds_1.NameValue(i,"input_qty")
+			ld_unitprice         = ds_1.NameValue(i,"unitprice")
+			ld_amt               = ds_1.NameValue(i,"input_amt")
+			ll_input_unq_num     = ds_1.NameValue(i,"input_unq_num")
+			ds_1.NameValue(i,"noout_qty") = parseFloat(ds_1.NameValue(i,"noout_qty")) - ld_qty;
+			if (is_tag == '2'){
+				ds_1.NameValue(i,"re_amt") = parseFloat(ds_1.NameValue(i,"re_amt")) - ld_amt;
+			}
+
+			ll_cnt = f_select_q("select nvl(input_unq_num,0) select_1 " +
+								"  from m_remaind_mat " +
+								" where dept_code = '" + is_dept_code + "'" +
+								"   and yymmdd = '" + id_date + "'" +
+								"   and seq  = " + ii_seq +
+								"   and input_unq_num = " + ll_input_unq_num )
+
+			if (ll_cnt > 0 && ds_select.NameValue(ds_select.RowPosition,"select_1") != 0 ) {
+				ll_output_unq_num = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1"))
+				arg_cmd = " UPDATE m_remaind_mat " +
+							"    set qty = qty ! " + ld_qty + "," +
+							"        amt = nvl(trunc(( qty ! " + ld_qty + " ) * unitprice,0),0)" +
+							"  where dept_code = " + "'" + is_dept_code + "'" +
+							"    and yymmdd = " + "'" + id_date + "'" +
+							"    and seq = " + ii_seq +
+							"    and input_unq_num = " + ll_output_unq_num 
+
+				f_update_sql(arg_cmd)
+			} else {
+				arg_cmd = "  INSERT INTO m_remaind_mat  " +
+						"  SELECT  dept_code,yymmdd,seq,input_unq_num,detailseq," + 
+						"	        MTRCODE,NAME,SSIZE,UNITCODE,ditag, " + ld_qty + 
+						"          ,'','',''" + 
+						"   FROM m_input_detail " + 
+						"  WHERE DEPT_CODE = '" + is_dept_code + "'" +
+						"    AND input_unq_num = " + ll_input_unq_num
+				f_update_sql(arg_cmd)
+			}
+		}
+	}
+
+//	if (is_tag == '2') {
+//	tr_2.Post()
+//	}
+//	else {
+//		tr_1.Post()
+//	}
+//
+//	ds_spcall.DataID = gs_home + '/const/m_web/03/y_m_output_cmpt_procedure.jsp?arg_dept_code=' + is_dept_code + '&arg_date=' + id_date + '&arg_seq=' + ii_seq
+//	ds_spcall.SyncLoad = true
+//	ds_spcall.reset()
+	btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//--------------------------------------------------------------------------
+function   rd_1_rtn()
+//----------------------------------------------------------------
+{
+	bt_1.checked=true
+	bt_2.checked=false
+//	bt_3.checked=false
+//	bt_4.checked=false
+//	bt_5.checked=false
+//	bt_6.checked=false
+	
+	is_tag = '1'
+	btnquery_onclick()
+} 
+//--------------------------------------------------------------------------
+function   rd_2_rtn()
+//----------------------------------------------------------------
+{
+	var ll_cnt,li_seq
+
+	bt_1.checked=false
+	bt_2.checked=true
+//	bt_3.checked=false
+//	bt_4.checked=false
+//	bt_5.checked=false
+//	bt_6.checked=false
+	
+	is_tag = '2'
+	btnquery_onclick()
+} 
+//--------------------------------------------------------------------------
+function   rd_3_rtn()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+//	bt_3.checked=true
+//	bt_4.checked=false
+//	bt_5.checked=false
+//	bt_6.checked=false
+	
+	is_tag = '3'
+	btnquery_onclick()
+} 
+//--------------------------------------------------------------------------
+function   rd_4_rtn()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+//	bt_3.checked=false
+//	bt_4.checked=true
+//	bt_5.checked=false
+//	bt_6.checked=false
+	
+	is_tag = '4'
+	btnquery_onclick()
+} 
+//--------------------------------------------------------------------------
+function   rd_5_rtn()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+//	bt_3.checked=false
+//	bt_4.checked=false
+//	bt_5.checked=true
+//	bt_6.checked=false
+	
+	is_tag = '5'
+	btnquery_onclick()
+} 
+//--------------------------------------------------------------------------
+function   rd_6_rtn()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+//	bt_3.checked=false
+//	bt_4.checked=false
+//	bt_5.checked=false
+//	bt_6.checked=true
+	
+	is_tag = '6'
+	btnquery_onclick()
+} 
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	gs_home          = array[0];     
+	is_dept_code     = array[1];
+	id_date          = array[2];
+	ii_seq           = array[3];
+	is_inouttypecode = array[4];
+	
+	is_tr_1_addr = gs_home + '/const/m_web/00/m_input_find_1tr.jsp'
+	is_tr_2_addr = gs_home + '/const/m_web/00/m_input_find_2tr.jsp'
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+	btnquery_onclick()
+   gd_1.format = is_format_1 
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+ 
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+if (colid == "comp_chk") {
+	if (ds_1.NameValue(row,colid) == 'T'){
+		ds_1.NameValue(row,colid) = 'F'
+	}
+	else {
+		ds_1.NameValue(row,colid) = 'T'
+	}
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	if (colid == "input_qty" ) {
+        	if (ds_1.NameValue(row,"noout_qty") < ds_1.NameValue(row,"input_qty")) {
+        		alert("재고수량을 초과하여 입력할 수 없습니다...")
+        		ds_1.NameValue(row,"input_qty") = 0
+        		return
+        	}
+        	else {
+     			ds_1.NameValue(row,"input_amt") = parseInt(ds_1.NameValue(row,"input_qty") * ds_1.NameValue(row,"unitprice"))
+        	}
+        	if (ds_1.NameValue(row,"input_qty") == 0 ) {
+        		ds_1.NameValue(row,"comp_chk") = 'F'
+        	}
+        	else {
+        		ds_1.NameValue(row,"comp_chk") = 'T'
+        	}
+        		
+	}   
+	if (colid == "comp_chk") {
+		if (ds_1.NameValue(row,"comp_chk") == 'T' ) {
+	        	if (ds_1.NameValue(row,"input_qty") == 0 ) {
+				ds_1.NameValue(row,"input_qty") = ds_1.NameValue(row,"noout_qty")
+				ds_1.NameValue(row,"input_amt") = ds_1.NameValue(row,"amt")
+			}
+		}
+		else {
+			ds_1.NameValue(row,"input_qty") = 0
+			ds_1.NameValue(row,"input_amt") = 0
+		}
+	}
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code(tr_2) : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT> </OBJECT>
+<OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+    <param name=UseFilter       value=true></OBJECT>
+<OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_input_find_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_input_find_2tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 10px; WIDTH: 150px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   > 
+						<input id=bt_1 type="radio" value="1"  defaultChecked=true checked=true onclick="rd_1_rtn()">주자재
+						<input id=bt_2 type="radio" value="2"  onclick="rd_2_rtn()">가설재
+<!--						<input id=bt_3 type="radio" value="2"  onclick="rd_3_rtn()">공구와기구
+						<input id=bt_4 type="radio" value="2"  onclick="rd_4_rtn()">집기비품  
+						<input id=bt_5 type="radio" value="2"  onclick="rd_5_rtn()">소모품    
+						<input id=bt_6 type="radio" value="2"  onclick="rd_6_rtn()">지급임차료 -->
+				</td>
+         </tr>                 
+      </table>
+</DIV>
+    
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 700px; WIDTH: 200px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<INPUT  type=button  class="img_btn4_1"  value=출고확정 onclick=Button_confirm_onclick() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+	<INPUT type=button  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+</DIV>
+<comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 10px; WIDTH: 970px; POSITION: absolute; TOP: 35px; HEIGHT: 610px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_1">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

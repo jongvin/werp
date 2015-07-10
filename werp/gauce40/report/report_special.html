@@ -1,0 +1,117 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ks_c_5601-1987">
+<title>GAUCE Component Sample</title>
+<script language="javascript">
+var alid_sort = "+";
+
+	function On_Load()
+	{
+		Grid_Format();
+		Report_Format();
+		ds_report.DataID = "report2.jsp";
+		ds_report.Reset();
+	}
+
+	function btn_Preview()
+	{
+		gauce_report.Preview();
+	}
+	
+	function btn_Print()
+	{
+		gauce_report.Print();
+	}
+
+	function Grid_Format()
+	{
+		gauce_grid.format = ''+
+		'<F> id={currow}, name=SEQ,width=40,headbgcolor="#2D2478",bgcolor="#2D2478",sumbgcolor="#2D2478",headcolor="#F0F8FF", color="#F0F8FF"</F>'+
+		'<F> id=sabun, name=번호,width=100,headbgcolor="#2D2478",align="center",mask="XXXX-XX",bgcolor="#C0E0FF",SubSumText="소계",SubBgColor="ffffff",sumtext="합계",sumbgcolor="#E2C8E4",sumcolor="#800000",headcolor="#F0F8FF"</F>'+
+		'<C> id=name, name=성명,width=100,headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubBgColor="ffffff",sumbgcolor="#E2C8E4",headcolor="#F0F8FF"</C>';
+	}
+
+	function Report_Format()
+	{
+		gauce_report.format = ''+
+		'<B>id=Header ,left=0,top=0 ,right=1900 ,bottom=363 ,face="굴림체" ,size=10 ,penwidth=1'+
+			'<T>id="Report Special Type Sample" ,left=573 ,top=143 ,right=1328 ,bottom=223 ,face="굴림" ,size=14 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+		'</B>'+
+		'<B>id=default ,left=0,top=0 ,right=1900 ,bottom=2023 ,face="굴림체" ,size=10 ,penwidth=1'+
+			'<T>id="2002년 10월" ,left=1180 ,top=1718 ,right=1455 ,bottom=1777 ,align="left" ,face="궁서체" ,size=12 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<T>id="XX 대학교 총장" ,left=1180 ,top=1800 ,right=1555 ,bottom=1859 ,align="left" ,face="궁서체" ,size=14 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<L> left=93 ,top=14 ,right=1798 ,bottom=14 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>'+
+			'<T>id="번    호" ,left=235 ,top=462 ,right=435 ,bottom=513 ,border=true ,penstyle=solid ,penwidth=1 ,pencolor=#000000</T>'+
+			'<C>id="sabun" ,left=443 ,top=462 ,right=683 ,bottom=513 ,align="left" ,mask="XXXX-XX"</C>'+
+			'<T>id="성    명" ,left=235 ,top=544 ,right=435 ,bottom=595 ,border=true ,penstyle=solid ,penwidth=1 ,pencolor=#000000</T>'+
+			'<C>id="name" ,left=443 ,top=544 ,right=683 ,bottom=595 ,align="left"</C>'+
+			'<L> left=90 ,top=9 ,right=90 ,bottom=2023 </L>'+
+			'<L> left=1798 ,top=12 ,right=1798 ,bottom=2020 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>'+
+			'<T>id="명 예 졸 업 증 서" ,left=575 ,top=173 ,right=1325 ,bottom=302 ,face="궁서체" ,size=20 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<T>id="위 사람은 본 대학교 명예졸업에관한규정 제2조의" ,left=300 ,top=900 ,right=1500 ,bottom=982 ,align="left" ,face="궁서체" ,size=15 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<T>id="자격심사 결과 명예졸업의 자격을 얻었으므로 이 증서를" ,left=300 ,top=1005 ,right=1625 ,bottom=1087 ,align="left" ,face="궁서체" ,size=15 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<T>id="수여합니다." ,left=300 ,top=1123 ,right=1050 ,bottom=1205 ,align="left" ,face="궁서체" ,size=15 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>'+
+			'<L> left=93 ,top=2020 ,right=1798 ,bottom=2020 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>'+
+		'</B>';
+	}
+</script>
+
+
+<!-- Data Sort -->
+<script language=JavaScript for=gauce_grid event=onClick(row,colid)>
+	if (row == 0) {
+		ds_report.SortExpr = alid_sort + colid;
+		ds_report.Sort();
+		if(alid_sort == "+") { alid_sort = "-"; }
+		else { alid_sort = "+"; }
+	}
+</script>
+
+
+<!-- Component 선언부 -->
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_report"></object>
+<object classid="clsid:CC26E2A9-760B-4ea6-8DDF-DB423FD24089" id="gauce_report"> 
+	<param name="DetailDataID" 		value="ds_report">
+	<param name="LandScape"         value="false">
+	<param name="PaperSize"	value="A4">
+	<param name="PrintSetupDlgFlag"	value=true>
+</object>
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/report_special_bar.gif" border=0>
+<br>
+
+<table cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td width="580" bgcolor="#FFFFFF" align="center" height="50">
+            <p align="right">
+				<img src="../image/icon/preview.gif" alt="출력물을 미리봅니다." style="cursor:hand;" onClick="btn_Preview();">
+				<img src="../image/icon/print.gif" alt="출력물을 바로 출력합니다." style="cursor:hand;" onClick="btn_Print();">
+			</p>
+        </td>
+        <td width="20" bgcolor="#FFFFFF" align="center" height="50">
+            <p>&nbsp;</p>
+        </td>
+    </tr>
+    <tr>
+        <td width="600" bgcolor="#FFFFFF" align="center" colspan="2">
+            <p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" id="gauce_grid" width="600" height="450" style="font-family:굴림; font-size:10pt;">
+				<param name="DataID" value="ds_report">
+				<param name="LineColor"	value="#ffffff">
+				<param name="HeadLineColor"	value="#ffffff">
+	            <param name="BorderStyle" value="1">
+	            <param name="HeadBorder" value="4">
+	            <param name="TitleHeight" value="20">
+	            <param name="ColSizing" value="true">
+	            <param name="FontSize" value="0">
+				<param name="IndWidth" value="0">
+            </object></p>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

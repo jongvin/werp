@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_efin_eis_project_is_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회										-->
+<!-- 3. 기 능 정 의   : 재무정보) 프로젝트별 손익계산서   	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var is_sysdate 
+
+var is_ds_1_addr = 'g_efin_eis_project_is_1q.jsp?arg_group_id='         
+var is_proj_code=""
+var is_error_code=""
+var il_group_id=""
+var is_close='N'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ 
+ document.all.LowerFrame.style.visibility="visible"; 
+ setTimeout('retrieve()',1);
+ 
+}
+
+//------------------------------------------------------------------------
+function retrieve()                     // 조회  
+//------------------------------------------------------------------------
+{
+ 
+ sp_call()
+ if (ds_update.CountRow == 0 || ds_update.NameValue(1,'group_id') == 'error') {
+    alert('생성시 에러 발생')
+    return
+ }
+ ds_1.DataID = is_ds_1_addr + ds_update.NameValue(1,'group_id') 
+ ds_1.SyncLoad=true
+ ds_1.Reset()
+ 
+ ll_cnt = f_update_sql("delete from efin_eis_project_is where group_id = " + ds_update.NameValue(1,'group_id') + " ")
+
+}
+//-----------------------------------------------------------------
+function sp_call()               // 프로젝트 손익계산서 생성 프로시져. 
+//------------------------------------------------------------------
+{
+   
+   ds_update.DataID = 'efin_eis_project_is_proc.jsp?arg_proj_code=' + is_proj_code + 
+                      '&arg_yymm=' + em_select_yymm.text
+   ds_update.SyncLoad = true
+   ds_update.reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   btnquery_onclick()   
+}   
+
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+    return
+ array = result.split("@");
+
+ il_proj_unq_key  = array[0]         // 0: 프로젝트 코드  
+ is_proj_code = array[1]             // 1: 경리 프로젝트 코드 
+ is_proj_name  = array[2]            // 1: 프로젝트 명칭
+ is_sysdate  = array[3] 
+ proj_name.value = is_proj_name
+ em_select_yymm.text = is_sysdate.substr(0,7)
+ gd_1.Focus()
+// btnquery_onclick()  // em_selectyymm onkill focus에서 조회함.
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+	gd_1.SetExcelTitle(0, "");
+	gd_1.SetExcelTitle(1, "value:손익계산서; font-face:굴림체; font-size:30pt; font-color:black;font-bold; font-underline; bgcolor:white; align:center; line-color:black;line-width:1pt; skiprow:0;");
+	gd_1.SetExcelTitle(1, "value:프로젝트명 &#058 " + is_proj_name   + "; font-face:굴림체; font-size:12pt; font-color:black;  bgcolor:white; align:left;  skiprow:0;");
+
+   gd_1.GridToExcel('손익계산서','c:\aa.xls',33)  
+
+
+}
+
+//-----------------------------------------------------------------
+function close_rtn()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+      is_close='Y'
+      window.close()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+      is_close='Y'
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+  if (is_close == 'Y') return
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>  
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) || kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>	   
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_proj
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 250px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">프로젝트명</div></td>
+             <td width='70%' >
+						<INPUT id=proj_name disabled >
+         </tr>                 
+      </table>
+</DIV>      
+
+  <DIV id=div_title
+         style="Z-INDEX: 111; LEFT:350px; WIDTH: 110px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px;HEIGHT: 24px">
+		<tr BGCOLOR="white"> 
+			<td   align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >기준월:</div></td>
+			<td   align="center"  style="COLOR: BLACK "  > 
+             <comment id="__NSID__"><OBJECT id=em_select_yymm 
+                    style=" WIDTH: 55px; " 
+                   classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+             	    <PARAM NAME="Alignment" VALUE="1">
+             	    <PARAM NAME="IsComma" VALUE="0">
+             	    <PARAM NAME="MaxLength" VALUE="6">
+             	    <PARAM NAME="Format" VALUE="YYYY-MM">
+                   <param name=ClipMode       value=false>
+             	    <PARAM NAME="Numeric" VALUE="0">
+             	    <PARAM NAME="SelectAll" VALUE="-1">
+             </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr>
+   </table>
+ </div>      
+ <input id=bt_excel type="button" value="엑셀" 
+          style="color:#2E4A4A; font-size:13px;WIDTH:30px; CURSOR: hand; LEFT:760px; Top:7px;height:17px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   POSITION: absolute;"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=excel_down()>
+
+
+<input id=bt_close type="button" value="닫기" 
+          style="color:#2E4A4A; font-size:13px;WIDTH:30px; CURSOR: hand; LEFT:800px; Top:7px;height:17px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   POSITION: absolute;"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=close_rtn()>
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px;  LEFT: 2px; WIDTH: 900px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 95%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='계 정 과 목'  id=account_name   width=300 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='당월발생'  id=ptd_amount   width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='당기누적'  id=ytd_amount   width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='전체누적'  id=pjt_amount   width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	 ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	<script language="javascript"  for=ds_update event=OnLoadStarted()>
+	   //document.all.LowerFrame.style.visibility="visible";
+	</script>
+	<script language="javascript"  for=ds_update event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+	</script>
+   
+	<iframe id="LowerFrame" name="work" style=" position:absolute; left:350px; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe> 
+
+</BODY></HTML>

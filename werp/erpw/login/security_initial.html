@@ -1,0 +1,250 @@
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : main.html								-->
+<!-- 2. 유형(시나리오): 숨기는 프레임															-->
+<!-- 3. 기 능 정 의   :      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML>
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<TITLE></TITLE>
+</HEAD>
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_empno
+
+//-------------------------------------
+function window_onload()
+//-------------------------------------
+{
+	 gs_home1 = readCookie("@gs_home@")
+	 gs_empno = readCookie("@empno@")
+	 gs_user_id = readCookie("@user_id@")
+	 gs_empno = readCookie("@empno@")
+
+	 gs_sysdate2 = readCookie("@sysdate@")
+    gs_sysdate1 = gs_sysdate2.substr(0,10)
+    top.frames['security'].gs_session_id.value = readCookie("JSESSIONID")
+
+
+	// 그룹웨워 홈 어드레스 셋팅 -------------------------------
+	 ll_cnt = f_select1_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='03'") // url + home
+	 if (ll_cnt == 0) 
+	    alert("그룹웨어  정보가 설치 되어있지 않습니다")
+		 top.frames['security'].gs_group_ip_addr.value=ds_select1.NameValue(1,"select_2")
+	//-------------------------------------------------------	 
+	// 톰켓  홈 어드레스 셋팅 -------------------------------
+	 ll_cnt = f_select1_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '991' and etc_code ='01'") // url + home
+	 if (ll_cnt == 0) 
+	    alert("WAS  정보가 설치 되어있지 않습니다")
+		 top.frames['security'].gs_tomcat_addr.value=ds_select1.NameValue(1,"select_2")
+	//-------------------------------------------------------	 
+
+	// 크리스탈레포트 홈 어드레스 셋팅 -------------------------------
+	 ll_cnt = f_select2_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='04'") // url + home
+	 if (ll_cnt == 0) 
+	    alert("크리스탈 홈 어드레스  정보가 설치 되어있지 않습니다")
+		 top.frames['security'].gs_crystal_addr.value=ds_select2.NameValue(1,"select_2") + '/reportViewer.asp?' 
+	//-------------------------------------------------------	 
+	
+   top.frames['main_title'].title_name.value = " IP ADDRESS 기록중입니다" 	
+
+   top.frames['main_title'].title_name.value = ""
+    
+	 top.frames['security'].empno.value=gs_empno
+	 top.frames['security'].user_id.value=readCookie("@user_id@")
+	 top.frames['security'].gs_name.value=readCookie("@name@")
+	 top.frames['security'].dept_code.value=readCookie("@deptcode@")
+
+	 top.frames['security'].short_name.value=readCookie("@short_name@")
+	 top.frames['security'].gs_password.value=readCookie("@password@")
+    makeCookie("@password@","") 
+
+	 top.frames['security'].gs_home.value=gs_home1
+	 top.frames['security'].gs_sysdate.value=gs_sysdate1
+
+	 is_ds_2_addr = gs_home1 + '/zmis/z_user_group_connect_userid_q.jsp?arg_user_id='         //유저가 가지고있는 그룹들 
+	 ds_2.DataID = is_ds_2_addr + gs_user_id 
+	 ds_2.SyncLoad = true
+	 ds_2.reset()
+    if (ds_2.CountRow > 0) {
+       top.frames['security'].gs_group_key.value =  ds_2.NameValue(1,"group_key")
+       top.frames['security'].gs_group_name.value =  ds_2.NameValue(1,"group_name")
+    }
+    else {
+       top.frames['security'].gs_group_key.value =  ''
+       top.frames['security'].gs_group_name.value =  ''
+    }
+
+	var result="";
+	var array = new Array();
+	result = readCookie("@g_code_dept@")
+	if (result == "err") {
+		 top.frames['security'].gs_dept_code.value = ""
+		 top.frames['security'].gs_comp_code.value = ""
+		 top.frames['security'].gs_comp_name.value = ""
+		 top.frames['security'].gs_dept_name.value = ""
+		 top.frames['security'].gs_dept_proj_tag.value = ""
+		 top.frames['security'].gs_use_tag.value = ""
+		 top.frames['security'].gs_sell_code.value = ""
+		 top.frames['security'].gs_sell_name.value = ""
+	}   
+	else {   
+		array = result.split("@");
+		top.frames['security'].gs_dept_code.value=array[0]
+		top.frames['security'].gs_comp_code.value=array[1];
+		top.frames['security'].gs_comp_name.value=array[2];
+		top.frames['security'].gs_dept_name.value=array[3];
+		top.frames['security'].gs_dept_proj_tag.value=array[4];
+		top.frames['security'].gs_use_tag.value=array[5];
+		top.frames['security'].gs_sell_code.value = array[6];
+		top.frames['security'].gs_sell_name.value = array[7];
+	}
+
+     parent.document.title = '     사번:' + gs_empno + '      성명:' + top.frames['security'].gs_name.value + 
+                             '      부서:' +  top.frames['security'].short_name.value + '    '
+		
+
+//    login status    기록 시작.......................
+      ds_ip.DataID = 'login_ipaddr.jsp'           // ip addr 및 crystal user및 password 얻기.
+      ds_ip.SyncLoad = true
+      ds_ip.reset()                              // "ip_addr" 방에 ip주소가 있슴. 
+
+      top.frames['security'].gs_crystal_user.value = ds_ip.NameValue(1,"database_user")
+      top.frames['security'].gs_crystal_password.value = ds_ip.NameValue(1,"database_password")
+
+      ds_login_status.DataID = 'm_login_status_1q.jsp?arg_seq_key=0'
+      ds_login_status.SyncLoad=true
+      ds_login_status.reset() 
+      ds_login_status.AddRow()
+      
+      ds_login_status.NameValue(ds_login_status.RowPosition,"ip_address") = ds_ip.NameValue(1,"ip_addr")
+      ds_login_status.NameValue(ds_login_status.RowPosition,"start_time") = gs_sysdate2
+      
+      ds_seq.DataID = 'm_unq_num_1q.jsp'
+      ds_seq.SyncLoad=true;             // seq no 구하기
+      ds_seq.reset()
+      
+      ds_login_status.NameValue(ds_login_status.RowPosition,"seq_key") = ds_seq.NameValue(1,"nextval") 
+
+
+      ds_login_status.NameValue(ds_login_status.RowPosition,"log_tag") = '2'
+      ds_login_status.NameValue(ds_login_status.RowPosition,"user_id") = top.frames['security'].user_id.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"empno") = top.frames['security'].empno.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"name") = top.frames['security'].gs_name.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"dept_code") = top.frames['security'].dept_code.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"long_name") = readCookie("@short_name@")    
+      ds_login_status.NameValue(ds_login_status.RowPosition,"remarks") = 'login'
+      top.frames['security'].gs_seq_key.value=ds_seq.NameValue(1,"nextval")
+      top.frames['security'].gs_ip_addr.value=ds_ip.NameValue(1,"ip_addr")
+      if (ds_login_status.IsUpdated) {
+         tr_1.Action = gs_home1 + '/login/m_login_status_1tr.jsp'
+         tr_1.Post()    // world
+      }
+}
+</SCRIPT>
+<BODY oncontextmenu="return false"  onload=setTimeout('window_onload()',1) >
+<SCRIPT language=JavaScript for=ds_login_status event=OnLoadError()>
+  alert("Error Code(ds_login_status) : " + ds_login_status.ErrorCode + "\n" + "Error Message : " + ds_login_status.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select1 event=OnLoadError()>
+  alert("Error Code(ds_select1) : " + ds_select1.ErrorCode + "\n" + "Error Message : " + ds_select1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select2 event=OnLoadError()>
+  alert("Error Code(ds_select2) : " + ds_select2.ErrorCode + "\n" + "Error Message : " + ds_select2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_ip 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_login_status 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_password 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_select1 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_select2 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_login_status_1tr=ds_login_status)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+	<input type="text" value="" id="empno">
+	<input type="text" value="" id="gs_name">
+	<input type="text" value="" id="dept_code">
+	<input type="text" value="" id="short_name">
+	<input type="text" value="" id="user_id">
+	<input type="text" value="" id="curdate">
+	<input type="text" value="" id="gs_home">
+	<input type="text" value="" id="gs_password">
+	<input type="text" value="" id="gs_dept_code">
+	<input type="text" value="" id="gs_dept_name">
+	<input type="text" value="" id="gs_comp_code">
+	<input type="text" value="" id="gs_comp_name">
+	<input type="text" value="" id="gs_dept_proj_tag">
+	<input type="text" value="" id="gs_use_tag">
+	<input type="text" value="" id="gs_sysdate">
+	<input type="text" value="" id="gs_seq_key">
+	<input type="text" value="" id="gs_ip_addr">
+	<input type="text" value="" id="gs_group_ip_addr">
+	<input type="text" value="" id="gs_sell_code">
+	<input type="text" value="" id="gs_sell_name">
+	<input type="text" value="" id="gs_crystal_addr">
+	<input type="text" value="" id="gs_tomcat_addr">
+	<input type="text" value="" id="gs_crystal_user">
+	<input type="text" value="" id="gs_crystal_password">
+	<input type="text" value="" id="gs_session_id">
+	<input type="text" value="" id="gs_group_key">
+	<input type="text" value="" id="gs_group_name">
+	<input type="text" value="" id="gs_degree">
+   <input type="text" value="" id="gs_param"> <!-- 프로그램에서 다른 프로그램을 호출하는 경우 필요한값을 저장하는용도--> 
+</BODY>
+</HTML>

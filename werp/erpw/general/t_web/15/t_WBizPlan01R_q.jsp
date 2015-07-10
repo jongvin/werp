@@ -1,0 +1,487 @@
+<%@ page import="com.cj.common.*, com.cj.database.*, com.cj.util.*, com.gauce.*, com.gauce.io.*, java.sql.*" errorPage="../common/Error.jsp" contentType="text/html;charset=euc-kr"%>
+<%
+/**************************************************************************/
+/* 1. 프 로 그 램 id : 
+/* 2. 유형(시나리오) : Select Page
+/* 3. 기  능  정  의 : 
+/* 4. 변  경  이  력 : 김흥수 작성(2006-01-16)
+/* 5. 관련  프로그램 : 
+/* 6. 특  기  사  항 : 
+/**************************************************************************/
+ 
+	CITGauceInfo GauceInfo = null;
+	
+	CITData lrReturnData = null;
+	GauceDataSet lrDataset = null;
+	//GauceDataSet lrDataset = new GauceDataSet();
+	String	strSql = "";
+	String	strAct = "";
+	
+	try
+	{
+		GauceInfo = CITCommon.initServerPage(request, response, session);
+		
+		CITData lrArgData = new CITData();
+		
+		strAct = CITCommon.toKOR(request.getParameter("ACT"));
+		
+		if (strAct.equals("MAIN"))
+		{
+			String strCLSE_ACC_ID_BF 	= CITCommon.toKOR(request.getParameter("CLSE_ACC_ID_BF"));
+			String strCLSE_ACC_ID_NW 	= CITCommon.toKOR(request.getParameter("CLSE_ACC_ID_NW"));
+			String strCLSE_ACC_ID_AF 	= CITCommon.toKOR(request.getParameter("CLSE_ACC_ID_AF"));
+			String strSTART_MM_MIN 		= CITCommon.toKOR(request.getParameter("START_MM_MIN"));
+			String strSTART_MM_MID 		= CITCommon.toKOR(request.getParameter("START_MM_MID"));
+			String strSTART_MM_MAX		= CITCommon.toKOR(request.getParameter("START_MM_MAX"));
+			String strCOMP_CODE 			= CITCommon.toKOR(request.getParameter("COMP_CODE"));
+			String strBASE_AMT	 			= CITCommon.toKOR(request.getParameter("BASE_AMT"));
+			
+strSql = "Select																						\n";
+strSql += "	a.RN,                                           \n";
+strSql += "	a.SUBRN,                                        \n";
+strSql += "	a.BIZ_PLAN_ITEM_NAME,		--항목명                \n";
+strSql += "	a.BF_Y_EXEC_AMT,			  --전년실적              \n";
+strSql += "	a.BF_Y_BM_EXEC_AMT,			--전년분기전실적        \n";
+strSql += "	a.NW_Y_BM_PLAN_AMT,			--당년분기전계획        \n";
+strSql += "	a.NW_Y_BM_EXEC_AMT,			--당년분기전실적        \n";
+strSql += "	Decode(a.MNG_CODE,'매출액',100 * Nvl(a.NW_Y_BM_EXEC_AMT,0) / NullIf(a.NW_Y_BM_PLAN_AMT,0) ,Nvl(a.NW_Y_BM_EXEC_AMT,0) - Nvl(a.NW_Y_BM_PLAN_AMT,0) ) NW_BM_P_E_SUB ,	--계획비(분기전)\n";
+strSql += "	Decode(a.MNG_CODE,'매출액',100 * Nvl(a.NW_Y_BM_EXEC_AMT,0) / NullIf(a.BF_Y_BM_EXEC_AMT,0) ,Nvl(a.NW_Y_BM_EXEC_AMT,0) - Nvl(a.BF_Y_BM_EXEC_AMT,0) ) NW_BM_B_E_SUM ,	--전년비(분기전)\n";
+strSql += "	a.NW_Y_NM_PLAN_AMT_01,                                                                                                                                                              \n";
+strSql += "a.NW_Y_NM_FOR_AMT_01,                                                                                                                                                               \n";
+strSql += "	a.NW_Y_NM_PLAN_AMT_02,                                                                                                                                                              \n";
+strSql += "	a.NW_Y_NM_FOR_AMT_02,                                                                                                                                                               \n";
+strSql += "	a.NW_Y_NM_PLAN_AMT_03,                                                                                                                                                              \n";
+strSql += "	a.NW_Y_NM_FOR_AMT_03,                                                                                                                                                               \n";
+strSql += "	a.NW_Y_PLAN_AMT,                                                                                                                                                                    \n";
+strSql += "	a.NW_Y_FOR_AMT,                                                                                                                                                                     \n";
+strSql += "	Decode(a.MNG_CODE,'매출액',100 * Nvl(a.NW_Y_FOR_AMT,0) / NullIf(a.NW_Y_PLAN_AMT,0) ,Nvl(a.NW_Y_FOR_AMT,0) - Nvl(a.NW_Y_PLAN_AMT,0) ) NW_P_E_SUB ,	--계획비(당년)                    \n";
+strSql += "	Decode(a.MNG_CODE,'매출액',100 * Nvl(a.NW_Y_FOR_AMT,0) / NullIf(a.BF_Y_EXEC_AMT,0) ,Nvl(a.NW_Y_FOR_AMT,0) - Nvl(a.BF_Y_EXEC_AMT,0) ) NW_B_E_SUM ,	--전년비(당년)                    \n";
+strSql += "	a.AF_Y_PLAN_AMT,                                                                                                                                                                    \n";
+strSql += "	Decode(a.MNG_CODE,'매출액',100 * Nvl(a.AF_Y_PLAN_AMT,0) / NullIf(a.NW_Y_FOR_AMT,0) ,Nvl(a.AF_Y_PLAN_AMT,0) - Nvl(a.NW_Y_FOR_AMT,0) ) AF_P_E_SUM		--전년대비(후년)                  \n";
+strSql += "From (                                                                                                                                                                               \n";
+strSql += "		With Base_Table As                                                                                                                                                                \n";
+strSql += "		(                                                                                                                                                                                 \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			a.BIZ_PLAN_ITEM_NAME,                                                                                                                                                           \n";
+strSql += "			a.MNG_CODE,                                                                                                                                                                     \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.CLSE_ACC_ID = ? Then                                                                                                                                \n";
+strSql += "					b.EXEC_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? BF_Y_EXEC_AMT,                                                                                                                                                    \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM >= ?||'01' And b.WORK_YM < ?||? Then                                                                              \n";
+strSql += "					b.EXEC_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? BF_Y_BM_EXEC_AMT,                                                                                                                                                 \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM >= ?||'01' And b.WORK_YM < ?||? Then                                                                              \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_BM_PLAN_AMT,                                                                                                                                                 \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM >= ?||'01' And b.WORK_YM < ?||? Then                                                                              \n";
+strSql += "					b.EXEC_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_BM_EXEC_AMT,                                                                                                                                                 \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_PLAN_AMT_01,                                                                                                                                              \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.FORECAST_AMT                                                                                                                                                              \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_FOR_AMT_01,                                                                                                                                               \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_PLAN_AMT_02,                                                                                                                                              \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.FORECAST_AMT                                                                                                                                                              \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_FOR_AMT_02,                                                                                                                                               \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_PLAN_AMT_03,                                                                                                                                              \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.WORK_YM = ?||? Then                                                                                                                     \n";
+strSql += "					b.FORECAST_AMT                                                                                                                                                              \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_NM_FOR_AMT_03,                                                                                                                                               \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.CLSE_ACC_ID = ? Then                                                                                                                                \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_PLAN_AMT,                                                                                                                                                    \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case                                                                                                                                                                          \n";
+strSql += "				When b.CLSE_ACC_ID = ? And b.WORK_YM < ?||? Then		--분기전이면 실적                                                                 \n";
+strSql += "					b.EXEC_AMT                                                                                                                                                                  \n";
+strSql += "				When b.CLSE_ACC_ID = ? And b.WORK_YM >= ?||? And b.WORK_YM <= ?||? Then	--분기내면 전망                     \n";
+strSql += "					b.FORECAST_AMT                                                                                                                                                              \n";
+strSql += "				When b.CLSE_ACC_ID = ? And b.WORK_YM > ?||? Then	--분기 이후면 계획금액                                                              \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? NW_Y_FOR_AMT,                                                                                                                                                     \n";
+strSql += "			Sum(                                                                                                                                                                            \n";
+strSql += "				Case When b.CLSE_ACC_ID = ? Then                                                                                                                                \n";
+strSql += "					b.PLAN_AMT                                                                                                                                                                  \n";
+strSql += "				Else                                                                                                                                                                          \n";
+strSql += "					Null                                                                                                                                                                        \n";
+strSql += "				End                                                                                                                                                                           \n";
+strSql += "			) / ? AF_Y_PLAN_AMT                                                                                                                                                     \n";
+strSql += "		From                                                                                                                                                                              \n";
+strSql += "			(                                                                                                                                                                               \n";
+strSql += "				Select                                                                                                                                                                        \n";
+strSql += "					a.BIZ_PLAN_ITEM_NO,                                                                                                                                                         \n";
+strSql += "					a.BIZ_PLAN_ITEM_NAME,                                                                                                                                                       \n";
+strSql += "					a.ITEM_TAG,                                                                                                                                                                 \n";
+strSql += "					a.LEVEL_TAG,                                                                                                                                                                \n";
+strSql += "					a.MNG_CODE,                                                                                                                                                                 \n";
+strSql += "					RowNum Rn                                                                                                                                                                   \n";
+strSql += "				From	T_PL_ITEM a                                                                                                                                                             \n";
+strSql += "				Where	a.LEVEL_TAG In ('1','2')                                                                                                                                                \n";
+strSql += "				Start With                                                                                                                                                                    \n";
+strSql += "					a.P_NO = 0                                                                                                                                                                  \n";
+strSql += "				Connect By                                                                                                                                                                    \n";
+strSql += "				Prior	a.BIZ_PLAN_ITEM_NO = a.P_NO                                                                                                                                             \n";
+strSql += "				Order Siblings By                                                                                                                                                             \n";
+strSql += "					a.ITEM_LEVEL_SEQ                                                                                                                                                            \n";
+strSql += "			) a,                                                                                                                                                                            \n";
+strSql += "			T_PL_COMP_PLAN_EXEC b                                                                                                                                                           \n";
+strSql += "		Where	a.BIZ_PLAN_ITEM_NO = b.BIZ_PLAN_ITEM_NO                                                                                                                                     \n";
+strSql += "		And		b.CLSE_ACC_ID In (?,?,?)                                                                                                          \n";
+strSql += "		And		b.COMP_CODE Like ? || '%'                                                                                                                                          \n";
+strSql += "		Group By                                                                                                                                                                          \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			a.MNG_CODE,                                                                                                                                                                     \n";
+strSql += "			a.BIZ_PLAN_ITEM_NAME                                                                                                                                                            \n";
+strSql += "		)                                                                                                                                                                                 \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			0 SUBRN,                                                                                                                                                                        \n";
+strSql += "			a.BIZ_PLAN_ITEM_NAME,                                                                                                                                                           \n";
+strSql += "			a.MNG_CODE,                                                                                                                                                                     \n";
+strSql += "			a.BF_Y_EXEC_AMT,                                                                                                                                                                \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT,                                                                                                                                                             \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT,                                                                                                                                                             \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT,                                                                                                                                                             \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01,                                                                                                                                                          \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01,                                                                                                                                                           \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02,                                                                                                                                                          \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02,                                                                                                                                                           \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03,                                                                                                                                                          \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03,                                                                                                                                                           \n";
+strSql += "			a.NW_Y_PLAN_AMT,                                                                                                                                                                \n";
+strSql += "			a.NW_Y_FOR_AMT,                                                                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT                                                                                                                                                                 \n";
+strSql += "		From	Base_Table a                                                                                                                                                                \n";
+strSql += "		Union All                                                                                                                                                                         \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			1 SUBRN,                                                                                                                                                                        \n";
+strSql += "			'(%)',                                                                                                                                                                          \n";
+strSql += "			a.MNG_CODE ||'율',                                                                                                                                                              \n";
+strSql += "			a.BF_Y_EXEC_AMT / NullIf(b.BF_Y_EXEC_AMT,0 ) * 100 BF_Y_EXEC_AMT,                                                                                                               \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT / NullIf(b.BF_Y_BM_EXEC_AMT ,0) * 100 BF_Y_BM_EXEC_AMT ,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT / NullIf(b.NW_Y_BM_PLAN_AMT ,0) * 100  NW_Y_BM_PLAN_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT / NullIf(b.NW_Y_BM_EXEC_AMT ,0) * 100  NW_Y_BM_EXEC_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01 / NullIf(b.NW_Y_NM_PLAN_AMT_01 ,0) * 100  NW_Y_NM_PLAN_AMT_01,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01 / NullIf(b.NW_Y_NM_FOR_AMT_01 ,0) * 100  NW_Y_NM_FOR_AMT_01,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02 / NullIf(b.NW_Y_NM_PLAN_AMT_02 ,0) * 100  NW_Y_NM_PLAN_AMT_02,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02 / NullIf(b.NW_Y_NM_FOR_AMT_02 ,0) * 100  NW_Y_NM_FOR_AMT_02,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03 / NullIf(b.NW_Y_NM_PLAN_AMT_03 ,0) * 100  NW_Y_NM_PLAN_AMT_03,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03 / NullIf(b.NW_Y_NM_FOR_AMT_03 ,0) * 100  NW_Y_NM_FOR_AMT_03,                                                                                               \n";
+strSql += "			a.NW_Y_PLAN_AMT / NullIf(b.NW_Y_PLAN_AMT ,0) * 100  NW_Y_PLAN_AMT,                                                                                                              \n";
+strSql += "			a.NW_Y_FOR_AMT / NullIf(b.NW_Y_FOR_AMT ,0) * 100  NW_Y_FOR_AMT,                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT / NullIf(b.AF_Y_PLAN_AMT ,0) * 100  AF_Y_PLAN_AMT                                                                                                               \n";
+strSql += "		From	Base_Table a,                                                                                                                                                               \n";
+strSql += "				Base_Table b                                                                                                                                                                  \n";
+strSql += "		Where	a.MNG_CODE = '매출이익'                                                                                                                                                     \n";
+strSql += "		And		b.MNG_CODE = '매출액'                                                                                                                                                       \n";
+strSql += "		Union All                                                                                                                                                                         \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			1 SUBRN,                                                                                                                                                                        \n";
+strSql += "			'(%)',                                                                                                                                                                          \n";
+strSql += "			a.MNG_CODE||'율',                                                                                                                                                               \n";
+strSql += "			a.BF_Y_EXEC_AMT / NullIf(b.BF_Y_EXEC_AMT,0 ) * 100 BF_Y_EXEC_AMT,                                                                                                               \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT / NullIf(b.BF_Y_BM_EXEC_AMT ,0) * 100 BF_Y_BM_EXEC_AMT ,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT / NullIf(b.NW_Y_BM_PLAN_AMT ,0) * 100  NW_Y_BM_PLAN_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT / NullIf(b.NW_Y_BM_EXEC_AMT ,0) * 100  NW_Y_BM_EXEC_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01 / NullIf(b.NW_Y_NM_PLAN_AMT_01 ,0) * 100  NW_Y_NM_PLAN_AMT_01,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01 / NullIf(b.NW_Y_NM_FOR_AMT_01 ,0) * 100  NW_Y_NM_FOR_AMT_01,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02 / NullIf(b.NW_Y_NM_PLAN_AMT_02 ,0) * 100  NW_Y_NM_PLAN_AMT_02,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02 / NullIf(b.NW_Y_NM_FOR_AMT_02 ,0) * 100  NW_Y_NM_FOR_AMT_02,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03 / NullIf(b.NW_Y_NM_PLAN_AMT_03 ,0) * 100  NW_Y_NM_PLAN_AMT_03,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03 / NullIf(b.NW_Y_NM_FOR_AMT_03 ,0) * 100  NW_Y_NM_FOR_AMT_03,                                                                                               \n";
+strSql += "			a.NW_Y_PLAN_AMT / NullIf(b.NW_Y_PLAN_AMT ,0) * 100  NW_Y_PLAN_AMT,                                                                                                              \n";
+strSql += "			a.NW_Y_FOR_AMT / NullIf(b.NW_Y_FOR_AMT ,0) * 100  NW_Y_FOR_AMT,                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT / NullIf(b.AF_Y_PLAN_AMT ,0) * 100  AF_Y_PLAN_AMT                                                                                                               \n";
+strSql += "		From	Base_Table a,                                                                                                                                                               \n";
+strSql += "				Base_Table b                                                                                                                                                                  \n";
+strSql += "		Where	a.MNG_CODE = '관리판매비'                                                                                                                                                   \n";
+strSql += "		And		b.MNG_CODE = '매출액'                                                                                                                                                       \n";
+strSql += "		Union All                                                                                                                                                                         \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			1 SUBRN,                                                                                                                                                                        \n";
+strSql += "			'(%)',                                                                                                                                                                          \n";
+strSql += "			a.MNG_CODE||'율',                                                                                                                                                               \n";
+strSql += "			a.BF_Y_EXEC_AMT / NullIf(b.BF_Y_EXEC_AMT,0 ) * 100 BF_Y_EXEC_AMT,                                                                                                               \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT / NullIf(b.BF_Y_BM_EXEC_AMT ,0) * 100 BF_Y_BM_EXEC_AMT ,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT / NullIf(b.NW_Y_BM_PLAN_AMT ,0) * 100  NW_Y_BM_PLAN_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT / NullIf(b.NW_Y_BM_EXEC_AMT ,0) * 100  NW_Y_BM_EXEC_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01 / NullIf(b.NW_Y_NM_PLAN_AMT_01 ,0) * 100  NW_Y_NM_PLAN_AMT_01,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01 / NullIf(b.NW_Y_NM_FOR_AMT_01 ,0) * 100  NW_Y_NM_FOR_AMT_01,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02 / NullIf(b.NW_Y_NM_PLAN_AMT_02 ,0) * 100  NW_Y_NM_PLAN_AMT_02,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02 / NullIf(b.NW_Y_NM_FOR_AMT_02 ,0) * 100  NW_Y_NM_FOR_AMT_02,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03 / NullIf(b.NW_Y_NM_PLAN_AMT_03 ,0) * 100  NW_Y_NM_PLAN_AMT_03,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03 / NullIf(b.NW_Y_NM_FOR_AMT_03 ,0) * 100  NW_Y_NM_FOR_AMT_03,                                                                                               \n";
+strSql += "			a.NW_Y_PLAN_AMT / NullIf(b.NW_Y_PLAN_AMT ,0) * 100  NW_Y_PLAN_AMT,                                                                                                              \n";
+strSql += "			a.NW_Y_FOR_AMT / NullIf(b.NW_Y_FOR_AMT ,0) * 100  NW_Y_FOR_AMT,                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT / NullIf(b.AF_Y_PLAN_AMT ,0) * 100  AF_Y_PLAN_AMT                                                                                                               \n";
+strSql += "		From	Base_Table a,                                                                                                                                                               \n";
+strSql += "				Base_Table b                                                                                                                                                                  \n";
+strSql += "		Where	a.MNG_CODE = '영업이익'                                                                                                                                                     \n";
+strSql += "		And		b.MNG_CODE = '매출액'                                                                                                                                                       \n";
+strSql += "		Union All                                                                                                                                                                         \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			1 SUBRN,                                                                                                                                                                        \n";
+strSql += "			'(%)',                                                                                                                                                                          \n";
+strSql += "			a.MNG_CODE||'율',                                                                                                                                                               \n";
+strSql += "			a.BF_Y_EXEC_AMT / NullIf(b.BF_Y_EXEC_AMT,0 ) * 100 BF_Y_EXEC_AMT,                                                                                                               \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT / NullIf(b.BF_Y_BM_EXEC_AMT ,0) * 100 BF_Y_BM_EXEC_AMT ,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT / NullIf(b.NW_Y_BM_PLAN_AMT ,0) * 100  NW_Y_BM_PLAN_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT / NullIf(b.NW_Y_BM_EXEC_AMT ,0) * 100  NW_Y_BM_EXEC_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01 / NullIf(b.NW_Y_NM_PLAN_AMT_01 ,0) * 100  NW_Y_NM_PLAN_AMT_01,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01 / NullIf(b.NW_Y_NM_FOR_AMT_01 ,0) * 100  NW_Y_NM_FOR_AMT_01,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02 / NullIf(b.NW_Y_NM_PLAN_AMT_02 ,0) * 100  NW_Y_NM_PLAN_AMT_02,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02 / NullIf(b.NW_Y_NM_FOR_AMT_02 ,0) * 100  NW_Y_NM_FOR_AMT_02,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03 / NullIf(b.NW_Y_NM_PLAN_AMT_03 ,0) * 100  NW_Y_NM_PLAN_AMT_03,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03 / NullIf(b.NW_Y_NM_FOR_AMT_03 ,0) * 100  NW_Y_NM_FOR_AMT_03,                                                                                               \n";
+strSql += "			a.NW_Y_PLAN_AMT / NullIf(b.NW_Y_PLAN_AMT ,0) * 100  NW_Y_PLAN_AMT,                                                                                                              \n";
+strSql += "			a.NW_Y_FOR_AMT / NullIf(b.NW_Y_FOR_AMT ,0) * 100  NW_Y_FOR_AMT,                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT / NullIf(b.AF_Y_PLAN_AMT ,0) * 100  AF_Y_PLAN_AMT                                                                                                               \n";
+strSql += "		From	Base_Table a,                                                                                                                                                               \n";
+strSql += "				Base_Table b                                                                                                                                                                  \n";
+strSql += "		Where	a.MNG_CODE = '경상이익'                                                                                                                                                     \n";
+strSql += "		And		b.MNG_CODE = '매출액'                                                                                                                                                       \n";
+strSql += "		Union All                                                                                                                                                                         \n";
+strSql += "		Select                                                                                                                                                                            \n";
+strSql += "			a.RN,                                                                                                                                                                           \n";
+strSql += "			1 SUBRN,                                                                                                                                                                        \n";
+strSql += "			'(%)',                                                                                                                                                                          \n";
+strSql += "			a.MNG_CODE||'율',                                                                                                                                                               \n";
+strSql += "			a.BF_Y_EXEC_AMT / NullIf(b.BF_Y_EXEC_AMT,0 ) * 100 BF_Y_EXEC_AMT,                                                                                                               \n";
+strSql += "			a.BF_Y_BM_EXEC_AMT / NullIf(b.BF_Y_BM_EXEC_AMT ,0) * 100 BF_Y_BM_EXEC_AMT ,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_PLAN_AMT / NullIf(b.NW_Y_BM_PLAN_AMT ,0) * 100  NW_Y_BM_PLAN_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_BM_EXEC_AMT / NullIf(b.NW_Y_BM_EXEC_AMT ,0) * 100  NW_Y_BM_EXEC_AMT,                                                                                                     \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_01 / NullIf(b.NW_Y_NM_PLAN_AMT_01 ,0) * 100  NW_Y_NM_PLAN_AMT_01,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_01 / NullIf(b.NW_Y_NM_FOR_AMT_01 ,0) * 100  NW_Y_NM_FOR_AMT_01,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_02 / NullIf(b.NW_Y_NM_PLAN_AMT_02 ,0) * 100  NW_Y_NM_PLAN_AMT_02,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_02 / NullIf(b.NW_Y_NM_FOR_AMT_02 ,0) * 100  NW_Y_NM_FOR_AMT_02,                                                                                               \n";
+strSql += "			a.NW_Y_NM_PLAN_AMT_03 / NullIf(b.NW_Y_NM_PLAN_AMT_03 ,0) * 100  NW_Y_NM_PLAN_AMT_03,                                                                                            \n";
+strSql += "			a.NW_Y_NM_FOR_AMT_03 / NullIf(b.NW_Y_NM_FOR_AMT_03 ,0) * 100  NW_Y_NM_FOR_AMT_03,                                                                                               \n";
+strSql += "			a.NW_Y_PLAN_AMT / NullIf(b.NW_Y_PLAN_AMT ,0) * 100  NW_Y_PLAN_AMT,                                                                                                              \n";
+strSql += "			a.NW_Y_FOR_AMT / NullIf(b.NW_Y_FOR_AMT ,0) * 100  NW_Y_FOR_AMT,                                                                                                                 \n";
+strSql += "			a.AF_Y_PLAN_AMT / NullIf(b.AF_Y_PLAN_AMT ,0) * 100  AF_Y_PLAN_AMT                                                                                                               \n";
+strSql += "		From	Base_Table a,                                                                                                                                                               \n";
+strSql += "				Base_Table b                                                                                                                                                                  \n";
+strSql += "		Where	a.MNG_CODE = '세전이익'                                                                                                                                                     \n";
+strSql += "		And		b.MNG_CODE = '매출액'                                                                                                                                                       \n";
+strSql += "	) a                                                                                                                                                                                 \n";
+strSql += "Order By                                                                                                                                                                             \n";
+strSql += "	RN,SUBRN                                                                                                                                                                            \n";
+
+lrArgData.addColumn("1CLSE_ACC_ID_BF"	, CITData.VARCHAR2);
+lrArgData.addColumn("1BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("2CLSE_ACC_ID_BF"	, CITData.VARCHAR2);
+lrArgData.addColumn("3CLSE_ACC_ID_BF"	, CITData.VARCHAR2);
+lrArgData.addColumn("1START_MM_MIN"		, CITData.VARCHAR2);
+lrArgData.addColumn("2BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("1CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("2CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("2START_MM_MIN"		, CITData.VARCHAR2);
+lrArgData.addColumn("3BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("3CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("4CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("3START_MM_MIN"		, CITData.VARCHAR2);
+lrArgData.addColumn("4BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("5CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("4START_MM_MIN"		, CITData.VARCHAR2);
+lrArgData.addColumn("5BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("6CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("5START_MM_MIN"		, CITData.VARCHAR2);
+lrArgData.addColumn("6BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("7CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("1START_MM_MID"		, CITData.VARCHAR2);
+lrArgData.addColumn("7BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("8CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("2START_MM_MID"		, CITData.VARCHAR2);
+lrArgData.addColumn("8BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("9CLSE_ACC_ID_NW"	, CITData.VARCHAR2);
+lrArgData.addColumn("1START_MM_MAX"		, CITData.VARCHAR2);
+lrArgData.addColumn("9BASE_AMT"				, CITData.NUMBER);
+lrArgData.addColumn("10CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("2START_MM_MAX"		, CITData.VARCHAR2);
+lrArgData.addColumn("10BASE_AMT"			, CITData.NUMBER);
+lrArgData.addColumn("11CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("11BASE_AMT"			, CITData.NUMBER);
+lrArgData.addColumn("12CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("13CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("3START_MM_MID"		, CITData.VARCHAR2);
+lrArgData.addColumn("14CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("15CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("4START_MM_MID"		, CITData.VARCHAR2);
+lrArgData.addColumn("16CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("3START_MM_MAX"		, CITData.VARCHAR2);
+lrArgData.addColumn("17CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("18CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("4START_MM_MAX"		, CITData.VARCHAR2);
+lrArgData.addColumn("12BASE_AMT"			, CITData.NUMBER);
+lrArgData.addColumn("1CLSE_ACC_ID_AF"	, CITData.VARCHAR2);
+lrArgData.addColumn("13BASE_AMT"			, CITData.NUMBER);
+lrArgData.addColumn("4CLSE_ACC_ID_BF"	, CITData.VARCHAR2);
+lrArgData.addColumn("19CLSE_ACC_ID_NW", CITData.VARCHAR2);
+lrArgData.addColumn("2CLSE_ACC_ID_AF"	, CITData.VARCHAR2);
+lrArgData.addColumn("1COMP_CODE"			, CITData.VARCHAR2);
+lrArgData.addRow();
+lrArgData.setValue("1CLSE_ACC_ID_BF"	, strCLSE_ACC_ID_BF);
+lrArgData.setValue("1BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("2CLSE_ACC_ID_BF"	, strCLSE_ACC_ID_BF);
+lrArgData.setValue("3CLSE_ACC_ID_BF"	, strCLSE_ACC_ID_BF);
+lrArgData.setValue("1START_MM_MIN"		, strSTART_MM_MIN);
+lrArgData.setValue("2BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("1CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("2CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("2START_MM_MIN"		, strSTART_MM_MIN);
+lrArgData.setValue("3BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("3CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("4CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("3START_MM_MIN"		, strSTART_MM_MIN);
+lrArgData.setValue("4BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("5CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("4START_MM_MIN"		,	strSTART_MM_MIN);
+lrArgData.setValue("5BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("6CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("5START_MM_MIN"		, strSTART_MM_MIN);
+lrArgData.setValue("6BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("7CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("1START_MM_MID"		, strSTART_MM_MID);
+lrArgData.setValue("7BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("8CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("2START_MM_MID"		, strSTART_MM_MID);
+lrArgData.setValue("8BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("9CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("1START_MM_MAX"		, strSTART_MM_MAX);
+lrArgData.setValue("9BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("10CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("2START_MM_MAX"		, strSTART_MM_MAX);;
+lrArgData.setValue("10BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("11CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("11BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("12CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("13CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("3START_MM_MID"		, strSTART_MM_MID);
+lrArgData.setValue("14CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("15CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("4START_MM_MID"		, strSTART_MM_MID);
+lrArgData.setValue("16CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("3START_MM_MAX"		, strSTART_MM_MAX);
+lrArgData.setValue("17CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("18CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("4START_MM_MAX"		, strSTART_MM_MAX);
+lrArgData.setValue("12BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("1CLSE_ACC_ID_AF"	, strCLSE_ACC_ID_AF);
+lrArgData.setValue("13BASE_AMT"				, strBASE_AMT);
+lrArgData.setValue("4CLSE_ACC_ID_BF"	, strCLSE_ACC_ID_BF);
+lrArgData.setValue("19CLSE_ACC_ID_NW"	, strCLSE_ACC_ID_NW);
+lrArgData.setValue("2CLSE_ACC_ID_AF"	, strCLSE_ACC_ID_AF);
+lrArgData.setValue("1COMP_CODE"				, strCOMP_CODE);
+			
+			try
+			{				
+				lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+				
+				lrReturnData.setScale("BF_Y_EXEC_AMT", 4);
+				lrReturnData.setScale("BF_Y_BM_EXEC_AMT", 4);
+				lrReturnData.setScale("NW_Y_BM_PLAN_AMT", 4);
+				lrReturnData.setScale("NW_Y_BM_EXEC_AMT", 4);
+				lrReturnData.setScale("NW_BM_P_E_SUB", 4);
+				lrReturnData.setScale("NW_BM_B_E_SUM", 4);				
+				lrReturnData.setScale("NW_Y_NM_PLAN_AMT_01", 4);
+				lrReturnData.setScale("NW_Y_NM_FOR_AMT_01", 4);
+				lrReturnData.setScale("NW_Y_NM_PLAN_AMT_02", 4);
+				lrReturnData.setScale("NW_Y_NM_FOR_AMT_02", 4);
+				lrReturnData.setScale("NW_Y_NM_PLAN_AMT_03", 4);
+				lrReturnData.setScale("NW_Y_NM_FOR_AMT_03", 4);
+				lrReturnData.setScale("NW_Y_PLAN_AMT", 4);
+				lrReturnData.setScale("NW_Y_FOR_AMT", 4);
+				lrReturnData.setScale("NW_P_E_SUB", 4);
+				lrReturnData.setScale("NW_B_E_SUM", 4);
+				lrReturnData.setScale("AF_Y_PLAN_AMT", 4);
+				lrReturnData.setScale("AF_P_E_SUM", 4);
+				
+				lrDataset = CITCommon.toGauceDataSet(lrReturnData);						
+				GauceInfo.response.enableFirstRow(lrDataset);				
+				lrDataset.flush();
+			}
+			catch (Exception ex)
+			{
+				if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+				GauceInfo.response.writeException("USER", "900001","MAIN Select 오류-> "+ ex.getMessage());
+			}
+		}
+
+	}
+	catch (Exception ex)
+	{
+		if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+		GauceInfo.response.writeException("SYS", "100001", "페이지 초기화 오류 -> " + ex.getMessage());
+	}
+	finally
+	{
+		try
+		{
+			CITCommon.finalServerPage(GauceInfo);
+		}
+		catch (Exception ex)
+		{
+			if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+			GauceInfo.response.writeException("SYS", "100002", "페이지 종료 오류 -> " + ex.getMessage());
+		}
+	}
+%>

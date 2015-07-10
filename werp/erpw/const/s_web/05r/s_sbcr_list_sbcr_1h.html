@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0048)file://H:\const\s_web\05r\s_sbcr_list_sbcr_1h.html	 -->
+<!-- **************************************************************		       -->
+<!-- 1. 프로그램 id   : s_sbcr_list_sbcr_1h.html								       -->
+<!-- 2. 유형(시나리오): 보고서															    -->
+<!-- 3. 기 능 정 의   : 협력업체 등록 명부(업체별)                       		 -->
+<!-- 4. 변 경 이 력   : 권미생 작성															 -->
+<!-- 5. 관련프로그램  :																			 -->
+<!-- 6. 특 기 사 항   :																			 -->
+<!-- *************************************************************				 -->
+<HTML>
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2800.1106" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_sbcr = ""
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   if (sbcr_name.value == ""){
+   	is_sbcr = "@"          // 전체출력 하기위해서  (%는 파라메터 값이 안넘어감)
+   }
+   
+   var arg_temp
+   arg_temp ="const_rpt/s_web/05r/"           // 보고서 디렉토리
+	arg_temp = arg_temp + "s_sbcr_list_sbcr"   // 보고서명 
+	arg_temp = arg_temp + "&RptParams=" + is_sbcr
+	
+   f_crystal_report(arg_temp)                 //보고서 호출
+}
+//---------------------------------------------------------------------
+function sbcr_search()                     //협력업체 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/const/s_web/00/s_sbcr_search_1h.html", sbcr_name.value,"dialogWidth:808px;dialogHeight:490px");
+	if(result == "") return;
+
+	array = result.split("@");
+	is_sbcr         = array[1]
+	sbcr_name.value = array[3]
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13){ 
+		sbcr_search();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+}
+</SCRIPT>
+</HEAD>
+<BODY oncontextmenu="return false" style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)>
+<DIV id=print_condition 
+	style="Z-INDEX: 107; LEFT: 300px; WIDTH: 400px; POSITION: absolute; TOP: 100px; HEIGHT: 150px">
+	<TABLE style="FONT-SIZE: 12px" height="100%" cellSpacing=0 width="100%" align=center border=5>
+	<TBODY>
+	<TR bgColor=white>
+	<TD style="COLOR: BLACK" width="20%" bgColor=#7494b8>
+	<DIV align=right>협력업체명</DIV></TD>
+	<TD><INPUT style="FONT-SIZE:12px;" id=sbcr_name onkeydown=keyDown() style="WIDTH: 250px">
+	<INPUT onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	style="BORDER-RIGHT: #a1a9a9 1px solid; BORDER-TOP: #a1a9a9 1px solid; FONT-SIZE: 12px; BORDER-LEFT: #a1a9a9 1px solid; WIDTH: 40px; CURSOR: hand; COLOR: #2e4a4a; BORDER-BOTTOM: #a1a9a9 1px solid; BACKGROUND-COLOR: #e9f5f5" 
+	onclick=sbcr_search() onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'&#13;&#10;&#9;&#9;&#9;&#9;&#9;&#9; " type=sbcr_search value=" 검색"> </TD></TR>
+	<TR bgColor=white>
+	<TD colspan=2 align=left>
+	<PRE>
+	빈           칸 : 전체 출력
+	
+	전문공종명 선택 : 해당 협력업체만 출력 </PRE></TD></TR>		
+	</TBODY>
+	</TABLE>
+</DIV>
+</BODY>
+</HTML>

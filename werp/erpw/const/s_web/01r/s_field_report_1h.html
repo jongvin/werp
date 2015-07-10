@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_field_report_1h.html									-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 현장설명서			                        		-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+
+var is_ds_1_addr = 's_order_list_rpt_1q.jsp?arg_dept_code='                        //발주 목록 
+var is_dept_code = ""
+var is_dept_name = ""
+var il_order_number = 0
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+   var arg_temp
+   arg_temp ="const_rpt/s_web/01r/s_field_report"        // 보고서 디렉토리
+
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code + "&RptParams=" + il_order_number 
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//------------------------------------------------------------------------
+function btnprint_onclick()                     // 즉시 출력  
+//------------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+   
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   il_screen = 1
+	btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1');
+	var xArr   = new Array(true);
+	var yArr   = new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+}    
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	 ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '020' order by etc_code") //승인구분
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   btnquery_onclick()
+
+
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+{
+  il_order_number = ds_1.NameValue(row,"order_number")
+}  
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+	<tr height="20px">
+		<td class=td_green>
+			<table BORDER="0" CELLSPACING="0" cellpadding="0" class=main_table>
+				<tr> 
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>현장명</td>
+					<td width="150px">
+						<INPUT style="FONT-SIZE:12px;" id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=22 onkeyDown="keyDown()">
+					</td>
+					<td>
+						<INPUT id=dept_name_button  type=button  class="img_btnFind"  value=검색 onclick=dept_code_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"></td>
+	         </tr>                 
+	      </table>
+	   </td>
+	</tr>
+	<tr height="*">
+		<td>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 105; WIDTH:100%; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=발주번호 ID=order_number Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C>
+				  <C> Name=승인구분 ID=approve_class Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center EditStyle=Lookup Data='ds_select:select_1:select_2' HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+				  <C> Name=발주명 ID=order_name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=350 </C> 
+				  <C> Name=발주공종명 ID=profession_wbs_name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+			      ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</talbe></div>
+</BODY></HTML>

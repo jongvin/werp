@@ -1,0 +1,1259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_structur_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 현장조직      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var is_dept_code
+var is_dept_name
+var il_chg_no_seq
+var is_update
+var is_ds_1_addr
+var is_tr_1_addr
+var is_jikwi = ""               // 직위
+var is_ji = ""               // 직책 
+var il_loop_cnt=31             // 31명까지 design되어있슴. 
+var is_ret='r'    //조회용이냐 수정용이냐
+var arg_pgrm               // 메뉴를 통해서 왔느냐 아니면 showmodal로 왔느냐 구분 셋팅
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ ds_1.DataID=is_ds_1_addr + is_dept_code + '&arg_chg_no_seq=' + il_chg_no_seq
+ ds_1.SyncLoad=true
+ ds_1.Reset()
+ ds_1_color()
+ for (i=1;i<=il_loop_cnt;i++) {
+    eval("ls_name = ds_1.NameValue(1,'name_"  + i + "') ") 
+    if (ls_name == '') {
+       eval("tab_r_" + i + ".style.visibility='hidden'")
+    }
+    else   
+       ji_jikwi_name(i)
+ }
+
+}
+//-----------------------------------------------------------------------
+function ds_1_color()                       // 컬러 색상  
+//------------------------------------------------------------------------
+{
+  var i 
+  for (i=1;i<=il_loop_cnt;i++) {
+         eval("ls_tx_name = tx_name_r_" + i + ".value")
+         if (ls_tx_name =="") continue
+         
+         eval("ls_jikwi = tx_jikwi_" + i + ".value")
+         if (ls_jikwi == '55') {  //현채직 
+            eval("tx_ji_" + i + ".style.backgroundColor = '#99CCFF'")
+            continue
+         }   
+         eval("ls_buim_tag = tx_buim_tag_" + i + ".value")
+         if (ls_buim_tag == '2') { // 겸직 
+            eval("tx_ji_" + i + ".style.backgroundColor = '#FFFF66'")
+            continue
+         }
+        eval("tx_ji_" + i + ".style.backgroundColor = '#33FF99'")
+  }
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+ ds_1.AddRow()
+ init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+ if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+   btnadd_onclick()
+   return
+ }  
+ ds_1.InsertRow(ds_1.RowPosition)
+ init_move()
+}
+//------------------------------------------------------------------------
+function init_move()                    // 추가/삽입 공통 로직.
+//------------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+// dup check logic   	
+
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+ } 
+ btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function close_rtn()                      // 닫기 
+//---------------------------------------------------------------------------
+{
+  if (arg_pgrm == 'menu')
+     top.frames['main_ct'].location.href(gs_home + "/const/c_web/04/c_structure_degree_1h.html" +"?"+is_update)
+  else 
+     window.close()
+}
+//---------------------------------------------------------------------------
+function ji_jikwi_name(i)                     // 직위와 직책 부임타이틀을 보여줌
+//---------------------------------------------------------------------------
+{
+   //직책
+   for (j=1;j<=ds_ji.CountRow;j++) {
+       if (ds_1.NameValue(1,'ji_' + i) ==  ds_ji.NameValue(j,'select_1')) {
+          eval("tx_ji_" + i + ".value = '" + ds_ji.NameValue(j,'select_2') + "'")
+          break
+       }
+       continue   
+   }
+   //직위
+   for (j=1;j<=ds_jikwi.CountRow;j++) {
+       if (ds_1.NameValue(1,'jikwi_' + i) ==  ds_jikwi.NameValue(j,'select_1')) {
+          eval("tx_jikwi_" + i + ".value = '" + ds_jikwi.NameValue(j,'select_2') + "'")
+          break
+       }
+       continue   
+   }
+   
+   if (ds_1.NameValue(1,'buim_tag_' + i) == '2')
+      eval("tx_buim_tag_" + i + ".value = '겸임'")
+   else      
+      eval("tx_buim_tag_" + i + ".value = '부임'")
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+   if (top.frames['main_title'] == null) 
+      arg_pgrm = 'not_menu'
+   else
+      arg_pgrm = 'menu'
+   var result;
+   var array = new Array();
+  
+//----------------
+   if (arg_pgrm == 'menu') { 
+      gs_home = parent.frames['security'].gs_home.value
+      top.frames['main_title'].mouse_over()
+	   is_dept_code = top.frames['security'].gs_dept_code.value
+	   is_dept_name = top.frames['security'].gs_dept_name.value
+	   dept_name.value = is_dept_name
+      result=	 top.frames['security'].gs_param.value
+	   array = new Array();
+      
+	   array = result.split("@");
+      il_chg_no_seq = array[0]  
+      is_update =  array[1] 
+      is_ret = gf_initial_security()
+  }
+  else {    
+      result = window.dialogArguments;
+      array = result.split("@")
+      gs_home = array[0]
+      is_dept_code = array[1]
+      is_dept_name = array[2]
+      dept_name.value = is_dept_name
+      il_chg_no_seq = array[3]
+      is_update = 'r'
+  }
+//----------------
+ is_ds_1_addr = gs_home + '/const/c_web/04/c_structure_1q.jsp?arg_dept_code='         
+ is_tr_1_addr = gs_home + '/const/c_web/04/c_structure_1tr.jsp'
+ 
+  tr_1.Action = is_tr_1_addr
+  var i
+   
+
+ 
+
+   ll_cnt = f_ds_select_q("ds_ji","select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '024' order by etc_code") //직책
+   ll_cnt = f_ds_select_q("ds_jikwi","select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '023' order by etc_code") //직위
+  
+   is_jikwi=''   //직위
+   for (i=1;i<=ds_jikwi.CountRow;i++) {
+       is_jikwi = is_jikwi + ds_jikwi.NameValue(i,'select_1') + "^" + ds_jikwi.NameValue(i,'select_2')
+       if (i != ds_jikwi.CountRow) 
+         is_jikwi = is_jikwi + ","
+   }
+
+   
+
+   var ls_name
+
+
+   btnquery_onclick()
+   
+
+   
+
+
+}
+</SCRIPT>
+
+
+</HEAD>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=tr_1 event=OnSuccess()>
+</SCRIPT> 
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+  var ls_colid,ls_value
+  ls_colid = colid
+  if (ls_colid.substr(0,10) == 'input_date') {
+     ls_value = ds_1.NameValue(row,colid)
+     if (ls_value.substr(0,1) == ' ') { 
+         ds_1.NameValue(row,colid) = ''
+     }    
+  }       
+</script>
+
+
+<comment id="__NSID__"><OBJECT id=ds_ji 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_jikwi 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_structure_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 200px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name disabled  >
+         </tr>                 
+      </table>
+</DIV> 
+<input id=bt_close type="button" value="닫기" 
+          style="color:#2E4A4A; font-size:13px;WIDTH:30px; CURSOR: hand; LEFT:950px; Top:7px;height:17px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   POSITION: absolute;"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=close_rtn()>
+     
+<DIV id=hphoto_1
+          style="Z-INDEX: 110; LEFT: 700px; WIDTH: 140px; POSITION: absolute; TOP: 2px; HEIGHT: 25px; FONT-SIZE: 12px  " >
+      <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="1" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td BGCOLOR="#33FF99"><div >정 직</div></td>
+             <td BGCOLOR="#FFFF66"><div >겸 임</div></td>
+             <td BGCOLOR="#99CCFF"><div >현채직</div></td>
+         </tr>
+      </table>   
+</DIV>
+<DIV id=hphoto_retrieve
+          style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1009px; POSITION: absolute; TOP: 30px; HEIGHT: 600px;   " >
+      <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="4" style="FONT-SIZE: 11px">
+         <tr BGCOLOR="white" > 
+             <td align=center colspan=3> 
+                <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_1 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_1  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_1 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_1   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_1  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_1 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center colspan=3> 
+                <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td align=center colspan=3> 
+                <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_2 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_2  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_2 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_2   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_2  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_2   width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center colspan=2> 
+                <table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_3 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_3  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_3 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_3   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_3  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_3 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td align=center > 
+                <table id=tab_r_4 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_4  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_4 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_4   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_4  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_4 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center > 
+                <table id=tab_r_5 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_5  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_5 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_5   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_5  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_5 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_6 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_6  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_6 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_6   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_6  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_6 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_7 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_7  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_7 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_7   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_7  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_7 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_8 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_8  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_8 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_8   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_8  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_8 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_9 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_9  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_9 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_9   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_9  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_9 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_10 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_10  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_10 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_10   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_10  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_10 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td align=center> 
+                <table id=tab_r_11  width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_11  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_11 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_11   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_11  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_11 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_12 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_12  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_12 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_12   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_12  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_12 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_13 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_13  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_13 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_13   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_13  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_13 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_14 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_14  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_14 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_14   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_14  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_14 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_15 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_15  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_15 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_15   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_15  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_15 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_16 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_16  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_16 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_16   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_16  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_16 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_17 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_17  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_17 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_17   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_17  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_17 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td align=center> 
+                <table id=tab_r_18 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_18  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_18 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_18   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_18  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_18 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_19 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_19  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_19 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_19   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_19  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_19 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_20 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_20  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_20 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_20   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_20  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_20 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_21 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_21  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_21 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_21   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_21  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_21 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_22 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_22  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_22 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_22   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_22  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_22 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_23 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_23  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_23 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_23   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_23  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_23 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_24 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_24  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_24 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_24   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_24  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_24 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td align=center> 
+                <table id=tab_r_25 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_25  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_25 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_25   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_25  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_25 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_26 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_26  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_26 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_26   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_26  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_26 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_27 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_27  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_27 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_27   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_27  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_27 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_28 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_28  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_28 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_28   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_28  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_28 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_29 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_29  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_29 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_29   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_29  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_29 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_30 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_30  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_30 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_30   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_30  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_30 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+             <td align=center> 
+                <table id=tab_r_31 width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+                    <tr>
+                        <td colspan=2><INPUT id=tx_ji_31  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=17  ></td> 
+                    </tr>
+                    <tr>
+                        <td ><INPUT id=tx_jikwi_31 style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; ""  size=6  ></td>
+                        <td ><INPUT id=tx_name_r_31   style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; " size=8  > </td>
+                    </tr>
+                    <tr> 
+                         <td ><INPUT id=tx_buim_tag_31  style="height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "  size=6  ></td>
+					         <td>
+					               <comment id="__NSID__"><OBJECT id=em_input_r_date_31 width=67px style="top:5px; height:20px;BORDER-RIGHT: 0px; BORDER-TOP: 0px; Z-INDEX: 100; LEFT: 117px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; "
+					                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							          <PARAM NAME="Alignment" VALUE="1">
+					                <param name=Border          value=false>
+					                 <param name=ReadOnly       value=true>
+					                <param name=Format value="YYYY-MM-DD">
+                               <param name=Numeric value=false>
+					                </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+                    </tr>
+                </table>
+             </td>                           
+         </tr>                 
+      </table>
+</DIV>
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=jikwi_1                Ctrl=tx_jikwi_1             Param=value Enable=enable</C>
+	   <C>Col=name_1                 Ctrl=tx_name_r_1                Param=value Enable=enable</C>
+	   <C>Col=input_date_1           Ctrl=em_input_r_date_1          Param=text Enable=enable</C>
+	   <C>Col=jikwi_2                Ctrl=tx_jikwi_2             Param=value Enable=enable</C>
+	   <C>Col=name_2                 Ctrl=tx_name_r_2                Param=value Enable=enable</C>
+	   <C>Col=input_date_2           Ctrl=em_input_r_date_2          Param=text Enable=enable</C>
+	   <C>Col=jikwi_3                Ctrl=tx_jikwi_3             Param=value Enable=enable</C>
+	   <C>Col=name_3                 Ctrl=tx_name_r_3                Param=value Enable=enable</C>
+	   <C>Col=input_date_3           Ctrl=em_input_r_date_3          Param=text Enable=enable</C>
+	   <C>Col=jikwi_4                Ctrl=tx_jikwi_4             Param=value Enable=enable</C>
+	   <C>Col=name_4                 Ctrl=tx_name_r_4                Param=value Enable=enable</C>
+	   <C>Col=input_date_4           Ctrl=em_input_r_date_4          Param=text Enable=enable</C>
+	   <C>Col=jikwi_5                Ctrl=tx_jikwi_5             Param=value Enable=enable</C>
+	   <C>Col=name_5                 Ctrl=tx_name_r_5                Param=value Enable=enable</C>
+	   <C>Col=input_date_5           Ctrl=em_input_r_date_5          Param=text Enable=enable</C>
+	   <C>Col=jikwi_6                Ctrl=tx_jikwi_6             Param=value Enable=enable</C>
+	   <C>Col=name_6                 Ctrl=tx_name_r_6                Param=value Enable=enable</C>
+	   <C>Col=input_date_6           Ctrl=em_input_r_date_6          Param=text Enable=enable</C>
+	   <C>Col=jikwi_7                Ctrl=tx_jikwi_7             Param=value Enable=enable</C>
+	   <C>Col=name_7                 Ctrl=tx_name_r_7                Param=value Enable=enable</C>
+	   <C>Col=input_date_7           Ctrl=em_input_r_date_7          Param=text Enable=enable</C>
+	   <C>Col=jikwi_8                Ctrl=tx_jikwi_8             Param=value Enable=enable</C>
+	   <C>Col=name_8                 Ctrl=tx_name_r_8                Param=value Enable=enable</C>
+	   <C>Col=input_date_8           Ctrl=em_input_r_date_8          Param=text Enable=enable</C>
+	   <C>Col=jikwi_9                Ctrl=tx_jikwi_9             Param=value Enable=enable</C>
+	   <C>Col=name_9                 Ctrl=tx_name_r_9                Param=value Enable=enable</C>
+	   <C>Col=input_date_9           Ctrl=em_input_r_date_9          Param=text Enable=enable</C>
+	   <C>Col=jikwi_10               Ctrl=tx_jikwi_10            Param=value Enable=enable</C>
+	   <C>Col=name_10                Ctrl=tx_name_r_10               Param=value Enable=enable</C>
+	   <C>Col=input_date_10          Ctrl=em_input_r_date_10          Param=text Enable=enable</C>
+	   <C>Col=jikwi_11               Ctrl=tx_jikwi_11            Param=value Enable=enable</C>
+	   <C>Col=name_11                Ctrl=tx_name_r_11               Param=value Enable=enable</C>
+	   <C>Col=input_date_11          Ctrl=em_input_r_date_11         Param=text Enable=enable</C>
+	   <C>Col=jikwi_12               Ctrl=tx_jikwi_12            Param=value Enable=enable</C>
+	   <C>Col=name_12                Ctrl=tx_name_r_12               Param=value Enable=enable</C>
+	   <C>Col=input_date_12          Ctrl=em_input_r_date_12         Param=text Enable=enable</C>
+	   <C>Col=jikwi_13               Ctrl=tx_jikwi_13            Param=value Enable=enable</C>
+	   <C>Col=name_13                Ctrl=tx_name_r_13               Param=value Enable=enable</C>
+	   <C>Col=input_date_13          Ctrl=em_input_r_date_13         Param=text Enable=enable</C>
+	   <C>Col=jikwi_14               Ctrl=tx_jikwi_14            Param=value Enable=enable</C>
+	   <C>Col=name_14                Ctrl=tx_name_r_14               Param=value Enable=enable</C>
+	   <C>Col=input_date_14          Ctrl=em_input_r_date_14         Param=text Enable=enable</C>
+	   <C>Col=jikwi_15               Ctrl=tx_jikwi_15            Param=value Enable=enable</C>
+	   <C>Col=name_15                Ctrl=tx_name_r_15               Param=value Enable=enable</C>
+	   <C>Col=input_date_15          Ctrl=em_input_r_date_15         Param=text Enable=enable</C>
+	   <C>Col=jikwi_16               Ctrl=tx_jikwi_16            Param=value Enable=enable</C>
+	   <C>Col=name_16                Ctrl=tx_name_r_16               Param=value Enable=enable</C>
+	   <C>Col=input_date_16          Ctrl=em_input_r_date_16         Param=text Enable=enable</C>
+	   <C>Col=jikwi_17               Ctrl=tx_jikwi_17            Param=value Enable=enable</C>
+	   <C>Col=name_17                Ctrl=tx_name_r_17               Param=value Enable=enable</C>
+	   <C>Col=input_date_17          Ctrl=em_input_r_date_17         Param=text Enable=enable</C>
+	   <C>Col=jikwi_18               Ctrl=tx_jikwi_18            Param=value Enable=enable</C>
+	   <C>Col=name_18                Ctrl=tx_name_r_18               Param=value Enable=enable</C>
+	   <C>Col=input_date_18          Ctrl=em_input_r_date_18         Param=text Enable=enable</C>
+	   <C>Col=jikwi_19               Ctrl=tx_jikwi_19            Param=value Enable=enable</C>
+	   <C>Col=name_19                Ctrl=tx_name_r_19               Param=value Enable=enable</C>
+	   <C>Col=input_date_19          Ctrl=em_input_r_date_19         Param=text Enable=enable</C>
+	   <C>Col=jikwi_20               Ctrl=tx_jikwi_20            Param=value Enable=enable</C>
+	   <C>Col=name_20                Ctrl=tx_name_r_20               Param=value Enable=enable</C>
+	   <C>Col=input_date_20          Ctrl=em_input_r_date_20         Param=text Enable=enable</C>
+	   <C>Col=jikwi_21               Ctrl=tx_jikwi_21            Param=value Enable=enable</C>
+	   <C>Col=name_21                Ctrl=tx_name_r_21               Param=value Enable=enable</C>
+	   <C>Col=input_date_21          Ctrl=em_input_r_date_21         Param=text Enable=enable</C>
+	   <C>Col=jikwi_22               Ctrl=tx_jikwi_22            Param=value Enable=enable</C>
+	   <C>Col=name_22                Ctrl=tx_name_r_22               Param=value Enable=enable</C>
+	   <C>Col=input_date_22          Ctrl=em_input_r_date_22         Param=text Enable=enable</C>
+	   <C>Col=jikwi_23               Ctrl=tx_jikwi_23            Param=value Enable=enable</C>
+	   <C>Col=name_23                Ctrl=tx_name_r_23               Param=value Enable=enable</C>
+	   <C>Col=input_date_23          Ctrl=em_input_r_date_23         Param=text Enable=enable</C>
+	   <C>Col=jikwi_24               Ctrl=tx_jikwi_24            Param=value Enable=enable</C>
+	   <C>Col=jikwi_25               Ctrl=tx_jikwi_25            Param=value Enable=enable</C>
+	   <C>Col=jikwi_26               Ctrl=tx_jikwi_26            Param=value Enable=enable</C>
+	   <C>Col=jikwi_27               Ctrl=tx_jikwi_27            Param=value Enable=enable</C>
+	   <C>Col=jikwi_28               Ctrl=tx_jikwi_28            Param=value Enable=enable</C>
+	   <C>Col=jikwi_29               Ctrl=tx_jikwi_29            Param=value Enable=enable</C>
+	   <C>Col=jikwi_30               Ctrl=tx_jikwi_30            Param=value Enable=enable</C>
+	   <C>Col=jikwi_31               Ctrl=tx_jikwi_31            Param=value Enable=enable</C>
+	   <C>Col=name_24                Ctrl=tx_name_r_24               Param=value Enable=enable</C>
+	   <C>Col=name_25                Ctrl=tx_name_r_25               Param=value Enable=enable</C>
+	   <C>Col=name_26                Ctrl=tx_name_r_26               Param=value Enable=enable</C>
+	   <C>Col=name_27                Ctrl=tx_name_r_27               Param=value Enable=enable</C>
+	   <C>Col=name_28                Ctrl=tx_name_r_28               Param=value Enable=enable</C>
+	   <C>Col=name_29                Ctrl=tx_name_r_29               Param=value Enable=enable</C>
+	   <C>Col=name_30                Ctrl=tx_name_r_30               Param=value Enable=enable</C>
+	   <C>Col=name_31                Ctrl=tx_name_r_31               Param=value Enable=enable</C>
+	   <C>Col=input_date_24          Ctrl=em_input_r_date_24         Param=text Enable=enable</C>
+	   <C>Col=input_date_25          Ctrl=em_input_r_date_25         Param=text Enable=enable</C>
+	   <C>Col=input_date_26          Ctrl=em_input_r_date_26         Param=text Enable=enable</C>
+	   <C>Col=input_date_27          Ctrl=em_input_r_date_27         Param=text Enable=enable</C>
+	   <C>Col=input_date_28          Ctrl=em_input_r_date_28         Param=text Enable=enable</C>
+	   <C>Col=input_date_29          Ctrl=em_input_r_date_29         Param=text Enable=enable</C>
+	   <C>Col=input_date_30          Ctrl=em_input_r_date_30         Param=text Enable=enable</C>
+	   <C>Col=input_date_31          Ctrl=em_input_r_date_31         Param=text Enable=enable</C>
+	   <C>Col=ji_1                Ctrl=tx_ji_1             Param=value Enable=enable</C>
+	   <C>Col=ji_2                Ctrl=tx_ji_2             Param=value Enable=enable</C>
+	   <C>Col=ji_3                Ctrl=tx_ji_3             Param=value Enable=enable</C>
+	   <C>Col=ji_4                Ctrl=tx_ji_4             Param=value Enable=enable</C>
+	   <C>Col=ji_5                Ctrl=tx_ji_5             Param=value Enable=enable</C>
+	   <C>Col=ji_6                Ctrl=tx_ji_6             Param=value Enable=enable</C>
+	   <C>Col=ji_7                Ctrl=tx_ji_7             Param=value Enable=enable</C>
+	   <C>Col=ji_8                Ctrl=tx_ji_8             Param=value Enable=enable</C>
+	   <C>Col=ji_9                Ctrl=tx_ji_9             Param=value Enable=enable</C>
+	   <C>Col=ji_10               Ctrl=tx_ji_10            Param=value Enable=enable</C>
+	   <C>Col=ji_11               Ctrl=tx_ji_11            Param=value Enable=enable</C>
+	   <C>Col=ji_12               Ctrl=tx_ji_12            Param=value Enable=enable</C>
+	   <C>Col=ji_13               Ctrl=tx_ji_13            Param=value Enable=enable</C>
+	   <C>Col=ji_14               Ctrl=tx_ji_14            Param=value Enable=enable</C>
+	   <C>Col=ji_15               Ctrl=tx_ji_15            Param=value Enable=enable</C>
+	   <C>Col=ji_16               Ctrl=tx_ji_16            Param=value Enable=enable</C>
+	   <C>Col=ji_17               Ctrl=tx_ji_17            Param=value Enable=enable</C>
+	   <C>Col=ji_18               Ctrl=tx_ji_18            Param=value Enable=enable</C>
+	   <C>Col=ji_19               Ctrl=tx_ji_19            Param=value Enable=enable</C>
+	   <C>Col=ji_20               Ctrl=tx_ji_20            Param=value Enable=enable</C>
+	   <C>Col=ji_21               Ctrl=tx_ji_21            Param=value Enable=enable</C>
+	   <C>Col=ji_22               Ctrl=tx_ji_22            Param=value Enable=enable</C>
+	   <C>Col=ji_23               Ctrl=tx_ji_23            Param=value Enable=enable</C>
+	   <C>Col=ji_24               Ctrl=tx_ji_24            Param=value Enable=enable</C>
+	   <C>Col=ji_25               Ctrl=tx_ji_25            Param=value Enable=enable</C>
+	   <C>Col=ji_26               Ctrl=tx_ji_26            Param=value Enable=enable</C>
+	   <C>Col=ji_27               Ctrl=tx_ji_27            Param=value Enable=enable</C>
+	   <C>Col=ji_28               Ctrl=tx_ji_28            Param=value Enable=enable</C>
+	   <C>Col=ji_29               Ctrl=tx_ji_29            Param=value Enable=enable</C>
+	   <C>Col=ji_30               Ctrl=tx_ji_30            Param=value Enable=enable</C>
+	   <C>Col=ji_31               Ctrl=tx_ji_31            Param=value Enable=enable</C>
+	   <C>Col=buim_tag_1               Ctrl=tx_buim_tag_1      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_2               Ctrl=tx_buim_tag_2      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_3               Ctrl=tx_buim_tag_3      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_4               Ctrl=tx_buim_tag_4      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_5               Ctrl=tx_buim_tag_5      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_6               Ctrl=tx_buim_tag_6      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_7               Ctrl=tx_buim_tag_7      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_8               Ctrl=tx_buim_tag_8      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_9               Ctrl=tx_buim_tag_9      Param=value Enable=enable</C>
+	   <C>Col=buim_tag_10              Ctrl=tx_buim_tag_10     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_11              Ctrl=tx_buim_tag_11     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_12              Ctrl=tx_buim_tag_12     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_13              Ctrl=tx_buim_tag_13     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_14              Ctrl=tx_buim_tag_14     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_15              Ctrl=tx_buim_tag_15     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_16              Ctrl=tx_buim_tag_16     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_17              Ctrl=tx_buim_tag_17     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_18              Ctrl=tx_buim_tag_18     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_19              Ctrl=tx_buim_tag_19     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_20              Ctrl=tx_buim_tag_20     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_21              Ctrl=tx_buim_tag_21     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_22              Ctrl=tx_buim_tag_22     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_23              Ctrl=tx_buim_tag_23     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_24              Ctrl=tx_buim_tag_24     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_25              Ctrl=tx_buim_tag_25     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_26              Ctrl=tx_buim_tag_26     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_27              Ctrl=tx_buim_tag_27     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_28              Ctrl=tx_buim_tag_28     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_29              Ctrl=tx_buim_tag_29     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_30              Ctrl=tx_buim_tag_30     Param=value Enable=enable</C>
+	   <C>Col=buim_tag_31              Ctrl=tx_buim_tag_31     Param=value Enable=enable</C>
+	   
+          "></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

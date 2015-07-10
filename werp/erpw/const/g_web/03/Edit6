@@ -1,0 +1,28 @@
+select decode(a.type,'1','내부','외부') type, a.gubun,a.detail_name,a.mm,a.cnt, b.tot_cnt, trunc(a.cnt / b.tot_cnt * 100,1)  per
+from (
+    SELECT '1' type, trunc(a.receive_date,'mm') mm,nvl(c.title_name,' ') gubun, nvl(c.title_name,' ') detail_name,  count(nvl(c.title_name,1)) cnt
+       from r1_proj a, p_pers_master b, view_dept_code c
+       where not(substr(a.in_empno,1,1) = ' ' or a.in_empno is null)
+         and a.in_empno = b.emp_no
+         and b.dept_code = c.dept_code
+         and a.receive_date >= '2005.01.01'
+         and a.receive_date < '2006.01.01'
+       group by trunc(a.receive_date,'mm'),nvl(c.title_name,' '),nvl(c.title_name,' ')
+    union all
+    SELECT '2' type, trunc(a.receive_date,'mm') ,nvl(a.out_type,'00') gubun,b.detail_name, count(nvl(a.out_type,1))
+       from r1_proj a, r1_code_etc_detail b
+       where (substr(a.in_empno,1,1) = ' ' or a.in_empno is null)
+         and b.class_tag = '04'
+         and a.out_type = b.etc_code (+)
+         and a.receive_date >= '2005.01.01'
+         and a.receive_date < '2006.01.01'
+       group by trunc(a.receive_date,'mm'),nvl(a.out_type,'00'),b.detail_name
+      ) a,
+   (
+    SELECT  trunc(a.receive_date,'mm') mm,count(a.receive_date) tot_cnt
+       from r1_proj a
+       where a.receive_date >= '2005.01.01'
+         and a.receive_date < '2006.01.01'
+       group by trunc(a.receive_date,'mm')) b
+  where a.mm = b.mm
+  order by a.type,a.gubun,a.mm    

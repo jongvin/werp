@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_code_labor_find_1h.html 								-->
+<!-- 2. 유형(시나리오): 직종 찾기													-->
+<!-- 3. 기 능 정 의   : 																	-->
+<!-- 4. 변 경 이 력   : 이명학 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<TITLE> 직종 찾기 </TITLE>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'l_code_job_find_1q.jsp?arg_job_name='
+var is_confirm_check = 'no'
+
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID =  is_ds_1_addr + Textbox_1.value;
+	ds_1.SyncLoad=true;
+	ds_1.reset();
+}
+
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return =	ds_1.NameValue(ds_1.RowPosition,'job_code') + '@'	+
+					ds_1.NameValue(ds_1.RowPosition,'job_name') + '@'	+
+					ds_1.NameValue(ds_1.RowPosition,'unitcost') + '@'
+
+ window.returnValue = ls_return
+ window.close();
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	btnquery_onclick();
+}
+
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=window_onload()  onunload=window_onunload()>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<BR>    
+<LABEL id=Label_1  
+    style="WIDTH: 50px; POSITION: absolute; HEIGHT: 25px; TOP:12px">&nbsp;&nbsp;성명:
+</LABEL>
+<INPUT id=Textbox_1 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 46px; POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+
+<INPUT  type=button style="Z-INDEX: 106; LEFT: 179; POSITION: absolute; TOP: 7"  class="img_btnFind"  value=검색 onclick=btnquery_onclick() >
+<INPUT  id=Button_confrim  type=button style="Z-INDEX: 106; LEFT: 310; POSITION: absolute; TOP: 7"  class="img_btnOk"  value=확인 onclick=Button_confirm_onclick() >
+<INPUT   id=Button_close type=button style="Z-INDEX: 106; LEFT: 360; POSITION: absolute; TOP: 7"  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 400px; POSITION: absolute; TOP: 35px; HEIGHT: 380px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name='직종코드' ID=job_code HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	   <C> Name='직 종 명' ID=job_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=155 </C>
+	   <C> Name='단     가' ID=unitcost HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	   ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY>
+</HTML>

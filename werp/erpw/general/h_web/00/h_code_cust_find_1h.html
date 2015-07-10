@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_code_house_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 고객코드 등록                       	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   : 고객코드 등록																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_ds_1_addr = 'h_code_cust_find_1q.jsp?arg_gubun='
+var is_cust_name_1 = ""
+var is_cust_name_2 = ""
+var is_sell_code
+var is_sort      = " "
+var il_nindex
+var tr_fail=1                 // update정상:1  비정상:0
+var find_chk=0                //고객찾기일경우 :1  아닐경우: 0
+is_format= "     <C> Name='고객코드'  id=cust_code  align=center width=106  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+           "     <C> Name='고객명'  id=cust_name  width=186  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+           "     <C> Name='구분1'  id=code_name  width=35  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+			  "     <C> Name='구분2'  id=div2_name  width=35  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+           "     <C> Name='자택 전화번호'  id=home_phone  width=126  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+           "      <C> Name='핸드폰'  id=cell_phone  width=126  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C> "
+// arg_gubun값: 1:주민번호  2:성명    3:가나다   4:기타
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ tab_changed()
+}
+
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'cust_code') + '@' + 
+                       ds_1.NameValue(ds_1.RowPosition,'cust_name') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cust_div') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cust_div2') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_zip_code') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_addr1')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_addr2')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'home_phone')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'office_phone')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cell_phone')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'e_mail')
+
+	
+  //makeCookie("@g_code_dept@",ls_return)
+        
+ window.returnValue = ls_return
+ window.close();
+}
+
+
+//---------------------------------------------------------------------
+function tab_changed()
+//---------------------------------------------------------------------
+{
+  is_ds_1_addr = 'h_code_cust_find_1q.jsp?arg_gubun=3&arg_cust_name_1='
+  gd_1.DataID=""
+  gd_2.DataID=""
+  gd_3.DataID=""
+  gd_4.DataID=""
+  gd_5.DataID=""
+  gd_6.DataID=""
+  gd_7.DataID=""
+  gd_8.DataID=""
+  gd_9.DataID=""
+  gd_10.DataID=""
+  gd_11.DataID=""
+  gd_12.DataID=""
+  gd_13.DataID=""
+  switch(il_nindex)
+    {
+     case 1 : gd_1.DataID = "ds_1"
+              is_cust_name_1 = "가"
+              is_cust_name_2 = "나" 
+              break 
+     case 2 : gd_2.DataID = "ds_1"
+              is_cust_name_1 = "나"
+              is_cust_name_2 = "다" 
+              break 
+     case 3 : gd_3.DataID = "ds_1"
+              is_cust_name_1 = "다"
+              is_cust_name_2 = "라" 
+              break 
+     case 4 : gd_4.DataID = "ds_1"
+              is_cust_name_1 = "라"
+              is_cust_name_2 = "마" 
+              break 
+     case 5 : gd_5.DataID = "ds_1"
+              is_cust_name_1 = "마"
+              is_cust_name_2 = "바" 
+              break 
+     case 6 : gd_6.DataID = "ds_1"
+              is_cust_name_1 = "바"
+              is_cust_name_2 = "사" 
+              break 
+     case 7 : gd_7.DataID = "ds_1"
+              is_cust_name_1 = "사"
+              is_cust_name_2 = "아" 
+              break 
+     case 8 : gd_8.DataID = "ds_1"
+              is_cust_name_1 = "아"
+              is_cust_name_2 = "자" 
+              break 
+     case 9 : gd_9.DataID = "ds_1"
+              is_cust_name_1 = "자"
+              is_cust_name_2 = "차" 
+              break 
+     case 10 : gd_10.DataID = "ds_1"
+              is_cust_name_1 = "차"
+              is_cust_name_2 = "카" 
+              break 
+     case 11 : gd_11.DataID = "ds_1"
+              is_cust_name_1 = "카"
+              is_cust_name_2 = "하" 
+              break 
+     case 12 : gd_12.DataID = "ds_1"
+              is_cust_name_1 = "하"
+              is_cust_name_2 = "힙" 
+              break 
+     case 13 : gd_13.DataID = "ds_1"
+              is_ds_1_addr = 'h_code_cust_find_1q.jsp?arg_gubun=4&arg_cust_name_1='
+              is_cust_name_1 = "가"
+              is_cust_name_2 = "힙" 
+              break 
+     }
+  
+   ds_1.DataID = is_ds_1_addr + is_cust_name_1 + "&arg_cust_name_2=" + is_cust_name_2 
+   ds_1.SyncLoad=true
+   if (find_chk != 1)    ds_1.reset(); 
+   find_chk = 0
+}
+//------------------------------------------------------------------------
+function cust_code_find()                       //고객 (주민번호)찾기
+//------------------------------------------------------------------------
+{
+  
+  var ls_name
+  ls_name = in_cust_code.value.substr(0,1)
+  if ((ls_name == "") || (ls_name == " ")) {
+     alert("주민번호를  입력하십시요")
+     return
+  }     
+  find_chk = 1
+  var i_search
+  i_search = in_cust_code.value.indexOf(" ")
+  if (i_search != -1) 
+      ls_name = in_cust_code.value.substr(0,i_search)
+  else
+      ls_name = in_cust_code.value  
+
+  is_ds_1_addr = 'h_code_cust_find_1q.jsp?arg_gubun=1&arg_cust_name_1='
+  ds_1.DataID = is_ds_1_addr + ls_name + "&arg_cust_name_2=" + ' '
+  ds_1.SyncLoad=true
+  ds_1.reset();
+  tb_1.ActiveIndex = 8
+}
+
+
+//------------------------------------------------------------------------
+function in_cust_code_keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		cust_code_find();
+	} 
+}
+
+//------------------------------------------------------------------------
+function cust_name_find()                       //고객 찾기
+//------------------------------------------------------------------------
+{
+  
+  var ls_name
+  ls_name = in_cust_name.value.substr(0,1)
+  if ((ls_name == "") || (ls_name == " ")) {
+     alert("고객명을  입력하십시요")
+     return
+  }     
+  find_chk = 1
+  is_ds_1_addr = 'h_code_cust_find_1q.jsp?arg_gubun=2&arg_cust_name_1='
+  ds_1.DataID = is_ds_1_addr + in_cust_name.value + "&arg_cust_name_2=" + " "
+
+  ds_1.SyncLoad=true
+  ds_1.reset();
+  if ((ls_name >= "가") && (ls_name < "나"))   tb_1.ActiveIndex = 1
+  if ((ls_name >= "나") && (ls_name < "다"))   tb_1.ActiveIndex = 2
+  if ((ls_name >= "다") && (ls_name < "라"))   tb_1.ActiveIndex = 3
+  if ((ls_name >= "라") && (ls_name < "마"))   tb_1.ActiveIndex = 4
+  if ((ls_name >= "마") && (ls_name < "바"))   tb_1.ActiveIndex = 5
+  if ((ls_name >= "바") && (ls_name < "사"))   tb_1.ActiveIndex = 6
+  if ((ls_name >= "사") && (ls_name < "아"))   tb_1.ActiveIndex = 7
+  if ((ls_name >= "아") && (ls_name < "자"))   tb_1.ActiveIndex = 8
+  if ((ls_name >= "자") && (ls_name < "차"))   tb_1.ActiveIndex = 9
+  if ((ls_name >= "차") && (ls_name < "카"))   tb_1.ActiveIndex = 10
+  if ((ls_name >= "카") && (ls_name < "하"))   tb_1.ActiveIndex = 11
+  if ((ls_name >= "하") && (ls_name < "힙"))   tb_1.ActiveIndex = 12
+  if (ls_name < "가")    tb_1.ActiveIndex = 13
+}
+
+
+//------------------------------------------------------------------------
+function in_cust_name_keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		cust_name_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+ gd_1.Format = is_format
+ gd_2.Format = is_format
+ gd_3.Format = is_format
+ gd_4.Format = is_format
+ gd_5.Format = is_format
+ gd_6.Format = is_format
+ gd_7.Format = is_format
+ gd_8.Format = is_format
+ gd_9.Format = is_format
+ gd_10.Format = is_format
+ gd_11.Format = is_format
+ gd_12.Format = is_format
+ gd_13.Format = is_format
+ 
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+   alert("찾기구분은 있어야 합니다 1:주민번호 2:성명찾기 ")
+ 
+ array = result.split("@");
+ find_chk = 1    //찾고자할경우 tab_changed에서 재조회를 하지않기위해서 
+ if (array[0] == "1") {                  //1:주민번호 찾기  2: 성명찾기
+    in_cust_code.value = array[1]
+    if (in_cust_code.value != "") {   
+        cust_code_find()
+        return
+    }    
+ }
+ if (array[0] == "2") {                  //1:주민번호 찾기  2: 성명찾기
+    in_cust_name.value = array[1]
+    if (in_cust_name.value != "") {    
+        cust_name_find()
+        return
+    }    
+ }
+
+tb_1.ActiveIndex = 1
+il_nindex=1
+
+}
+</SCRIPT>
+<script language=JavaScript for=in_cust_code event=onKeyDown(kcode,scode)>
+if (kcode == 13) cust_code_find()
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_2 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_3 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_4 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_5 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_6 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_7 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_8 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_9 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_10 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_11 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_12 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=gd_13 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+  il_nindex = nIndex
+  tab_changed()
+</SCRIPT>
+<SCRIPT language=JavaScript event=CanSelChange(nIndex) for=tb_1>
+  il_nindex = nIndex
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+      
+ <comment id="__NSID__"><Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ 
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+	
+<LABEL id=Label_1  
+    style="WIDTH: 30px; LEFT: 40px;POSITION: absolute; HEIGHT: 25px; TOP:9px">고객:
+</LABEL>
+
+
+<INPUT id=in_cust_code 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 72px; WIDTH:95px; POSITION: absolute; TOP: 5px"
+    onkeyDown="in_cust_code_keyDown()">
+
+<!-- <comment id="__NSID__"><OBJECT id=in_cust_code  
+        style="WIDTH: 95px; LEFT: 72px; POSITION: absolute; HEIGHT: 20px; TOP: 6px; "
+        classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+          <param name=SelectAll       value=true>
+          <param name=ClipMode       value=false>
+         </object></comment> <script> __ws__(__NSID__);</script> -->
+<input type="button" value=" 검색"  class="img_btnFind"
+          style="LEFT: 170px; POSITION: absolute; TOP: 7px; "   
+            onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=cust_code_find()>
+<LABEL id=Label_1  
+    style="WIDTH: 30px; LEFT: 225px;POSITION: absolute; HEIGHT: 25px; TOP:9px">성명:
+</LABEL>
+<INPUT id=in_cust_name 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 257px; WIDTH:105px; POSITION: absolute; TOP: 5px"
+    onkeyDown="in_cust_name_keyDown()">
+<input type="button" value=" 검색" 
+          style="LEFT: 365px; POSITION: absolute; TOP: 7px;  "   class="img_btnFind" 
+            onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=cust_name_find()>
+           
+<input type="button" value=" 조회"  class="img_btn2_1"
+          style="LEFT: 500px; POSITION: absolute;  TOP: 7px; "   
+            onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=btnquery_onclick()>
+
+<input type="button" value="확인" 
+	style="LEFT: 552px;  POSITION: absolute; TOP: 8px;"   class="img_btnOk"
+	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_confirm_onclick()>
+<input type="button" value="닫 기" 
+	style="LEFT: 605px; POSITION: absolute; TOP: 8px;"   class="img_btnClose"
+	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_close_onclick()>
+
+<comment id="__NSID__"><OBJECT id=tb_1 
+    style="FONT-SIZE: 11px; Z-INDEX: 200; LEFT: 1px; WIDTH: 480px; POSITION: absolute; TOP: 30px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=ㄱ</T>
+    <T>divid=tab_page_2 title=ㄴ</T>
+    <T>divid=tab_page_3 title=ㄷ</T>
+    <T>divid=tab_page_4 title=ㄹ</T>
+    <T>divid=tab_page_5 title=ㅁ</T>
+    <T>divid=tab_page_6 title=ㅂ</T>
+    <T>divid=tab_page_7 title=ㅅ</T>
+    <T>divid=tab_page_8 title=ㅇ</T>
+    <T>divid=tab_page_9 title=ㅈ</T>
+    <T>divid=tab_page_10 title=ㅊ</T>
+    <T>divid=tab_page_11 title=ㅋ-ㅍ</T>
+    <T>divid=tab_page_12 title=ㅎ</T>
+    <T>divid=tab_page_13 title=기타</T>
+    ">
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+   <DIV id=tab_page_1 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE="ds_1">
+	      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_2 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_2 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_3 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_3 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_4 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_4 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_5 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_5 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_6 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_6 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_7 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_7 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_8 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_8 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_9 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_9 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_10 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_10 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_11 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_11 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_12 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_12 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_13 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 52px; HEIGHT: 600px;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_13 
+         style="Z-INDEX: 110; LEFT: 1px; WIDTH: 660px; POSITION: absolute; TOP: 1px; HEIGHT: 600px;FONT-SIZE: 12px" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+         <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+
+
+</BODY></HTML>

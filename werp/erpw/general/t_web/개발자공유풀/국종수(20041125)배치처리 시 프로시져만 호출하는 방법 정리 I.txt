@@ -1,0 +1,150 @@
+[배치처리할 때 쓰는 방법입니다.]
+
+1. 프로시져를 호출할 때 넘겨줄 파라메타를 담을 Dataset을 정의합니다.
+		<!--COPY Dataset-->
+		<object id=dsCOPY classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+			<param name="SyncLoad" value="-1">
+		</object>
+
+2. 프로시져 호출 명령을 실행해줄 Transaction을 정의합니다.
+		<!--계정별 예산신청내역(전월복사) Transaction-->
+		<object id="trans01" classid="clsid:0A2233AD-E771-11D2-973D-00104B15E56F" > 
+		  <param name="Action"    value="./WBaBmBudRequestRegister_U.jsp?ACT=COPY"> 
+		  <param name="KeyValue"  value="Service1(I:dsCOPY=dsCOPY)">
+		</object>
+
+3. Initialize() 함수에 다음을 추가합니다.
+		G_addDataSet(dsCOPY, trans01, null, "WBaBmBudRequestRegister_S.jsp?ACT=ACC_CODE", "전월복사전달인자");
+			:
+			:
+		G_Load(dsCOPY, null);
+
+4. 그리고, Select 페이지에서 dsCOPY에 데이터를 넘겨줄 코드를 주가합니다.
+   그냥 레코드 하나를 생성해주는 코드입니다.
+		else if (strAct.equals("COPY"))
+		{
+			strSql  = "\nselect						   ";
+			strSql += "\n		'          ' PROJ_CODE,		       ";
+			strSql += "\n		'          ' BUDG_YM 		       ";
+			strSql += "\nfrom	dual         ";
+
+			try
+			{
+				lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+				
+				lrDataset = CITCommon.toGauceDataSet(lrReturnData);
+				GauceInfo.response.enableFirstRow(lrDataset);
+				lrDataset.flush();
+			}
+			catch (Exception ex)
+			{
+				if (GauceInfo != null)
+				{
+					GauceInfo.response.writeException("USER", "900001","MAIN Select 오류-> "+ ex.getMessage());
+				}
+				else
+				{
+					throw new Exception("USER-900001:MAIN Select 오류 -> " + ex.getMessage());
+				}
+			}
+		}
+
+5. 여기까지 했으면, 프로시져를 호출하기위한 Transaction과 파라메타를 넘겨줄 Dataset이 만들어 졌습니다.
+   이제 function에서 데이터 셑을 채우고 Transaction을 post만 하면 됩니다.
+		dsCOPY.NameString(dsCOPY.RowPosition,"PROJ_CODE") = vProjCode;
+		dsCOPY.NameString(dsCOPY.RowPosition,"BUDG_YM") = vBudgYm;
+		G_saveData(dsCOPY);
+
+6. update 페이지에서 처리...
+   GauceDataRow.TB_JOB_INSERT) 와 GauceDataRow.TB_JOB_DELETE)에는 아무처리를 않했음을 주의...
+   
+
+		else if (strAct.equals("COPY"))
+		{
+			dsCOPY = GauceInfo.request.getGauceDataSet("dsCOPY");
+			rows = dsCOPY.getDataRows();
+
+			try
+			{
+				for	(int i = 0;	i <	rows.length; i++)
+				{
+					CITData lrArgData = new CITData();
+					
+					if(rows[i].getJobType()	== GauceDataRow.TB_JOB_INSERT)
+					{
+						_log("TB_JOB_INSERT");
+					}
+					else if(rows[i].getJobType() == GauceDataRow.TB_JOB_UPDATE)
+					{
+						_log("TB_JOB_UPDATE");
+						String PROJ_CODE = rows[i].getString(dsCOPY.indexOfColumn("PROJ_CODE"));
+						String BUDG_YM = rows[i].getString(dsCOPY.indexOfColumn("BUDG_YM"));
+						_log(PROJ_CODE+"|");
+						_log(BUDG_YM+"|");
+
+						strSql = "{call SPBA_BUDG_C(?,?)}";
+
+						lrArgData.addColumn("PROJ_CODE", CITData.VARCHAR2);
+						lrArgData.addColumn("BUDG_YM", CITData.VARCHAR2);
+
+						lrArgData.addRow();
+						lrArgData.setValue("PROJ_CODE",  PROJ_CODE);
+						lrArgData.setValue("BUDG_YM",  BUDG_YM);
+
+						CITDatabase.executeProcedure(strSql, lrArgData);
+
+					}
+					else if(rows[i].getJobType() == GauceDataRow.TB_JOB_DELETE)
+					{
+						_log("TB_JOB_DELETE");
+					}
+					else
+					{
+						continue;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				GauceInfo.response.writeException("USER", "900001", "데이타 갱신 에러" + ex.getMessage());
+			}
+		}
+
+6. 마지막으로 원래 페이지에서 OnSuccess, OnFail 함수에 사후 처리를 합니다.
+			function OnSuccess(dataset, trans)
+			{
+				//alert("OnSuccess : " + dataset.id);
+				if (dataset == dsMAIN)
+				{
+					//계정별 예산신청내역
+				}
+				else if (dataset == dsLIST)
+				{
+				}
+				else if (dataset == dsCOPY)
+				{
+					G_Load(dsMAIN, null);
+				}
+
+			}
+			
+			function OnFail(dataset, trans, msg)
+			{
+				//alert("OnFail : " + dataset.id);
+				if (dataset == dsMAIN)
+				{
+					//계정별 예산신청내역
+				}
+				else if (dataset == dsLIST)
+				{
+				}
+				else if (dataset == dsCOPY)
+				{
+					//alert("trans01 OnFail : " + trans01.ErrorMsg);
+					C_msgOk(trans01.ErrorMsg, "에러");
+				}
+
+			}
+
+7. 요청사항..
+   프로시져를 호출 후 리턴 데이터센 받는 코드 좀 정리해서 올려주세요.

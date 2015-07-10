@@ -1,0 +1,568 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : p_order_paperno_1h.html                       	-->
+<!-- 2. 유형(시나리오): 조회및 입력											      -->
+<!-- 3. 기 능 정 의   : 정기승호자 일괄등록	                           -->
+<!-- 4. 변 경 이 력   : 장희선 작성												   -->
+<!-- 5. 관련프로그램  :																   -->
+<!-- 6. 특 기 사 항   :															      -->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_work_date 
+var is_work_year 
+var is_ds_1_addr = gs_home + '/general/p_web/20/p_order_conv_1q.jsp?arg_emp_name='    		//조회용
+var is_ds_2_addr = gs_home + '/general/p_web/20/p_order_conv_list_1q.jsp?arg_emp_name='   //조회용
+var is_tr_2_addr = gs_home + '/general/p_web/20/p_order_conv_1tr.jsp'             			//수정용 
+var is_ds_seq_addr = gs_home + '/general/p_web/99/p_spec_unq_no_1q.jsp'  
+var is_comp_code
+var is_orderno
+var is_focus_enter='N'
+var is_up_paystep, is_up_level
+var is_sort =""
+var is_success = 'Y'	// 문서번호 저장여부
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + tx_empno_find.value
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	ds_2.DataID = is_ds_2_addr + tx_empno_find.value
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"work_year")		 = is_work_year   
+}   
+//------------------------------------------------------------------------
+function fn_SetColumn()                 //포커스
+//------------------------------------------------------------------------
+{
+	 gd_1.Focus()
+	 gd_1.SetColumn("order_title")
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	ds_1.AddRow()
+ 	init_move()
+ 	fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	ds_1.InsertRow(ds_1.RowPosition)
+ 	init_move()
+	fn_SetColumn()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_1.CountRow ;i >0 ;i--)
+     {
+        if (ds_1.RowMark(i) == 1)
+               ds_1.DeleteRow(i)
+    }   
+    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+   } 
+  else
+     ds_1.DeleteRow(ds_1.RowPosition)  
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_2.IsUpdated){
+    if (confirm("변경되었습니다 저장하시겠습니까?")) {
+		 var ls_order_no, ls_order_date, ls_comp_code
+		 
+		 for (i=1;i<=ds_2.CountRow;i++) {
+			 if (ds_1.UserStatus(i) == 1){			// 추가
+		   	 ls_order_no = ds_2.NameValue(i,"order_no")
+				 ls_order_date = ds_2.NameValue(i,"annc_date")
+				 ls_comp_code = ds_2.NameValue(i,"comp_code")
+				 ls_title = ds_2.NameValue(i,"emp_name") + ' ' + ds_2.NameValue(i,"order_name")
+				 ll_cnt = f_ds_select_q("ds_orderno","select count(*) select_1 " +
+										      "from p_code_grade where order_no = '"+ ls_order_no +"'")	//문서번호찾기
+				 if (ds_orderno.NameValue(1,"select_1") < 1){
+						arg_cmd = " insert into p_order_paperno (ORDER_NO,  INPUT_DATE,  COMP_CODE,  ORDER_TITLE,  DECISION_DATE) " +  
+         			 " values ('" + ls_order_no + "', '" + ls_order_date + "', '" + ls_comp_code + "', '" + ls_title + "', " +
+         			 			 " '" + ls_order_date + "' ) "
+         
+         			f_update_sql(arg_cmd)
+						if (is_success == 'N') return
+				 }
+			 }
+		 }
+ 
+		 tr_2.Action = is_tr_2_addr                   // jsp update용 
+		 tr_2.Post()
+
+    	 btnquery_onclick()
+    }
+ }
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        } 
+   }     
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+	alert('a')
+		btnquery_onclick();
+	} 
+}
+//-------------------------------------------------------------------------------
+function all_ok()                  		//전체선택
+//--------------------------------------------------------------------------------
+{
+	var i
+	
+	for (i=1;i<=ds_1.CountRow;i++) {
+		 ds_1.NameValue(i, "ok_tag") = 'T' 
+   }   
+}
+//-------------------------------------------------------------------------------
+function all_cancel()                  //전체취소
+//--------------------------------------------------------------------------------
+{
+	var i
+	
+	for (i=1;i<=ds_1.CountRow;i++) {
+		 ds_1.NameValue(i, "ok_tag") = 'F' 
+   }   
+}
+//---------------------------------------------------------------------------
+function ok_select()                        //대상자선택
+//---------------------------------------------------------------------------
+{
+	var i, ll_row, ll_up_paystep
+	
+	for (i=1 ;i<=ds_1.CountRow ;i++){
+		if (ds_1.NameValue(i,"ok_tag") == 'T') {
+			ds_2.AddRow()
+			
+			ds_seq.SyncLoad=true;              // spec_no_seq 구하기
+			ds_seq.reset()
+			ds_2.NameValue(ds_2.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+
+			ds_2.NameValue(ds_2.RowPosition,"emp_no") 	= ds_1.NameValue(i,"empl_numb")
+			ds_2.NameValue(ds_2.RowPosition,"emp_name") 	= ds_1.NameValue(i,"empl_name")
+			ds_2.NameValue(ds_2.RowPosition,"apply_order_date") = ds_1.NameValue(i,"annc_date")
+		   ds_2.NameValue(ds_2.RowPosition,"dept_code") = ds_1.NameValue(i,"dept_code")
+		   ds_2.NameValue(ds_2.RowPosition,"dept_short_name") = ds_1.NameValue(i,"dept_name")
+			ds_2.NameValue(ds_2.RowPosition,"cost_dept_code") = ds_1.NameValue(i,"dept_code")
+			ds_2.NameValue(ds_2.RowPosition,"work_dept_code") = ds_1.NameValue(i,"dept_code")
+
+			ds_2.NameValue(ds_2.RowPosition,"order_no") = ds_1.NameValue(i,"stat_year")
+		   ds_2.NameValue(ds_2.RowPosition,"confirm_tag") = '1'
+			
+		}
+	}
+	    
+}  
+//---------------------------------------------------------------------------
+function ok_cancel()                        //대상자선택 취소
+//---------------------------------------------------------------------------
+{
+
+	var j
+	
+	for (j=ds_2.CountRow ;j >0 ;j--) {
+     if (ds_2.RowMark(j) == 1)
+        ds_2.DeleteRow(j)
+   }
+   ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)  //삭제작업완료후 MARK
+    
+}
+//------------------------------------------------------------------------
+function keyDown_emp()                   //사원 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	
+	// erpw
+	ll_cnt = f_ds_select_q("ds_comp","select comp_code select_1, comp_name select_2 " +
+								  "  from z_code_comp where comp_name <> '전체' order by comp_code")		//사업체
+	ll_cnt = f_ds_select_q("ds_dept","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2, long_name select_3 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//부서
+	ll_cnt = f_ds_select_q("ds_cost_dept","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//원가부서
+	ll_cnt = f_ds_select_q("ds_work_dept","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//근무부서
+	ll_cnt = f_ds_select_q("ds_grade","select grade_code select_1, grade_name select_2 " +
+								  "from p_code_grade order by grade_code")	//직위
+	ll_cnt = f_ds_select_q("ds_level","select level_code select_1, level_name select_2 " +
+								  "from p_code_level order by level_code")	//직급
+	ll_cnt = f_ds_select_q("ds_title","select title_code select_1, title_name select_2 " +
+								  "from p_code_title order by title_code")	//직책
+	
+	// 이전
+	ll_cnt = f_ds_select_q("ds_old_comp","select comp_code select_1, comp_name select_2 " +
+								  "  from z_code_comp where comp_name <> '전체' order by comp_code")		//사업체
+	ll_cnt = f_ds_select_q("ds_old_dept","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//부서
+	ll_cnt = f_ds_select_q("ds_old_cost","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//원가부서
+	ll_cnt = f_ds_select_q("ds_old_work","select dept_code select_1, long_name|| '(' ||dept_code|| ')' select_2 " +
+								  "from z_code_dept order by dept_proj_tag, long_name")	//근무부서
+	ll_cnt = f_ds_select_q("ds_old_grade","select grade_code select_1, grade_name select_2 " +
+								  "from p_code_grade order by grade_code")	//직위
+	ll_cnt = f_ds_select_q("ds_old_level","select level_code select_1, level_name select_2 " +
+								  "from p_code_level order by level_code")	//직급
+	
+	ll_cnt = f_ds_select_q("ds_order","select order_code select_1, order_name select_2 from p_code_order order by order_name")		//발령
+   
+	ds_seq.DataID = is_ds_seq_addr
+	
+}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }
+
+	if (colid == "ok_tag") {
+	   if (ds_1.NameValue(row,colid) == 'T')
+	       ds_1.NameValue(row,colid) = 'F'
+	   else
+	       ds_1.NameValue(row,colid) = 'T'    
+	}	   
+</script>
+<script language=JavaScript for=gd_2 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_2.SortExpr = "-" + colid;
+  	   else
+   	  ds_2.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_2.SortExpr;
+  	  ds_2.Sort();
+  }
+</script>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</script>
+<script language=JavaScript for=ds_2 event=OnColumnChanged(row,colid)>
+	if (colid == 'dept_code') {
+		i = ds_dept.NameValueRow("select_1",ds_2.NameValue(row,colid))
+		ds_2.NameValue(row,'dept_short_name')= ds_dept.NameValue(i,"select_3")
+	}
+</script>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code ds_1: " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code ds_2: " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+  alert('문서번호 저장실패')
+  is_success = 'N'
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=CanRowPosChange(row)>
+return true
+</SCRIPT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_erpc_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=ds_comp
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_cost_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_work_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_grade
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_level
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_title
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<!-- 이전 -->
+<OBJECT id=ds_old_comp
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_old_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_old_cost
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_old_work
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_old_grade
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_old_level
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=ds_order
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=tr_2
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_order_conv_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+	
+<DIV id=hdept_page_4
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 170px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">사원찾기</div></td>
+          	 <td >
+			        <INPUT id=tx_empno_find style=" FONT-SIZE: 12px;" MAXLENGTH=20 SIZE=15 onkeyDown="keyDown_emp()" ></td>	          	    
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT: 200px; WIDTH: 300px; POSITION: absolute; TOP: 10px; HEIGHT: 20px">
+<input id=bt_confirm_all type="button" value="전체선택" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=all_ok()>
+<input id=bt_cancel_all type="button" value="전체해제" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=all_cancel()>
+</div> 
+
+
+<DIV id=gd_2_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 35px; HEIGHT: 10px">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	     	<tr BGCOLOR="white" > 
+				<td width="100%" height="7%" BGCOLOR="#BBE0F4" style="COLOR: BLACK "  colspan=4> 
+					<DIV align=center>ERPC</DIV></td>					
+	   	</tr>
+	</table>	
+</div> 
+<OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px;TOP: 55px;  WIDTH: 1005px; HEIGHT: 250px; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='선택'  id=ok_tag  width=40 EditStyle=CheckBox BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='사번'  id=empl_numb  width=60 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+			SumText='인원수'  SumColor=Black SumBgColor=Pink </C>     	
+     <C> Name='성명'  id=empl_name  width=60 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@count          SumColor=Black SumBgColor=Pink </C> 
+     <C> Name='주민번호'   id=resi_numb  align=center  width=60 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령구분'  	id=annc_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령일'  	id=annc_date  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령번호'	id=stat_year  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='사업체'  	id=comp_code  width=40 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='사업체명'  	id=comp_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='부서'  		id=dept_site  width=60 Edit=None  EditStyle=Lookup Data='ds_erpc_dept:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='부서명' 		id=dept_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직위' 		id=pstn_kind  width=30 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직위명' 		id=pstn_name  width=50 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직급'  		id=grad_kind  width=30 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='호봉'  		id=paym_step  width=30 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='담당업무'  	id=serv_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전사업체'  	id=prev_comp  width=50 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전사업체명'	id=prev_comp_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전부서'  	id=prev_dept_site  width=60 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전부서명'  	id=prev_dept_site_name  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전직위'  	id=prev_pstn  width=40 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전직위명'  	id=prev_pstn_name  width=60 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전직급'  	id=prev_grad  width=40 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전호봉'  	id=prev_paym  width=40 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전담당업무' id=prev_serv  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='비고'  		id=remk_text  width=70 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     ">
+</OBJECT>
+
+<DIV id=gd_2_button 
+	style="Z-INDEX: 107; LEFT: 500px; WIDTH: 200px; POSITION: absolute; TOP: 310px; HEIGHT: 20px">
+	<table width="100%" height="100%" align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      <tr BGCOLOR="white" >
+      	<td >
+          <img src="../../../image/icon/imgAddRowOn.gif"  id=img_fr OnClick="var result = ok_select(); "
+					style=" POSITION: absolute; LEFT: 0px;  POSITION: absolute; TOP: 0px ">
+			 <img src="../../../image/icon/imgCancelOn.gif"  id=img_fr OnClick="var result = ok_cancel(); "
+					style=" POSITION: absolute; LEFT: 60px;  POSITION: absolute; TOP: 0px"></td>
+		</tr>                 
+   </table>
+</div> 
+
+<DIV id=gd_2_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 335px; HEIGHT: 10px">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	     	<tr BGCOLOR="white" > 
+				<td width="100%" height="7%" BGCOLOR="#BBE0F4" style="COLOR: BLACK "  colspan=4> 
+					<DIV align=center>ERPW</DIV></td>					
+	   	</tr>
+	</table>	
+</div> 
+<OBJECT id=gd_2 
+    style="POSITION: absolute; LEFT: 2px;TOP: 355px;  WIDTH: 1005px; HEIGHT: 270px; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='사번'  		id=emp_no  width=60 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+	      SumText='인원수'  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='성명'  		id=emp_name width=60 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+     	   SumText=@count          SumColor=Black SumBgColor=Pink </C> 
+     <C> Name='주민번호'  	id=resident_no width=60 Edit=None   align=center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령구분'  	id=order_code			  	width=70   	EditStyle=Lookup Data='ds_order:select_1:select_2'	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령일'  	id=apply_order_date  	width=70   	Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='발령번호'  	id=order_no				  	width=70   	Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='사업체'  	id=comp_code  				width=100   EditStyle=Lookup Data='ds_comp:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='부서'  		id=dept_code  				width=120   EditStyle=Lookup Data='ds_dept:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='부서명' 		id=dept_short_name			width=120   Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='원가부서'  	id=cost_dept_code  		width=120   EditStyle=Lookup Data='ds_cost_dept:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='근무부서'  	id=work_dept_code  		width=120   EditStyle=Lookup Data='ds_work_dept:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직위'  		id=grade_code  			width=70   	EditStyle=Lookup Data='ds_grade:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직책'  		id=title_code  			width=70   	EditStyle=Lookup Data='ds_title:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='직급'  		id=level_code  			width=70   	EditStyle=Lookup Data='ds_level:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='호봉'  		id=paystep  				width=50   	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='담당업무'	id=duty 			 			width=120   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='특위'  		id=special_tag  			width=50   	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전사업체'  	id=old_comp_code  		width=120   EditStyle=Lookup Data='ds_old_comp:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전부서'  	id=old_dept_code  		width=120   EditStyle=Lookup Data='ds_old_dept:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전원가부서' id=old_cost_dept_code  	width=120   EditStyle=Lookup Data='ds_old_cost:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전근무부서' id=old_work_dept_code  	width=120   EditStyle=Lookup Data='ds_old_work:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전직위'  	id=old_grade_code  		width=70   	EditStyle=Lookup Data='ds_old_grade:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전직급'  	id=old_level_code  		width=70   	EditStyle=Lookup Data='ds_old_level:select_1:select_2'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     <C> Name='전호봉'  	id=old_paystep  			width=70  	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='확정'  	   id=confirm_tag  			width=70    EditStyle=Combo Data='1:확정,3:' ''  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumColor=Black SumBgColor=Pink </C>
+     ">
+</OBJECT>
+
+</BODY></HTML>

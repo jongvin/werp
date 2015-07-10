@@ -1,0 +1,111 @@
+데이타베이스사랑넷에서 퍼옴
+장석문(math90)님이 2005-03-14 14:31:55에 작성한 댓글입니다.
+
+단순 집합의 곱이 필요하시다면 간단한 SQL문으로 가능합니다.
+
+ 
+
+1. 문제정의 : SQL의 기본 함수만 사용하여 누적곱을 구하라.
+       문제예) Source Table
+      ID   Col1
+      ---  ----
+      1       5
+      2      10
+      3       7
+      4      10
+      ....
+      
+      -> 원하는 집합
+      ID   Col1  누적곱
+      ---  ----  ------
+      1       5       5
+      2      10      50
+      3       7     350
+      4      10    3500
+      ....
+      
+2. 적용원리
+   . 임의의 숫자의 곱을 숫자의 합 형태로 변경한다.
+      - e^(ln X) = X
+      - e^(ln X + ln Y) = 
+        e^(ln (X * Y))  = X * Y
+
+
+3. 원리를 적용한 SQL
+     Select Id, Col1, Exp(M) multiply
+     from (
+         select ID, Col1, sum(ln(Col1)) over (order by ID) M
+         from Test
+     )     
+
+Select Id, Col1, Exp(M) multiply
+from (
+ select ID, Col1, sum(ln(Col1)) over (order by ID) M
+ from khs_mul_test
+)     
+
+
+
+select exp(sum(ln(Col1))) from khs_mul_test
+/
+SQL> select exp(sum(ln(Col1))) from khs_mul_test
+  2  /
+
+EXP(SUM(LN(COL1)))
+------------------
+              3500
+
+
+
+Select
+	SubStrb(full_path,- Lengthb(full_path)+1) full_path,
+	Exp(sum(ln(RATIO))) RATIO
+From
+	(
+		Select
+			lead(a.full_path,a.slv-1) over(order by rn  ) full_path,
+			a.RATIO
+		From
+			(
+				select 
+					a.SOURCE ,
+					a.TARGET ,
+					a.RATIO,
+					sys_connect_by_path(a.TARGET,',')||','||a.SOURCE full_path,
+					level lv,
+					slv,
+					RowNum rn
+				from 
+					(
+						select 
+							a.SOURCE ,
+							a.TARGET ,
+							a.RATIO,
+							level slv
+						from test a
+						Start With Not Exists
+						(
+							select
+								null
+							from test b
+							where b.TARGET = a.SOURCE
+						  )
+						connect by
+							prior  a.TARGET = a.source
+					)a
+				Start With Not Exists
+				(
+					select
+						null
+					from test b
+					where a.TARGET = b.SOURCE
+				  )
+				connect by
+					prior  a.source = a.TARGET
+			) a
+		order by a.rn  
+	)
+Group by
+	full_path
+
+

@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_mbo_item_grade_1h.html                -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : MBO 평가항목별 등급등록                      -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_item_grade_1q.jsp'         
+var is_tr_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_item_grade_1tr.jsp'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr
+   ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("eval_grade");
+} 
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	ds_1.AddRow()
+	Fn_SetColumn()	
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+	  btnadd_onclick()
+	  return
+	}  
+	ds_1.InsertRow(ds_1.RowPosition)
+	Fn_SetColumn()	
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	   for (i=ds_1.CountRow ;i >0 ;i--){
+	      if (ds_1.RowMark(i) == 1)
+	             ds_1.DeleteRow(i)	             
+	  	}   
+	  ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	}
+	else{
+		ds_1.DeleteRow(ds_1.RowPosition)
+	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_1","eval_grade")
+	 if (ll_dup > 0) {
+	     alert("평가등급코드가 중복되었습니다: 수정하십시요 ")
+	     ds_1.RowPosition = ll_dup
+	     gd_1.Focus()
+     	  gd_1.SetColumn("eval_code")
+	     return
+	 }
+	 else{
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+    }
+  }
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  tr_1.Action = is_tr_1_addr
+  
+  btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+}
+</script>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_mbo_item_grade_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+	
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 10px;
+    HEIGHT: 103%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='평가등급코드'  id=eval_grade width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가등급명칭'  id=eval_grade_name width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가등급설명'  id=eval_grade_spec width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='환산점수'  id=exchange_score width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가등급기준(년간)'  id=eval_grade_base width=300  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

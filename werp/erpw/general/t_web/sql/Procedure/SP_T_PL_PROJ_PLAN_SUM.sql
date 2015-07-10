@@ -1,0 +1,13 @@
+Create Or Replace Procedure SP_T_PL_PROJ_PLAN_SUM
+(
+	Ar_COMP_CODE				Varchar2,
+	Ar_CLSE_ACC_ID				Varchar2,
+	Ar_DEPT_CODE				Varchar2
+)
+Is
+Begin
+	SP_T_PL_PROJ_PLAN_SUMUP(Ar_COMP_CODE,Ar_CLSE_ACC_ID,0,Ar_DEPT_CODE);
+	PKG_PL_DEPT_PLAN.ProcessAutoRecal(Ar_COMP_CODE,Ar_CLSE_ACC_ID,0,Ar_DEPT_CODE,'0');
+	SP_T_PL_PROJ_PLAN_SUMUP(Ar_COMP_CODE,Ar_CLSE_ACC_ID,0,Ar_DEPT_CODE);
+End;
+/

@@ -1,0 +1,377 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_code_degree_1h.html                   -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : 평가종류별 차수등록                          -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/general/p_web/13/p_eval_code_1q.jsp'         
+var is_tr_1_addr = gs_home + '/general/p_web/13/p_eval_code_1tr.jsp'
+var is_ds_2_addr = gs_home + '/general/p_web/13/p_eval_degree_1q.jsp?arg_eval_code='         
+var is_tr_2_addr = gs_home + '/general/p_web/13/p_eval_degree_1tr.jsp'
+var il_screen = 2
+var is_focus
+var is_eval_code	//평가종류
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_2.DataID = is_ds_2_addr + is_eval_code
+   ds_2.SyncLoad=true
+	ds_2.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	if (il_screen > 1){
+		gd_2.Focus();
+		gd_2.SetColumn("eval_degree");
+	}   
+	else{	
+		gd_1.Focus();
+		gd_1.SetColumn("eval_code");
+	}
+} 
+//-----------------------------------------------------------------------
+function div_init_move()               // 하위초기값세팅
+//-----------------------------------------------------------------------
+{
+   ds_2.NameValue(ds_2.RowPosition,"eval_code") = is_eval_code
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if (il_screen > 1){
+		div_btnadd_onclick()
+	}   
+	else{	
+		ds_1.AddRow()
+		Fn_SetColumn()
+	}
+}
+//-----------------------------------------------------------------------
+function div_btnadd_onclick()                       // 하위추가 
+//------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		alert('평가종류를 먼저 저장하십시오.')
+		return
+	}	
+	
+	ds_2.AddRow()
+	div_init_move()
+	Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (il_screen > 1){
+		div_btninsert_onclick()
+	}   
+	else{	
+ 		if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+ 		  btnadd_onclick()
+ 		  return
+ 		}  
+ 		ds_1.InsertRow(ds_1.RowPosition) 		
+	}
+}
+//-----------------------------------------------------------------------
+function div_btninsert_onclick()                    // 하위삽입
+//-----------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		alert('평가종류를 먼저 저장하십시오.')
+		return
+	}
+	
+ 	if (ds_2.RowPosition == 0){     //한건도 없을경우는  0 
+ 	  btnadd_onclick()
+ 	  return
+ 	}  
+ 	ds_2.InsertRow(ds_2.RowPosition)
+ 	div_init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if (il_screen > 1){
+		div_btndelete_onclick()
+	}   
+	else{	
+		if  (ds_2.CountRow > 0){
+			 alert('평가차수를 먼저 삭제하십시오.')
+			 return
+		}
+  		if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+  		   for (i=ds_1.CountRow ;i >0 ;i--)
+  		   {
+  		      if (ds_1.RowMark(i) == 1)
+  		             ds_1.DeleteRow(i)
+  		             
+  		             // 평가종류삭제 확인로직
+  		  }   
+  		  ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+  		 }
+	}
+}
+//------------------------------------------------------------------------
+function div_btndelete_onclick()                    // 하위삭제 
+//------------------------------------------------------------------------
+{
+
+	//var ls_appl_no
+	//ls_appl_no = ds_2.NameValue(ds_2.RowPosition, 'appl_no') 
+   //
+  	//ll_cnt = f_ds_select_q("ds_select5", "select distinct a.appl_no select_1 " +
+   //						 "  from p_emp_pass a " +
+   //						 " where a.employ_degree= '" + is_employ_degree + "' " +
+   //						 "   and a.interview_degree = '" + is_interview_degree + "' " +
+   //						 "   and a.appl_no= '" + ls_appl_no + "' ")
+	//}
+   
+	if  (gd_2.MultiRowSelect){               // multi row select 일 경우
+	   for (i=ds_2.CountRow ;i >0 ;i--)
+	   {
+	      if (ds_2.RowMark(i) == 1)
+	             ds_2.DeleteRow(i)
+	  }   
+	  ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)  //삭제작업완료후 MARK
+	 }
+ 
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+
+ if (il_screen > 1){
+		div_btnsave_onclick()
+		return
+	}   
+  if (ds_1.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_1","eval_code")
+	 if (ll_dup > 0) {
+	     alert("평가종류가 중복되었습니다: 수정하십시요 ")
+	     ds_1.RowPosition = ll_dup
+     	  gd_1.SetColumn("eval_code")
+	     return
+	 }
+	 else{
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+    }
+  }
+  div_btnsave_onclick()
+
+}
+//---------------------------------------------------------------------------
+function div_btnsave_onclick()                       // 하위저장
+//---------------------------------------------------------------------------
+{
+  if (ds_2.IsUpdated){
+    var ll_dup
+    ll_dup = f_dup_chk("ds_2","eval_degree")
+	 if (ll_dup > 0) {
+	     alert("평가차수가 중복되었습니다: 수정하십시요 ")
+	     gd_2.Focus()
+	     ds_2.RowPosition = ll_dup
+     	  gd_2.SetColumn("eval_degree")
+	     return
+	 }
+	 else{
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_2.Post()
+    }
+  }
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	if (il_screen > 1) {
+		div_btncancel_onclick()
+		return
+	}   
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function div_btncancel_onclick()                     // 하위취소
+//---------------------------------------------------------------------------- 
+{
+  ds_2.Undo(ds_2.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	if (il_screen > 1){
+	  if (ds_2.IsUpdated) {
+    	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+    	    {  //저장 routine
+    	    }   
+	 }     
+	}   
+	else{	
+	  if (ds_1.IsUpdated) {
+     	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+     	    {  //저장 routine
+     	    }   
+     }     
+   }
+}
+//---------------------------------------------------------------------------
+function closing_readonly()                      // 면접차수가 마감일때 ds 수정못함
+//---------------------------------------------------------------------------
+{
+	//ll_cnt = f_ds_select_q("ds_select6","select to_char(closing_tag) select_1 " +
+	//												"  from p_emp_inter_degree " +
+	//												" where employ_degree = '" + is_employ_degree + "' " +
+	//												"   and interview_degree = " + is_interview_degree + " ")
+	//
+	//is_closing_tag = ds_select6.NameValue(ds_select6.RowPosition, 'select_1')
+	//
+	//if (is_closing_tag == 'T'){		
+	//	top.frames['main_title'].div_u.style.visibility = "hidden"
+  	//	top.frames['main_title'].div_r.style.visibility = "visible"
+	//	gd_1.Editable=false
+	//	gd_2.Editable=false
+	//}
+	//else{
+	//	top.frames['main_title'].div_u.style.visibility = "visible"
+  	//	top.frames['main_title'].div_r.style.visibility = "hidden"
+	//	gd_1.Editable=true
+	//	gd_2.Editable=true
+	//}
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+  tr_1.Action = is_tr_1_addr
+  tr_2.Action = is_tr_2_addr
+
+   ds_1.DataID = is_ds_1_addr
+   ds_1.SyncLoad=true
+   ds_1.Reset()
+
+	if (ds_1.CountRow < 1) {
+		ds_2.ClearData()	
+		return
+	}
+		
+  
+}
+//---------------------------------------------------------------------
+function get_focus(focus)   // 각각의 gd에 focus를 부여함.
+//---------------------------------------------------------------------
+{
+	il_screen = focus
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_2 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+	    if (ds_2.RowPosition == ds_2.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_2.RowPosition++
+}
+</script>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	if  (row < 1) return;
+	
+	if (ds_2.IsUpdated){
+  		div_btnsave_onclick()
+  	}
+  	
+	is_eval_code = ds_1.NameValue(row, "eval_code")
+	btnquery_onclick()
+</script>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_code_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_degree_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 400px; POSITION: absolute; TOP: 10px;
+    HEIGHT: 103%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='평가코드'  id=eval_code width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가명칭'  id=eval_name width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+
+<OBJECT id=gd_2 onfocus="get_focus(2)"
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 405px; WIDTH: 600px; POSITION: absolute; TOP: 10px; HEIGHT: 103%" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='평가차수'  id=eval_degree width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가내용'  id=eval_degree_name width=300  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_2"></OBJECT>
+</BODY></HTML>

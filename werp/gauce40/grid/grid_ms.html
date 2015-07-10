@@ -1,0 +1,179 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ks_c_5601">
+<title>GAUCE - 도로공사 신정보화 Component Sample</title>
+<script language="javascript">
+
+	function On_Load()
+	{
+		Grid_Format();
+	}
+
+
+	var data_catch_db ="";
+	function data_catch(data){
+		var array = data.split(":");
+		data_catch_db = array[1];
+
+	}
+	function DataImport(odataset, tdataset, ovalue) {
+		
+		var data_temp = "";
+		var data_ExportData = "";
+		var data_group_cnt ="";
+
+		var virtual_cnt = "0";
+		for(i=1; i<=odataset.Countrow; i++){
+		
+			if(odataset.NameValue(i, odataset.ColumnID(ovalue)) != odataset.NameValue(i+1, odataset.ColumnID(ovalue))){
+				tdataset.addrow();
+				virtual_cnt++;
+				for(j=1; j<=odataset.CountColumn; j++){
+					tdataset.NameValue(virtual_cnt, tdataset.ColumnID(j)) = odataset.NameValue(i, odataset.ColumnID(j));
+					if(data_catch_db != "") virtual_grid(),tdataset.NameValue(virtual_cnt, tdataset.ColumnID(j+1)) = "+";
+				}
+			}
+		}	
+	}
+
+	function virtual_grid(){
+
+		gauce_grid.Dataid = "ds_virtual_temp";
+		gauce_grid.editable = "false";
+		gauce_grid.ViewSummary = "1";
+		gauce_grid.format = ''+
+		'<F> id=level, name=level,width=40,headbgcolor="#2D2478",bgcolor="#E2C8E4",align=center,sumbgcolor="#E2C8E4",headcolor="#F0F8FF"</F>'+
+		'<F> id=deptnm, name=부서명,width=220,suppress="1",headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubSumText="소계",SubBgColor="ffffff",sumtext="합계",sumbgcolor="#E2C8E4",sumcolor="#800000",headcolor="#F0F8FF"</F>'+
+		'<C> id=year, name=년도,width=92,suppress="2",headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubBgColor="ffffff",sumbgcolor="#E2C8E4",headcolor="#F0F8FF"</C>'+
+		'<G> name=금액,headbgcolor="#2D2478",headcolor="#F0F8FF"'+
+		'<C> id=amt1, name=금액1,width=115,headbgcolor="#2D2478",bgcolor="#FFE8A0",color="#0000FF",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C>'+
+		'<C> id=amt2, name=금액2,width=115,headbgcolor="#2D2478",bgcolor="#FFD0D0",color="#FF0000",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C></G>';
+	
+	}
+
+	function SetData(odataset,tdataset, tlevel){
+   		
+   		var temp,temp2="";
+   		for(i=1; i<=odataset.CountColumn; i++){
+   			var headertype = "";
+   			if(odataset.columntype(i) == "1" ){
+   				headertype = "STRING";
+   			}else if(odataset.columntype(i) == "2"){
+   				headertype = "INT";
+   			}
+   			temp = odataset.columnid(i)+":"+headertype+"("+odataset.ColumnSize(i)+"."+"odataset.ColumnDec(i)"+")";
+   			if( i != odataset.CountColumn){
+   				temp = temp +",";
+   			}
+   			temp2 += temp;
+   		}
+   		if(tlevel != "") temp2 +=","+tlevel, data_catch(tlevel);
+   		tdataset.SetDataHeader(temp2);
+   }
+   var check_cg ="";
+   var check_cg_da = "";
+   
+   function DataImport_temp(odataset, tdataset, col_data,ovalue) {
+		var data_temp = "";
+		var data_ExportData = "";
+		var virtual_cnt = "0";
+		check_cg = col_data;
+		if(check_cg != check_cg_da){
+			tdataset.ClearData();
+			for(i=1; i<=odataset.Countrow; i++){
+				if(odataset.NameValue(i, odataset.ColumnID(ovalue)) !=  odataset.NameValue(i+1, odataset.ColumnID(ovalue))||odataset.NameValue(i, odataset.ColumnID(ovalue)) == col_data){ 
+					tdataset.addrow();
+					virtual_cnt++;
+					for(j=1; j<=odataset.CountColumn; j++){
+						tdataset.NameValue(virtual_cnt, tdataset.ColumnID(j)) = odataset.NameValue(i, odataset.ColumnID(j));
+						if(data_catch_db != "") {
+							virtual_grid();
+							if(odataset.NameValue(i, odataset.ColumnID(ovalue)) == col_data){
+								tdataset.NameValue(virtual_cnt, tdataset.ColumnID(j+1)) = "|";
+							}else{
+								tdataset.NameValue(virtual_cnt, tdataset.ColumnID(j+1)) = "+";
+							}
+						}
+					}
+				}
+			}
+		check_cg_da = col_data;	
+		}else {
+			tdataset.ClearData();
+			DataImport(ds_grid, ds_virtual_temp, 1);
+			check_cg_da = "";	
+		}
+	}
+
+
+function Grid_Format()
+{
+		gauce_grid.Dataid = "ds_virtual_temp";
+		gauce_grid.editable = "false";
+		gauce_grid.ViewSummary = "1";
+		
+		gauce_grid.format = ''+
+		'<F> id=deptnm, name=부서명,width=220,suppress="1",headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubSumText="소계",SubBgColor="ffffff",sumtext="합계",sumbgcolor="#E2C8E4",sumcolor="#800000",headcolor="#F0F8FF"</F>'+
+		'<C> id=year, name=년도,width=92,suppress="2",headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubBgColor="ffffff",sumbgcolor="#E2C8E4",headcolor="#F0F8FF"</C>'+
+		'<G> name=금액,headbgcolor="#2D2478",headcolor="#F0F8FF"'+
+		'<C> id=amt1, name=금액1,width=115,headbgcolor="#2D2478",bgcolor="#FFE8A0",color="#0000FF",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C>'+
+		'<C> id=amt2, name=금액2,width=115,headbgcolor="#2D2478",bgcolor="#FFD0D0",color="#FF0000",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C></G>';
+
+		ds_grid.DataID = "grid.jsp?Option=SL&PGM=S";
+		ds_grid.Reset();
+
+			
+			SetData(ds_grid, ds_virtual_temp, "level:string(255)");
+
+			DataImport(ds_grid, ds_virtual_temp, 1);
+	}
+
+</script>
+
+
+<script language="javascript"  for=gauce_grid event=OnClick(row,colid)>
+	if(colid == "level"){
+	    DataImport_temp(ds_grid, ds_virtual_temp,ds_virtual_temp.NameValue(row, "deptnm"), 1);
+	}
+</script>
+
+
+<!-- Component 선언부 -->
+
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/grid_msproject_bar.gif" border=0>
+<br>
+<br>
+
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_grid" width="0" height="0">
+	<param name="SyncLoad" value="true">
+</object>
+
+
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_virtual_temp">
+	<param name="SyncLoad" value="true">
+</object>
+
+
+<table cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td width="600" bgcolor="#99CCFF" align="center">
+			<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" id="gauce_grid" width="600" height="500" style="font-family:굴림; font-size:10pt;">
+				<param name="DataID" value="ds_grid">
+				<param name="LineColor"	value="#ffffff">
+				<param name="HeadLineColor"	value="#ffffff">
+	            <param name="BorderStyle" value="1">
+	            <param name="HeadBorder" value="4">
+	            <param name="TitleHeight" value="20">
+	            <param name="ColSizing" value="true">
+	            <param name="FontSize" value="0">
+				<param name="IndWidth" value="0">
+            </object>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

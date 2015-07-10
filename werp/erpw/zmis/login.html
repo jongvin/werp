@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : login.html (그리드가 하나일경우)								-->
+<!-- 2. 유형(시나리오): user id check														-->
+<!-- 3. 기 능 정 의   : login check      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<META content="Pragma" CONTENT="No-Cache">
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="cookie.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript> 
+var gs_home = 'erpw' 
+var is_user_id
+var is_ds_1_addr = gs_home + '/login/m_authority_user_login_q.jsp?arg_user_id='
+
+function bt_confirm_onclick()
+{
+  is_user_id = tb_user_id.value
+  ds_1.DataID=is_ds_1_addr + is_user_id
+  ds_1.SyncLoad = true;
+  ds_1.reset()
+  if  (ds_1.CountRow != 1){
+     alert("사번이 틀렸습니다")
+     return
+  } 
+
+ if  (tb_user_id.value != ds_1.namevalue(1,"user_id"))
+        alert("사번이 틀렸습니다")
+     else if  (tb_password.value != ds_1.namevalue(1,"password"))
+              alert("암호가 틀렸습니다")   
+     else { makeCookie("@user_id@",tb_user_id.value)  
+            makeCookie("@empno@",ds_1.NameValue(1,"empno"))
+            makeCookie("#name#",ds_1.NameValue(1,"name"))
+            makeCookie("@deptcode@",ds_1.NameValue(1,"deptcode"))
+            makeCookie("@short_name@",ds_1.NameValue(1,"short_name"))
+            makeCookie("@gs_home@",gs_home)
+            ls_bb = readCookie("@JSESSIONID@")
+            makeCookie("@JFLAG@",ls_bb)
+            window.open("main.html")
+//            location.href("main.html")
+//		window.open("main.html","","height="+screen.availHeight+",width="+screen.availWidth+",left=0,top=0,scrollbars=1, resizable=0, status=1"); 
+//        self.opener=self;
+
+//		 self.close();
+            
+           }
+           
+}
+//----------------------------------------------------------
+function inkeyDown()  
+//----------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_confirm_onclick()
+	} 
+}
+
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" window_onload() oncontextmenu="return false">
+<A HREF='erpw/install/ADE_setup.exe'>초기 셋업</A><BR>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<LABEL id=Label_1 
+    style="LEFT: 196px; POSITION: absolute; TOP: 391px; HEIGHT: 22px">사&nbsp;&nbsp;번:&nbsp;</LABEL>
+<LABEL id=Label_1 
+    style="LEFT: 365px; POSITION: absolute; TOP: 393px; HEIGHT: 22px">PASSWORD:&nbsp;</LABEL>
+<INPUT id=tb_user_id onkeyDown="inkeyDown()"
+    style="Z-INDEX: 101; LEFT: 241px; WIDTH: 80px; POSITION: absolute; TOP: 388px; HEIGHT: 22px" 
+    tabIndex=1 maxLength=6 size=10 border=1>
+<INPUT id=tb_password onkeyDown="inkeyDown()"
+    style="Z-INDEX: 102; LEFT: 446px; WIDTH: 80px; POSITION: absolute; TOP: 388px; HEIGHT: 22px" 
+    tabIndex=2 type=password maxLength=8 size=10 border=1>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 103; LEFT: 50px; POSITION: absolute; TOP: 38px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+	<PARAM NAME="CacheLoad" VALUE="0"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<INPUT id=bt_confirm 
+    style="Z-INDEX: 104; LEFT: 553px; POSITION: absolute; TOP: 388px" onclick=bt_confirm_onclick()
+    tabIndex=3 type=button value=확인> 
+</BODY></HTML>

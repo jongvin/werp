@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_proj_tmat_1h.html									-->
+<!-- 2. 유형(시나리오): 조회														-->
+<!-- 3. 기 능 정 의   : 현장별가설재손료전표  		                	-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+var is_ds_1_addr = 'm_tmat_nooutput_1q.jsp?arg_dept_code='                        //
+var is_ds_2_addr = 'm_proj_nooutput_2q.jsp?arg_dept_code='                        //
+var is_yymm
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회
+//------------------------------------------------------------------------
+{
+	if (sel_view_chk.value == "2") {
+		gd_1.ColumnProp('amt', 'Show')    = true
+		gd_1.ColumnProp('vatamt', 'Show') = true
+		gd_1.ColumnProp('outamt', 'Show') = true
+		gd_1.ColumnProp('outvat', 'Show') = true
+		gd_1.ColumnProp('noamt', 'Show')  = true
+		gd_1.ColumnProp('novat', 'Show')  = true
+	} else {
+		gd_1.ColumnProp('amt', 'Show')    = false
+		gd_1.ColumnProp('vatamt', 'Show') = false
+		gd_1.ColumnProp('outamt', 'Show') = false
+		gd_1.ColumnProp('outvat', 'Show') = false
+		gd_1.ColumnProp('noamt', 'Show')  = false
+		gd_1.ColumnProp('novat', 'Show')  = false
+	}
+
+	if (document.all("dept_total").checked == true) {
+		ds_1.DataID = is_ds_1_addr + "T" + "&arg_date=" + is_yymm + "&arg_comp_code=" + com_comp_code.value + "&arg_view_chk=" + sel_view_chk.value
+	} else {
+		ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_date=" + is_yymm + "&arg_comp_code=" + com_comp_code.value + "&arg_view_chk=" + sel_view_chk.value
+	}
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2) + ".01"
+	btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+}   
+//---------------------------------------------------------------------------
+function window_onunload()                      // window close event
+//---------------------------------------------------------------------------
+{
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+      gd_1.GridToExcel(em_select_yymm.text + "재료미출고현황","C:\재료미출고현황.xls",1)
+ 
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+
+	top.frames['main_title'].mouse_over()
+	dept_name.value = is_dept_name
+	is_yymm = is_work_date.substr(0,7) + ".01"
+	em_select_yymm.text = is_yymm
+	btnquery_onclick()
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+	if ((em_select_yymm.Modified) && kcode == 13 ){ 
+		select_yymm()
+	}
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update
+	style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 330px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+						<input type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+						<INPUT type="checkbox" id=dept_total>전체
+         </tr>                 
+      </table>
+</DIV>
+<LABEL id=Label_2  
+		style="WIDTH: 75px; LEFT:350px;POSITION: absolute; HEIGHT: 25px; TOP:10px">&nbsp;&nbsp;기준년월:
+</LABEL>
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+	   style="Z-INDEX: 101; LEFT: 420px; WIDTH: 80px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+	  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	<PARAM NAME="Alignment" VALUE="1">
+	<PARAM NAME="IsComma" VALUE="0">
+	<PARAM NAME="MaxLength" VALUE="6">
+	<PARAM NAME="Format" VALUE="YYYY-MM">
+	<param name=ClipMode       value=false>
+	<PARAM NAME="Numeric" VALUE="0">
+	<PARAM NAME="SelectAll" VALUE="-1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<LABEL id=Label_2  
+		style="WIDTH: 75px; LEFT:500px;POSITION: absolute; HEIGHT: 25px; TOP:10px">&nbsp;&nbsp;사업체:
+</LABEL>
+<SELECT id="com_comp_code" style="Z-INDEX: 101; LEFT: 560px; WIDTH: 120px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" >
+	<OPTION value="T">전체</OPTION>
+	<OPTION value="A0" selected>월드건설</OPTION>
+	<OPTION value="B0">월드건설산업</OPTION>
+</SELECT>
+<LABEL id=Label_2  
+		style="WIDTH: 75px; LEFT:680px;POSITION: absolute; HEIGHT: 25px; TOP:10px">&nbsp;&nbsp;조회구분:
+</LABEL>
+<SELECT id="sel_view_chk" style="Z-INDEX: 101; LEFT: 750px; WIDTH: 80px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" onchange="btnquery_onclick()">
+	<OPTION value="1" selected>수량</OPTION>
+	<OPTION value="2">전표</OPTION>
+</SELECT>
+
+<input id=excel_prt type="button" value="엑셀내리기" 
+			style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;LEFT: 880px; POSITION: absolute; TOP: 5px;
+			background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+			onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+			onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=excel_down()>
+</TD>
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2px; WIDTH:1010px; POSITION: absolute; TOP: 30px; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM name="ViewSummary"    value=1>
+	<PARAM name="sortview" value="left">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE=" 
+		<C> Name='현장명' ID=long_name sort=true BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=130 </C>
+		<C> Name='입고일자' ID=inputdate sort=true BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+		<C> Name='품명' ID=name sort=true BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=150 </C>
+		<C> Name='규격' ID=ssize BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+		<C> Name='단위' ID=unitcode BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=50 </C>
+		<C> Name='입고수량' ID=qty BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='입고금액' ID=amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='입고부가세' ID=vatamt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='출고수량' ID=outqty BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='출고금액' ID=outamt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='출고부가세' ID=outvat BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText=@sum SumColor=Black SumBgColor=Pink</C>
+		<C> Name='미출고수량' ID=noqty value={qty - outqty} Dec=3 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 
+				SumText={sum(qty - outqty)} SumColor=Black SumBgColor=Pink</C>
+		<C> Name='미출고금액' ID=noamt value={amt - outamt} BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText={sum(amt - outamt)} SumColor=Black SumBgColor=Pink</C>
+		<C> Name='미출고부가세' ID=novat value={vatamt - outvat} BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+				SumText={sum(vatamt - outvat)} SumColor=Black SumBgColor=Pink</C>
+
+	">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

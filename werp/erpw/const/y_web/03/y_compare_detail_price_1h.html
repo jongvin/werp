@@ -1,0 +1,858 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_compare_detail_price_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회											-->
+<!-- 3. 기 능 정 의   : 단가 대비    	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charsetem=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/y_web/01/y_cmp_dept_code_1q.jsp?arg_dept_code='     //현장선택용
+var is_ds_2_addr = gs_home + '/const/y_web/03/y_compare_dept_detail_q.jsp?arg_dept_code='  // 선택된현장 상세정보
+var is_tr_1_addr = gs_home + '/const/y_web/01/y_cmp_dept_code_1tr.jsp'
+var is_ds_3_addr = gs_home + '/const/y_web/03/y_compare_detail_price_1q.jsp?arg_dept_code='  // 표준내역비교       
+var is_ds_4_addr = gs_home + '/const/y_web/03/y_compare_wbs_tot_amt_1q.jsp?arg_dept_code_tag='  // 전체공사평당대비표       
+var is_ds_5_addr = gs_home + '/const/y_web/03/y_compare_part_tot_amt_1q.jsp?arg_dept_code_tag='  // 파트별 평당대비표       
+var is_dept_code = ""
+var is_dept_name = ""
+var il_gross_floor_area_sum=0
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+   ds_1.DataID = is_ds_1_addr + is_dept_code
+   ds_1.SyncLoad=true
+   ds_1.Reset()
+   ds_2_retrieve()
+   if (tb_1.ActiveIndex == 1) {
+      if (ds_1.CountRow > 0) {
+         gd_3_cmp()       //단가 대비 
+      }
+   }   
+   if (tb_1.ActiveIndex == 2) {
+      if (ds_1.CountRow > 0) {
+         ds_4_retrieve()    // 전체 공사평당 대비표 
+      }
+   }   
+   if (tb_1.ActiveIndex == 3) {
+      if (ds_1.CountRow > 0) {
+         ds_5_retrieve()    // 파트별 평당 대비 
+      }
+   }   
+}
+//----------------------------------------------------------------
+function ds_2_retrieve()                    // 현장 데이타 크로스 텝 
+//----------------------------------------------------------------
+{
+   ds_2.DataID = is_ds_2_addr + is_dept_code
+   ds_2.SyncLoad=true
+   ds_2.Reset()
+      // 부서별로 크로스텝정보를 보여주기위해서 보조 dataset
+   ll_cnt = f_ds_select_q("ds_dept"," select ' ' select_1, '  ' select_2,' ' select_3 from dual")
+   ds_dept.ClearData()
+
+   var i
+   for (i=1; i<= ds_2.CountRow; i++) {
+       ds_dept.AddRow()
+       ds_dept.NameValue(ds_dept.RowPosition,'select_1') = '1. 공사기간'
+       ds_dept.NameValue(ds_dept.RowPosition,'select_2') = ds_2.NameValue(i,'long_name')
+       ds_dept.NameValue(ds_dept.RowPosition,'select_3') = ds_2.NameValue(i,'chg_const_start_date') + '-' + 
+                                                           ds_2.NameValue(i,'chg_const_end_date')
+                                                           
+       ds_dept.AddRow()
+       ds_dept.NameValue(ds_dept.RowPosition,'select_1') = '2. 전체연면적'
+       ds_dept.NameValue(ds_dept.RowPosition,'select_2') = ds_2.NameValue(i,'long_name')
+       ds_dept.NameValue(ds_dept.RowPosition,'select_3') = ds_2.NameValue(i,'gross_floor_area_sum') + ""
+
+       ds_dept.AddRow()
+       ds_dept.NameValue(ds_dept.RowPosition,'select_1') = '3. 세대수'
+       ds_dept.NameValue(ds_dept.RowPosition,'select_2') = ds_2.NameValue(i,'long_name')
+       ds_dept.NameValue(ds_dept.RowPosition,'select_3') = ds_2.NameValue(i,'tot_cnt') + ""
+
+       ds_dept.AddRow()
+       ds_dept.NameValue(ds_dept.RowPosition,'select_1') = '4. 동수'
+       ds_dept.NameValue(ds_dept.RowPosition,'select_2') = ds_2.NameValue(i,'long_name')
+       ds_dept.NameValue(ds_dept.RowPosition,'select_3') = ds_2.NameValue(i,'dong_cnt') 
+
+       ds_dept.AddRow()
+       ds_dept.NameValue(ds_dept.RowPosition,'select_1') = '5. 평형'
+       ds_dept.NameValue(ds_dept.RowPosition,'select_2') = ds_2.NameValue(i,'long_name')
+       ds_dept.NameValue(ds_dept.RowPosition,'select_3') = ds_2.NameValue(i,'py_cnt') 
+   }
+   
+  ds_dept.ResetStatus()
+  ds_dept.SortExpr = "+select_1+select_2"
+  ds_dept.Sort();
+   
+  rds_dept.DataID = 'ds_dept'
+  rds_dept.SyncLoad = true
+  rds_dept.Reset()
+  rds_dept.DataID = ''
+
+}
+//----------------------------------------------------------------
+function gd_3_cmp()                    // 단가 비교분석 
+//----------------------------------------------------------------
+{
+  var ls_data
+  ls_data = is_dept_code + '@'
+  var i
+  var ls_dept  
+  il_gross_floor_area_sum=0          //선택된현장의 면적 총합계
+  for (i=1; i<= ds_2.CountRow; i++) {
+   if (ds_2.NameValue(i,'gross_floor_area_sum') == 0) {
+      alert('현장명=' + ds_2.NameValue(i,'long_name') + ' 전체연면적의 데이타가 없습니다')
+      return
+   }   
+   il_gross_floor_area_sum = il_gross_floor_area_sum + ds_2.NameValue(i,'gross_floor_area_sum')
+  }
+  il_gross_floor_area_sum = il_gross_floor_area_sum / ds_2.CountRow  // 평균면적
+  ls_dept_detail = "    (b.dept_code = '" + is_dept_code + "'  and  " + 
+                         "     b.chg_no_seq = (select max(chg_no_seq) " +
+                         "         from y_chg_degree where dept_code = '" + is_dept_code  + "') ) "
+  
+  for (i=1;i<=ds_1.CountRow; i++) {
+     ls_dept =  ds_1.NameValue(i,'cmp_dept_code')    //비교할 부서코드
+     ls_dept_detail = ls_dept_detail +  " or   (b.dept_code = '" + ls_dept + "'  and  " + 
+                                           "       b.chg_no_seq = (select max(chg_no_seq) " +
+                                           "         from y_chg_degree where dept_code = '" + ls_dept  + "') ) "
+  }  
+ 
+  ds_3.DataID = is_ds_3_addr + is_dept_code + '&arg_dept_detail=' + ls_dept_detail
+
+  ds_3.SyncLoad=true
+  ds_3.Reset()
+  // 평균값구하기(sql에서 구하지않고 로직으로 구현: 표준내역코드가 동일한것끼리 합을 구함. 
+  ds_avg.DataID = is_ds_3_addr + is_dept_code + '&arg_dept_detail=' + " 1 <> 1 "   //해더정보만 가져오기위함.
+  ds_avg.SyncLoad=true
+  ds_avg.Reset()
+  ds_avg.ClearData()
+  
+  if (ds_3.CountRow < 1) return
+  var lsum_bud_amt,lsum_sub_amt,lsum_mat_amt
+  var lsum_bud_qty,lsum_sub_qty,lsum_mat_qty
+  var sa_detail_code=""
+  i=1
+  while (sa_detail_code != 'zzzzzz') {
+      sa_detail_code = ds_3.NameValue(i,'detail_code')
+      lsum_bud_amt=lsum_sub_amt=lsum_mat_amt=0
+      lsum_bud_qty=lsum_sub_qty=lsum_mat_qty=0
+      while(sa_detail_code == ds_3.NameValue(i,'detail_code')) {
+         lsum_bud_amt = lsum_bud_amt + ds_3.NameValue(i,'bud_amt')
+         lsum_bud_qty = lsum_bud_qty + ds_3.NameValue(i,'bud_qty')
+         lsum_sub_amt = lsum_sub_amt + ds_3.NameValue(i,'sub_amt')
+         lsum_sub_qty = lsum_sub_qty + ds_3.NameValue(i,'sub_qty')
+         lsum_mat_amt = lsum_mat_amt + ds_3.NameValue(i,'mat_amt')
+         lsum_mat_qty = lsum_mat_qty + ds_3.NameValue(i,'mat_qty')
+         i++
+         if (i > ds_3.CountRow) sa_detail_code = 'zzzzzz'
+      }
+      
+      ds_avg.AddRow()
+      ds_avg.NameValue(ds_avg.RowPosition,'long_name') = '평균값'
+      ds_avg.NameValue(ds_avg.RowPosition,'detail_code') = ds_3.NameValue(i - 1,'detail_code')
+      ds_avg.NameValue(ds_avg.RowPosition,'name') = ds_3.NameValue(i - 1,'name')
+      ds_avg.NameValue(ds_avg.RowPosition,'ssize') = ds_3.NameValue(i - 1,'ssize')
+      ds_avg.NameValue(ds_avg.RowPosition,'unit') = ds_3.NameValue(i - 1,'unit')
+      ds_avg.NameValue(ds_avg.RowPosition,'bud_price') = (lsum_bud_amt / lsum_bud_qty)
+      ds_avg.NameValue(ds_avg.RowPosition,'pyoung_avg') = (lsum_bud_amt / lsum_bud_qty) / il_gross_floor_area_sum 
+      ds_avg.NameValue(ds_avg.RowPosition,'sub_price') = lsum_sub_amt / lsum_sub_qty
+      ds_avg.NameValue(ds_avg.RowPosition,'mat_price') = lsum_mat_amt / lsum_mat_qty
+  }
+  txa_tempdata.value = ds_avg.ExportData(1,99999,true)
+  ds_3.ImportData(txa_tempdata.value)
+  ds_3.ResetStatus() 
+  ds_3.SortExpr = "+detail_code+long_name"
+  ds_3.Sort();
+
+  rds_3.DataID = 'ds_3'
+  rds_3.SyncLoad = false
+  rds_3.Reset()
+  rds_3.DataID = ''
+}
+//----------------------------------------------------------------
+function ds_4_retrieve()                    // 전체 공사 평당 대비표 
+//----------------------------------------------------------------
+{
+  var i
+   if (ds_2.NameValue(1,'gross_floor_area_sum') == 0) {
+      alert('현장명=' + ds_2.NameValue(1,'long_name') + ' 전체연면적의 데이타가 없습니다')
+      return
+   }   
+    // is_dept_code를 첨자로 보내는 이유는 jsp에서 현장명에 blank를 삽입하기위해서
+   ds_4.DataID = is_ds_4_addr + is_dept_code + '&arg_dept_code=' + is_dept_code + '&arg_pyoung=' + ds_2.NameValue(1,'gross_floor_area_sum') 
+   ds_4.SyncLoad=true
+   ds_4.Reset()
+
+  for (i=2; i<= ds_2.CountRow; i++) {
+   if (ds_2.NameValue(i,'gross_floor_area_sum') == 0) {
+      alert('현장명=' + ds_2.NameValue(i,'long_name') + ' 전체연면적의 데이타가 없습니다')
+      continue
+   }   
+     ds_4.DataID = is_ds_4_addr + is_dept_code + '&arg_dept_code=' + ds_2.NameValue(i,'dept_code') + 
+                              '&arg_pyoung=' + ds_2.NameValue(i,'gross_floor_area_sum') 
+     ds_4.SyncLoad=true
+     ds_4.Append()
+  }
+
+  ds_4.ResetStatus()
+  ds_4.SortExpr = "+direct_class+wbs_code+name+long_name+"
+  ds_4.Sort();
+  
+  rds_4.DataID = 'ds_4'
+  rds_4.SyncLoad = true
+  rds_4.Reset()
+  rds_4.DataID = ''
+}
+//----------------------------------------------------------------
+function ds_5_retrieve()                    // 파트별 평당 단가.
+//----------------------------------------------------------------
+{
+  var i
+   if (ds_2.NameValue(1,'gross_floor_area_sum') == 0) {
+      alert('현장명=' + ds_2.NameValue(1,'long_name') + '전체연면적의 데이타가 없습니다')
+      return
+   }   
+   var ls_wbs_code,ls_division
+   ls_wbs_code = ccom_wbs_mast.CodeValue
+   ls_division = ccom_division.CodeValue
+    // is_dept_code를 첨자로 보내는 이유는 jsp에서 현장명에 blank를 삽입하기위해서
+   ds_5.DataID = is_ds_5_addr + is_dept_code + '&arg_dept_code=' + is_dept_code 
+                                             + '&arg_pyoung=' + ds_2.NameValue(1,'gross_floor_area_sum') 
+                                             + '&arg_wbs_mast=' +ls_wbs_code  
+                                             + '&arg_division=' +ls_division  
+   ds_5.SyncLoad=true
+   ds_5.Reset()
+
+  for (i=2; i<= ds_2.CountRow; i++) {
+   if (ds_2.NameValue(i,'gross_floor_area_sum') == 0) {
+      alert('현장명=' + ds_2.NameValue(i,'long_name') + '전체연면적의 데이타가 없습니다')
+      continue
+   }   
+   ds_5.DataID = is_ds_5_addr + is_dept_code + '&arg_dept_code=' +  ds_2.NameValue(i,'dept_code')
+                                             + '&arg_pyoung=' + ds_2.NameValue(i,'gross_floor_area_sum') 
+                                             + '&arg_wbs_mast=' +ls_wbs_code  
+                                             + '&arg_division=' +ls_division  
+                                             
+     ds_5.SyncLoad=true
+     ds_5.Append()
+  }
+
+  ds_5.ResetStatus()
+  ds_5.SortExpr = "+tot_tag+wbs_code+name+long_name+"   // tot_tag = 1: data 2:합계 
+  ds_5.Sort();
+  
+  rds_5.DataID = 'ds_5'
+  rds_5.SyncLoad = true
+  rds_5.Reset()
+  rds_5.DataID = ''
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_3.Undo(ds_3.RowPosition)
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+   if (ds_1.IsUpdated){
+       alert("먼저 저장을 하십시요")
+       return
+   }    
+	dept_code_cond_find('')
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if  (is_dept_code == "") {
+		alert("현장을 선택하십시요(검색을 누르십시요)")
+		return
+	}     
+	if  (ds_1.CountRow > 0) { 
+	}    
+	else {
+	}
+	init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	var ls_temp
+	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1){
+						ds_1.DeleteRow(i)
+	        }
+	    }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	   } 
+	  else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+var ls_temp
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+          ll_dup = f_dup_chk("ds_1","cmp_dept_code")
+          if (ll_dup > 0) {
+             alert("동일현장은 선택할수 없습니다\n 삭제하신후 저장하십시요")
+             ds_1.RowPosition = ll_dup
+             return
+          }   
+	       tr_1.Post()
+	    }
+   } 
+}
+//---------------------------------------------------------------------------
+function dept_code_cond_find(data)                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	var is_dept_search_addr = gs_home + '/comm_search/z_dept_cond_find_1h.html'
+
+	var array = new Array();
+	result = window.showModalDialog(is_dept_search_addr,gs_home + '@'  + 'xxx' + '@' + 'xxx',
+	"dialogWidth:860px;dialogHeight:730px");
+	
+	if(result == "") return false;
+	array = result.split("@");
+	var i,j,k
+	j = array.length - 1
+	j = j / 2
+	k=0
+	for (i=1;i<=j;i++) {
+	   ds_1.AddRow()
+	   
+	   ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+  	   ds_1.NameValue(ds_1.RowPosition,"no_seq") = ds_1.NameValue(ds_1.CountRow - 1,'no_seq') + 1
+
+	   ds_1.NameValue(ds_1.RowPosition,'cmp_dept_code') = array[k]
+	   k++
+	   ds_1.NameValue(ds_1.RowPosition,'long_name') = array[k];
+	   k++
+	}   
+
+	if (ds_1.IsUpdated) {
+      ll_dup = f_dup_chk("ds_1","cmp_dept_code")
+      if (ll_dup > 0) {
+         alert("동일현장은 선택할수 없습니다\n 삭제하신후 저장하십시요")
+         ds_1.RowPosition = ll_dup
+         return
+      }   
+	  	 tr_1.Post()
+	}  	 
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_3.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+   setTimeout("btnquery_onclick()",1)
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//----------------------------------------------------------------
+function excel_down_1()                      //엑셀자료 내리기(현장정보) 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = '현장정보'
+ gd_2.GridToExcel(temp_1,'c:\aa.xls',0) 
+   
+}
+//----------------------------------------------------------------
+function excel_down_2()                      //엑셀자료 내리기(하위 자료내리기) 
+//----------------------------------------------------------------
+{
+ var temp_1
+ if (tb_1.ActiveIndex == 1) {
+    temp_1 = '단가 대비'
+   gd_3.GridToExcel(temp_1,'c:\aa.xls',0)
+ }  
+ if (tb_1.ActiveIndex == 2) {
+    temp_1 = '전체공사 평당대비'
+   gd_4.GridToExcel(temp_1,'c:\aa.xls',0)
+ }  
+ if (tb_1.ActiveIndex == 3) {
+    temp_1 = '파트별  평당대비'
+   gd_5.GridToExcel(temp_1,'c:\aa.xls',0)
+ }  
+   
+}
+
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 크리스탈 보고서 미리보기
+//------------------------------------------------------------------------
+{  
+   var arg_temp
+   arg_temp ="const_rpt/y_web/01r/"        // 보고서 디렉토리
+   arg_temp = arg_temp + "y_compare_wbs_price"    // 보고서명 
+   
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code          // 날짜 포맷에 맞춰야함. "01"포함 현재는 빠졌음.
+                         
+                                          
+   //alert(arg_temp)                         
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_2', 'tab_page_1', 'tab_page_2', 'tab_page_3');
+	var xArr   = new Array(true, true, true, true);
+	var yArr   = new Array(false, true, true, true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return
+   top.frames['main_title'].mouse_over()
+   
+ 	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	
+   f_set_resize()
+	
+	dept_name.value = is_dept_name
+   ll_cnt = f_ds_select_q("ds_wbs_mast","select wbs_code select_1, name select_2 from y_wbs_code where llevel = 2 order by no_seq ") //대공종
+   ccom_wbs_mast.Index = 1
+   ll_cnt = f_ds_select_q("ds_division","select division select_1 , division_name select_2 from y_code_division order by division") // 아파트 상가
+   ds_division.InsertRow(1)
+   ds_division.NameValue(1,'select_1') = ''
+   ds_division.NameValue(1,'select_2') = '전체'
+   ccom_division.Index = 0
+	tr_1.Action = is_tr_1_addr 
+   setTimeout("btnquery_onclick()",1)
+}
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+ if (nIndex == 1 || nIndex == 2) {
+   div_wbs_mast.style.visibility="hidden"
+   div_division.style.visibility="hidden"
+ }  
+ else {
+   div_wbs_mast.style.visibility="visible"
+   div_division.style.visibility="visible"
+ } 
+  setTimeout("btnquery_onclick()",1)  //tab이 변경되었을경우 해당텝의 화면을 먼저 활성화한다음에 조회              
+</SCRIPT>
+
+<script language=JavaScript for=gd_4 event=OnUserColor(row,eventid)>
+ var ls_temp
+ if(eventid == "ucolor") {
+   ls_temp = rds_4.NameValue(row,'direct_class')
+   if (ls_temp.substr(1,1) == '1')
+       return "ffffff";
+   else { 
+         return "silver"
+   }
+ }
+</script>
+
+<script language=JavaScript for=gd_5 event=OnUserColor(row,eventid)>
+ var ls_temp
+ if(eventid == "ucolor") {
+   ls_temp = rds_5.NameValue(row,'tot_tag')
+   if (ls_temp == '1')
+       return "ffffff";
+   else { 
+         return "silver"
+   }
+ }
+</script>
+
+<script language=JavaScript for=ccom_division event=onCloseUp()>
+   setTimeout('btnquery_onclick()',1)
+</script>
+
+<script language=JavaScript for=ccom_wbs_mast event=onCloseUp()>
+   setTimeout('btnquery_onclick()',1)
+</script>
+<script language="javascript"  for=ds_3 event=OnLoadStarted()>
+	document.all.LowerFrame.style.visibility="visible";
+</script>
+<script language="javascript"  for=ds_3 event=OnLoadCompleted(rowcount)>
+	document.all.LowerFrame.style.visibility="hidden";
+</script>
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><Object id=ds_select2
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> 
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3 
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object id=rds_3
+		  classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+	<param name=Logical value=true>
+	<param name=DataID  value="">
+	<param name=GroupExpr    value="detail_code:name:ssize:unit,long_name,bud_price:sub_price:mat_price">
+</object></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_dept
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object id=rds_dept
+		  classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+	<param name=Logical value=true>
+	<param name=DataID  value="">
+	<param name=GroupExpr    value="select_1,select_2,select_3">
+</object></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_4
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 id=rds_4>
+	<param name=Logical value=true>
+	<param name=DataID  value="">
+	<param name=GroupExpr    value="direct_class:name,long_name,amt:avg1">
+</object></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_5
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 id=rds_5>
+	<param name=Logical value=true>
+	<param name=DataID  value="">
+	<param name=GroupExpr    value="tot_tag:name,long_name,amt:avg1">
+</object></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_avg 
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_wbs_mast
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_division
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+		  classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_cmp_dept_code_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin:0;" onload="setTimeout('window_onload()',1)" onresize='f_set_resize()' oncontextmenu="return false" >
+<div class=main_div>
+	<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR  height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="45px" class=font_green_bold>현장명</td>
+							<td width="166">
+								<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()"   >
+							</td>
+							<td width="50">
+								<input id="button_query" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+							</td>
+							
+							</td>
+							<td width="*">&nbsp;</td>
+							<td width="500px">
+								<input id=bt_excel_1 type="button" value="현장정보 엑셀" class="img_btn6_1"
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=excel_down_1()>
+								<input id=bt_excel_2 type="button" value="하위자료 엑셀" class="img_btn6_1"
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=excel_down_2()>
+								<input id=bt_report type="button" value="공종별평당공사비" class="img_btnRpt8_1"
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=btnquery_prt_onclick()>			
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<TR  height="500px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="*">&nbsp;</td>
+							<td width="1px">
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<tr>
+			<td height="*">
+			</td>
+		</tr>
+	</table>
+
+ 
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 5px; WIDTH: 300px; POSITION: absolute; TOP: 35px; HEIGHT: 173px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=1>
+	<param name="MultiRowSelect"   value="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+   	<C> Name='현  장  명'  id=long_name  Edit=None width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=gd_2 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 303px; WIDTH: 707px; POSITION: absolute; TOP: 35px;
+    HEIGHT: 173px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=1>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='구  분'  id=select_1  width=140  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <R>
+         <G>name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK   
+             <C>ID=select_3_$$      width=140  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+         </G>
+     </R>  
+     ">
+	<PARAM NAME="DataID" VALUE="rds_dept">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=div_wbs_mast
+    style="FONT-SIZE: 12px;visibility:hidden; Z-INDEX: 200; LEFT: 315px; WIDTH: 200px; POSITION: absolute; TOP: 210px; HEIGHT: 15px" >
+	<table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 11px">
+		<tr BGCOLOR="white"> 
+			<td width="40%"   BGCOLOR="#CA7944" style="COLOR: BLACK"> 
+				<div align="right">대공종선택</div>
+			</td>
+			<td width="60%"> 
+				<comment id="__NSID__"><OBJECT id=ccom_wbs_mast width=120px 
+						  classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					<PARAM NAME="ComboDataID" VALUE="ds_wbs_mast">
+					<PARAM NAME="CodecColumn" VALUE="select_1">
+					<PARAM NAME="DatacColumn" VALUE="select_2">
+					<param name=Index    value=0>
+					<PARAM NAME="Enable" VALUE="-1">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+	</table>
+</DIV>  
+    
+<DIV id=div_division
+    style="FONT-SIZE: 12px;visibility:hidden; Z-INDEX: 200; LEFT: 520px; WIDTH: 200px; POSITION: absolute; TOP: 212px; HEIGHT: 15px" >
+	<table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 11px">
+		<tr BGCOLOR="white" > 
+			<td width="30%"   BGCOLOR="#CA7944" style="COLOR: BLACK"> 
+				<div align="right">분류선택</div></td>
+			<td width="60%"> 
+				<comment id="__NSID__"><OBJECT id=ccom_division width=135px 
+						  classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					<PARAM NAME="ComboDataID" VALUE="ds_division">
+					<PARAM NAME="CodecColumn" VALUE="select_1">
+					<PARAM NAME="DatacColumn" VALUE="select_2">
+					
+					<PARAM NAME="Enable" VALUE="-1">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+	</table>
+</DIV>  
+	
+<comment id="__NSID__"><OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 5px; WIDTH: 300px; POSITION: absolute; TOP: 213px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=단가대비</T>
+    <T>divid=tab_page_2 title=전체공사평당대비</T>
+    <T>divid=tab_page_3 title=대공종별평당대비</T>
+   ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=tab_page_1 
+	  style="Z-INDEX: 110; LEFT: 5px; WIDTH: 1008px; HEIGHT: 100%; POSITION: absolute; TOP: 234px; FONT-SIZE: 12px" >
+	<comment id="__NSID__"><OBJECT id=gd_3 
+			  style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+			  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+		<PARAM NAME="MultiRowSelect" VALUE="0">
+		<PARAM NAME="AutoInsert"     VALUE="0">
+		<PARAM NAME="AllShowEdit"    VALUE="0">
+		<PARAM NAME="BorderStyle"    VALUE=1>
+		<PARAM NAME="Editable"       VALUE="0">
+		<PARAM NAME="ColSizing"      VALUE="-1">
+		<PARAM NAME="Format"         VALUE="
+			<C> Name='내역코드'  id=detail_code  width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			<C> Name='명칭'  id=name  width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			<C> Name='규격'  id=ssize  width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			<C> Name='단위'  id=unit  width=30  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			<R>
+				<G>name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK   
+					<C>ID=bud_price_$$     name='실행'  width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+					<C>ID=sub_price_$$     name='외주' Show=false width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+					<C>ID=mat_price_$$     name='자재' width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+				</G>
+			</R>  
+		">
+		<PARAM NAME="DataID"         VALUE="rds_3">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV> 
+    	
+<DIV id=tab_page_2 
+	  style="Z-INDEX: 110; LEFT: 5px; WIDTH: 1008px; HEIGHT: 100%; POSITION: absolute; TOP: 234px;FONT-SIZE: 12px" >
+	<comment id="__NSID__"><OBJECT id=gd_4 
+			  style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+			  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+		<PARAM NAME="MultiRowSelect" VALUE="0">
+		<PARAM NAME="AutoInsert"     VALUE="0">
+		<PARAM NAME="AllShowEdit"    VALUE="0">
+		<PARAM NAME="BorderStyle"    VALUE=1>
+		<PARAM NAME="Editable"       VALUE="0">
+		<PARAM NAME="ColSizing"      VALUE="-1">
+		<PARAM NAME="Format"         VALUE="
+		<C> Name='명칭'  id=name  width=200  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+		<R>
+			<G>name=$xkeyname_$$    HeadBgColor=#BBE0F4  HeadColor=BLACK   
+				<C>ID=amt_$$     name='금액'  width=90 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+				<C>ID=avg1_$$     name='평당금액'  width=90  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+			</G>
+		</R>  
+		">
+		<PARAM NAME="DataID"         VALUE="rds_4">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>  
+   	
+<DIV id=tab_page_3 
+	  style="Z-INDEX: 110; LEFT: 5px; WIDTH: 1008px; HEIGHT: 100%; POSITION: absolute; TOP: 234px;FONT-SIZE: 12px" >
+	<comment id="__NSID__"><OBJECT id=gd_5 
+			  style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+			  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+		<PARAM NAME="MultiRowSelect" VALUE="0">
+		<PARAM NAME="AutoInsert"     VALUE="0">
+		<PARAM NAME="AllShowEdit"    VALUE="0">
+		<PARAM NAME="BorderStyle"    VALUE=1>
+		<PARAM NAME="Editable"       VALUE="0">
+		<PARAM NAME="ColSizing"      VALUE="-1">
+		<PARAM NAME="Format"         VALUE="
+		<C> Name='명칭'  id=name  width=200  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+		<R>
+			<G>name=$xkeyname_$$    HeadBgColor=#BBE0F4  HeadColor=BLACK   
+				<C>ID=amt_$$     name='금액'  width=90 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+				<C>ID=avg1_$$     name='평당금액'  width=90  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+			</G>
+		</R>  
+		">
+		<PARAM NAME="DataID"         VALUE="rds_5">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>      
+</div>
+<textarea id=txa_tempdata cols=62 rows=10 style="visibility:hidden;"></textarea>
+<iframe id="LowerFrame" name="work" style=" Z-INDEX: 500; visibility:hidden; position:absolute; left:330px; top:150px" FrameBorder="0" src="/werp/erpw/comm_function/wait.html"></iframe>
+
+
+</BODY>
+</HTML>

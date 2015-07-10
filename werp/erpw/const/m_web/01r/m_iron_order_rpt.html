@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_iron_order_rpt.html								-->
+<!-- 2. 유형(시나리오): 보고서													-->
+<!-- 3. 기 능 정 의   : 철근 발주서	                        			-->
+<!-- 4. 변 경 이 력   : 권미생 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+var is_start_date
+var is_sbcr_code, is_sbcr_name
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/m_web/01r/"      // 보고서 디렉토리
+   arg_temp = arg_temp + "m_iron_order"  // 보고서명 
+
+   arg_temp = arg_temp + "&RptParams=" + is_sbcr_code  +
+                         "&RptParams=" + is_start_date
+                            
+   //alert(arg_temp)
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//------------------------------------------------------------------------
+function sbcr_rtn() //협력업체선택
+//------------------------------------------------------------------------
+{
+   var result
+   var array = new Array();
+
+   result = window.showModalDialog(gs_home + "/const/m_web/00/m_vender_find_1h.html","","dialogWidth:+670px;dialogHeight:510px");
+
+   if(result == "") return;
+   array = result.split("@");
+
+   is_sbcr_code = array[0];  // 코드
+   is_sbcr_name = array[1];  // 명칭
+	
+   sbcr_name.value = is_sbcr_name		
+}
+//-------------------------------------------------------------------------------
+function select_date()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_start_date = em_start_date.text.substr(0,7)
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+      top.frames['main_title'].mouse_over()
+
+      is_work_date = f_sysdate()
+      em_start_date.text = is_work_date.substr(0,7)
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_start_date event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_date()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_start_date event=onKillFocus()>
+   if (em_start_date.Modified){ 
+	   select_date()
+	}
+</SCRIPT>        	
+</HEAD>
+<comment id="__NSID__"><OBJECT id=ds_sysdate style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<DIV id=print_condition style="Z-INDEX: 107; LEFT: 300px; WIDTH: 300px; POSITION: absolute; TOP: 100px; HEIGHT: 150px">
+	<table width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white">
+		<td width="30%" BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+		<div align="right">협력업체명</div></td>
+		<td>
+		<INPUT id=sbcr_name   >
+		<input type="button_query" value=" 검색" 
+		style="color:#2E4A4A; font-size:12px; CURSOR: hand; width:40px;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid; "   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=sbcr_rtn()></td>
+	</tr>
+	<tr BGCOLOR="white">
+		<td width="30%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+		<div align="right">년월</div></td>
+		<td>
+		<comment id="__NSID__"><OBJECT id=em_start_date style=" WIDTH: 80px;" 
+		classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="IsComma" VALUE="0">
+		<PARAM NAME="MaxLength" VALUE="6">
+		<PARAM NAME="Format" VALUE="YYYY.MM">
+		<param name=ClipMode VALUE=false>
+		<PARAM NAME="Numeric" VALUE="0">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+		if(!is_null(result)){ em_start_date.text = result.substr(0,6);} ; select_date()" ></td>
+	</tr>
+	</table>
+</DIV>
+</BODY></HTML>

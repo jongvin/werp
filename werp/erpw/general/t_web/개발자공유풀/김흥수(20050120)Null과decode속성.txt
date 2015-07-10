@@ -1,0 +1,113 @@
+아래에 있는 결과를 참고 하시길.....
+set serveroutput on
+declare
+	b boolean;
+	procedure pr
+	is
+	begin
+		if b Is Null then
+			dbms_output.put_line('null');
+		elsIf b Then
+			dbms_output.put_line('true');
+		else
+			dbms_output.put_line('false');
+		end If;
+	end;
+begin
+	dbms_output.enable;
+	b := true Or Null;
+	dbms_output.put_line('true Or Null');
+	pr;
+	b := true And Null;
+	dbms_output.put_line('true And Null');
+	pr;
+	b := false Or Null;
+	dbms_output.put_line('false Or Null');
+	pr;
+	b := false And Null;
+	dbms_output.put_line('false And Null');
+	pr;
+end;
+/
+true Or Null
+true
+true And Null
+null
+false Or Null
+null
+false And Null
+false
+
+
+***
+decode의 경우 참인 것만 평가된다.
+
+SQL> select decode(1,2,10/0,2,1/1,10) from dual;
+
+DECODE(1,2,10/0,2,1/1,10)
+-------------------------
+                       10
+
+select decode(1,1,10/0,2,1/1,10) from dual
+                    *
+1행에 오류:
+ORA-01476: 제수가 0 입니다
+
+***
+PL-SQL에서 Nvl의 성능
+
+set serveroutput on
+declare
+	llcnt			number := 50000000;
+	lddt1			date;
+	lddt2			date;
+	lddt3			date;
+	lddt4			date;
+	liSec1			number;
+	liSec2			number;
+	liSec3			number;
+	lnTest			Number := Null;
+Begin
+	dbms_output.enable;
+	lddt1 := sysdate;
+	for liI In 1..llcnt Loop
+		If Nvl(lnTest,0) = 0 Then
+			Null;
+		End If;
+	End Loop;
+	lddt2 := sysdate;
+	for liI In 1..llcnt Loop
+		If lnTest Is Null Or lnTest = 0 Then
+			Null;
+		End If;
+	End Loop;
+	lddt3 := sysdate;
+	for liI In 1..llcnt Loop
+		If lnTest = 0 Or lnTest Is Null Then
+			Null;
+		End If;
+	End Loop;
+	lddt4 := sysdate;
+	dbms_output.put_line(to_char(lddt1,'yyyy-mm-dd hh24:mi:ss'));
+	dbms_output.put_line(to_char(lddt2,'yyyy-mm-dd hh24:mi:ss'));
+	dbms_output.put_line(to_char(lddt3,'yyyy-mm-dd hh24:mi:ss'));
+	dbms_output.put_line(to_char(lddt4,'yyyy-mm-dd hh24:mi:ss'));
+	liSec3 := (lddt4 - lddt3) * 60 * 60 * 24;
+	liSec2 := (lddt3 - lddt2) * 60 * 60 * 24;
+	liSec1 := (lddt2 - lddt1) * 60 * 60 * 24;
+	dbms_output.put_line(liSec1);
+	dbms_output.put_line(liSec2);
+	dbms_output.put_line(liSec3);
+End;
+/
+2005-01-20 16:03:39
+2005-01-20 16:04:37
+2005-01-20 16:04:49
+2005-01-20 16:05:09
+58.00000000000000000000000000000000000008
+12.00000000000000000000000000000000000001
+20.00000000000000000000000000000000000002
+
+결과적으로 nvl과 is null or는 (내용적으로는 같은것임)
+성능상 약 세배의 차이가 납니다요...
+즉 nvl이 약 세배 느리다는......

@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   :  p_attend_emp_create_1h.html                		-->
+<!-- 2. 유형(시나리오):  조회및 입력												-->
+<!-- 3. 기 능 정 의   :  생성				                       				-->
+<!-- 4. 변 경 이 력   :  장희선 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_work_date 
+var is_sort      = " "
+var is_focus_enter='N'
+var is_success_tag='Y'	// 집계시 오류나면 'N'
+//-------------------------------------------------------------------------------
+function date_reset()                  // 생성
+//--------------------------------------------------------------------------------
+{
+	
+	if (confirm(em_work_year.text.substr(0,4) + "년 " + em_work_year.text.substr(5,2) + "월 자료를 생성 하시겠습니까?")) {
+		ds_spcall.DataID = 'sp_p_attend_emp.jsp?&arg_work_year=' + em_work_year.text + '.01'
+		ds_spcall.SyncLoad = true
+		ds_spcall.reset()
+		
+		if (is_success_tag == 'Y')
+			alert("정상처리되었습니다...")
+		 
+   }
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_work_date = f_sysdate()
+	em_work_year.text = is_work_date.substr(0,7) + ".01"
+	
+}
+</SCRIPT>
+
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px"  onload=window_onload() oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code ds_spcall: " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+  is_success_tag = 'N'
+</SCRIPT>
+
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 200px; WIDTH: 700px; POSITION: absolute; TOP: 50px; HEIGHT: 30px">
+    <LABEL id=Label_1  
+        	style="LEFT: 20px; WIDTH: 700px; Font: Bold; font-size:13px; ">&nbsp;해당년월에 따른 자료를 생성합니다.
+    </LABEL>
+</DIV>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 200px; WIDTH: 60px; POSITION: absolute; TOP: 85px; HEIGHT: 20px">
+    <LABEL id=Label_2  
+        	style="WIDTH: 75px; ">&nbsp;&nbsp;해당년월:
+    </LABEL>
+</DIV>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 270px; WIDTH: 100px; POSITION: absolute; TOP: 80px; HEIGHT: 20px">
+    <OBJECT id=em_work_year 
+          style="Z-INDEX: 101;  WIDTH: 80px;  " 
+          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+    	    <PARAM NAME="Alignment" VALUE="1">
+    	    <PARAM NAME="IsComma" VALUE="0">
+    	    <PARAM NAME="MaxLength" VALUE="6">
+    	    <PARAM NAME="Format" VALUE="YYYY.MM">
+            <param name=ClipMode       value=false>
+    	    <PARAM NAME="Numeric" VALUE="0">
+    	    <PARAM NAME="SelectAll" VALUE="-1">
+    </OBJECT>
+    <img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+				if(!is_null(result)){ em_work_year.text = result.substr(0,8);} ; select_yymm()" 
+				style=" WIDTH: 20px; POSITION: absolute; TOP: 0px; HEIGHT:20px"></td>
+</DIV>
+
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT: 400px; WIDTH: 100px; POSITION: absolute; TOP: 80px; HEIGHT: 20px">
+	<input id=bt_date_reset type="button" value="자료생성" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';
+			 font-size: 10pt; border:1 solid #000000; CURSOR: hand; border:1 #A1A9A9 solid; 
+          onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+          onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=date_reset()>
+</DIV>
+
+</BODY></HTML>

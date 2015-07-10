@@ -1,0 +1,990 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : v_ins_item_reg_input_1h.html							-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 품질평가항목입력											-->
+<!-- 4. 변 경 이 력   : 이준구 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+
+var is_ds_1_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_1q.jsp?arg_quality_section='                        
+var is_ds_2_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_2q.jsp?arg_quality_section='    
+var is_ds_3_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_3q.jsp?arg_quality_section='        
+var is_tr_1_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_1tr.jsp'    
+var is_tr_2_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_2tr.jsp'        
+var is_tr_3_addr = gs_home + '/const/v_web/03/V_INS_ITEM_REG_INPUT_3tr.jsp'        
+
+var il_screen = 1
+var il_quality_section = 1
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+		if ( r_quality_section[0].checked == true ) { il_quality_section= 1; } 
+		else if( r_quality_section[1].checked == true ) { il_quality_section = 2 ; }
+   
+
+		ds_1.DataID = is_ds_1_addr + il_quality_section
+//		alert(ds_1.dataid);
+		ds_1.SyncLoad=true
+		ds_1.Reset()	
+
+		if ( ds_1.CountRow < 1 )   
+		{	
+			ds_2.ClearData()
+			ds_3.ClearData()
+			return ; 
+		}
+		
+		gd_size_chk()
+		
+		div_btnquery_onclick1()
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick1()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+		ds_2.DataID = is_ds_2_addr +  il_quality_section + '&arg_quality_ins_code=' + ds_1.NameValue(ds_1.RowPosition,"quality_ins_code") 
+//		alert(ds_2.dataid);
+		ds_2.SyncLoad=true
+		ds_2.Reset()	
+		
+			
+		if ( ds_2.CountRow < 1 )   
+		{
+			ds_3.ClearData()
+			return ;
+		}	
+
+
+	   gd_2.focus()
+		gd_2.SetColumn("wbs_code");
+				   		
+		div_btnquery_onclick2()
+
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick2()                     // 조회  
+//------------------------------------------------------------------------
+{
+		if ( ds_2.CountRow < 1 )   
+		{
+			ds_3.ClearData()
+			return ;
+		}	
+
+		ds_3.DataID = is_ds_3_addr +  il_quality_section + '&arg_quality_ins_code=' + ds_2.NameValue(ds_2.RowPosition,"quality_ins_code") 
+							+ "&arg_seq=" + ds_2.NameValue(ds_2.RowPosition,"seq")
+//  	alert(ds_3.dataid);
+		ds_3.SyncLoad=true
+		ds_3.Reset()	
+		
+		ll_cnt = f_ds_select_q("ds_11","select Profession_wbs_code select_1 , Profession_wbs_name select_2 from s_profession_wbs")//공종코드
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+
+	 if ( il_screen  == 1 ) { 
+  			ds_1.AddRow() 
+		div_init_move1() 
+		}
+
+	 if ( il_screen  == 2 ) { 
+ 		if (ds_1.CountRow < 1 ) return
+  			ds_2.AddRow() 
+			div_init_move2() 
+		}
+
+	 if ( il_screen  == 3 ) { 
+ 		if (ds_2.CountRow < 1 ) return
+	   	ds_3.AddRow() 
+		div_init_move3() 
+		}
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+    
+	 if ( il_screen  == 1 ) { 
+		if (ds_1.CountRow == 0)				 // 한건도 없을경우는  0 
+		{  
+			btnadd_onclick()   
+			return
+		}  
+		ds_1.InsertRow(ds_1.RowPosition)   
+		div_init_move1()
+		}
+	
+    if ( il_screen  == 2 ) { 
+ 		if (ds_1.CountRow < 1 ) return
+			if (ds_2.CountRow == 0)				 // 한건도 없을경우는  0 
+			{
+				btnadd_onclick()   
+				return
+			}  
+			ds_2.InsertRow(ds_2.RowPosition)   
+	 	   div_init_move2()
+		}
+
+	 if ( il_screen  == 3 ) { 
+ 		if (ds_2.CountRow < 1 ) return
+			if (ds_3.CountRow == 0)				 // 한건도 없을경우는  0 
+			{
+				btnadd_onclick()   
+				return
+			}  
+			ds_3.InsertRow(ds_3.RowPosition)   
+		   div_init_move3()
+		}
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+		
+		switch ( il_screen )
+		{
+		case 1:
+		   if ( ds_2.CountRow > 0 ) 
+	      { alert("하위에 자료가 존재하여 삭제하실 수 없습니다."); return ;  }
+		   break;
+		case 2:
+		   if ( ds_3.CountRow > 0 ) 
+	      { alert("하위에 자료가 존재하여 삭제하실 수 없습니다."); return ;  }
+		   break;
+		}
+		
+		if ( il_screen  == 1 ) 
+		{ 
+		   if (ds_2.isUpdated)
+		   {
+		   	alert("하위 내역 변경사항을 저장하셔야합니다.")
+				return ;
+			}	
+		
+		   if (ds_1.CountRow < 1 ) return
+			if  (gd_1.MultiRowSelect)
+			  {                                   // multi row select 일 경우
+			     for (i=ds_1.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+			     {
+			        if (ds_1.RowMark(i) == 1)                              // 선택되어 있으며는 
+			            ds_1.DeleteRow(i)
+			    }   
+			    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+			  }
+			  else
+			  	ds_1.DeleteRow(ds_1.RowPosition)  
+   	
+         div_btnquery_onclick1()	
+		}  	 	
+     
+     
+
+		if ( il_screen  == 2 ) 
+		{ 
+		   if (ds_3.isUpdated)
+		   {
+		   	alert("하위 내역 변경사항을 저장하셔야합니다.")
+				return ;
+			}			
+			
+		   if (ds_2.CountRow < 1 ) return
+			if  (gd_2.MultiRowSelect)
+			  {                                   // multi row select 일 경우
+			     for (i=ds_2.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+			     {
+			        if (ds_2.RowMark(i) == 1)                              // 선택되어 있으며는 
+			            ds_2.DeleteRow(i)
+			    }   
+			    ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+			  }
+			  else
+			 	ds_2.DeleteRow(ds_2.RowPosition) 
+
+			div_btnquery_onclick2() 
+		}  
+
+		if ( il_screen  == 3 ) 
+		{ 
+		   if (ds_3.CountRow < 1 ) return
+			if  (gd_3.MultiRowSelect)
+			  {                                   // multi row select 일 경우
+			     for (i=ds_3.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+			     {
+			        if (ds_3.RowMark(i) == 1)                              // 선택되어 있으며는 
+			            ds_3.DeleteRow(i)
+			    }   
+			    ds_3.MarkRows(ds_3.RowPosition,ds_3.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+			  }
+			  else
+			 	ds_3.DeleteRow(ds_3.RowPosition)  
+			 	
+		}  
+ }
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	if ( il_screen  == 1 ){ ds_1.Undo(ds_1.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 2 ){ ds_2.Undo(ds_2.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 3 ){ ds_3.Undo(ds_3.RowPosition) }                                  //해당 row만 취소한다.
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if ( ds_1.IsUpdated ||  ds_2.IsUpdated || ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+				
+			if ( ds_1.IsUpdated )	 	//변경된것이 있으며는 
+			{ 
+			ll_dup = f_dup_chk("ds_1","QUALITY_INS_NAME")
+			if (ll_dup > 0) {
+			alert("빈칸이나 중복된 파트명이 입력되었습니다.\n수정하십시요 ")
+			ds_1.RowPosition = ll_dup
+			gd_1.SetColumn("QUALITY_INS_NAME");
+			return false }
+			
+				tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			} 
+			
+			if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+	 	 	ll_dup = f_dup_chk("ds_2","part_code@section@INS_ITEM")
+	  		if (ll_dup > 0) {
+			alert("빈칸이나 중복된 평가항목이 입력되었습니다. \n수정하십시요 ")
+			ds_2.RowPosition = ll_dup
+			gd_2.SetColumn("INS_ITEM");
+			return false	}		
+			
+				tr_2.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			} 
+		
+			if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+			
+		   ll_dup = f_dup_chk("ds_3","POINT")
+		   if (ll_dup > 0) {
+			alert("빈칸이나 중복된 배점이 입력되었습니다.\n수정하십시요 ")
+			ds_3.RowPosition = ll_dup
+			gd_3.SetColumn("point");
+			return false }			
+			
+				tr_3.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			}
+	
+		}
+	}
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	btnsave_onclick() 
+	
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+	
+	top.frames['main_ct'].window.close()     
+}
+
+//----------------------------------------------------------------------
+function div_init_move1()                         // initial move
+//----------------------------------------------------------------------
+{
+   var temp = 0;
+  
+   if ( ds_2.IsUpdated || ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+			if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+		 	 	ll_dup = f_dup_chk("ds_2","INS_ITEM")
+		  		if (ll_dup > 0) {
+				alert("빈칸이나 중복된 평가항목이 입력되었습니다.\n수정하십시요 ")
+				ds_2.RowPosition = ll_dup
+				gd_2.SetColumn("INS_ITEM");
+				return false	}		
+				
+					tr_2.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+				} 
+		
+			if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+			
+			   ll_dup = f_dup_chk("ds_3","POINT")
+			   if (ll_dup > 0) {
+				alert("빈칸이나 중복된 배점이 입력되었습니다.\n수정하십시요 ")
+				ds_3.RowPosition = ll_dup
+				gd_3.SetColumn("point");
+				return false		}	
+			
+				tr_3.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			}
+	
+		}
+	}
+   
+	for( i = 1 ; i <= ds_1.CountRow  ; i++ )	
+	{
+		if ( parseInt(ds_1.NameValue(i,"QUALITY_INS_CODE")) > parseInt(temp) )
+	   	temp = ds_1.NameValue(i,"QUALITY_INS_CODE") 
+	}
+   ds_1.NameValue(ds_1.RowPosition,"QUALITY_INS_CODE") = parseInt(temp) + 1
+   ds_1.NameValue(ds_1.RowPosition,"quality_section") = il_quality_section
+
+	//column_size_pop()
+
+	 ds_1.NameValue(ds_1.RowPosition,"column_size") = '3@4@4@7@6@4'   
+
+    gd_size_chk()  
+
+    div_btnquery_onclick1() 
+   
+	 ds_3.ClearData()
+}
+//----------------------------------------------------------------------
+function div_init_move2()                         // initial move
+//----------------------------------------------------------------------
+{
+   var temp = 0;
+
+	if ( ds_1.IsUpdated || ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+				
+			if ( ds_1.IsUpdated )	 	//변경된것이 있으며는 
+			{ 
+				ll_dup = f_dup_chk("ds_1","QUALITY_INS_NAME")
+				if (ll_dup > 0) {
+				alert("빈칸이나 중복된 파트명이 입력되었습니다.\n수정하십시요 ")
+				ds_1.RowPosition = ll_dup
+				gd_1.SetColumn("QUALITY_INS_NAME");
+				return false  }
+			
+				tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			} 
+			
+			if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+			   ll_dup = f_dup_chk("ds_3","POINT")
+			   if (ll_dup > 0) {
+				alert("빈칸이나 중복된 배점이 입력되었습니다.\n수정하십시요 ")
+				ds_3.RowPosition = ll_dup
+				gd_3.SetColumn("point"); 
+		   	return false }
+		
+		  	
+				tr_3.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			}
+		}	
+	   else
+		{
+			if ( ds_1.IsUpdated ){
+	   	 	ds_2.Undo(ds_2.RowPosition)
+	   		alert("평가항목을 저장하셔야 평가내역을 저장가능합니다.");
+	   		gd_1.focus()
+	   		return ;	}
+   	}
+	}
+
+   
+	for( i = 1 ; i <= ds_2.CountRow  ; i++ )	
+	{
+		if ( parseInt(ds_2.NameValue(i,"seq")) > parseInt(temp) )
+	   	temp = ds_2.NameValue(i,"seq") 
+	}
+   ds_2.NameValue(ds_2.RowPosition,"seq") = parseInt(temp) + 1
+   ds_2.NameValue(ds_2.RowPosition,"QUALITY_INS_CODE") = ds_1.NameValue(ds_1.RowPosition,"QUALITY_INS_CODE")
+   ds_2.NameValue(ds_2.RowPosition,"quality_section") = il_quality_section
+   ds_2.NameValue(ds_2.RowPosition,"part_code") = ds_2.NameValue(ds_2.RowPosition -1,"part_code")
+   ds_2.NameValue(ds_2.RowPosition,"wbs_code") = ds_2.NameValue(ds_2.RowPosition -1,"wbs_code")  
+   ds_2.NameValue(ds_2.RowPosition,"section") = ds_2.NameValue(ds_2.RowPosition -1,"section")
+   ds_2.NameValue(ds_2.RowPosition,"ins_item") = ds_2.NameValue(ds_2.RowPosition -1,"ins_item")   
+   ds_2.NameValue(ds_2.RowPosition,"place") = ds_2.NameValue(ds_2.RowPosition -1,"place")
+   ds_2.NameValue(ds_2.RowPosition,"remark ") = ds_2.NameValue(ds_2.RowPosition -1,"remark ")        
+
+   
+   div_btnquery_onclick2() 
+}
+//----------------------------------------------------------------------
+function div_init_move3()                         // initial move
+//----------------------------------------------------------------------
+{
+   var temp = 0;
+	
+	if ( ds_1.IsUpdated ||  ds_2.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+				
+			if ( ds_1.IsUpdated )	 	//변경된것이 있으며는 
+			{ 
+			ll_dup = f_dup_chk("ds_1","QUALITY_INS_NAME")
+			if (ll_dup > 0) {
+			alert("빈칸이나 중복된파트명이 입력되었습니다.\n수정하십시요 ")
+			ds_1.RowPosition = ll_dup
+			gd_1.SetColumn("QUALITY_INS_NAME");
+			return false   }
+			
+				tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			} 
+			
+			if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+	 	 	ll_dup = f_dup_chk("ds_2","INS_ITEM")
+	  		if (ll_dup > 0) {
+   	 	ds_3.Undo(ds_3.RowPosition)
+			alert("빈칸이나 중복된항목이 입력되었습니다.\n수정하십시요 ")
+			ds_2.RowPosition = ll_dup
+			gd_2.SetColumn("INS_ITEM");
+			return false	}		
+			
+				tr_2.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			} 
+		}
+		else
+		{
+			if ( ds_2.IsUpdated )
+	   	{
+	   	 	ds_3.Undo(ds_3.RowPosition)
+	   		alert("평가항목을 저장하셔야 평가배점을 저장가능합니다.");
+	   		gd_2.focus()
+				gd_2.SetColumn("INS_ITEM");
+	   		return ;	
+			}
+		}
+	}
+	
+	for( i = 1 ; i <= ds_3.CountRow  ; i++ )	
+	{
+		if ( parseInt(ds_3.NameValue(i,"d_seq")) > parseInt(temp) )
+	   	temp = ds_3.NameValue(i,"d_seq") 
+	}
+   ds_3.NameValue(ds_3.RowPosition,"d_seq") = parseInt(temp) + 1
+   ds_3.NameValue(ds_3.RowPosition,"seq") = ds_2.NameValue(ds_2.RowPosition,"seq")
+   ds_3.NameValue(ds_3.RowPosition,"QUALITY_INS_CODE") = ds_2.NameValue(ds_2.RowPosition,"QUALITY_INS_CODE")
+   ds_3.NameValue(ds_3.RowPosition,"quality_section") = il_quality_section   
+}
+//----------------------------------------------------------------------
+function gd_size_chk()                        
+//----------------------------------------------------------------------
+{
+   var unit = 20
+	var result;
+	var array = new Array();
+	array = ds_1.NameValue(ds_1.RowPosition,"COLUMN_SIZE").split("@");
+
+	gd_2.ColumnProp('part_code','Width')= 	array[0] * unit 	
+	gd_2.ColumnProp('wbs_code','Width')= array[1] * unit 		
+	gd_2.ColumnProp('section','Width')= array[2] * unit 	
+	gd_2.ColumnProp('ins_item','Width')= array[3] * unit 	
+	gd_2.ColumnProp('place','Width')= array[4] * unit 	
+	gd_2.ColumnProp('remark','Width')= array[5] 	* unit 
+
+	if (  array[0] < 1 )
+		gd_2.ColumnProp('part_code','show') = "false" 		
+	else 
+		gd_2.ColumnProp('part_code','show') = "true" 	
+	
+	if (  array[1]< 1 )
+		gd_2.ColumnProp('wbs_code','show') = "false" 		
+	else 
+		gd_2.ColumnProp('wbs_code','show') = "true" 		
+	
+	if (  array[2] < 1 )
+		gd_2.ColumnProp('section','show') = "false" 		
+	else 
+		gd_2.ColumnProp('section','show') = "true" 		
+	
+	if ( array[3] < 1 )
+		gd_2.ColumnProp('ins_item','show') = "false" 		
+	else 
+		gd_2.ColumnProp('ins_item','show') = "true" 		
+	
+	if ( array[4] < 1 )
+		gd_2.ColumnProp('place','show') = "false" 		
+	else 	
+		gd_2.ColumnProp('place','show') = "true" 		
+	
+	if ( array[5] < 1 )
+		gd_2.ColumnProp('remark','show') = "false" 		
+	else 	
+		gd_2.ColumnProp('remark','show') = "true" 		
+		
+}	
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+	if (is_sec == 'r') return   // 조회권한일경우 
+	
+	switch ( il_screen )
+	{
+	case 1:
+      break;
+	case 2:
+	   break;
+	case 3:
+	    break;
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  
+//    f_set_resize()
+
+    top.frames['main_title'].mouse_over()
+
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+	tr_3.Action = is_tr_3_addr	
+	
+	is_sec = gf_initial_security()
+	is_temp = is_sec
+   if (is_sec != 'r') {
+     is_temp = 'u'
+   }	
+	if (is_sec == 'r') {
+	   button_1.style.visibility='hidden'
+	   button_3.style.visibility='hidden'
+	   button_4.style.visibility='hidden'
+	   button_5.style.visibility='hidden'
+	   button_6.style.visibility='hidden'
+	   button_7.style.visibility='hidden'
+	}
+
+	ll_cnt = f_ds_select_q("ds_10"," select null select_1 , null select_2 from dual union all select ETC_CODE select_1 , CHILD_NAME select_2 from Z_CODE_ETC_CHILD WHERE CLASS_TAG ='001' ")//파트코드
+	ll_cnt = f_ds_select_q("ds_11","select Profession_wbs_code select_1 , Profession_wbs_name select_2 from s_profession_wbs where profession_wbs_code" )//공종코드
+
+	btnquery_onclick()
+
+	r_quality_section[0].checked  = "true"
+}
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+/*	var objArr=new Array('gd_1','gd_2','gd_3');
+	var xArr =new Array(false,false,true);
+	var yArr =new Array(true,true,true);
+
+	f_reSize(objArr, xArr, yArr);
+*/
+}
+//---------------------------------------------------------------------------
+function column_size_pop()
+//---------------------------------------------------------------------------
+{
+/*
+   var result;
+   var array = ds_1.NameValue(ds_1.RowPosition,"column_size")
+	var gs_home1 = top.frames['security'].gs_home.value
+	var is_dept_search_addr = gs_home1 + '/const/v_web/03/V_INS_ITEM_REG_INPUT_POP_1h.html'
+   
+	result = window.showModalDialog(is_dept_search_addr,array ,"resizable:no;scroll:no;status:no;help:no;dialogWidth:280px;dialogHeight:300px");
+	
+	if(result == "") return false;
+	
+	 ds_1.NameValue(ds_1.RowPosition,"column_size") = result   
+
+    gd_size_chk()  
+
+*/	 
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event               							           -->
+<!-- ======================================================================= -->
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code(tr_2) : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_3 event=OnFail()>
+  alert("Error Code(tr_3) : " + tr_3.ErrorCode + "\n" + "Error Message : " + tr_3.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language="javascript"  for=gd_1 event=OnClick(Row,Colid)>
+ 	gd_size_chk()
+
+   if ( ds_2.IsUpdated || ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+			if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+		 	 	ll_dup = f_dup_chk("ds_2","INS_ITEM")
+		  		if (ll_dup > 0) {
+				alert("빈칸이나 중복된 평가항목이 입력되었습니다.\n수정하십시요 ")
+				ds_2.RowPosition = ll_dup
+				gd_2.SetColumn("INS_ITEM");
+				return false	}		
+				
+					tr_2.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+				} 
+		
+			if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+			
+			   ll_dup = f_dup_chk("ds_3","POINT")
+			   if (ll_dup > 0) {
+				alert("빈칸이나 중복된 배점이 입력되었습니다.\n수정하십시요 ")
+				ds_3.RowPosition = ll_dup
+				gd_3.SetColumn("point");
+				return false		}	
+
+			   ll_dup = f_dup_chk("ds_3","contents")
+			   if (ll_dup > 0) {
+				alert("빈칸이나 중복된 기준이 입력되었습니다.\n수정하십시요 ")
+				ds_3.RowPosition = ll_dup
+				gd_3.SetColumn("contents");
+				return false		}	
+							
+				tr_3.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			}
+	
+		}
+	}
+
+	div_btnquery_onclick1()
+	
+</script>
+<script language="javascript"  for=gd_2 event=OnClick(Row,Colid)>
+	if	( Colid == "wbs_code" )
+	{
+	ll_cnt = f_ds_select_q("ds_11","select Profession_wbs_code select_1 , Profession_wbs_name select_2 from s_profession_wbs where profession_wbs_code like '"
+				+	ds_2.NameValue(ds_2.RowPosition,"part_code") +"%'")//공종코드	
+	}		
+//----------하위자료 저장체크-------------
+	
+	if ( ds_1.IsUpdated || ds_3.IsUpdated)
+	{
+	  	if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{
+			if ( ds_1.IsUpdated )	 	//변경된것이 있으며는 
+			{ 
+			ll_dup = f_dup_chk("ds_1","QUALITY_INS_NAME")
+			if (ll_dup > 0) {
+			alert("빈칸이나 중복된파트명이 입력되었습니다.\n수정하십시요 ")
+			ds_1.RowPosition = ll_dup
+			gd_1.SetColumn("QUALITY_INS_NAME");
+			return false   }
+			
+				tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			} 
+	
+			if ( ds_3.IsUpdated ) 
+			{
+		   ll_dup = f_dup_chk("ds_3","POINT")
+		   if (ll_dup > 0) {
+				alert("빈칸이나 중복된 배점이 입력되었습니다.\n수정하십시요 ")
+				gd_3.focus();
+				ds_3.RowPosition = ll_dup
+				gd_3.SetColumn("point");
+				return false }
+		
+				tr_3.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			}
+	    }
+	  }  
+//--------------------------------	
+	div_btnquery_onclick2()
+</script>
+<script language="javascript"  for=gd_3 event=OnClick(Row,Colid)>
+	if ( ds_1.IsUpdated ||  ds_2.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+				
+			if ( ds_1.IsUpdated )	 	//변경된것이 있으며는 
+			{ 
+			ll_dup = f_dup_chk("ds_1","QUALITY_INS_NAME")
+			if (ll_dup > 0) {
+			alert("빈칸이나 중복된 파트명이 입력되었습니다.\n수정하십시요 ")
+			ds_1.RowPosition = ll_dup
+			gd_1.SetColumn("QUALITY_INS_NAME");
+			return false   }
+			
+				tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+			} 
+			
+			if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+			{  
+	 	 	ll_dup = f_dup_chk("ds_2","INS_ITEM")
+	  		if (ll_dup > 0) {
+			alert("빈칸이나 중복된 항목이 입력되었습니다.\n수정하십시요 ")
+			ds_2.RowPosition = ll_dup
+			gd_2.SetColumn("INS_ITEM");
+			return false	}		
+			
+				tr_2.Post()           // 저장(window_onload()에서 tr_2.Action 이 연결되어있어야한다.) 
+			} 
+		}
+		else
+		{
+			if ( ds_2.IsUpdated )
+	   	{
+	   	 	ds_3.Undo(ds_3.RowPosition)
+	   		alert("평가항목을 저장하셔야 평가배점을 저장가능합니다.");
+	   		gd_2.focus()
+	   		return ;	
+			}
+		}
+	}
+</script>
+
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+//	column_size_pop()
+</script>
+<script language=JavaScript  for=gd_1 event=onKeyPress(keycode)>
+if ( keycode == 38 || keycode == 40 )
+	div_btnquery_onclick1()
+</script>
+<script language=JavaScript  for=gd_2 event=onKeyPress(keycode)>
+if ( keycode == 38 || keycode == 40 )
+	div_btnquery_onclick2()
+</script>
+<script language=JavaScript for=gd_2 event=OnPopup(row,colid,data)>
+if ( colid = 'wbs_code')
+{  
+   if (ds_2.NameValue(ds_2.RowPosition,"part_code") == '' ) 
+	{
+		alert('파트명을 선택해주세요.')
+		gd_2.SetColumn("part_code");
+		return ;	
+	}   
+ 	   
+	var result;
+	var array = new Array();
+	var gs_home1 = top.frames['security'].gs_home.value
+	var is_dept_search_addr = gs_home1 + '/const/v_web/03/V_INS_ITEM_REG_CODE_POP_1H.html'
+
+	   result = window.showModalDialog(is_dept_search_addr,gs_home1 + "@" + ds_2.NameValue(ds_2.RowPosition,"part_code") + "@" ,"resizable:no;scroll:no;status:no;help:no;dialogWidth:400px;dialogHeight:500px");
+		
+		if(result == "") return false;
+	
+		array = result.split("@");
+	
+		ds_2.NameValue(ds_2.RowPosition,"wbs_code") = array[0];
+		ds_2.NameValue(ds_2.RowPosition,"wbs_name") = array[1];
+
+}	
+</script>
+<script language=JavaScript for=gd_2 event=OnCloseUp(row,colid)>
+	if ( colid =='part_code' )
+	{
+		ds_2.NameValue(row , 'wbs_code') = ''
+		ds_2.NameValue(row , 'wbs_name') = ''
+
+	}	
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+<comment id="__NSID__"><OBJECT id=ds_10 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_11 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+        
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:V_INS_ITEM_REG_INPUT_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:V_INS_ITEM_REG_INPUT_2tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_3 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:V_INS_ITEM_REG_INPUT_3tr=ds_3)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>		
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr class=td_green>
+		<td colspan=5 height=24 >
+			<table width="100%" BORDER="0"  CELLSPACING="0" cellspacing="0" >
+				<tr>
+					<td width="*">
+						<table border=0 width="100%" cellpadding=0 cellspacing=0 style="font-size:12px" >
+							<tr>
+	                     <td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+								<td align="left" height="20" class=font_green_bold width="55" >
+									항목선택
+								</td>
+								<td align="center" width="25">
+									<input type="radio" name="r_quality_section" align="absmiddle" onclick="btnquery_onclick()">
+								</td>
+								<td width="30">품질</td>
+								<td align="center" width="25">
+									<input type="radio" name="r_quality_section" align="absmiddle" onclick="btnquery_onclick()">
+								</td>
+								<td width="834">환경</td>
+					   	</tr>
+					   </table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="20">
+		<td  class=font_green_bold ><img src="../../../image/bullet1.gif" align="absmiddle" > 평가구분
+		</td>
+		<td  class=font_green_bold ><img src="../../../image/bullet1.gif" align="absmiddle" > 평가항목
+		</td>
+		<td  class=font_green_bold ><img src="../../../image/bullet1.gif" align="absmiddle" > 평가배점
+		</td>
+	</tr>
+	<tr>
+		<td width="17%">
+			<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+			    style="FONT-SIZE: 12px; Z-INDEX: 105;  width=100% ; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=구분 ID=quality_ins_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80</C> 
+				  <g> name =가중치 HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK 
+				  <C> Name=From ID=weight_point1 edit=RealNumeric BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=35 </C> 
+				  <C> Name=To ID=weight_point2 edit=RealNumeric BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=35 </C> 
+			     </g>
+			      ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td width="800">	
+			<comment id="__NSID__"><OBJECT id=gd_2 onfocus="get_focus(2)"
+			    style="FONT-SIZE: 12px; Z-INDEX: 105; width=100% ; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_2">
+			   <param name=SortView  value="Left">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=파트 ID=part_code EditStyle=Lookup Data='ds_10:select_1:select_2' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=3  Width=80 </C> 
+				  <C> Name=공종 ID=wbs_name EditStyle=popup HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=2 Width=150 </C> 
+				  <C> Name=구분 ID=section  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=1 Width=150 </C> 
+				  <C> Name=*평가항목 ID=ins_item BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+				  <C> Name=위치 ID=place BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+				  <C> Name=비고 ID=remark BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+			     ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td  width="300">	
+			<comment id="__NSID__"><OBJECT id=gd_3 onfocus="get_focus(3)"
+			    style="FONT-SIZE: 12px; Z-INDEX: 105;  width=100% ; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			    <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_3">
+			    <param name=SortView  value="Left">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=기준 ID=contents BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=145 </C> 
+				  <C> Name=*배점 ID=point Dec=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+			     ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script> 
+		</td>
+	</tr>
+</table>
+
+
+</div>
+
+
+</BODY></HTML>

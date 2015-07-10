@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_labor_basic.html 					-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					-->
+<!-- 3. 기 능 정 의   : 노무자코드 등록  	  				-->
+<!-- 4. 변 경 이 력   : 김 동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_ds_1_addr = gs_home + '/const/l_web/99/l_code_job_1q.jsp'
+var is_tr_1_addr = gs_home + '/const/l_web/99/l_code_job_1tr.jsp'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("job_code");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	//ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+	  Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 ds_1.AddRow()
+	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	 ds_1.InsertRow(ds_1.RowPosition)
+	 init_move()
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1)
+	               ds_1.DeleteRow(i)
+	    }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	   } 
+	  else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?"))
+	       tr_1.Post()
+ } 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+}     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(is_dept_search_addr,gs_home + "@" + dept_name.value,"dialogWidth:500px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+//	ds_1.NameString(row,"dept_code") = array[0];   // 부서 코드 
+//                                         [1];   // 사업장 코드 	
+//	ds_1.NameString(row,"comp_name") = array[2];   // 사업장 명 
+//                                         [3];   // 상위 레벨 코드 
+//	ds_1.NameString(row,"long_name") = array[4];   // 부서명칭
+//                                         [5];   // 현장 구분 	
+//
+//                                    [6];   // 부서 사용 구분 
+   is_dept_code = array[0]       //부서코드 
+   is_dept_name = array[4]       //부서명칭
+   dept_name.value = is_dept_name = array[4]
+//   makeCookie("@y_chg_degree@",array[0] + "@" + array[4])
+   btnquery_onclick()
+}     
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+//ds_combo.DataID = is_ds_combo
+//ds_combo.SyncLoad=true
+//ds_combo.reset()
+   top.frames['main_title'].mouse_over()
+ds_1.DataID=is_ds_1_addr
+ds_1.SyncLoad=true
+ds_1.reset()
+tr_1.Action = is_tr_1_addr 
+}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:l_code_job_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 5px; HEIGHT: 645px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='직종코드' ID=job_code Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name='직 종 명' ID=job_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=300 </C>
+	  <C> Name='단    가' ID=unitcost  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 </C>
+	  <C> Name='' ID=comp_text Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=480 </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_cust_status_rpt_1h.html									-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 청약자/당첨자/예비당첨자출력                  	-->
+<!-- 4. 변 경 이 력   : 정호준 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+
+var is_dept_code 	  = ""
+var is_dept_name 	  = ""
+var is_sell_code    = ""
+var is_sell_name    = ""
+var is_rpt_select   = ""
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+   var arg_temp
+   
+   arg_temp ="general_rpt/h_web/02r/"        // 보고서 디렉토리
+   
+   switch(is_rpt_select)
+   
+   {
+   	case "0" : arg_temp = arg_temp + "h_cust_status_subs" + "&RptParams=" + is_dept_code + "&RptParams=" + is_sell_code  ; break                                                         
+   	case "1" : arg_temp = arg_temp + "h_cust_status_sale" + "&RptParams=" + is_dept_code + "&RptParams=" + is_sell_code  ; break
+   }
+   
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+  	makeCookie("@h_cust_status@",is_dept_code + "@" + is_dept_name + "@" + is_sell_code + "@" + is_sell_name)
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_hdept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	is_sell_code = top.frames['security'].gs_sell_code.value
+	is_sell_name = top.frames['security'].gs_sell_name.value
+
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function rpt_select(value)                      // window open event
+//---------------------------------------------------------------------------
+{
+	is_rpt_select = value
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	var result="";
+	var array = new Array();
+   result = ""
+   result = readCookie("@h_cust_status@")
+   if (result == "err") {
+   }   
+	else {   
+	   array = result.split("@");
+      is_dept_code = array[0]
+      is_dept_name = array[1]
+      is_sell_code = array[2]
+      is_sell_name = array[3]
+      dept_name.value = is_dept_name
+      sell_name.value = is_sell_name
+      is_rpt_select = '0'
+    }
+   if (is_dept_code == top.frames['security'].gs_dept_code.value) {
+   }   
+   else {   
+		is_dept_code = top.frames['security'].gs_dept_code.value
+		is_dept_name = top.frames['security'].gs_dept_name.value
+		is_sell_code = top.frames['security'].gs_sell_code.value
+		is_sell_name = top.frames['security'].gs_sell_name.value
+		dept_name.value = is_dept_name
+		sell_name.value = is_sell_name
+		is_rpt_select = '0'
+   }
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_select
+		  style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"
+		  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+		  <param name=SortExpr       value="-select_1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLPADDING="0" CELLSPACING="0">
+	<TR HEIGHT="50%">
+		<TD>
+      <table width="370px" BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td width="15%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+             	<div align="right">현장명</div>
+             </td>
+             <td width="60%"> 
+				 	<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active"   onkeyDown="keyDown()" style="width:140px">
+					<INPUT id=sell_name style="width:80px">
+					<input type="button" value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+				 </td>
+         </tr>
+         <tr BGCOLOR="white" >
+         <td width="15%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+          		<div align="right">출력구분</div>
+          	 </td>
+             <td width="10%"> 
+					<select name="rpt_select"  onchange=rpt_select(value)>
+							  <option value = "0">청약자현황</option>
+							  <option value = "1">계약자현황</option>
+					</select>
+				</td> 
+			</tr>
+    </table>
+    </TD>
+  </TR>
+  <TR HEIGHT="50%">
+  	 <TD></TD>
+  </TR>
+</TABLE>
+</BODY></HTML>

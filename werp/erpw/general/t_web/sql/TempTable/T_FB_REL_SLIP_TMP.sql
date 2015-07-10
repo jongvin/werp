@@ -1,0 +1,22 @@
+CREATE Global Temporary TABLE T_FB_REL_SLIP_TMP (
+       SLIP_ID              NUMBER NOT NULL,
+       SLIP_IDSEQ           NUMBER NOT NULL,
+       PAY_METHOD_GUBUN     VARCHAR2(1) NULL,
+       PAY_KIND_GUBUN       VARCHAR2(2) NULL,
+       COMP_CODE            VARCHAR2(20) NULL,
+       DEPT_CODE            VARCHAR2(10) NULL,
+       PAY_AMT              NUMBER NULL,
+       PAY_DUE_YMD          VARCHAR2(8) NULL,
+       DESCRIPTION          VARCHAR2(1000) NULL,
+       IN_BANK_CODE         VARCHAR2(2) NULL,
+       IN_ACCOUNT_NO        VARCHAR2(50) NULL,
+       ACCT_HOLDER_NAME     VARCHAR2(50) NULL,
+       CUST_SEQ             NUMBER NULL,
+       VENDOR_NAME          VARCHAR2(200) NULL,
+       OUT_BANK_CODE        VARCHAR2(2) NULL,
+       OUT_ACCOUNT_NO       VARCHAR2(50) NULL,
+       PAY_YMD              VARCHAR2(8) NULL
+)
+;
+ALTER TABLE T_FB_REL_SLIP_TMP
+       ADD  ( PRIMARY KEY (SLIP_ID, SLIP_IDSEQ));

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : V_INS_PLAN_POPUP.html 									-->
+<!-- 2. 유형(시나리오): 파트 찾기													-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   :  이준구 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<TITLE> 파트 찾기 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = '/const/v_web/03/V_INS_PLAN_POPUP_1q.jsp'
+var is_confirm_check = 'no'
+var not_query = ''
+</SCRIPT> 
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<script language="javascript" >
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+  ds_1.DataID =  gs_home + is_ds_1_addr + '?arg_not_query=' + not_query
+  ds_1.SyncLoad=true
+  ds_1.reset()
+  
+  if ( ds_1.CountRow  < 1 ) 
+    Button_close_onclick() 
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'etc_code') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'child_name') + "@ "  
+        
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ 
+ if(result == "") return false;
+	
+ array = result.split("@"); 
+
+ gs_home = array[0] 
+ not_query = '\'\''+ array[1]
+ 
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event               							           -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->    
+
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) onunload="window_onunload()" oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr class=td_green>
+		<td colspan=5 height=24 >
+			<table width="100%" BORDER="0"  CELLSPACING="0" cellspacing="0" >
+				<tr>
+               <td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+					<td align="left"height="20" class=font_green_bold width="871" >파트명 </td>
+					<td width="50">
+						<INPUT  id=Button_confrim  type=button class="img_btnOk"  value=확인 onclick=Button_confirm_onclick() >
+					</td>
+					<td>
+						<INPUT   id=Button_close type=button  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>	
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="Z-INDEX: 105; WIDTH: 100%; POSITION: relative;HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+				<PARAM NAME="AutoInsert" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				 <param name="MultiRowSelect"   value="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE="
+				   <C> Name=파트명 ID=child_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=280 </C> 
+				   ">
+			 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>
+</div>		 	
+</BODY></HTML>

@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_authority_user_find 									-->
+<!-- 2. 유형(시나리오): 성명 찾기 													-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE> 성명  찾기 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr ='/const/v_web/01/v_user_find_1q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID = gs_home + is_ds_1_addr + "?arg_name=" + Textbox_1.value 
+  ds_1.SyncLoad=true
+  
+
+/*  
+  if  (Textbox_1.value == "") {
+     alert("검색조건을 반드시 입력하십시요")
+     return
+  }      
+*/      
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'empno') + '@' + ds_1.NameValue(ds_1.RowPosition,'name') + '@'
+				+ ds_1.NameValue(ds_1.RowPosition,'long_name') + '@'  
+        
+  window.returnValue = ls_return
+  window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+   alert("최소한 홈 디렉토리는 있어야 합니다")
+ array = result.split("@");
+ gs_home = array[0]                  // 0: 홈 디렉토리 
+ Textbox_1.value = array[1]          // 1: 찾고자하는 값.
+//  ccom_process_code.Index = 1;
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  var ls_sort
+  if (row == 0) {
+  		if (ls_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  ls_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<script language=JavaScript for=ccom_process_code event=onSelChange()>
+  gd_1.ReDraw = false
+  ds_1.Filter()
+  gd_1.ReDraw = true
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"  CELLSPACING="0"  style="FONT-SIZE: 12px; ">  
+	<tr>
+		<td class=td_green>
+			<table width="*"  height="24"  BORDER="0"  CELLSPACING="0"  style="FONT-SIZE: 12px; ">  
+				<tr>
+		         <td><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+		         <td class=font_green_bold >검색조건</td>
+					<td>
+						<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()" 
+						    style="FONT-SIZE: 12px;"
+						    onkeyDown="keyDown()" size="17">
+						<input type="button" value="조회" 
+							style="color:#2E4A4A; font-size:12px;" onclick=btnquery_onclick()
+							class="img_btn2_1" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+<!--
+				   <td class=font_green_bold>재직구분</td>
+					<td>
+					    <comment id="__NSID__"><OBJECT id=ccom_process_code width=80px 
+					    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					    <param name=Data     value="01^전체,02^재직,03^퇴직"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					</td>
+-->					
+					<td width="200" align="right">
+					<input type="button" value="확인" 
+							style="color:#2E4A4A; font-size:12px;" onclick=Button_confirm_onclick()
+							class="img_btn2_1" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+				
+						<input type="button" value="닫기" 
+							style="color:#2E4A4A; font-size:12px;" onclick=Button_close_onclick()
+							class="img_btn2_1" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">						
+				
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>		
+		<td height="100%" width="100%">
+		<comment id="__NSID__"><OBJECT id=gd_1 
+		    style="Z-INDEX: 105; LEFT: 5px; WIDTH:100%; HEIGHT:100%" 
+		    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+			<PARAM NAME="AutoInsert" VALUE="0">
+			<PARAM NAME="AllShowEdit" VALUE="0">
+			 <param name="MultiRowSelect"   value="0">
+		   <PARAM NAME="BorderStyle"  VALUE=1>
+			<PARAM NAME="Editable" VALUE="0">
+			<PARAM NAME="ColSizing" VALUE="-1">
+			<PARAM NAME="DataID" VALUE="ds_1">
+			<PARAM NAME="Format" VALUE="
+			   <C> Name=사번 ID=empno HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 </C>
+			   <C> Name='성 명' ID=name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+		      <C> Name='구분'  id=using_tag EditStyle=Combo Data='Y:재직,N:퇴직' width=40  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			   
+			   <C> Name='부 서 명' ID=long_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=250 </C>
+			   ">
+				<!-- <C> Name='직위' ID=grade_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+			   <C> Name='직책' ID=title_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C> -->
+		 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>
+</div>
+</BODY>
+</HTML>

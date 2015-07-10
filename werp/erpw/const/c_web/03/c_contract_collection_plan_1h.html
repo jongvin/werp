@@ -1,0 +1,381 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_contract_collection_plan_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 도급기성 수금 계획 등록   	-->
+<!-- 4. 변 경 이 력   : 박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_ds_1_addr = gs_home + '/const/c_web/03/c_contract_collection_plan_1q.jsp?arg_dept_code='         
+var is_tr_1_addr = gs_home + '/const/c_web/03/c_contract_collection_plan_1tr.jsp'
+var is_dept_code = ""
+var is_dept_name = ""
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function init_move()                            //입력시 초기값 셋팅
+//------------------------------------------------------------------------
+{
+  	ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code  
+  	ds_1.NameValue(ds_1.RowPosition,"extablish_tag") = 2
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+ 	if (is_dept_code == "") {
+     	alert("현장을 선택하십시요(검색을 누르십시요)")
+      return
+ 	}     
+ 	ds_1.AddRow()
+ 	init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+  	ds_1.InsertRow(ds_1.RowPosition);
+  	init_move()
+
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+ 	if (is_dept_code == "") return
+ 	if (ds_1.RowPosition < 1) return
+ 	ds_1.DeleteRow(ds_1.RowPosition)
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if  (is_dept_code == "") return
+ 	
+	if (ds_1.IsUpdated){
+   	if (ds_1.NameValue(ds_1.RowPosition,"key_plan_yymm") == "" ) {
+   		alert("계획년월을 입력하십시요")
+     	  	gd_1.SetColumn("key_plan_yymm");
+	     	return
+   	}
+   	
+   	if (ds_1.NameValue(ds_1.RowPosition,"extablish_time") == "" || ds_1.NameValue(ds_1.RowPosition,"extablish_time") == 0 ) {
+   		alert("기성차수를 입력하십시요")
+     	  	gd_1.SetColumn("extablish_time");
+	     	return
+   	}
+   	
+   	if (ds_1.NameValue(ds_1.RowPosition,"extablish_tag") == "" ) {
+   		alert("기성구분을 입력하십시요")
+     	  	gd_1.SetColumn("extablish_tag");
+	     	return
+   	}
+   	
+   	if (ds_1.NameValue(ds_1.RowPosition,"key_plan_yymm").length == "6") {
+   	ds_1.NameValue(ds_1.RowPosition,"key_plan_yymm") =	ds_1.NameValue(ds_1.RowPosition,"key_plan_yymm").substr(0,4) + "." + ds_1.NameValue(ds_1.RowPosition,"key_plan_yymm").substr(4,2)
+   	}
+   	
+   	if(!f_check_date(ds_1.NameValue(ds_1.RowPosition, "plan_date"))) {
+	  	 	alert("계획년월이 올바르지 않습니다")
+	     	gd_1.SetColumn("key_plan_yymm");
+	  	 	return
+    	}
+	 	var ll_dup, ll_dup2
+	 	ll_dup = f_dup_chk("ds_1","key_plan_yymm")
+	 	if (ll_dup > 0) {
+	   	alert("계획년월이 중복되었습니다: 계획년월을 수정하십시요 ")
+	     	ds_1.RowPosition = ll_dup
+     	  	gd_1.SetColumn("key_plan_yymm");
+	     	return
+	 	}
+	 	
+	 	ll_dup2 = f_dup_chk("ds_1","extablish_time")
+	 	if (ll_dup2 > 0) {
+	   	alert("기성차수가 중복되었습니다: 기성차수를 수정하십시요 ")
+	     	ds_1.RowPosition = ll_dup2
+     	  	gd_1.SetColumn("extablish_time");
+	     	return
+	 	}
+	 	
+	 	if(!f_check_date(ds_1.NameValue(ds_1.RowPosition, "cash_date")) && ds_1.NameValue(ds_1.RowPosition, "cash_date").length != 0) {
+	 		alert("현금입금예정일이 올바르지 않습니다")
+	     	gd_1.SetColumn("cash_date");
+	  	 	return
+    	}
+    	
+    	if(!f_check_date(ds_1.NameValue(ds_1.RowPosition, "bill_date")) && ds_1.NameValue(ds_1.RowPosition, "bill_date").length != 0) {
+	  	 	alert("어음만기일이 올바르지 않습니다")
+	     	gd_1.SetColumn("bill_date");
+	  	 	return
+    	}
+  	}
+
+   if (ds_1.IsUpdated){
+    	if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        	tr_1.Post()
+ 	} 
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+	btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1');
+	var xArr   = new Array(true);
+	var yArr   = new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  	if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '005' order by etc_code") //기성금종류
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	dept_name.value = is_dept_name
+
+   tr_1.Action = is_tr_1_addr
+   btnquery_onclick()
+   
+   gd_1.ColumnProp("key_plan_yymm", "EditLimit") = 7
+	gd_1.ColumnProp("extablish_time", "EditLimit") = 3
+	gd_1.ColumnProp("cash_date", "EditLimit") = 10
+	gd_1.ColumnProp("bill_date", "EditLimit") = 10
+}
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  	alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  	alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  	alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	
+	var ls_in_date = ""
+	if ( row < 1)	return
+	
+	if (colid == "key_plan_yymm") {
+		ls_in_date = ds_1.NameValue(row, "key_plan_yymm")
+		ls_in_date = ls_in_date.replace(/\./g,"")
+		
+		if ( ls_in_date.length > 6)
+			ls_in_date = ls_in_date.substr(0,7)
+		else if ( ls_in_date.length < 6) {
+			ds_1.NameValue(row, "key_plan_yymm") = ls_in_date
+			ds_1.NameValue(row,"plan_date") = ds_1.NameValue(row,"key_plan_yymm") + '.01'
+			return
+		}
+		ds_1.NameValue(row, "key_plan_yymm") = ls_in_date.substr(0,4) + "." + ls_in_date.substr(4,2)
+		ds_1.NameValue(row,"plan_date") = ds_1.NameValue(row,"key_plan_yymm") + '.01'
+		
+	}
+	
+	if (colid == "cash_date") {
+		ls_in_date = ds_1.NameValue(row, "cash_date")
+		ls_in_date = ls_in_date.replace(/\./g,"")
+		
+		if ( ls_in_date.length > 8)
+			ls_in_date = ls_in_date.substr(0,8)
+		else if ( ls_in_date.length < 8) {
+			ds_1.NameValue(row, "cash_date") = ls_in_date
+			return
+		}
+		ds_1.NameValue(row, "cash_date") = ls_in_date.substr(0,4) + "." + ls_in_date.substr(4,2) + "." + ls_in_date.substr(6,2)
+		
+	}
+	
+	if (colid == "bill_date") {
+		ls_in_date = ds_1.NameValue(row, "bill_date")
+		ls_in_date = ls_in_date.replace(/\./g,"")
+		
+		if ( ls_in_date.length > 8)
+			ls_in_date = ls_in_date.substr(0,8)
+		else if ( ls_in_date.length < 8) {
+			ds_1.NameValue(row, "bill_date") = ls_in_date
+			return
+		}
+		ds_1.NameValue(row, "bill_date") = ls_in_date.substr(0,4) + "." + ls_in_date.substr(4,2) + "." + ls_in_date.substr(6,2)
+	}
+	
+	if (colid == "cash_amt" || colid == "bill_amt") {
+		ds_1.NameValue(row, "collection_plan_amt") = ds_1.NameValue(row, "cash_amt") + ds_1.NameValue(row, "bill_amt")
+	}
+</script>
+<SCRIPT language=JavaScript for=tr_1 event=OnSuccess()>
+  	btnquery_onclick()    // key를 수정할수 있게끔 하기위해 재조회함(key_plan_date의 값에 plan_date을 같게하기위해)
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><Object id=ds_sysdate
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select
+   style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+   classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_contract_collection_plan_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="font: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="20px">
+		<TD class=td_green>
+			<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>현장명</td>
+					<td width="166">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()"   >
+					</td>
+					<td width="50">
+						<input id="button_query" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+					</td>
+					<td width="*">&nbsp;</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 102; width: 100%; height: 100%;"
+			    HEIGHT: 620px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="AutoInsert" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<param name="ViewSummary"    value=1>
+				<PARAM NAME="Format" VALUE="
+				  <C> Name='*계획년월' ID=key_plan_yymm  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=59 
+				                         SumText='합 계'  SumColor=Black SumBgColor=Pink align=center </C>
+				  <C> Name='*기성차수' ID=extablish_time  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=57 align=center </C>
+				  <C> Name='*기성구분' ID=extablish_tag  EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=63  </C>
+				  <C> Name='현금'     ID=cash_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=98  </C>
+				  <C> Name='어음'     ID=bill_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=98  </C>
+				  <C> Name='계획금액' ID=collection_plan_amt  Edit='none'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+				                         SumText=@sum          SumColor=Black SumBgColor=Pink </C>
+				  <C> Name='수금조건' ID=collection_cond    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=182 </C>
+				  <C> Name='현금입금예정일' ID=cash_date    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 align=center </C>
+				  <C> Name='어음만기일'     ID=bill_date    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 align=center </C>
+				  <C> Name='비    고'       ID=remark    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=140 </C>
+			     ">
+				<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</TD>
+	</TR>
+</TABLE></DIV>
+</BODY></HTML>

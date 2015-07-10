@@ -1,0 +1,155 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+ServiceLoader loader = new ServiceLoader(request, response);
+GauceService service = loader.newService();
+GauceContext context = service.getContext();
+Logger logger = context.getLogger();
+GauceDBConnection conn = null;
+conn = service.getDBConnection();
+GauceStatement stmt = null;
+GauceRequest req = service.getGauceRequest();
+GauceResponse res = service.getGauceResponse();
+try {
+     String strUserID = new String(session.getAttribute("userid").toString());
+     conn.setAutoCommit(false);
+     GauceDataSet dSet = req.getGauceDataSet("l_labor_daily_work_1tr");
+   	int idx_dept_code = dSet.indexOfColumn("dept_code");
+   	int idx_civil_register_number = dSet.indexOfColumn("civil_register_number");
+   	int idx_work_date = dSet.indexOfColumn("work_date");
+   	int idx_spec_no_seq = dSet.indexOfColumn("spec_no_seq");
+   	int idx_spec_unq_num = dSet.indexOfColumn("spec_unq_num");
+   	int idx_dailywork = dSet.indexOfColumn("dailywork");
+   	int idx_unitcost = dSet.indexOfColumn("unitcost");
+   	int idx_inv_section = dSet.indexOfColumn("inv_section");
+   	int idx_jibul_tag = dSet.indexOfColumn("jibul_tag");
+   	int idx_jibul_date = dSet.indexOfColumn("jibul_date");
+   	int idx_people_pension = dSet.indexOfColumn("people_pension");
+   	int idx_pay_amt = dSet.indexOfColumn("pay_amt");
+   	int idx_income_tax = dSet.indexOfColumn("income_tax");
+   	int idx_civil_tax = dSet.indexOfColumn("civil_tax");
+   	int idx_netpay_amt = dSet.indexOfColumn("netpay_amt");
+   	int idx_insurance_tax = dSet.indexOfColumn("insurance_tax");
+    int  rowCnt = dSet.getDataRowCnt();
+    for(int i=0; i< rowCnt; i++){
+    	GauceDataRow rows = dSet.getDataRow(i);
+	if(rows.getJobType() == GauceDataRow.TB_JOB_INSERT){
+		String sSql = " INSERT INTO L_LABOR_DAILYWORK ( dept_code," + 
+                    "civil_register_number," + 
+                    "work_date," + 
+                    "spec_no_seq," + 
+                    "spec_unq_num," + 
+                    "dailywork," + 
+                    "unitcost," + 
+                    "inv_section," + 
+                    "jibul_tag," + 
+                    "jibul_date," + 
+                    "people_pension," + 
+                    "pay_amt," + 
+                    "income_tax," + 
+                    "civil_tax," + 
+                    "netpay_amt," + 
+                    "insurance_tax )      ";
+      sSql = sSql + " VALUES ( :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16 ) ";
+      stmt = conn.getGauceStatement(sSql);
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_civil_register_number);
+      stmt.bindColumn(3, idx_work_date);
+      stmt.bindColumn(4, idx_spec_no_seq);
+      stmt.bindColumn(5, idx_spec_unq_num);
+      stmt.bindColumn(6, idx_dailywork);
+      stmt.bindColumn(7, idx_unitcost);
+      stmt.bindColumn(8, idx_inv_section);
+      stmt.bindColumn(9, idx_jibul_tag);
+      stmt.bindColumn(10, idx_jibul_date);
+      stmt.bindColumn(11, idx_people_pension);
+      stmt.bindColumn(12, idx_pay_amt);
+      stmt.bindColumn(13, idx_income_tax);
+      stmt.bindColumn(14, idx_civil_tax);
+      stmt.bindColumn(15, idx_netpay_amt);
+      stmt.bindColumn(16, idx_insurance_tax);
+      stmt.executeUpdate();
+      stmt.close();
+ 
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_UPDATE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "update l_labor_dailywork set " + 
+                            "dept_code=?,  " + 
+                            "civil_register_number=?,  " + 
+                            "work_date=?,  " + 
+                            "spec_no_seq=?,  " + 
+                            "spec_unq_num=?,  " + 
+                            "dailywork=?,  " + 
+                            "unitcost=?,  " + 
+                            "inv_section=?,  " + 
+                            "jibul_tag=?,  " + 
+                            "jibul_date=?,  " + 
+                            "people_pension=?,  " + 
+                            "pay_amt=?,  " + 
+                            "income_tax=?,  " + 
+                            "civil_tax=?,  " + 
+                            "netpay_amt=?,  " + 
+                            "insurance_tax=?  where dept_code=? " +
+                            "and civil_register_number=?  " + 
+                            "and work_date=?  " ;  
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_civil_register_number);
+      stmt.bindColumn(3, idx_work_date);
+      stmt.bindColumn(4, idx_spec_no_seq);
+      stmt.bindColumn(5, idx_spec_unq_num);
+      stmt.bindColumn(6, idx_dailywork);
+      stmt.bindColumn(7, idx_unitcost);
+      stmt.bindColumn(8, idx_inv_section);
+      stmt.bindColumn(9, idx_jibul_tag);
+      stmt.bindColumn(10, idx_jibul_date);
+      stmt.bindColumn(11, idx_people_pension);
+      stmt.bindColumn(12, idx_pay_amt);
+      stmt.bindColumn(13, idx_income_tax);
+      stmt.bindColumn(14, idx_civil_tax);
+      stmt.bindColumn(15, idx_netpay_amt);
+      stmt.bindColumn(16, idx_insurance_tax);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(17, idx_dept_code);
+      stmt.bindColumn(18, idx_civil_register_number);
+      stmt.bindColumn(19, idx_work_date);
+      stmt.executeUpdate();
+      stmt.close();
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_DELETE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "delete from l_labor_dailywork where dept_code=? " +
+                            "and civil_register_number=?  " + 
+                            "and work_date=?  " ;  
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_civil_register_number);
+      stmt.bindColumn(3, idx_work_date);
+      stmt.executeUpdate();
+      stmt.close();
+    }
+     }
+     dSet.flush();
+     res.commit("성공적으로 마쳤습니다");
+     res.close();
+} catch (Exception e) {
+    res.writeException("Native","9999",e.toString());
+    res.commit();
+    res.close();
+    if (conn != null) {
+       conn.rollback();
+    }
+    if (stmt != null) {
+       stmt.close();
+    }
+} finally {
+    if (conn != null) {
+        try {
+            conn.commit();
+            conn.close();
+        } catch (Exception e) {}
+    }
+    loader.restoreService(service);
+}
+%>

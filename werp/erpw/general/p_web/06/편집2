@@ -1,0 +1,36 @@
+
+1. event=OnColumnChanged(row,colid)
+
+//-----------------------------------------------------------------------
+function emp_dept_grade()                       // 성명/부서/직위 가져오기 
+//------------------------------------------------------------------------
+{
+	var ls_grade
+	is_emp_no = ds_1.NameValue(ds_1.RowPosition, 'emp_no')
+	ll_cnt = f_ds_select_q("ds_select2", "select a.dept_code select_1, a.grade_code select_2, a.emp_name select_3, " +
+														"       b.dept_name select_4, c.grade_name select_5 " +
+														"  from p_pers_master a, z_code_dept b, p_code_grade c " +
+														" where a.service_div = '1' " +
+														"   and a.dept_code  = b.dept_code " +
+														"   and a.grade_code = c.grade_code " +
+														"   and a.emp_no = '" + is_emp_no + "' ")
+	 if (ll_cnt > 0) {
+   	tx_dept_code.value = ds_select2.NameValue(1,"select_1")
+   	ls_grade = ds_select2.NameValue(1,"select_2")
+      tx_grade_code.value = ls_grade
+   	tx_emp_name.value   = ds_select2.NameValue(1,"select_3")
+   	tx_dept_name.value  = ds_select2.NameValue(1,"select_4")
+   	tx_grade_name.value = ds_select2.NameValue(1,"select_5")  			
+    }
+}
+
+
+
+
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+  if (colid == 'staff_no') {
+  	  is_staff_no = ds_1.NameValue(row, 'staff_no')
+  	  emp_dept_grade()
+	}
+</script>
+

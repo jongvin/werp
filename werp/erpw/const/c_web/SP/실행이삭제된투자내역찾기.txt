@@ -1,0 +1,149 @@
+select b.dept_code,b.spec_unq_num,b.tab,max(c.long_name),count(b.spec_unq_num)
+   from  y_budget_detail a,
+         z_code_dept c,
+       (
+		     select
+               b.dept_code,
+               b.spec_unq_num,
+               b.tab
+           from (                 
+						  SELECT a.dept_code,
+						         a.spec_unq_num,
+						         'l_labor_dailywork' tab
+							  from l_labor_dailywork a
+							 where  
+							    a.work_date >= '2005.10.01'
+							   and a.work_date < add_months('2005.10.01',1)
+						 group by a.dept_code,
+									 a.spec_unq_num  
+                union all
+						  SELECT a.dept_code,
+						         a.spec_unq_num,
+						         'l_resignation' 
+							  from l_resignation a
+							 where  
+							    a.resign_date >= '2005.10.01'
+							   and a.resign_date < add_months('2005.10.01',1)
+						 group by a.dept_code,
+									 a.spec_unq_num  
+                union all
+						  SELECT a.dept_code,
+						         a.spec_unq_num,
+						         'f_request' 
+							  from f_request a
+							 where 
+							    a.rqst_date >= '2005.10.01'
+							   and a.rqst_date < add_months('2005.10.01',1)
+								and a.cost_type = '1'
+								and a.spec_unq_num <> 0
+						 group by a.dept_code,
+									 a.spec_unq_num 
+                union all
+						  SELECT a.dept_code,
+						         a.spec_unq_num,
+						         'f_nopay_request' 
+							  from f_nopay_request a
+							 where 
+							    a.request_date >= '2005.10.01'
+							   and a.request_date < add_months('2005.10.01',1)
+						 group by a.dept_code,
+									 a.spec_unq_num 
+                union all
+						  SELECT a.dept_code,
+						         a.spec_unq_num,
+						         'c_invest_detail'
+							  from c_invest_detail a
+							 where  
+							    a.yymm >= '2005.10.01'
+							   and a.yymm < add_months('2005.10.01',1)
+						 group by a.dept_code,
+									 a.spec_unq_num 
+					union all				 
+						  SELECT b.dept_code,
+						         b.spec_unq_num,
+						         'm_input_detail'
+							  from m_input_detail b,
+							       y_budget_detail c,
+							       C_SPEC_CONST_DETAIL d
+							 where 
+							    b.yymmdd >= '2005.10.01'
+							   and b.yymmdd < add_months('2005.10.01',1)
+								and b.dept_code = c.dept_code
+								and c.chg_no_seq = 0
+								and b.spec_unq_num = c.spec_unq_num 
+								and b.ditag in ('5','6','7','8','9')  
+								and b.dept_code = d.dept_code
+								and b.spec_unq_num = d.spec_unq_num
+								and d.yymm  = '2005.10.01'
+						 group by b.dept_code,
+									 b.spec_unq_num 
+					union all				 
+						  SELECT b.dept_code,
+						         b.spec_unq_num,
+						         'm_output_detail'
+							  from m_output_detail b,
+							       y_budget_detail c,
+							       C_SPEC_CONST_DETAIL d
+							 where 
+							    b.yymmdd >= '2005.10.01'
+							   and b.yymmdd < add_months('2005.10.01',1)
+								and b.dept_code = c.dept_code
+								and c.chg_no_seq = 0
+								and b.spec_unq_num = c.spec_unq_num 
+								and b.INOUTTYPECODE = '2'    
+								and b.ditag = '1'            
+								and b.dept_code = d.dept_code
+								and b.spec_unq_num = d.spec_unq_num
+								and d.yymm  = '2005.10.01'
+						 group by b.dept_code,
+									 b.spec_unq_num 
+					union all				 
+						  SELECT b.dept_code,
+						         b.spec_unq_num,
+						         'm_tmat_proj_rent' 
+							  from m_tmat_proj_rent b,
+							       m_tmat_stock c,
+							       C_SPEC_CONST_DETAIL d,
+							       m_input_detail a
+							 where 
+							   b.month= '2005.10.01'
+								and b.dept_code = c.dept_code
+                        and b.yymmdd = c.yymmdd
+                        and b.seq = c.seq
+                        and b.input_unq_num = c.input_unq_num
+								and b.dept_code = d.dept_code
+								and b.spec_unq_num = d.spec_unq_num
+								and d.yymm  = '2005.10.01'
+								and c.dept_code = a.dept_code
+								and c.input_unq_num = a.input_unq_num
+						 group by b.dept_code,
+									 b.spec_unq_num 
+					union all				 
+						  SELECT c.dept_code,
+						         c.spec_unq_num,
+						         's_cn_detail' 
+							  from s_prgs_detail b,
+									 s_cn_detail c,
+							       C_SPEC_CONST_DETAIL d,
+									 s_cn_list e
+							 where b.dept_code      = e.dept_code
+							   and b.order_number   = e.order_number
+                        and b.dept_code      = c.dept_code
+								and b.order_number   = c.order_number 
+								and b.spec_no_seq    = c.spec_no_seq 
+								and b.detail_unq_num = c.detail_unq_num
+								and c.dept_code      = d.dept_code
+								and c.spec_unq_num   = d.spec_unq_num
+								and b.yymm           = d.yymm
+								and b.yymm = '2005.10.01'
+						 group by c.dept_code,
+									 c.spec_unq_num ) b
+          group by b.dept_code,
+                   b.spec_unq_num,b.tab  ) b
+   where a.dept_code (+) = b.dept_code
+     and a.spec_unq_num (+) = b.spec_unq_num
+     and b.dept_code  = c.dept_code 
+     and a.spec_unq_num is null 
+group by b.dept_code,
+ 		   b.spec_unq_num,b.tab                  	
+;

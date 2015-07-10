@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************** -->
+<!-- 1. 프로그램 id   : r_receive_receive_no_find.html	 				  -->
+<!-- 2. 유형(시나리오): 수주코드 찾기	            					  -->
+<!-- 3. 기 능 정 의   : 														  -->
+<!-- 4. 변 경 이 력   :  황보은영 작성										  -->
+<!-- 5. 관련프로그램  :															  -->
+<!-- 6. 특 기 사 항   :															  -->
+<!-- *************************************************************  -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<TITLE> 수주코드 찾기 </TITLE>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = ""
+var arg_name = ""
+var arg_receive = ""
+var is_check_receive = ""
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()
+//------------------------------------------------------------------------
+{
+	if (Textbox_1.value == "")
+		arg_name = ""
+	else
+		arg_name = "( name like '%" + Textbox_1.value + "%' or const_shortname like '%" + Textbox_1.value + "%' ) and "
+	
+	check_receive()
+	
+	receive_sql = "select receive_code select_1, name select_2, const_shortname select_3 from r_receive_code where " + arg_name + arg_receive + " order by receive_code"
+	ll_cnt = f_ds_select_q("ds_receive_code", receive_sql)
+	
+	if (ll_cnt == 0 )
+		return
+		
+	ds_receive_code.SyncLoad = true
+	ds_receive_code.reset()	 
+}
+//------------------------------------------------------------------------
+function check_receive()
+//------------------------------------------------------------------------
+{
+	if ( is_check_receive == "1")
+		arg_receive = " receive_tag = '1' "
+	else
+		arg_receive = " receive_tag in ('2', '3', '4', '5') "
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	var ls_return = ""
+	ls_return = ds_receive_code.NameValue(ds_receive_code.RowPosition, "select_1")
+	window.returnValue = ls_return
+ 	window.close();
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+	window.returnValue = "";
+	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	
+	if(result == "")
+		return
+	
+	array = result.split("@");
+	gs_home = array[0]
+	Textbox_1.value = array[1]
+	is_check_receive = array[2]
+	
+	btnquery_onclick()                                         
+}	
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_receive_code event=OnLoadError()>
+  alert("Error Code(ds_receive_code) : " + ds_receive_code.ErrorCode + "\n" + "Error Message : " + ds_receive_code.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	if (row > 0 )
+		Button_confirm_onclick()
+</script>
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_receive_code 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false" scroll="no">
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0">
+	<tr height="23px">
+		<td>
+			<table border="0" cellspacing="0" cellpadding="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="36px" class=font_green_bold>명칭</td>
+					<td width="135px">
+					   <input id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active" tabindex=1
+					                 style="Z-INDEX: 100; FONT-SIZE: 12px; width: 130px;" onkeyDown="keyDown()">
+					</td>
+					<td width="60px">
+						<input type="button" value="조회" onclick=btnquery_onclick() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="*" align="right">
+						<input type="button" value="확인" onclick=Button_confirm_onclick() class=img_btnOk onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+						<input type="button" value="닫기" onclick=Button_close_onclick() class=img_btnClose onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="*">
+		<td>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			        style="Z-INDEX: 105; WIDTH: 100%; HEIGHT: 100%" 
+			        classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+				<PARAM NAME="AutoInsert" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				<param name="MultiRowSelect"   value="0">
+				<PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_receive_code">
+				<PARAM NAME="Format" VALUE="
+				   <C> Name='수주코드'   ID=select_1 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=65 align=center </C>
+				   <C> Name='공 사 명(단명)' ID=select_3 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 </C>
+				   <C> Name='공 사 명' ID=select_2 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=210 </C>
+				">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>	 
+		</td>
+	</tr>
+</table></div>   
+</BODY>
+</HTML>

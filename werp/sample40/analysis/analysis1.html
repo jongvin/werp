@@ -1,0 +1,297 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="javascript">
+var order = null;
+var gbn = 0;			//DataSet reset, append 구분 기준.
+
+function fn_Onload(){
+	window.status = "";
+	
+	MxGrid_1.style.visibility = "hidden";
+}
+
+function fn_GridOpen(){
+	MxGrid_1.style.visibility = "visible";
+}
+
+function fn_GridClose(){
+	MxGrid_1.style.visibility = "hidden";
+}
+
+function fn_Search() {
+	MxChart_1.RemoveAllSeries();
+	gbn = 0;
+	MxDataSet_2.ClearData();
+
+	MxDataSet_1.DataID = "./analysis1_select.jsp?gbn=0";
+	MxDataSet_1.reset();
+
+	SeriesIdx = MxChart_1.AddSeries(0);
+	MxChart_1.Series(0).Title = "RNI-001";            // Legend 에 보이는 정보를 정한다.
+	MxChart_1.Series(0).Color = MxChart_1.ToOLEColor("#5686E7");
+	
+	SeriesIdx = MxChart_1.AddSeries(0);
+	MxChart_1.Series(1).Title = "RNI-002";            // Legend 에 보이는 정보를 정한다.
+	MxChart_1.Series(1).Color = MxChart_1.ToOLEColor("#E51919");
+	
+	SeriesIdx = MxChart_1.AddSeries(0);
+	MxChart_1.Series(2).Title = "RNI-003";            // Legend 에 보이는 정보를 정한다.
+	MxChart_1.Series(2).Color = MxChart_1.ToOLEColor("#2CCB21");
+	
+	SeriesIdx = MxChart_1.AddSeries(0);
+	MxChart_1.Series(3).Title = "RNI-004";            // Legend 에 보이는 정보를 정한다.
+	MxChart_1.Series(3).Color = MxChart_1.ToOLEColor("#4848A8");
+	
+	SeriesIdx = MxChart_1.AddSeries(0);
+	MxChart_1.Series(4).Title = "RNI-005";            // Legend 에 보이는 정보를 정한다.
+	MxChart_1.Series(4).Color = MxChart_1.ToOLEColor("#CD1BDD");
+
+	order = setInterval("fn_Chart_Draw()",100);
+}
+
+function fn_Chart_Draw() {
+
+	gbn += 1;
+	
+	if(gbn > 500) {
+		clearTimeout(order);
+		fn_Search();
+	} else {
+		var tmp_cnt = MxDataSet_1.countrow;
+
+		MxDataSet_1.DataID = "./analysis1_select.jsp?gbn="+gbn;
+		MxDataSet_1.reset();
+
+		MxDataSet_2.DataID = "./analysis1_select.jsp?gbn="+gbn;
+		MxDataSet_2.Append();
+	}
+	
+	var xtmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,"X1");
+	var ytmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,"Y1");
+	
+	MxChart_1.Series(0).AddXY( xtmp-1, ytmp-1, "", MxChart_1.ToOLEColor("#5686E7"));
+
+	var xtmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("X2"));
+	var ytmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("Y2"));
+
+	MxChart_1.Series(1).AddXY( xtmp-1, ytmp-1, "", MxChart_1.ToOLEColor("#E51919"));
+	
+	var xtmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("X3"));
+	var ytmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("Y3"));
+
+	MxChart_1.Series(2).AddXY( xtmp-1, ytmp-1, "", MxChart_1.ToOLEColor("#2CCB21"));
+	
+	var xtmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("X4"));
+	var ytmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("Y4"));
+
+	MxChart_1.Series(3).AddXY( xtmp-1, ytmp-1, "", MxChart_1.ToOLEColor("#4848A8"));
+	
+	var xtmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("X5"));
+	var ytmp = MxDataSet_1.nameValue(MxDataSet_1.countrow,("Y5"));
+
+	MxChart_1.Series(4).AddXY( xtmp-1, ytmp-1, "", MxChart_1.ToOLEColor("#CD1BDD"));
+	
+}
+
+</script>
+
+<script language=JavaScript for=MxDataSet_2 event=OnLoadCompleted(rowcnt)>
+	//fn_Search();
+</script>
+
+<script language=JavaScript for=MxChart_1 event=onCreate()>
+	MxChart_1.Aspect.View3D = false;
+	
+	MxChart_1.Panel.Gradient.Visible = 1;
+	MxChart_1.Panel.BorderStyle = 1;
+    MxChart_1.Panel.Gradient.Direction = 0;
+    MxChart_1.Panel.Gradient.StartColor = MxChart_1.ToOLEColor("#CACACA");
+    MxChart_1.Panel.Gradient.EndColor = MxChart_1.ToOLEColor("#E0E0E0");
+    MxChart_1.Panel.MarginTop = 10;
+    
+    //Header의 Text의 위치지정
+	MxChart_1.Header.Alignment = 0; 
+	MxChart_1.Header.top = 2;
+	MxChart_1.Header.left = 20;
+	
+	MxChart_1.Axis.Bottom.Visible = true;
+	
+	//legend관련
+	MxChart_1.Legend.Visible = true;
+    MxChart_1.Legend.LegendStyle = 0;
+	MxChart_1.Legend.TextStyle = 0;
+	MxChart_1.Legend.CheckBoxes = true;
+	MxChart_1.Legend.Symbol.Width = 20;
+	MxChart_1.Legend.Alignment = 3;
+	MxChart_1.Legend.Font.Size = 8.7;
+	MxChart_1.Legend.TopPos = 5;
+	MxChart_1.Legend.VertSpacing = 0;
+	MxChart_1.Legend.ShadowSize = 5;
+	MxChart_1.Legend.ShapeStyle = 0;
+	MxChart_1.Legend.Color = MxChart_1.ToOLEColor("#E0F0FF");
+	MxChart_1.Legend.ShadowColor = MxChart_1.ToOLEColor("#8080C0");
+
+	//Grid없앰.
+	MxChart_1.Axis.Bottom.GridPen.visible = false;
+	MxChart_1.Axis.Bottom.Labels.Separation = 1;
+	MxChart_1.Axis.Bottom.Labels.Angle = 0;
+	MxChart_1.Axis.Bottom.Labels.Font.Size = 8;
+
+	MxChart_1.Axis.Left.Automatic = false;
+	MxChart_1.Axis.Left.Maximum = 10000;
+	MxChart_1.Axis.Left.Minimum = 0;
+	MxChart_1.Axis.Bottom.Automatic = false;
+	MxChart_1.Axis.Bottom.Maximum = 499;
+	MxChart_1.Axis.Bottom.ExactDateTime = MxChart_1.GetDateTimeStep(1);
+
+	//MarkTip 관련 (마우스를 사용하여  값을 확인할 수 있다.)
+//	Mark = MxChart_1.Tools.Add(8);
+//
+//	MxChart_1.Tools.Items(Mark).asMarksTip.Series = "0"; 		// Uses Seriesindex
+//	MxChart_1.Tools.Items(Mark).asMarksTip.style = 0;
+//	MxChart_1.Tools.Items(Mark).asMarksTip.MouseAction = 0;  	//0:mouse over, 1:mouse click
+//	MxChart_1.Tools.Items(Mark).asMarksTip.Delay = 0;
+</script>
+
+<OBJECT ID="MxDataSet_1" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=true>
+</OBJECT>
+<OBJECT ID="MxDataSet_2" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=true>
+</OBJECT>
+
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// -->
+</script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_Onload()" OnLoad="na_preload_img(false, '../images/direct_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm10_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>공전단계별 추이분석</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+							<a href="#" OnMouseOut="na_restore_img_src('image1', 'document')" OnMouseOver="na_change_img_src('image1', 'document', '../images/direct_bu_color.gif', true)"><img src="../images/direct_bu.gif" width="61" height="20" border="0" name="image1" onclick="fn_Search()"></a></p>
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="270" valign="top">
+
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<p>									<font size="2"><b>Grid Option</b></font></p>
+											</td>
+											<td width="51" height="25">
+			&nbsp;								</td>
+											<td width="39" height="25">                                    <p><font size="2">Open</font>                                    
+			</p>
+
+												<td width="20" height="25">
+			<p><input type="radio" name="rdo1" onclick="fn_GridOpen()"></p>                                
+													<td width="15" height="25">&nbsp;</td>
+											<td width="41" height="25">
+												<p><font size="2">Close</font></p>
+											</td>
+													<td width="44" height="25"><p><input type="radio" name="rdo1" checked  onclick="fn_GridClose()"></p></td>
+													<td width="483" height="25"></td>
+										</tr>
+									</table>                        <p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="790" height="215">
+									</object></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="223" background="../images/gauce.jpg">
+									<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_1">
+									<param name="DataID"	value=MxDataSet_2>
+									<param name="IndWidth"	value="0">
+									<param name="HeadBorder"	value="4">
+									<param name="BorderStyle"	value="1">
+									<param name="LineColor"	value="#FFFFFF">
+									<param name="HeadLineColor"	value="#FFFFFF">
+									<param name="Format"	value="
+												<c>id=accountMake	align=center	name=고객사	width=92 HeadBgColor=#908F8B HeadColor=#FFFFFF bgcolor=#ACABA8</c>
+												<c>id=X1     name=RNI-001	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=Y1     name=RNI-001	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=X2     name=RNI-002	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=Y2     name=RNI-002	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=X3     name=RNI-003	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=Y3     name=RNI-003	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=X4     name=RNI-004	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=Y4     name=RNI-004	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=X5     name=RNI-005	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+												<c>id=Y5     name=RNI-005	width=68,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</c>
+											">
+									</object></p>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

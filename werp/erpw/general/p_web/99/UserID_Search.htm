@@ -1,0 +1,110 @@
+<html>
+	<head>
+		<title>월드건설 id검색</title>
+		<script language="javascript">
+	   var ib_return	
+		function g_userid_search(pUserID)
+			{
+				var RtnValue = "FALSE";
+				try{
+					var objNode, objRoot;
+					var xmlpara = new ActiveXObject("Microsoft.XMLDOM");					
+					var xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+					
+					var objRoot = xmlpara.createNode(1,"DATA","");	// Root Node 생성
+					xmlpara.appendChild(objRoot);
+					
+					var objNode = xmlpara.createNode(1, "CN", "");						
+					objNode.text = pUserID;
+					xmlpara.documentElement.appendChild(objNode);
+		
+					var objNode = xmlpara.createNode(1, "PROP", "");	
+					objNode.text = "cn;Description;Company";
+					xmlpara.documentElement.appendChild(objNode);
+		
+					var objNode = xmlpara.createNode(1, "CATE", "");	
+					objNode.text = "user";
+					xmlpara.documentElement.appendChild(objNode);
+		
+					xmlhttp.open("POST","/myoffice/ezOrgan/OrganInfo/GetADInfos.aspx",false);
+					xmlhttp.send(xmlpara);
+						
+					if(xmlhttp.status == 200)
+					{
+						xmlpara = xmlhttp.responseXML;
+						if(xmlpara.selectSingleNode("DATA/CN").text == pUserID)
+						{
+							RtnValue  = "TRUE";
+						}
+					}
+				}catch(e){
+					alert(e.description);
+				}
+				return RtnValue;
+			}		
+			
+			//id 검색벜튼
+			function btn_useridsearch()
+			{
+				var SearchID = result
+				var SearchResult = "";
+				if(SearchID == "")
+				{
+					return false;
+				}else
+				{
+					if(g_userid_search(SearchID) == "FALSE")
+					{
+						return false
+					}else
+					{
+						return true
+					}
+					Rtn_Div.innerHTML = SearchResult;
+				}
+				
+			}
+     //----------------------------------------------------------------
+     function window_onload()                  // window open event 
+     //-----------------------------------------------------------------
+     {
+         result = window.dialogArguments;
+
+         ib_return = btn_useridsearch(result)
+         window.returnValue = ib_return
+         window.close();
+
+	  }
+    //-----------------------------------------------------------------
+    function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+    //-----------------------------------------------------------------
+    {
+          window.returnValue = ib_return
+    }
+	  
+		</script>
+		<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+		<link href="css/style.css" rel="stylesheet" type="text/css">
+	</head>
+	<body onload=setTimeout('window_onload()',1)  onunload=window_onunload() leftmargin="10" topmargin="10" marginwidth="10" marginheight="0">
+	<form action="javascript:btn_useridsearch();">	
+		<table width="230" border="0" cellpadding="1" cellspacing="0" bgcolor="#FFFFFF" style="border:1px solid #A6A6A6; visibility:hidden"
+			ID="Table6">
+			<tr valign="bottom">
+				<td align="center" height="50" colspan="3" nowrap><font color="darkyellow"><b>ID 검색</b></font></td>
+			</tr>
+			<tr>
+				<td width="15" align="right"><img src="images/login_worldro/l_id.gif" width="22" height="10" hspace="3"></td>
+				<td><input type="text" name="TextUserID" style="width:140px; border:1px solid #959595" ID="TextUserID"></td>
+				<td><a onclick="javascript:btn_useridsearch();" style="cursor:hand"><img src="images/i_search.gif" border="0"></a></td>
+			</tr>			 
+			<tr>
+				<td colspan="3" height="25" nowrap></td>				
+			</tr>
+			<tr>
+				<td id="Rtn_Div" align="center" colspan="3" height="25" nowrap></td>				
+			</tr>
+		</table>	
+	 <form>
+	</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_emp_no_eval_find_1h.html 				      -->
+<!-- 2. 유형(시나리오): 사번 찾기												-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :	리더쉽역량 평가자지정  								-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<TITLE> 사원 찾기 </TITLE>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'p_emp_no_eval_find_1q.jsp?arg_emp_no='
+var is_confirm_check = 'no'
+var is_comp_code
+var is_service_div = "2"
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+  ds_1.DataID =  is_ds_1_addr + Textbox_1.value + "&arg_service_div="
+  						+ is_service_div + "&arg_comp_code="  + is_comp_code
+  ds_1.SyncLoad=true
+  ds_1.reset()
+}
+//----------------------------------------------------------------------------
+function select_service_div() 						//재직구분 선택
+//----------------------------------------------------------------------------
+{
+//	if (service_div.value == '9')
+//		is_service_div = ""
+//	else
+//		is_service_div = service_div.value
+//	
+//	btnquery_onclick()
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ 	window.returnValue = "";
+ 	window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	var i,j
+   j=0
+   var ls_return=""
+   for (i=1;i<=ds_1.CountRow ;i++) {
+       if (ds_1.RowMark(i) == 1) {
+           j=j+1
+           ls_return =  ls_return + 
+           					ds_1.NameValue(i,'resident_no') + '@'  +
+				            ds_1.NameValue(i,'emp_name') + '@' +
+				            ds_1.NameValue(i,'dept_code') + '@' +
+				            ds_1.NameValue(i,'grade_code') + '@' +
+				            ds_1.NameValue(i,'dept_name') + '@' +
+				            ds_1.NameValue(i,'grade_name') + '@' +
+				            ds_1.NameValue(i,'comp_code') + '@'	+
+				            ds_1.NameValue(i,'title_code') + '@' +
+				            ds_1.NameValue(i,'degree') + '@'	
+        }
+   }
+   
+  	is_confirm_check = 'yes'
+  	window.returnValue = ls_return
+  	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ 	var result;
+ 	var array = new Array();
+ 	result = window.dialogArguments;
+ 	
+ 	array = result.split("@");
+ 	is_comp_code    = array[0]
+ 	Textbox_1.value     = array[1]
+// 	service_div.value = is_service_div
+ 	
+ 	if (result == "") return 
+ 	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  	if (is_confirm_check == 'no')
+  	    window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  var ls_sort
+  if (row == 0) {
+  		if (ls_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  ls_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<BR>    
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 250; POSITION: absolute; TOP: 5px; HEIGHT: 28px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td WIDTH='25%' BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">검색조건</div></td>
+             <td WIDTH= '*' >
+				<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+				    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 65px; POSITION: absolute; TOP:5px"
+				    onkeyDown="keyDown()">
+				<INPUT id=Button
+				    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 210px; POSITION: absolute; TOP: 5px;
+					background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+					onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					"  onclick=btnquery_onclick() type=button value='조회'>      
+				</td>
+         </tr>                 
+      </table>
+</DIV> 
+
+
+
+<INPUT id=Button_confrim 
+    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 580px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick() type=button value='확인'>     
+<INPUT id=Button_close 
+    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 625px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick() type=button value='닫기'>    
+<OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 2px; WIDTH: 680px; POSITION: absolute; TOP: 35px; HEIGHT: 380px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name='사번' ID=emp_no 		  Width=70	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='성명' ID=emp_name 	  Width=70 	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='부서명' ID=dept_name  Width=160  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='직위'   ID=grade_name   Width=60 	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='직책'   ID=title_name   Width=60 	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='구분' ID=service_div_code EditStyle=Combo Data='2:재직,3:퇴직'  Width=50 	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   <C> Name='사업체'   ID=comp_name   Width=130 	HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    </C>
+	   ">
+ 	</OBJECT>
+</BODY></HTML>

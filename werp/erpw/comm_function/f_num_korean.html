@@ -1,0 +1,131 @@
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : 공통 Function											-->
+<!-- 2. 유형(시나리오): Function   												-->
+<!-- 3. 기 능 정 의   : 숫자를 한글로 전환한다			                 	-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. Argment      : 반드시 문자열로 보내야함.								-->
+<!-- 6. 호출방법      : f_num_korean(arg_unmber)				   			-->
+<!-- 7. Return       : 한글값                   				   			-->
+<!-- *************************************************************	-->
+
+//------------------------------------------------------------------------
+function f_num_korean(arg_number)
+//------------------------------------------------------------------------
+{
+	var s_return
+	var s_my = new Array();
+	var i, i_number
+	
+	if ( arg_number == '0' || arg_number == '') 
+		return '-'
+	    
+	i_number = arg_number.length
+
+	for (i = 1;i<=i_number;i++) {
+	    s_my[i] =arg_number.substr((i_number - i),1)
+	}
+	    
+	for (i = 1;i<=i_number;i++) {
+		if ( s_my[i] == '0') {
+			if ((i % 4) == 1){
+				s_my[i] = f_get_koreanunit(i)
+				if (i <= (i_number - 3) && s_my[i + 1] == '0' && s_my[i + 2] == '0' && s_my[i + 3] == '0') 
+					s_my[i] = ''
+			}
+			else 
+				s_my[i] = ''
+		}
+		else if ( s_my[i] == '-' ) 
+				s_my[i] = f_get_koreanhan(s_my[i])
+		else if (s_my[i] != '1' || (i % 4) == 1 || i == i_number) 
+			s_my[i] = f_get_koreanhan(s_my[i]) + f_get_koreanunit(i)
+		else
+			s_my[i] = f_get_koreanunit(i)
+		
+	}
+	    
+	s_return = ''
+	    
+	if ( parseInt(arg_number) < 0 ) 
+		s_return = '**'
+	
+	for (i=arg_number.length;i>=1; i--) {
+		s_return = s_return + s_my[i]
+	}
+	    
+	return s_return
+}
+//------------------------------------------------------------------------
+function f_get_koreanunit(arg_position)                       //
+//------------------------------------------------------------------------
+{
+	switch (arg_position) {
+	     case 1: 
+						return ''
+	               break;
+	     case 5:
+	               return '만'
+	               break;
+	     case 9:
+	               return '억'
+	               break;
+	     case 13:
+	               return '조'
+	               break;
+	     case 17:
+	               return '경'
+	               break;
+	}
+	switch (arg_position % 4) {
+	     case 0: 
+						return '천'
+	               break;
+	     case 1:
+	               return ''
+	               break;
+	     case 2:
+	               return '십'
+	               break;
+	     case 3:
+	               return '백'
+	               break;
+	}
+}
+//------------------------------------------------------------------------
+function f_get_koreanhan(arg_number)                       //
+//------------------------------------------------------------------------
+{
+	switch (arg_number) {
+	     case '0': 
+						return ''
+	               break;
+	     case '1':
+	               return '일'
+	               break;
+	     case '2':
+	               return '이'
+	               break;
+	     case '3':
+	               return '삼'
+	               break;
+	     case '4':
+	               return '사'
+	               break;
+	     case '5':
+	               return '오'
+	               break;
+	     case '6':
+	               return '육'
+	               break;
+	     case '7':
+	               return '칠'
+	               break;
+	     case '8':
+	               return '팔'
+	               break;
+	     case '9':
+	               return '구'
+	               break;
+	}
+	return ''
+}

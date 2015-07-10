@@ -1,0 +1,120 @@
+CREATE OR REPLACE PROCEDURE Sp_T_Work_Acc_Slip_Body_Emy_I
+(
+	AR_SLIP_ID                                 NUMBER,
+	AR_SLIP_IDSEQ                              NUMBER,
+	AR_CRTUSERNO                               VARCHAR2, 
+	AR_WORK_CODE                               VARCHAR2,
+	AR_DEPT_CODE                               VARCHAR2
+)
+IS
+/**************************************************************************/
+/* 1. 프 로 그 램 id : SP_T_WORK_ACC_SLIP_BODY_I
+/* 2. 유형(시나리오) : Procedure
+/* 3. 기  능  정  의 : T_WORK_ACC_SLIP_BODY 테이블 Insert
+/* 4. 변  경  이  력 : 홍길동 작성(2006-01-26)
+/* 5. 관련  프로그램 : 
+/* 6. 특  기  사  항 : 
+/**************************************************************************/
+lrT_WORK_ACC_CODE	T_WORK_ACC_CODE%ROWTYPE;
+lrT_DEPT_CODE_ORG	T_DEPT_CODE_ORG%ROWTYPE;
+lrT_DEPT_CLASS_CODE T_DEPT_CLASS_CODE%ROWTYPE;
+
+BEGIN
+	BEGIN
+		SELECT
+			*
+		INTO lrT_DEPT_CODE_ORG
+		FROM
+			T_DEPT_CODE_ORG
+		WHERE
+			DEPT_CODE=AR_DEPT_CODE;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		--NULL;
+		RAISE_APPLICATION_ERROR(-20009,'존재하지 않는 부서코드입니다');
+	END;
+	
+	IF lrT_DEPT_CODE_ORG.COST_DEPT_KND_TAG IS NULL THEN
+		RAISE_APPLICATION_ERROR(-20009,'['||lrT_DEPT_CODE_ORG.DEPT_CODE||']'||lrT_DEPT_CODE_ORG.DEPT_NAME||'의 원가현장구분이 등록되지 않았습니다.');
+	END IF;
+	
+	BEGIN
+		SELECT
+			/*
+			WORK_CODE,
+			ACC_CODE,
+			ACC_POSITION,
+			SUMMARY_CODE,
+			SUMMARY1,
+			SUMMARY2,
+			VAT_CODE,
+			SEQ,
+			USE_TAG
+			*/
+			*
+		INTO lrT_WORK_ACC_CODE
+		FROM
+			T_WORK_ACC_CODE
+		WHERE
+			WORK_CODE=AR_WORK_CODE
+			AND COST_DEPT_KND_TAG = lrT_DEPT_CODE_ORG.COST_DEPT_KND_TAG
+			AND USE_TAG = 'T'
+			AND ROWNUM=1;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		--NULL;
+		RAISE_APPLICATION_ERROR(-20009,'해당 자동전표의 상대계정정보를 가져올 수 없습니다.');
+	END;
+
+	BEGIN
+		SELECT
+			*
+		INTO lrT_DEPT_CLASS_CODE
+		FROM		  
+			T_DEPT_CLASS_CODE
+		WHERE
+			DEPT_CODE = AR_DEPT_CODE
+			AND DFLT_TAG='T';
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR(-20009,'부서 부문코드가 등록되지 않습니다.');
+		--NULL;
+	END;
+
+	INSERT INTO T_WORK_ACC_SLIP_BODY
+	(
+		SLIP_ID,
+		SLIP_IDSEQ,
+		CRTUSERNO,
+		CRTDATE,
+		MODUSERNO,
+		MODDATE,
+		WORK_CODE,
+		ACC_CODE,
+		SUMMARY_CODE,
+		SUMMARY1,
+		SUMMARY2,
+		VAT_CODE,
+		TAX_COMP_CODE,
+		COMP_CODE,
+		DEPT_CODE,
+		CLASS_CODE
+	)
+	VALUES
+	(
+		AR_SLIP_ID,
+		AR_SLIP_IDSEQ,
+		AR_CRTUSERNO,
+		SYSDATE,
+		NULL,
+		NULL,
+		AR_WORK_CODE,
+		lrT_WORK_ACC_CODE.ACC_CODE,
+		lrT_WORK_ACC_CODE.SUMMARY_CODE,
+		lrT_WORK_ACC_CODE.SUMMARY1,
+		lrT_WORK_ACC_CODE.SUMMARY2,
+		lrT_WORK_ACC_CODE.VAT_CODE,
+		lrT_DEPT_CODE_ORG.TAX_COMP_CODE,
+		lrT_DEPT_CODE_ORG.COMP_CODE,
+		lrT_DEPT_CODE_ORG.DEPT_CODE,
+		lrT_DEPT_CLASS_CODE.CLASS_CODE
+	);
+END;
+/

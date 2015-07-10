@@ -1,0 +1,1 @@
+Create Sequence SQ_T_DEPT_PLN_FUNC_NO;

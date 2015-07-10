@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : m_est_result_1h.html  							-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 업체별 견적 대비(차수별대비) 										-->
+<!-- 4. 변 경 이 력   :  박두현 작성										-->
+<!-- 5. 관련프로그램  :														-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var is_estimateyymm=""               //부서 코드 
+var is_estimateseq=0               //발주순번
+var is_dept_name=""               //부서 명 
+var is_ds_1_addr = 'm_est_result_1q.jsp?arg_estimateyymm='
+var is_sbcr_code  
+var is_sbcr_name                              
+var is_format_1               //전체 도급및 실행을 보는 보는 그리드
+var il_est_amt
+is_format_1 = "<FC> Name='업체명' ID=sbcr_name BgColor=@ucolor   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=200 </FC> " + 
+              "<R>" + 
+              "  <G>name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK  " + 
+              "       <C>ID=open_dt_$$    name='견적개봉일'   align=Center BgColor=@ucolor width=120   HeadBgColor=#BBE0F4  HeadColor=BLACK </C> " + 
+              "       <C>ID=unit_amt_$$   name='금액'   BgColor=@ucolor width=100   HeadBgColor=#BBE0F4  HeadColor=BLACK </C>" +
+              "  </G>" + 
+              "</R>"  
+                               
+                                
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+  // 1차견적인지 2차 견적인지 여부 check 로직.
+  ls_data = " SELECT a.sbcr_code select_1,                   " + 
+            "        b.sbcr_name select_2,                   " + 
+            "  		a.amt select_3,                         " + 
+            "  		a.chg_amt select_4                      " + 
+     		 	"   from  m_vender_est a,                              " + 
+            "         s_sbcr b                         " +  
+            "   where a.sbcr_code  = b.sbcr_code         " +     
+            "     and a.ESTIMATEYYMM =  '" + is_estimateyymm + "' " +   
+            "     and a.ESTIMATESEQ = " + is_estimateseq + " " + 
+            "     and a.est_yn = 'Y'                         " + 
+            "   order by a.chg_amt asc " 
+ ll_cnt = f_ds_select_q("ds_top",ls_data)
+ il_est_amt = ds_top.NameValue(1,'select_4')
+ var i,i_chk=1   // i_chk=1 1차 아래로직에서 1차와 2차 금액이 틀리면 2차 견적으로 간주. 
+ for (i=1;i<=ds_top.CountRow;i++) {
+     if (ds_top.NameValue(1,'select_3') == ds_top.NameValue(1,'select_4')) continue
+     i_chk = 2
+     break
+ }
+
+is_sbcr_code = ds_top.NameValue(1,'select_1')
+is_sbcr_name = ds_top.NameValue(1,'select_2')
+
+ds_1.DataID = is_ds_1_addr + is_estimateyymm + "&arg_estimateseq="  +  is_estimateseq + '&arg_chasu=' + i_chk
+ds_1.SyncLoad=true
+ds_1.reset()
+
+ var ls_value=''
+ if (ll_cnt > 0)
+    ls_value = '최저가입찰사: ' + ds_top.NameValue(1,'select_2')
+ ls_data = "select to_char(sum(decode(a.rk,1,a.amt,0)),'999,999,999,999') select_1,                   " + 
+           "       to_char(sum(a.sil_amt),'999,999,999,999')  select_2                           " + 
+           "     from (                                           " + 
+           "     select c.amt amt,                                " + 
+           "            b.qty * nvl(c.price,0) sil_amt,           " + 
+           "             RANK() OVER (PARTITION by b.spec_unq_num ORDER BY b.spec_unq_num asc, b.estimatedetailseq) rk " + 
+           "        from m_vender_est_detail a,                   " + 
+           "             m_est_detail b,                          " + 
+           "             y_budget_detail c                        " + 
+           "        where a.estimateyymm = b.estimateyymm         " + 
+           "          and a.estimateseq = b.estimateseq           " + 
+           "          and a.est_unq_num = b.est_unq_num           " + 
+           "          and b.dept_code = c.dept_code (+)           " + 
+           "          and b.spec_unq_num = c.spec_unq_num (+)     " + 
+           "          and a.estimateyymm = '" + is_estimateyymm + "'   " + 
+           "          and a.estimateseq = " + is_estimateseq + "                     " + 
+           "          and a.sbcr_code = '" + is_sbcr_code + "'                  " + 
+           "       ) a                                           " 
+ ll_cnt = f_ds_select_q("ds_top",ls_data)
+ tx_top.value = ls_value + '       실행금액:' + ds_top.NameValue(1,'select_1') + 
+                    '       실시안금액: ' + ds_top.NameValue(1,'select_2')
+    
+}
+//--------------------------------------------------------------- 
+function btnexit_onclick(ls_arg)           //종료
+//---------------------------------------------------------------
+{
+ if (ds_1.IsUpdated) {
+   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------
+function bt_estimate_list()
+//----------------------------------------------------------------
+{
+  window.close()
+  
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ array = result.split("@");
+ is_estimateyymm = array[0]    //작성일자
+ is_estimateseq = parseInt(array[1])  //순번
+ gd_1.format = is_format_1 
+ btnquery_onclick()
+    
+}
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+ if(eventid == "ucolor") {
+   if (rds_1.NameValue(row,'sbcr_name') == is_sbcr_name  || rds_1.NameValue(row,'unit_amt_1') == il_est_amt ||
+       rds_1.NameValue(row,'unit_amt_2') == il_est_amt )
+       return "#FF33FF";
+   else { 
+     if ((row % 2) == 0)
+         return "#F4F2D8"
+     else
+         return "ffffff"
+   }
+ }
+</script>
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_top
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+      
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value=ds_1>
+      <param name=GroupExpr    value="sbcr_name,band_tag,open_dt:unit_amt"></object></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<INPUT id=tx_top
+      style="Z-INDEX:100; COLOR: #ff0080;  BORDER-RIGHT: 0px; BORDER-TOP: 0px;BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; LEFT: 30px; WIDTH: 600px; POSITION: absolute; TOP: 7px; HEIGHT: 20px" tabindex=-1 size=50 >
+
+<input type="button" value="닫기" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 850px; POSITION: absolute; WIDTH: 50px; TOP: 7px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_estimate_list()>
+  <DIV id=tab_page_1 
+      style="Z-INDEX: 107; LEFT: 1px; WIDTH: 1000px; POSITION: absolute; TOP: 30px; HEIGHT: 600px">
+     <comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 1; WIDTH: 1000px; POSITION: absolute; TOP: 1px; HEIGHT: 600px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="0">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	     <PARAM NAME="Editable" VALUE="0">
+        <param name="MultiRowSelect"   value="0">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <param name="ViewSummary"    value=1>
+	     <PARAM NAME="DataID" VALUE="rds_1">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</DIV>	
+</BODY></HTML>

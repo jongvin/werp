@@ -1,0 +1,541 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_labor_basic.html 										-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력								-->
+<!-- 3. 기 능 정 의   : 노무자기본사항 등록  	  								-->
+<!-- 4. 변 경 이 력   : 김 동우 작성												-->
+<!--                    이준구 수정  ( 2006.03.07)                      -->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+var is_dept_search_addr = gs_home + '/comm_search/z_dept_find_1h.html'
+var is_ds_1_addr = gs_home + '/const/l_web/99/l_labor_basic_1q.jsp?arg_dept_code='
+var is_tr_1_addr = gs_home + '/const/l_web/99/l_labor_basic_1tr.jsp'
+var is_work_date
+var is_dept_code = ""
+var is_dept_name = ""
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code 
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("job_code");
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"dept_code")  = is_dept_code
+	ds_1.NameValue(ds_1.RowPosition,"blacklist")  = 'N'
+	ds_1.NameValue(ds_1.RowPosition,"military")   = 'N'    // 본사 미승인
+	ds_1.NameValue(ds_1.RowPosition,"transcript") = 'Y'
+	ds_1.NameValue(ds_1.RowPosition,"labor_class") = 'L'
+	ds_1.NameValue(ds_1.RowPosition,"lastapplydate") = '1990.01.01'
+	ds_1.NameValue(ds_1.RowPosition,"contract_date") = '1990.01.01'
+	ds_1.NameValue(ds_1.RowPosition,"entrance_date") = '1990.01.01'
+	
+	Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 ds_1.AddRow()
+	 init_move()
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	 ds_1.InsertRow(ds_1.RowPosition)
+	 init_move()
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1)
+	               ds_1.DeleteRow(i)
+	     }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	} 
+	else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+   sa_position = ds_1.RowPosition
+// DUP CHECK
+  if (ds_1.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_1","civil_register_number")
+	 if (ll_dup > 0) {
+	     alert("주민번호가 중복되었습니다: 주민번호를 수정하십시요 ")
+	     ds_1.RowPosition = ll_dup
+     	  gd_1.SetColumn("civil_register_number");
+	     return
+	 }
+	 
+  }
+
+	for (i=1; i<= ds_1.CountRow; i++){
+   	if (ds_1.NameValue(i,"spec_unq_num") == 0){
+			alert("투입공종을 반드시 입력하십시오 \n        저장되지않았습니다.")
+			return
+		}
+	}
+
+	if (ds_1.IsUpdated){
+	    if  (confirm("변경되었습니다 저장하시겠습니까?")) {
+	        tr_1.Post()
+	        btnquery_onclick()
+	        ds_1.RowPosition = sa_position
+	    }    
+   } 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+	        }   
+ 
+	   }     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function bt_spec_onclick()                     //실행내역 찾기
+//---------------------------------------------------------------------------
+{
+	if ( ds_1.RowPosition == 0 ) {
+		return
+	}
+
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/comm_search/y_budget_find_1h.html","lab@" + is_dept_code,"dialogWidth:1020px;dialogHeight:700px");
+	if(result == "") return;
+	array = result.split("@");
+	ds_1.NameString(ds_1.RowPosition,"spec_no_seq") = array[0];   // 실행 상위 unq_no 
+	ds_1.NameString(ds_1.RowPosition,"spec_unq_num") = array[1];  // 실행내역 unq_no 
+	ds_1.NameString(ds_1.RowPosition,"spec_name") = array[2];          // 실행내역 명칭 
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+}     
+//---------------------------------------------------------------------------
+function bt_zip_onclick()                     //우편번호 찾기
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/comm_search/z_zip_find_1h.html", tx_address.value,"dialogWidth:640px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	em_zip_number.text = array[0]
+	tx_address.value = array[1]
+
+}
+//---------------------------------------------------------------------------
+function bt_job_onclick()                     //직종 찾기
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/const/l_web/00/l_code_job_find_1h.html", "","dialogWidth:430px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	tx_job_code.value = array[0]
+	tx_job_name.value = array[1]
+	em_unitcost.text  = array[2]
+
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	
+	is_work_date = f_sysdate()
+ 	tr_1.Action = is_tr_1_addr 
+	dept_name.value = is_dept_name
+   btnquery_onclick()
+
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+   
+	em_civil_number_error_check_name.Enable="false"
+
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+	if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+	}
+</SCRIPT>
+<script language=JavaScript for=em_civil_register_number event=OnKillFocus()>
+    if (jumin_check(em_civil_register_number.Text)) 
+	    ds_1.NameValue(ds_1.RowPosition,"civil_number_error_check")  = 'Y'
+    else
+	    ds_1.NameValue(ds_1.RowPosition,"civil_number_error_check")  = 'N'
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+</HEAD>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+	 <param name=SortExpr       value="+labor_name+civil_register_number">
+</OBJECT>
+<OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:l_labor_basic_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>	
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->	
+<BODY style="FONT-SIZE: 12px" onload=window_onload() oncontextmenu="return false" >
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 265px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+				<INPUT id=dept_name style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+				<INPUT  type=button  class="img_btnFind"  value=검색 onclick=dept_code_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+			 </td>
+         </tr>                 
+      </table>
+</DIV>      
+<comment id="__NSID__"><OBJECT id=gd_1 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 302px; POSITION: absolute; TOP: 30px; HEIGHT: 630px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='직 종 명' ID=job_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=74 </C>
+	  <C> Name='주민번호' ID=civil_register_number Mask='XXXXXX-XXXXXXX' Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+	  <C> Name='성    명' ID=labor_name  Align=CENTER BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=tab_page_1 
+         style="LEFT: 306px; WIDTH: 706px; POSITION: absolute; TOP: 30px; HEIGHT: 625px; BACKGROUND-COLOR: BLACK">
+	<table width="100%" height="100%" BORDER="5"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">*주민등록번호&nbsp;</div></td>
+			<td width="80%"> 
+               <comment id="__NSID__"><OBJECT id=em_civil_register_number  MAXLENGTH=14 tabIndex=1 size=16 
+					style="WIDTH: 130px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="000000-0000000">
+					<PARAM NAME="Numeric" VALUE="0">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+				<comment id="__NSID__"><OBJECT id=em_civil_number_error_check_name 
+					style="WIDTH: 130px;" 
+					classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0 VIEWASTEXT>
+					<PARAM NAME="Format" VALUE="Y^정상,N^비정상">
+					<PARAM NAME="Enable" VALUE="0">
+					<PARAM NAME="Cols" VALUE="2">
+					<param name=DataID           value="ds_1">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr>                 
+		<tr BGCOLOR="white"> 
+             		<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 		<div align="right">*출역자명&nbsp;</div></td>
+             		<td width="80%"> 
+                  		<INPUT id=tx_labor_name  MAXLENGTH=8 tabIndex=2 size=10></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">*임직/노무구분&nbsp;</div></td>
+			<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_labor_class_name 
+					style="WIDTH: 180px;" 
+					classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0 VIEWASTEXT>
+					<PARAM NAME="Format" VALUE="A^임직,L^직영,W^직영여,S^용역,Z^기타">
+					<PARAM NAME="Enable" VALUE="1">
+					<PARAM NAME="Cols" VALUE="3">
+					<param name=DataID           value="ds_1">
+					<param name=CodeColumn      value="labor_class">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr>                 
+		<tr BGCOLOR="white"> 
+             		<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 		<div align="right">블랙리스트&nbsp;</div></td>
+             		<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_blacklist tabIndex=3
+					style="WIDTH: 130px;" 
+					classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0 VIEWASTEXT>
+					<PARAM NAME="Format" VALUE="Y^예,N^아니오">
+					<PARAM NAME="Cols" VALUE="2">
+					<PARAM NAME="CodeValue" VALUE="N">
+					<param name=DataID           value="ds_1">
+					<param name=CodeColumn      value="blacklist">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">*직종&nbsp;</div></td>
+			<td width="80%"> 
+				<INPUT id=tx_job_code  align="absmiddle" MAXLENGTH=6 tabIndex=4 size=6><INPUT id=bt_job_code  type=button  align="absmiddle" value=...  onclick=bt_job_onclick()>
+				<INPUT id=tx_job_name  align="absmiddle" MAXLENGTH=30 tabIndex=0 size=20>
+			</td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">*단가&nbsp;</div></td>
+			<td width="80%"> 
+                  		<comment id="__NSID__"><OBJECT id=em_unitcost tabIndex=5
+					style="WIDTH: 130px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="2">
+					<PARAM NAME="MaxLength" VALUE="13">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">전화번호&nbsp;</div></td>
+			<td width="80%"> 
+                  		<INPUT id=tx_tel_number  MAXLENGTH=20 tabIndex=6 size=20></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">주소&nbsp;</div></td>
+			<td width="80%" > 
+                  		<comment id="__NSID__"><OBJECT id=em_zip_number tabIndex=7 align="absmiddle" 
+					style="WIDTH: 55px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="000-000">
+					<PARAM NAME="Numeric" VALUE="0">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+				<INPUT id=bt_zip_number  align="absmiddle" type=button  value=...  onclick=bt_zip_onclick()>
+			  	<INPUT id=tx_address align="absmiddle" MAXLENGTH=100 tabIndex=8 size=70></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">계약일자&nbsp;</div></td>
+			<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_contract_date tabIndex=9 
+					style="WIDTH: 130px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">입사일자&nbsp;</div></td>
+			<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_entrance_date tabIndex=10 
+					style="WIDTH: 130px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+             		<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 		<div align="right">퇴사일자&nbsp;</div></td>
+             		<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_resign_date tabIndex=11 
+					style="WIDTH: 130px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+             		<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 		<div align="right">고용보험취득일&nbsp;</div></td>
+             		<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_insurance_get_day tabIndex=12 
+					style="WIDTH: 130px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+         	<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">등본제출여부&nbsp;</div></td>
+			<td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_transcript
+					style="WIDTH: 130px;" 
+					classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0 VIEWASTEXT>
+					<PARAM NAME="Format" VALUE="Y^예,N^아니오">
+					<PARAM NAME="Cols" VALUE="2">
+					<PARAM NAME="CodeValue" VALUE="N">
+					<param name=DataID           value="ds_1">
+					<param name=CodeColumn      value="transcript">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+            <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                <div align="right">본사승인여부&nbsp;</div></td>
+            <td width="80%"> 
+				<comment id="__NSID__"><OBJECT id=em_military
+					style="WIDTH: 130px;" 
+					classid=clsid:754F3DC4-0C79-4C92-AD64-A806D8FF2AB0 VIEWASTEXT>
+					<PARAM NAME="Format" VALUE="Y^승인,N^미승인">
+					<PARAM NAME="Enable" VALUE="0">
+					<PARAM NAME="Cols" VALUE="2">
+					<param name=DataID      value="ds_1">
+
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">*투입공종&nbsp;</div></td>
+			<td width="80%"> 
+			  	<INPUT id=tx_spec_unq_num  align="absmiddle" MAXLENGTH=18 tabIndex=0 size=13 ><INPUT id=bt_spec_unq_num align="absmiddle"  type=button value=...  onclick=bt_spec_onclick()>
+			  	<INPUT id=tx_spec_name align="absmiddle"  MAXLENGTH=40 tabIndex=0 size=60  ></td>
+         	</tr>                 
+
+	</table>    
+
+</DIV>
+<OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+    	<C>Col=civil_register_number Ctrl=em_civil_register_number Param=text Enable=enable</C>
+    	<C>Col=civil_number_error_check Ctrl=em_civil_number_error_check_name Param=codevalue Disable=disabled</C>
+		<C>Col=labor_name     Ctrl=tx_labor_name Param=value Enable=enable</C>
+    	<C>Col=labor_class Ctrl=em_labor_class_name Param=codevalue Enable=enable</C>
+		<C>Col=zip_number     Ctrl=em_zip_number Param=text Enable=enable</C>
+		<C>Col=address        Ctrl=tx_address Param=value Enable=enable</C>
+		<C>Col=unitcost       Ctrl=em_unitcost Param=text Enable=enable</C>
+    	<C>Col=military 		 Ctrl=em_military Param=codevalue Disable=disabled</C>
+		<C>Col=entrance_date  Ctrl=em_entrance_date Param=text Enable=enable</C>
+		<C>Col=resign_date    Ctrl=em_resign_date Param=text Enable=enable</C>
+		<C>Col=job_code       Ctrl=tx_job_code Param=value Enable=enable</C>
+		<C>Col=job_name       Ctrl=tx_job_name Param=value Enable=enable</C>
+		<C>Col=tel_number     Ctrl=tx_tel_number Param=value Enable=enable</C>
+		<C>Col=contract_date       Ctrl=em_contract_date Param=text Enable=enable</C>
+		<C>Col=insurance_get_day   Ctrl=em_insurance_get_day Param=text Enable=enable</C>
+		<C>Col=spec_unq_num   Ctrl=tx_spec_unq_num Param=value Enable=enable</C>
+		<C>Col=spec_name      Ctrl=tx_spec_name Param=value Enable=enable</C>
+	" >
+</OBJECT>
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,55 @@
+아래의 두 SQL의 차이는 단지 inview 안에 rownum이 있나 없나의 차이이다.
+그러나 논리적 관점에서 보면 이 SQL은 등가의 SQL이다
+그러나 결과에는 차이가 있다.
+이는 오라클이 invew을 통합된 SQL로 다루는데 있어서의 명백한 헛점이다.
+
+SQL> Select count(*)
+  2  From
+  3   (
+  4    Select
+  5     a.ACC_CODE P_ACC_CODE,
+  6     a.ACC_NAME P_ACC_NAME,
+  7     b.ACC_CODE C_ACC_CODE,
+  8     b.ACC_NAME C_ACC_NAME
+  9    From TIA_ACC_CODE a,
+ 10      TIA_ACC_CODE b
+ 11    Where b.FUND_INPUT_CLS = 'T'
+ 12    Start With
+ 13      a.ACC_CODE = b.ACC_CODE
+ 14    Connect By
+ 15      Prior b.ACC_CODE = b.ACC_CODE
+ 16    And Prior a.COMPUTER_ACC = a.ACC_CODE
+ 17   )
+ 18  Where P_ACC_CODE <> C_ACC_CODE
+ 19  /
+
+  COUNT(*)
+----------
+         0
+         
+         
+SQL> Select count(*)
+  2  From
+  3   (
+  4    Select
+  5     a.ACC_CODE P_ACC_CODE,
+  6     a.ACC_NAME P_ACC_NAME,
+  7     b.ACC_CODE C_ACC_CODE,
+  8     b.ACC_NAME C_ACC_NAME,
+  9     rownum
+ 10    From TIA_ACC_CODE a,
+ 11      TIA_ACC_CODE b
+ 12    Where b.FUND_INPUT_CLS = 'T'
+ 13    Start With
+ 14      a.ACC_CODE = b.ACC_CODE
+ 15    Connect By
+ 16      Prior b.ACC_CODE = b.ACC_CODE
+ 17    And Prior a.COMPUTER_ACC = a.ACC_CODE
+ 18   )
+ 19  Where P_ACC_CODE <> C_ACC_CODE
+ 20  /
+
+  COUNT(*)
+----------
+      2186
+      

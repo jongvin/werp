@@ -1,0 +1,467 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_chg_cn_approve_rpt_1h.html							-->
+<!-- 2. 유형(시나리오): 보고서 														-->
+<!-- 3. 기 능 정 의   : 변경/정산 하도승인 신청관련 보고서       			-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- **************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_temp = top.frames['security'].gs_sysdate.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+
+var gs_password = top.frames['security'].gs_password.value
+
+var is_ds_1_addr = 's_chg_cn_title_real_1q.jsp?arg_dept_code='                    //발주 목록 
+var is_ds_2_addr = '../03/s_chg_cn_list_1q.jsp?arg_dept_code='                     
+var is_ds_3_addr = '../03/s_chg_cn_list_1q.jsp?arg_dept_code='    
+                  
+var is_sbcr_code = ""
+var is_dept_code = ""
+var is_dept_name = ""
+var is_sbc_date  = ""
+var is_company_name
+var is_represent_name
+var il_screen = 1
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (il_screen > 1){
+	div_btnquery_onclick()
+	return
+	}   
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset() 
+	
+   if (ds_1.CountRow < 1)    // 상위가 한건도 없을경우 하위의 기존 데이타를 없앰. 
+       ds_2.ClearData()
+
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+ 
+ if (ds_1.CountRow < 1) return
+
+ ds_2.DataID = is_ds_2_addr +  is_dept_code + "&arg_order_number=" + ds_1.NameValue(ds_1.RowPosition,"order_number")
+ ds_2.SyncLoad=true
+ ds_2.Reset()
+ if (ds_2.CountRow > 0) ds_2.RowPosition = ds_2.CountRow
+
+ ds_3.DataID = is_ds_2_addr +  is_dept_code + "&arg_order_number=" + ds_1.NameValue(ds_1.RowPosition,"order_number")
+ ds_3.SyncLoad=true
+ ds_3.Reset()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+  il_screen = 1   //parent를 다시 읽음 
+	btnquery_onclick()
+}  
+//---------------------------------------------------------------------------
+function input_sbc_date()                      //계약날짜 입력(pop)
+//---------------------------------------------------------------------------
+{
+	result = window.showModalDialog("s_sbc_date_input_1h.html", gs_home + '@' + gs_temp ,"dialogWidth:300px;dialogHeight:200px");
+	
+	if(result == "")
+		return
+	
+	is_sbc_date = result
+} 
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//--------------------------------------------------------------------------
+function rd_chg_approve_onclick()                 //변경/정산 하도승인신청서 
+//--------------------------------------------------------------------------
+{
+	rb_1.checked=true
+	rb_2.checked=false
+	rb_3.checked=false
+	rb_4.checked=false
+	if (ds_2.CountRow < 1) {
+		alert("차수가 등록되어있지않아 보고서를 출력할수 없습니다")
+		return
+	}
+}  
+//--------------------------------------------------------------------------
+function rd_chg_cn_agreement_onclick()                 // 변경/정산 합의내역서
+//--------------------------------------------------------------------------
+{
+	rb_1.checked=false
+	rb_2.checked=true
+	rb_3.checked=false
+	rb_4.checked=false
+	if (ds_2.CountRow < 1) {
+		alert("차수가 등록되어있지않아 보고서를 출력할수 없습니다")
+		return
+	}
+}
+//--------------------------------------------------------------------------
+function rd_chg_cn_contract_onclick()                 // 하도급 변경/정산 계약서
+//--------------------------------------------------------------------------
+{
+	rb_1.checked=false
+	rb_2.checked=false
+	rb_3.checked=true
+	rb_4.checked=false
+	if (ds_2.CountRow < 1) {
+		alert("차수가 등록되어있지않아 보고서를 출력할수 없습니다")
+		return
+	}
+}
+//--------------------------------------------------------------------------
+function rd_chg_approve_detail_onclick()                 // 변경/정산 예산대비표
+//--------------------------------------------------------------------------
+{
+	rb_1.checked=false
+	rb_2.checked=false
+	rb_3.checked=false
+	rb_4.checked=true
+	if (ds_2.CountRow < 1) {
+		alert("차수가 등록되어있지않아 보고서를 출력할수 없습니다")
+		return
+	}
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/s_web/03r/"        // 보고서 디렉토리
+//변경/정산 하도승인신청서
+   if (rb_1.checked) {
+       arg_temp = arg_temp + "s_chg_cn_approve"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                       "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"order_number")  + 
+		                       "&RptParams=" + ds_3.NameValue(ds_3.RowPosition,"chg_degree")    +
+		                       "&RptParams=" + ds_2.NameValue(ds_2.RowPosition,"chg_degree")
+   } 
+//하도 정산 합의서
+   if (rb_2.checked) {
+   		 rd_chg_cn_agreement_onclick()
+   		 input_sbc_date()
+   		 
+   		 if (is_sbc_date == "" || is_sbc_date == null)
+   		 	return
+   		 	
+       arg_temp = arg_temp + "s_chg_cn_agreement"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+		                       "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"order_number")  + 
+		                       "&RptParams=" + ds_2.NameValue(ds_2.RowPosition,"chg_degree") +
+		                       "&RptParams=" + ds_3.NameValue(ds_3.RowPosition,"chg_degree") +
+		                       "&RptParams=" + is_sbc_date.substr(0,4) +
+		                       "&RptParams=" + is_sbc_date.substr(4,2) +
+		                       "&RptParams=" + is_sbc_date.substr(6,2) 
+   } 
+//변경 계약서
+	if (rb_3.checked) {
+		rd_chg_cn_contract_onclick()
+		input_sbc_date()
+/*		ls_class=ds_1.NameValue(ds_1.RowPosition,"order_class")	
+		if (ls_class == '1')		
+			arg_temp = arg_temp + "s_chg_cn_contract"    // 외주
+		else 
+			arg_temp = arg_temp + "s_chg_cn_contract_1"    // 납품설치
+*/			// 기존 내용
+		
+		if ( is_sbc_date == "" || is_sbc_date == null)
+			return
+			
+      arg_temp = arg_temp + "s_chg_cn_list_dept"
+		arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+									 "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"order_number")  + 
+									 "&RptParams=" + ds_3.NameValue(ds_3.RowPosition,"chg_degree") +
+									 "&RptParams=" + ds_2.NameValue(ds_2.RowPosition,"chg_degree") +
+									 "&RptParams=" + is_sbc_date.substr(0,4) +
+		                      "&RptParams=" + is_sbc_date.substr(4,2) +
+		                      "&RptParams=" + is_sbc_date.substr(6,2)   
+	} 
+
+//하도급계약변경 대비표
+   if (rb_4.checked) {
+          rd_chg_approve_detail_onclick()
+       arg_temp = arg_temp + "s_cn_detail_incre"    // 보고서명 
+	    arg_temp = arg_temp + "&RptParams=" + is_dept_name + 
+		                       "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"sbcr_name")  +
+		                       "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"sbc_name")    +
+		                       "&RptParams=" + is_dept_code +
+		                       "&RptParams=" + ds_1.NameValue(ds_1.RowPosition,"order_number")  +
+		                       "&RptParams=" + ds_2.NameValue(ds_2.RowPosition,"chg_degree")  +
+		                       "&RptParams=" + ds_3.NameValue(ds_3.RowPosition,"chg_degree")
+   } 
+
+   f_crystal_report(arg_temp)   //보고서 호출
+
+}
+//---------------------------------------------------------------------------
+function guljae_rtn()                      // 전자결재
+//---------------------------------------------------------------------------
+{
+	var ls_addr,ll_temp
+	if (rb_1.checked) {
+		ll_temp = is_dept_code + '@' + ds_1.NameValue(ds_1.RowPosition,"order_number") + '@' + ds_3.NameValue(ds_3.RowPosition,"chg_degree") +
+				'@' + ds_2.NameValue(ds_2.RowPosition,"chg_degree")
+
+		ls_addr = 'https://www.worldro.net/loginsso.aspx?ui='
+		ls_addr = ls_addr + gs_user_id + ':' + gs_password + '&unq=' + ll_temp + '&type=Y09'
+
+		ll_height = screen.availHeight  -  40
+		ll_width  = screen.availWidth
+		window.showModalDialog(ls_addr,"","status:no;dialogWidth:777px;dialogHeight:737px;edge sunken;scroll:no");
+	}
+}
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+}
+
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1', 'gd_2', 'gd_3', 'hdept_page_2');
+	var xArr   = new Array(false, true, true, true);
+	var yArr   = new Array(true, false, false, true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+    top.frames['main_title'].mouse_over()
+	ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '004' order by etc_code") //승인구분
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+   rb_1.checked=true
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+	f_set_resize()
+
+}
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+  if  (row < 1) return;
+  div_btnquery_onclick()
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<Object id=ds_sysdate
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<Object id=ds_select
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_1
+	style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_2 
+   style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+   classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_3 
+   style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+   classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+    
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onresize=f_set_resize() onunload=window_onunload() oncontextmenu="return false" >
+
+<DIV id=hdept_page_1 
+	  style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white" > 
+			<td BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+				<div align="right">현장명</div></td>
+			<td>
+				<INPUT style="FONT-SIZE:12px;" id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+				<input type="button_query" value=" 검색" 
+				style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+				background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+				onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+				onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'"  
+				onclick=dept_code_find()></td>
+		</tr>                 
+	</table>
+</DIV>      
+
+<OBJECT id=gd_1 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2px; WIDTH:500px; POSITION: absolute; TOP: 30px; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit"    VALUE="-1">
+   <PARAM NAME="BorderStyle"    VALUE=4>
+	<PARAM NAME="Editable"       VALUE="0">
+	<PARAM NAME="ColSizing"      VALUE="-1">
+	<PARAM NAME="DataID"         VALUE="ds_1">
+	<PARAM NAME="Format"         VALUE=" 
+	  <C> Name=발주번호 ID=order_number  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 </C>
+	  <C> Name=변경차수 ID=chg_degree  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=50 </C> 
+	  <C> Name=계약명   ID=sbc_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=140 </C> 
+	  <C> Name=업체명   ID=sbcr_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 </C> 
+	  <C> Name=발주구분 ID=order_class  Align=Center EditStyle=Combo Data='1:외주,2:납품설치' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 </C> 
+	  <C> Name=승인구분 ID=approve_class   Edit=None EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+   ">
+</OBJECT>
+
+<LABEL id=Label_1  
+       style="FONT-SIZE: 12px;WIDTH: 75px; LEFT: 503px;POSITION: absolute; HEIGHT: 25px; TOP:14px">(당초)
+</LABEL>
+
+<OBJECT id=gd_2 onfocus="get_focus(2)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 503px; WIDTH:500px; POSITION: absolute; TOP: 30px; HEIGHT: 160px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+   <PARAM NAME="BorderStyle"    VALUE=4>
+	<PARAM NAME="AllShowEdit"    VALUE="0">
+	<PARAM NAME="Editable"       VALUE="0">
+	<PARAM NAME="ColSizing"      VALUE="-1">
+	<PARAM NAME="DataID"         VALUE="ds_2">
+	<PARAM NAME="Format"         VALUE=" 
+		<C> Name=차수     ID=chg_degree Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=40 </C> 
+		<C> Name=공사완료 ID=close_tag  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 
+		                                EditStyle=Combo  Data='Y:완료,N:진행'  </C> 
+		<C> Name=계약명칭 ID=sbc_name   Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+		<C> Name=승인구분 ID=approve_class   Edit=None EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+	">
+</OBJECT>
+
+<LABEL id=Label_1  
+		 style="FONT-SIZE: 12px; WIDTH: 75px; LEFT: 503px;POSITION: absolute; HEIGHT: 35px; TOP:199px">(변경)
+</LABEL>
+
+<OBJECT id=gd_3 onfocus="get_focus(3)"
+		  style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 503px; WIDTH:500px; POSITION: absolute; TOP: 215px; HEIGHT: 165px" 
+		  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit"    VALUE="0">
+	<PARAM NAME="BorderStyle"    VALUE=4>
+	<PARAM NAME="Editable"       VALUE="0">
+	<PARAM NAME="ColSizing"      VALUE="-1">
+	<PARAM NAME="DataID"         VALUE="ds_3">
+	<PARAM NAME="Format"         VALUE=" 
+		<C> Name=차수     ID=chg_degree Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=40 </C> 
+		<C> Name=공사완료 ID=close_tag  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 
+		                                EditStyle=Combo  Data='Y:완료,N:진행'  </C> 
+		<C> Name=계약명칭 ID=sbc_name   Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+		<C> Name=승인구분 ID=approve_class   Edit=None EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+	">
+</OBJECT>
+
+<DIV id=hdept_page_2 
+	  style="Z-INDEX: 111; LEFT: 503px; WIDTH: 500px; border-style:double; border-color:#A1A9A9;   POSITION: absolute; TOP: 381px; HEIGHT: 30%;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white" height="20%"> 
+			<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+		</tr> 
+		<tr BGCOLOR="white"> 
+			<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+			<td style="COLOR: BLACK" BORDER="0"> 
+				<input id=rb_1 type="radio" value="1" defaultChecked=true onclick="rd_chg_approve_onclick()">&nbsp;변경/정산 하도승인신청서 &nbsp;&nbsp;&nbsp;
+			<!--	<input id=btn_guljae type="button" value="전산결재" 
+				style="color:#2E4A4A; font-size:13px; CURSOR: hand;  FONT-SIZE: 11px;
+				background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+				onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+				onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'"  
+				onclick=guljae_rtn() NAME="btn_guljae">-->
+			</td>
+		</tr> 
+		<tr BGCOLOR="white"> 
+			<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+			<td style="COLOR: BLACK" BORDER="0"> 
+				<input id=rb_2 type="radio" value="2" defaultChecked=true onclick="rd_chg_cn_agreement_onclick()">&nbsp;하도 정산 합의서 &nbsp;&nbsp;&nbsp;</td>	
+		</tr> 
+		<tr BGCOLOR="white"> 
+			<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+			<td style="COLOR: BLACK" BORDER="0"> 
+				<input id=rb_3 type="radio" value="3" defaultChecked=true onclick="rd_chg_cn_contract_onclick()">&nbsp;변경 계약서</td>	
+		</tr> 
+		<tr BGCOLOR="white"> 
+			<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+			<td style="COLOR: BLACK" BORDER="0"> 
+				<input id=rb_4 type="radio" value="4"   onclick="rd_chg_approve_detail_onclick()">&nbsp;하도급계약변경 대비표</td>	
+		</tr> 
+			<tr BGCOLOR="white" height="20%"> 
+				<td width="30%" colspan=2 style="COLOR: BLACK" BORDER="0"></td>	
+		</tr> 
+	</table>
+</div>	
+</BODY></HTML>

@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_mis_sale_plan_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 확정사업S&P현황		  	  								-->
+<!-- 4. 변 경 이 력   : 장희선 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_ds_1_addr = gs_home + '/const/g_web/02/g_mis_sale_plan_1q.jsp?arg_work_year='
+var is_ds_seq_addr = gs_home + '/const/g_web/99/g_spec_unq_no_1q.jsp'  
+var is_work_year
+var is_success_tag = 'Y'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+
+	ds_1.DataID = is_ds_1_addr + is_work_year
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	ds_1_recal()	// 동일 Key Breake
+   ds_1.SortExpr = "+proj_bus_type+spec_no_seq+work_yymm"
+   ds_1.Sort();
+	rds_1.DataID = 'ds_1'
+   rds_1.SyncLoad = true
+   rds_1.Reset()
+   rds_1.DataID = ''
+}
+//----------------------------------------------------------------------------
+function ds_1_recal()               // 동일 자체에 년월일경우 순번 자동구하기.
+//-----------------------------------------------------------------------------
+{
+   if (ds_1.CountRow <= 1) return
+	var i=1,j
+	var sa_proj_bus_type
+	var sa_work_yymm
+	sa_aft_proj_unq_key=''
+	while (sa_aft_proj_unq_key != 'last') {
+	   // 그룹 전처리 
+	   sa_proj_bus_type= ds_1.NameValue(i,'proj_bus_type')
+	   sa_work_yymm= ds_1.NameValue(i,'work_yymm')
+      j=0
+	   alert(sa_proj_bus_type + ' ' + sa_work_yymm)
+	   // 같은 그룹끼리 보여주기 위해 spec_no_seq를 위해 재부여함..
+	   // 변수와 비교대상이 완전히 같을때만 loop.. 결국 j를 +1씩 증가시킴, 비교대상 값이 다르면 다시 j=1이 되게함...
+	   while(sa_aft_proj_unq_key != 'last' && sa_proj_bus_type == ds_1.NameValue(i,'proj_bus_type')  
+	                                       && sa_work_yymm == ds_1.NameValue(i,'work_yymm') ) {
+         j = j + 1
+	      ds_1.NameValue(i,'spec_no_seq') = j
+	      alert('type=' + ds_1.NameValue(i,'proj_bus_type') + ' j=' + j + ' yymm=' + ds_1.NameValue(i,'work_yymm'))
+	      i++
+	      
+	      if (i > ds_1.CountRow)  {
+	           sa_aft_proj_unq_key = 'last'
+	      }
+	   }
+	   //그룹 후처리 
+	}
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+	}     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+}
+//-------------------------------------------------------------------------------
+function select_year()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_year = em_select_year.text + '.01.01'
+   ds_1.ClearData()
+
+   btnquery_onclick()
+}   
+//----------------------------------------------------------------
+function excel_down()                      //엑셀 내리기 
+//----------------------------------------------------------------
+{
+	var temp_1
+	temp_1 = '수주추진관련 예상매출 추정액 [' + is_work_year + ']'
+	gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+  	em_select_year.text = is_work_date.substr(0,4)
+	// 프로젝트명
+	ll_cnt = f_ds_select_q("ds_proj", " select proj_unq_key select_1, proj_name select_2 " +
+												 "   from r_proj_view_business_form " +
+												 " order by proj_name ")
+	
+	select_year()
+	
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code ds_spcall: " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+  is_success_tag = 'N'
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_year event=onKillFocus()>
+   if (em_select_year.Modified){ 
+	   select_year()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_year event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_year()
+	}
+</SCRIPT>        	
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_proj
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<object classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 id=rds_1>
+    <param name=Logical value=true>
+    <param name=DataID  value="">
+   <param name=GroupExpr    value="proj_bus_type:spec_no_seq,work_mm,proj_name:hos_cnt">
+</object>
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 160px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">해당년도</div></td>
+          	 <td width="63%" >
+			       <OBJECT id=em_select_year style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="4">
+						    <PARAM NAME="Format" VALUE="YYYY">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_year.text = result.substr(0,4);} ; select_year()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 700px; POSITION: absolute; WIDTH: 300px; TOP: 7px;  height:20px">
+	<input id=button_driver type="button" value="&nbsp;엑셀내리기" 
+	          style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid; "   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	           "  onclick=excel_down()>	
+</DIV>      
+
+<OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px;TOP: 30px;  WIDTH: 1010px; HEIGHT: 99%; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" 	VALUE="-1">
+	<PARAM NAME="AutoInsert" 		VALUE="-1">
+	<PARAM NAME="AllShowEdit" 		VALUE="-1">
+   <PARAM NAME="BorderStyle"  	VALUE=4>
+	<PARAM NAME="Editable" 			VALUE="0">
+	<PARAM NAME="ColSizing" 		VALUE="-1">
+	<param name="ViewSummary"    	value=1>
+	<PARAM NAME="DataID" 			VALUE="rds_1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='사업유형'    id=proj_bus_type  width=100  EditStyle=Combo Data='1:자체,2:재건축,3:수주,4:기타'  suppress=2  BgColor='ffffff'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  
+	  			SumText='합 계'  SumColor=Black SumBgColor=Pink </C>
+     <R>
+	     <G> Name=$xkeyname_$$  ID=work_mm_$$ HeadBgColor=#BBE0F4  HeadColor=BLACK   >		
+		     <C>name='프로젝트' ID=proj_name_$$ 	align=left  width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK
+		              SumText=@sum  SumColor=Black SumBgColor=Pink </C>
+		     <C>name='세대수' ID=hos_cnt_$$ 		align=right  width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK
+		              SumText=@sum  SumColor=Black SumBgColor=Pink </C>		     
+		  </G>
+     </R>       
+     ">
+</OBJECT>	
+</DIV>
+</BODY></HTML>

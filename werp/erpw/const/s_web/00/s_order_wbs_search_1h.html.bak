@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_order_wbs_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 발주 공종 코드 찾기 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<TITLE>발주 전문 공종 </TITLE>
+<SCRIPT language=JavaScript>
+var is_ds_1_addr = 's_order_wbs_search_1q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+ll_1 = ds_1.NameValueRow('name',Textbox_1.value)	
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+ds_1.SyncLoad=true
+ds_1.reset()
+
+ls_str = Textbox_1.value 
+
+for (i=1; i<= ds_1.CountRow; i++) {
+   ls_from = ds_1.NameValue(i,'name')
+   if (ls_from.substr(0,ls_str.length) == ls_str) {
+      ds_1.RowPosition = i
+      return
+   }   
+}
+
+
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+ if  ((ds_1.CountRow == ds_1.RowPosition) ||
+     (ds_1.NameValue(ds_1.RowPosition ,"llevel") >= ds_1.NameValue(ds_1.RowPosition + 1,"llevel"))){
+     is_confirm_check = 'yes'
+     var ls_return=""
+     ls_return = ds_1.NameValue(ds_1.RowPosition,'order_wbs_code') + '@' + ds_1.NameValue(ds_1.RowPosition,'name') 
+     window.returnValue = ls_return
+     window.close();
+ }
+ else
+    alert("최종 공종코드가 아니므로 선택할수 없슴니다")       
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ array = result.split("@");
+ Textbox_1.value = array[0]          // 0: 찾고자하는 값.
+ ds_1.DataID = is_ds_1_addr
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+</SCRIPT>
+<script language=JavaScript for=tree_1 event=OnDblClick()>
+Button_confirm_onclick()
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<LABEL id=Label_1  
+    style="WIDTH: 75px; POSITION: absolute; top:11px; HEIGHT: 25px">&nbsp;&nbsp;검색조건:</LABEL>
+<INPUT style="FONT-SIZE:12px;" id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 60px; POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+<INPUT style="FONT-SIZE:12px;" id=Button_query 
+    style="Z-INDEX: 106; LEFT: 210px; POSITION: absolute; TOP: 7px" 
+    onclick=btnquery_onclick() type=button value='조회'>      
+<INPUT style="FONT-SIZE:12px;" id=Button_confrim 
+    style="Z-INDEX: 106; LEFT: 280px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_confirm_onclick() type=button value='확인'>     
+<INPUT style="FONT-SIZE:12px;" id=Button_close 
+    style="Z-INDEX: 106; LEFT: 320px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_close_onclick() type=button value='닫 기'>    
+    
+<OBJECT id=tree_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 370px; POSITION: absolute; TOP: 35px; HEIGHT: 400px" 
+    HEIGHT: 650px"    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="LevelColumn" VALUE="llevel">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_1">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT>
+
+</BODY></HTML>

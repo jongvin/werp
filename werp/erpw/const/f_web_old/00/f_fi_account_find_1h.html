@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_code_bank_find_1h.html									-->
+<!-- 2. 유형(시나리오): 은행코드및계좌번호 찾기(분양)								-->
+<!-- 3. 기 능 정 의   : fi                                      ->
+<!-- 4. 변 경 이 력   :  													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 계좌번호(FI) 찾기 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'f_fi_account_find_1q.jsp'
+var is_confirm_check = 'no'
+var is_org_code = ''
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{	 var ls_str, arg_1, arg_2
+   ls_str = Textbox_1.value 
+	if (isNaN(Textbox_1.value )) {
+		arg_1 = Textbox_1.value;
+		arg_2 = '';
+	}
+	else{
+	   arg_1 = '';
+      arg_2 = Textbox_1.value;  
+	}
+	ds_1.DataID = is_ds_1_addr + "?arg_name=" + arg_1 + "&arg_number=" + arg_2 + "&arg_org_code=" + is_org_code
+
+  ds_1.SyncLoad=true
+  if  (Textbox_1.value == "") {
+//     alert("검색조건을 반드시 입력하십시요")
+     Textbox_1.value=""
+//     return
+  }      
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return=""
+	ls_return = ds_1.NameValue(ds_1.RowPosition,'BANK_ACCOUNT_ID') + '@' + 
+				ds_1.NameValue(ds_1.RowPosition,'BANK_ACCOUNT_NUMBER') + '@' + 
+				ds_1.NameValue(ds_1.RowPosition,'BANK_BRANCH_NAME') + '@' +
+				ds_1.NameValue(ds_1.RowPosition,'FOLDER_CODE') + '@'
+	window.returnValue = ls_return
+	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	array = result.split("@");
+	is_org_code = array[0]                  // 사업자번호
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+    <param name=UseFilter       value=true>
+</OBJECT>
+<BR>
+
+<LABEL id=Label_1  
+    style="WIDTH: 30px; left: 5px;  POSITION: absolute; HEIGHT: 25px">명칭:
+</LABEL><INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 35px; width: 130px ;POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+<input type="button" value="조회" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 175px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=btnquery_onclick()>
+
+<input type="button" value="확인" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 335px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 380px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+         
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 726px; POSITION: absolute; TOP: 35px; HEIGHT: 510px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+		<C> Name='은 행 명' ID=bank_name           Edit=None HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 </C>
+		<C> Name='계좌번호' ID=bank_account_number Edit=None Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+		<C> Name='예금주'   ID=account_holder_name Edit=None Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+		<C> Name='지점명'   ID=bank_branch_name    Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+		<C> Name='계좌명'   ID=bank_account_name   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=250 </C>
+	   ">
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

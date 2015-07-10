@@ -1,0 +1,97 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+ServiceLoader loader = new ServiceLoader(request, response);
+GauceService service = loader.newService();
+GauceContext context = service.getContext();
+Logger logger = context.getLogger();
+GauceDBConnection conn = null;
+conn = service.getDBConnection();
+GauceStatement stmt = null;
+GauceRequest req = service.getGauceRequest();
+GauceResponse res = service.getGauceResponse();
+try {
+     String strUserID = new String(session.getAttribute("userid").toString());
+     conn.setAutoCommit(false);
+    GauceDataSet dSet = req.getGauceDataSet("r_code_lice_child_1tr");
+   	int idx_license_kind_code     = dSet.indexOfColumn("license_kind_code");
+   	int idx_key_license_kind_code = dSet.indexOfColumn("key_license_kind_code");
+   	int idx_license_class_code    = dSet.indexOfColumn("license_class_code");
+   	int idx_license_name          = dSet.indexOfColumn("license_name");
+   	int idx_link_raw              = dSet.indexOfColumn("link_raw");
+   	int idx_remark                = dSet.indexOfColumn("remark");
+    int  rowCnt = dSet.getDataRowCnt();
+    for(int i=0; i< rowCnt; i++){
+    	GauceDataRow rows = dSet.getDataRow(i);
+	if(rows.getJobType() == GauceDataRow.TB_JOB_INSERT){
+		String sSql = " INSERT INTO r_code_license ( license_kind_code," + 
+                    " license_class_code," + 
+                    " license_name, " + 
+                    " link_raw , " +
+                    " remark)      ";
+      sSql = sSql + " VALUES ( :1, :2, :3, :4, :5 ) ";
+      stmt = conn.getGauceStatement(sSql);
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_license_kind_code);
+      stmt.bindColumn(2, idx_license_class_code);
+      stmt.bindColumn(3, idx_license_name);
+      stmt.bindColumn(4, idx_link_raw) ;
+      stmt.bindColumn(5, idx_remark);
+      stmt.executeUpdate();
+      stmt.close();
+ 
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_UPDATE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "update r_code_license set " + 
+                            " license_kind_code=?,  " + 
+                            " license_class_code=?,  " + 
+                            " license_name=?, " +
+                            " link_raw=?, " +
+                            " remark=?  where license_kind_code=? " +
+                            " and license_class_code=? ";  
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_license_kind_code);
+      stmt.bindColumn(2, idx_license_class_code);
+      stmt.bindColumn(3, idx_license_name);
+      stmt.bindColumn(4, idx_link_raw) ;
+      stmt.bindColumn(5, idx_remark);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(6, idx_key_license_kind_code);
+      stmt.bindColumn(7, idx_license_class_code);
+      stmt.executeUpdate();
+      stmt.close();
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_DELETE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "delete from r_code_license where license_kind_code=? " +
+      						" and license_class_code=? "; 
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(1, idx_key_license_kind_code);
+      stmt.bindColumn(2, idx_license_class_code);
+      stmt.executeUpdate();
+      stmt.close();
+    }
+     }
+     dSet.flush();
+     res.commit("성공적으로 마쳤습니다");
+     res.close();
+} catch (Exception e) {
+    res.writeException("Native","9999",e.toString());
+    res.commit();
+    res.close();
+    if (conn != null) {
+       conn.rollback();
+    }
+    if (stmt != null) {
+       stmt.close();
+    }
+} finally {
+    if (conn != null) {
+        try {
+            conn.commit();
+            conn.close();
+        } catch (Exception e) {}
+    }
+    loader.restoreService(service);
+}
+%>

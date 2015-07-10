@@ -1,0 +1,18 @@
+CREATE OR REPLACE FORCE VIEW VIEW_C_SPEC_CONST_PARENT
+(YYMM, SUM_CODE, PARENT_SUM_CODE, DEPT_CODE, LONG_NAME, 
+ USE_TAG, NO_SEQ, CNT_RESULT_AMT, CNT_RESULT_MAT_AMT, CNT_RESULT_LAB_AMT, 
+ CNT_RESULT_EXP_AMT, RESULT_AMT, RESULT_MAT_AMT, RESULT_SUB_AMT, RESULT_LAB_AMT, 
+ RESULT_EQU_AMT, RESULT_EXP_AMT, COST_AMT, COST_MAT_AMT, COST_SUB_AMT, 
+ COST_LAB_AMT, COST_EQU_AMT, COST_EXP_AMT, WBS_CODE, PRE_RESULT_AMT, 
+ PRE_RESULT_RATE, LS_CNT_RESULT_AMT, LS_CNT_RESULT_MAT_AMT, LS_CNT_RESULT_LAB_AMT, LS_CNT_RESULT_EXP_AMT, 
+ LS_RESULT_AMT, LS_RESULT_MAT_AMT, LS_RESULT_SUB_AMT, LS_RESULT_LAB_AMT, LS_RESULT_EQU_AMT, 
+ LS_RESULT_EXP_AMT, LS_COST_AMT, LS_COST_MAT_AMT, LS_COST_SUB_AMT, LS_COST_LAB_AMT, 
+ LS_COST_EQU_AMT, LS_COST_EXP_AMT, CNT_AMT, CNT_MAT_AMT, CNT_LAB_AMT, 
+ CNT_EXP_AMT, AMT, MAT_AMT, LAB_AMT, EXP_AMT, 
+ EQU_AMT, SUB_AMT, PROJ_POS, PROJ_CHARGE, CHG_CONST_START_DATE, 
+ CHG_CONST_END_DATE)
+AS 
+SELECT c_spec_const_parent.yymm, c_spec_class_parent.sum_code,           c_spec_class_parent.parent_sum_code, c_spec_const_parent.dept_code,           z_code_dept.long_name, z_code_dept.use_tag, c_spec_class_child.no_seq,          c_spec_const_parent.cnt_result_amt, c_spec_const_parent.cnt_result_mat_amt,           c_spec_const_parent.cnt_result_lab_amt, c_spec_const_parent.cnt_result_exp_amt,           c_spec_const_parent.result_amt, c_spec_const_parent.result_mat_amt,          c_spec_const_parent.result_sub_amt, c_spec_const_parent.result_lab_amt,           c_spec_const_parent.result_equ_amt, c_spec_const_parent.result_exp_amt,           c_spec_const_parent.cost_amt, c_spec_const_parent.cost_mat_amt,           c_spec_const_parent.cost_sub_amt, c_spec_const_parent.cost_lab_amt,          c_spec_const_parent.cost_equ_amt, c_spec_const_parent.cost_exp_amt,          c_spec_const_parent.wbs_code, c_spec_const_parent.pre_result_amt,          c_spec_const_parent.pre_result_rate, c_spec_const_parent.ls_cnt_result_amt,          c_spec_const_parent.ls_cnt_result_mat_amt, c_spec_const_parent.ls_cnt_result_lab_amt,           c_spec_const_parent.ls_cnt_result_exp_amt, c_spec_const_parent.ls_result_amt,           c_spec_const_parent.ls_result_mat_amt, c_spec_const_parent.ls_result_sub_amt,           c_spec_const_parent.ls_result_lab_amt, c_spec_const_parent.ls_result_equ_amt,           c_spec_const_parent.ls_result_exp_amt, c_spec_const_parent.ls_cost_amt,           c_spec_const_parent.ls_cost_mat_amt, c_spec_const_parent.ls_cost_sub_amt,           c_spec_const_parent.ls_cost_lab_amt, c_spec_const_parent.ls_cost_equ_amt,           c_spec_const_parent.ls_cost_exp_amt, c_spec_const_parent.cnt_amt,           c_spec_const_parent.cnt_mat_amt, c_spec_const_parent.cnt_lab_amt,           c_spec_const_parent.cnt_exp_amt, c_spec_const_parent.amt,           c_spec_const_parent.mat_amt, c_spec_const_parent.lab_amt,           c_spec_const_parent.exp_amt, c_spec_const_parent.equ_amt,           c_spec_const_parent.sub_amt,           z_code_dept.proj_pos,z_code_dept.proj_charge,           z_code_dept.chg_const_start_date,z_code_dept.chg_const_end_date       FROM c_spec_class_child, c_spec_const_parent,            y_budget_parent, z_code_dept,            c_spec_class_parent        WHERE ( c_spec_class_child.spec_no_seq = c_spec_class_parent.spec_no_seq )          and ( c_spec_class_child.dept_code = z_code_dept.dept_code )          and ( c_spec_const_parent.dept_code = c_spec_class_child.dept_code )          and ( c_spec_const_parent.dept_code = y_budget_parent.dept_code )          and ( c_spec_const_parent.spec_no_seq = y_budget_parent.spec_no_seq )          and ( ( y_budget_parent.sum_code = '01' ) );
+
+
+

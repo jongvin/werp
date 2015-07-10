@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : f_request_acc_list_1h.html							-->
+<!-- 2. 유형(시나리오): 보고서													-->
+<!-- 3. 기 능 정 의   : 전도금 청구 내역서									-->
+<!-- 4. 변 경 이 력   : 정호준 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_yymm,is_res_type = '@',is_fund_type = '@',is_receipt_rqst_type = '@'
+var is_cust_sel = '0'
+
+var is_dr_1_addr = 'f_request_list_1q.jsp?arg_dept_code='                     //보고서
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+//    print_condition_query()
+   var arg_temp
+   arg_temp ="const_rpt/f_web/01r/f_request_acc_sel_list"        // 보고서 명
+
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code + "&RptParams=" + is_yymm + 
+   			  "&RptParams=" + is_res_type + "&RptParams=" + is_cust_sel
+   f_crystal_report(arg_temp)   //보고서 호출
+
+}
+//------------------------------------------------------------------------
+function btnprint_onclick()                     // 즉시 출력  
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+   rt_1.Print()
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+}   
+//-------------------------------------------------------------------------------
+function select_res_type_onchange()                  //단위 변경
+//--------------------------------------------------------------------------------
+{
+	is_res_type = select_res_type.value 
+   if (is_res_type == '') is_res_type = '@'
+}
+//-------------------------------------------------------------------------------
+function select_fund_type_onchange()                  //단위 변경
+//--------------------------------------------------------------------------------
+{
+	is_fund_type = select_fund_type.value 
+   if (is_fund_type == '') is_fund_type = '@'
+}
+//-------------------------------------------------------------------------------
+function select_receipt_rqst_type_onchange()                  //단위 변경
+//--------------------------------------------------------------------------------
+{
+	is_receipt_rqst_type = select_receipt_rqst_type.value 
+   if (is_receipt_rqst_type == '') is_receipt_rqst_type = '@'
+}
+//-------------------------------------------------------------------------------
+function select_cust_sel_onchange()                  //거래처 구분 변경
+//--------------------------------------------------------------------------------
+{
+	is_cust_sel = select_cust_sel.value 
+}
+
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2) + ".01"
+  	is_work_date = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)  + "." +  em_select_yymm.text.substr(8,2)
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+   	top.frames['main_title'].mouse_over()
+	dept_name.value = is_dept_name
+	is_yymm = is_work_date.substr(0,7) + ".01"
+	em_select_yymm.text = is_work_date
+
+
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<BODY style="FONT-SIZE: 12px" onload=window_onload() oncontextmenu="return false" >
+
+<DIV id=print_condition 
+      style="Z-INDEX: 107; LEFT: 300px; WIDTH: 500px; POSITION: absolute; TOP: 100px; HEIGHT: 160px">
+      <table width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">현장명</div>
+                 </td>
+             <td  width="80%"> 
+					 	<INPUT id=dept_name   size=40  onkeyDown="keyDown()">   
+						<input type="button_query" value=" 검색" 
+						          style="color:#2E4A4A; font-size:12px; CURSOR: hand; width:40px;
+						           background-color:#E9F5F5; border:1 #A1A9A9 solid; "   
+						            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+						            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+						           "  onclick=dept_code_find()>
+						</td>
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">출력년월</div>
+                 </td>
+             <td> 
+						<comment id="__NSID__"><OBJECT id=em_select_yymm 
+						          style="width:100px;"
+						      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							    <PARAM NAME="Alignment" VALUE="1">
+							    <PARAM NAME="IsComma" VALUE="0">
+							    <PARAM NAME="MaxLength" VALUE="6">
+							    <PARAM NAME="Format" VALUE="YYYY-MM">
+						            <param name=ClipMode       value=false>
+							    <PARAM NAME="Numeric" VALUE="0">
+							    <PARAM NAME="SelectAll" VALUE="-1">
+								</OBJECT></comment> <script> __ws__(__NSID__);</script>
+								<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+									if(!is_null(result)){ em_select_yymm.text = result.substr(0,8);} ; select_yymm()"> 
+                 </td>
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">비목구분</div>
+                 </td>
+             <td> 
+						<SELECT id=select_res_type 
+						             onchange="select_res_type_onchange()" >
+						           <OPTION value='' selected>전체</OPTION> 
+						           <OPTION value='M'>자재</OPTION>
+						           <OPTION value='L'>노무</OPTION>
+						           <OPTION value='E'>장비</OPTION>
+						           <OPTION value='S'>외주</OPTION>
+						           <OPTION value='X'>경비</OPTION>
+						</SELECT> 
+                 </td>
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">거래처코드구분</div>
+                 </td>
+             <td> 
+						<SELECT id=select_cust_sel 
+						             onchange="select_cust_sel_onchange()" >
+						           <OPTION value='0' selected>전체</OPTION> 
+						           <OPTION value='1'>코드있는것</OPTION>
+						           <OPTION value='2'>코드없는것</OPTION>
+						</SELECT> 
+                 </td>
+         </tr>                 
+    </table>
+</DIV>
+
+</BODY></HTML>

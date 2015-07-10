@@ -1,0 +1,56 @@
+데이타베이스 튜닝 툴인 tkprof를 sql-plus로 실행하여 결과를 받아보기
+먼저 아래에 설명된 파일들을 만듭니다.
+1. tron.sql 파일 만들기
+sql-plus에서
+ed tron.sql
+이라고 치면 노트패드가 나타납니다.
+이 때 아래의 명령을 복사해서 붙여넣고 저장합니다.
+
+alter session set sql_trace = true;
+
+2. troff.sql 파일 만들기 
+1번과 같은 방법으로
+ed troff.sql
+을 실행하여 아래의 내용을 붙여넣습니다.
+
+alter session set sql_trace = false;
+
+3. dumptkprof.sql 만들기
+같은 방법으로
+ed dumptkprof.sql
+치고
+아래의 내용을 복사후 저장
+
+set serveroutput on size 1000000
+exec dbms_java.set_output(1000000);
+set trimspool on
+spool rs.txt
+exec dump_tkprof
+spool off
+ed rs.txt
+
+
+
+자 이제 준비가 다 되었습니다.
+tkprof는 사용된 sql의 실제 데이타베이스에서의 질의 계획과 cpu사용시간 물리적 읽기에 든 시간 등등을 알려주는 아주 유용한
+툴입니다.
+자세한건 책을 읽으시고
+
+위의 세 파일을 사용하는 방법은
+
+1. 먼저 tron.sql을 실행하여 autotrace 모드로 전환 합니다.
+@tron
+이라고 만 치시면 됩니다.
+2. 이제 튜닝할 SQL을 실행하고
+3. troff를 실행하여 autotrace 모드를 끕니다.
+@troff
+라고만 치면 됩니다.
+4. 이제 실제 질의계획을 보기 위해 dumptkprof를 실행합니다.
+@dumptkprof
+라고만 치면 노트패드가 뜹니다.
+거기에 내용이 있습니다.
+tkprof파일의 내용을 해서하는 방법은 expert one-on-one ORACLE이라는 책에 잘 나와 있습니다.
+
+그리고 여기에 사용된  dump_tkprof이라는 SP는 ccms/Stored_Procedure/Util.sql에 있으니 참고하십시오.
+
+감사합니다.

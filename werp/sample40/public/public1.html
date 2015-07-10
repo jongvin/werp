@@ -1,0 +1,416 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language=JavaScript>
+	function fn_Onload(){
+		window.status = "";
+		fn_Search();
+	}
+
+	function fn_Search(){
+		Mxdataset1.dataid = "./public1_select1.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset1.reset();
+
+		Mxdataset2.dataid = "./public1_select2.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset2.reset();
+
+		Mxdataset3.dataid = "./public1_select3.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset3.reset();
+
+		Mxdataset4.dataid = "./public1_select4.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset4.reset();
+	}
+
+	function fn_select1(){
+		Mxdataset1.dataid = "./public1_select1.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset1.reset();
+
+		Mxdataset2.dataid = "./public1_select2.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset2.reset();
+
+		Mxdataset3.dataid = "./public1_select3.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset3.reset();
+
+		Mxdataset4.dataid = "./public1_select4.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset4.reset();
+	}
+
+	function fn_select2(){
+		Mxdataset1.dataid = "./public1_select1.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset1.reset();
+
+		Mxdataset2.dataid = "./public1_select2.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset2.reset();
+
+		Mxdataset3.dataid = "./public1_select3.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset3.reset();
+
+		Mxdataset4.dataid = "./public1_select4.jsp?year="+select_1.value+"&month="+select_2.value;
+		Mxdataset4.reset();
+	}
+
+	function fn_Print(){
+//		ln_Report_MakeData("pgm5_Rpt.csv");				//csv화일로 생성
+		ln_Report_Popup("Program5.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+	}
+
+</script>
+
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+//	alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+
+<script language=JavaScript FOR=MxChart_1 EVENT=OnCreate>
+	MxChart_1.RemoveAllSeries();
+	MxChart_1.Aspect.View3D = true;
+
+	MxChart_1.Aspect.Chart3DPercent = 50;
+
+	MxChart_1.Aspect.Zoom = 100;
+	MxChart_1.Aspect.ZoomText = false
+
+
+	MxChart_1.Panel.Color = MxChart_1.ToOLEColor("#dddddd,#ffffff");
+	MxChart_1.Panel.BorderStyle = 0;
+	MxChart_1.Panel.Gradient.Visible = true;
+	MxChart_1.Panel.Gradient.Direction = 0;
+	MxChart_1.Panel.Gradient.StartColor = MxChart_1.ToOLEColor('#B8B8B8');
+	MxChart_1.Panel.Gradient.EndColor = MxChart_1.ToOLEColor('#E7E7E7');
+	MxChart_1.Zoom.Enable = false;
+
+	MxChart_1.Axis.Left.Labels.Font.Color   = MxChart_1.ToOLEColor("BLUE");
+	MxChart_1.Axis.Bottom.Labels.Font.Color = MxChart_1.ToOLEColor("RED");
+
+	MxChart_1.Header.Alignment = 2;
+	MxChart_1.Header.Font.Size = 9;
+	MxChart_1.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+	MxChart_1.SubHeader.Alignment = 1;
+	MxChart_1.Header.Text.Add ("등급별 전력사용 비율");
+
+	MxChart_1.Legend.Visible = false;
+
+	var SeriesIdx = MxChart_1.AddSeries(5);
+/*	MxChart_1.Series(SeriesIdx).asPie.Circled = true;
+	MxChart_1.Series(SeriesIdx).asPie.Dark3D = true;
+
+	MxChart_1.Series(SeriesIdx).asPie.RotationAngle = 0;
+
+	MxChart_1.Series(SeriesIdx).asPie.XRadius = 0;
+	MxChart_1.Series(SeriesIdx).asPie.YRadius = 0;
+*/
+
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(0) = 10;
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(1) = 50;
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(2) = 10;
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(3) = 10;
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(4) = 10;
+	MxChart_1.Series(SeriesIdx).asPie.ExplodedSlice.Value(5) = 10;
+
+	MxChart_1.Series(SeriesIdx).DataID = "Mxdataset1";
+	MxChart_1.Series(SeriesIdx).Title = "";
+	MxChart_1.Series(SeriesIdx).YValueColumn = "C";
+	MxChart_1.Series(SeriesIdx).LabelColumn = "B";
+	MxChart_1.Series(SeriesIdx).Marks.Style = 3;
+	MxChart_1.Series(SeriesIdx).ColorColumn= "D";
+
+	MxChart_1.Reset();
+</script>
+
+
+<script language=JavaScript FOR=MxChart_2 EVENT=OnCreate>
+
+	//**********[XChart Legend  정보입력]**********//
+	MxChart_2.RemoveAllSeries();
+	MxChart_2.Legend.Visible = 0;
+	MxChart_2.Aspect.View3D = "false";
+
+	//**********[XChart WallBgcolor  정보입력]**********//
+	MxChart_2.Panel.Color = MxChart_2.ToOLEColor("#dddddd,#ffffff");
+	MxChart_2.Panel.BorderStyle = 0;
+	MxChart_2.Panel.Gradient.Visible = true;
+	MxChart_2.Panel.Gradient.Direction = 0;
+	MxChart_2.Panel.Gradient.StartColor = MxChart_2.ToOLEColor('#B8B8B8');
+	MxChart_2.Panel.Gradient.EndColor = MxChart_2.ToOLEColor('#E7E7E7');
+	MxChart_2.Zoom.Enable = false;
+	MxChart_2.Axis.Left.Labels.Font.Color   = MxChart_2.ToOLEColor("BLUE");
+	MxChart_2.Axis.Bottom.Labels.Font.Color = MxChart_2.ToOLEColor("RED");
+
+	MxChart_2.Header.Alignment = 2;
+	MxChart_2.Header.Font.Size = 9;
+	MxChart_2.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+	MxChart_2.Header.Text.Add ("시간당 평균전력 사용량 (12시간)");
+	MxChart_2.SubHeader.Alignment = 1;
+	MxChart_2.SubHeader.Text.Add ("단위:kw");
+
+
+	var SeriesIdx1 = MxChart_2.AddSeries(16);
+	MxChart_2.Series(SeriesIdx1).DataID = "Mxdataset2";
+	MxChart_2.Series(SeriesIdx1).Title = "";
+	MxChart_2.Series(SeriesIdx1).YValueColumn = "B";
+	MxChart_2.Series(SeriesIdx1).LabelColumn = "A";
+	MxChart_2.Series(SeriesIdx1).Color = MxChart_2.ToOLEColor("#4B7600");
+	MxChart_2.Series(SeriesIdx1).Marks.Arrow.Visible=false;
+	MxChart_2.Series(SeriesIdx1).Marks.Transparent=true;
+
+	MxChart_2.Reset();
+</script>
+
+<script language=JavaScript FOR=MxChart_3 EVENT=OnCreate>
+	MxChart_3.RemoveAllSeries();
+	MxChart_3.Aspect.View3D = "true";
+	MxChart_3.Legend.Visible = "true";
+	MxChart_3.Legend.Alignment = "3";
+	MxChart_3.Legend.FontSeriesColor = "true";
+	MxChart_3.Scroll.Enable = false;
+
+	//**********[XChart WallBgcolor  정보입력]**********//
+	MxChart_3.Panel.Color = MxChart_3.ToOLEColor("#dddddd,#ffffff");
+	MxChart_3.Panel.BorderStyle = 0;
+	MxChart_3.Panel.Gradient.Visible = true;
+	MxChart_3.Panel.Gradient.Direction = 0;
+	MxChart_3.Panel.Gradient.StartColor = MxChart_3.ToOLEColor('#B8B8B8');
+	MxChart_3.Panel.Gradient.EndColor = MxChart_3.ToOLEColor('#E7E7E7');
+	MxChart_3.Zoom.Enable = "false";
+	MxChart_3.Axis.Left.Labels.Font.Color   = MxChart_3.ToOLEColor("BLUE");
+	MxChart_3.Axis.Bottom.Labels.Font.Color = MxChart_3.ToOLEColor("RED");
+
+	MxChart_3.Header.Alignment = 2;
+	MxChart_3.Header.Font.Size = 9;
+	MxChart_3.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+	MxChart_3.SubHeader.Alignment = 1;
+	MxChart_3.SubHeader.Text.Add ("단위:kw");
+	MxChart_3.Header.Text.Add ("지역별 전력소비 현황");
+
+	var SeriesIdx = MxChart_3.AddSeries(14);
+	MxChart_3.Series(SeriesIdx).DataID = "Mxdataset3";
+	MxChart_3.Series(SeriesIdx).Title = "지역별 현황";
+	MxChart_3.Series(SeriesIdx).YValueColumn = "B";
+	MxChart_3.Series(SeriesIdx).asVolume.LinePen.Width = "2";
+	MxChart_3.Series(SeriesIdx).LabelColumn = "A";
+	MxChart_3.Series(SeriesIdx).Marks.Style = 3;
+	MxChart_3.Series(SeriesIdx).ColorColumn= "D";
+
+	MxChart_3.Reset();
+</script>
+
+<script language=JavaScript FOR=MxChart_4 EVENT=OnCreate>
+	MxChart_4.RemoveAllSeries();
+	MxChart_4.Aspect.View3D = "true";
+	MxChart_4.Legend.Visible = "true";
+	MxChart_4.Legend.Alignment = "3";
+	MxChart_4.Legend.FontSeriesColor = "true";
+	MxChart_4.Scroll.Enable = false;
+
+	//**********[XChart WallBgcolor  정보입력]**********//
+	MxChart_4.Panel.Color = MxChart_4.ToOLEColor("#dddddd,#ffffff");
+	MxChart_4.Panel.BorderStyle = 0;
+	MxChart_4.Panel.Gradient.Visible = true;
+	MxChart_4.Panel.Gradient.Direction = 0;
+	MxChart_4.Panel.Gradient.StartColor = MxChart_4.ToOLEColor('#B8B8B8');
+	MxChart_4.Panel.Gradient.EndColor = MxChart_4.ToOLEColor('#E7E7E7');
+	MxChart_4.Zoom.Enable = "false";
+	MxChart_4.Axis.Left.Labels.Font.Color   = MxChart_4.ToOLEColor("BLUE");
+	MxChart_4.Axis.Bottom.Labels.Font.Color = MxChart_4.ToOLEColor("RED");
+
+	MxChart_4.Header.Alignment = 2;
+	MxChart_4.Header.Font.Size = 9;
+	MxChart_4.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+	MxChart_4.SubHeader.Alignment = 1;
+	MxChart_4.SubHeader.Text.Add ("단위:kw");
+	MxChart_4.Header.Text.Add ("지역별 전력생산 현황");
+
+	var SeriesIdx = MxChart_4.AddSeries(24);
+	MxChart_4.Series(SeriesIdx).DataID = "Mxdataset4";
+	MxChart_4.Series(SeriesIdx).Title = "지역별 현황";
+	MxChart_4.Series(SeriesIdx).YValueColumn = "B";
+	MxChart_4.Series(SeriesIdx).LabelColumn = "A";
+	MxChart_4.Series(SeriesIdx).Marks.Style = 3;
+	MxChart_4.Series(SeriesIdx).Color   = MxChart_4.ToOLEColor("#389870");
+	//MxChart_4.Series(SeriesIdx).ColorColumn= "D";
+
+	MxChart_4.Reset();
+</script>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<object id=Mxdataset1 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+<param name="SyncLoad" 		 	value="true">
+</object>
+<object id=Mxdataset2 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+<param name="SyncLoad" 		 	value="true">
+</object>
+<object id=Mxdataset3 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+<param name="SyncLoad" 		 	value="true">
+</object>
+<object id=Mxdataset4 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+<param name="SyncLoad" 		 	value="true">
+</object>
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// -->
+</script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_Onload();na_preload_img(false, '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm5_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>전력사용통계</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30" colspan="2">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<font size="2">&nbsp;&nbsp;<b>조회기준</b></font>
+											</td>
+											<td width="51" height="25">
+
+												<p><select id="select_1" name="select_1" size="1" onchange="fn_select1();">
+													<option value="2000">2000</option>
+													<option value="2001">2001</option>
+													<option value="2003" selected>2003</option>
+												   </select>
+												</p>
+											</td>
+											<td width="20" height="25">년</td>
+											<td width="15" height="25">
+											</td>
+											<td width="40" height="25">
+												 <p><select id="select_2" name="select_2" size="1" onchange="fn_select2();">
+													<option value="1">01</option>
+													<option value="2">02</option>
+													<option value="3" selected>03</option>
+													<option value="4">04</option>
+													<option value="5">05</option>
+													<option value="6">06</option>
+													<option value="7">07</option>
+													<option value="8">08</option>
+													<option value="9">09</option>
+													<option value="10">10</option>
+													<option value="11">11</option>
+													<option value="12">12</option>
+													</select></p>
+											</td>
+											<td width="40" height="25">월</td>
+											<td width="527" height="25">&nbsp;</td>
+										</tr>
+									</table></td>
+							</tr>
+							<tr>
+								<td width="387" height="230">
+								<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="100%" height="100%">
+								   </object></p>
+								</td>
+								<td width="387" height="230">
+								<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_2" width="100%" height="100%">
+								   </object></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="387" height="230">
+								<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_3" width="100%" height="100%">
+								   </object></p>
+								</td>
+								<td width="387" height="230">
+								<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_4" width="100%" height="100%">
+								   </object></p>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+				EXTRACT *
+				   FROM Mxdataset1
+				UNION ALL
+				EXTRACT *
+				   FROM Mxdataset2
+				UNION ALL
+				EXTRACT *
+				   FROM Mxdataset3
+				UNION ALL
+				EXTRACT *
+				   FROM Mxdataset4
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

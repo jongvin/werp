@@ -1,0 +1,416 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_pers_empno_new_1h.html 							-->
+<!-- 2. 유형(시나리오): 등록														-->
+<!-- 3. 기 능 정 의   : 신규사번 등록									   	-->
+<!-- 4. 변 경 이 력   : 장희선 작성 											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value.substr(0,10)
+var is_ds_1_addr = gs_home + '/general/p_web/02/p_pers_empno_new_1q.jsp?arg_work_date='
+var is_tr_1_addr = gs_home + '/general/p_web/02/p_pers_empno_new_1tr.jsp'
+var is_regist_date, is_empno, is_max_empno, is_yy, is_mm, is_userid
+var is_tr_chk='N'
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ls_work_date = is_work_date.substr(0,4) + is_work_date.substr(5,6)	//작업년월의 해당사번만 조회
+  
+  ds_1.DataID =  is_ds_1_addr + ls_work_date
+  ds_1.SyncLoad=true
+  ds_1.reset()
+  
+  //ds_1.ClearData()    
+}
+//-----------------------------------------------------------------------
+function init_move()                       // 추가시 초기값 셋팅
+//------------------------------------------------------------------------
+{
+	var ls_seq, ls_temp
+	
+	ls_seq = '00'
+	ll_cnt = f_ds_select_q("ds_select","select a.emp_no select_1 " +
+  						  "  from p_pers_last_empno a, p_pers_master b, " +
+  						  "     ( select max(emp_no) max_empno from p_pers_last_empno " + 
+  						  "		  where substr(emp_no, 1,4) = '" + is_yy + "' " +
+  						   "		    and substr(emp_no, 5,2) = '" + is_mm + "' ) c " +
+  						  " where a.emp_no = b.emp_no   " +
+  						  "   and a.emp_no = c.max_empno   " )  
+
+  	is_max_empno = ds_select.NameValue(1,"select_1")
+
+ 	if (is_max_empno != null && is_max_empno != "") {
+ 		ls_temp = is_max_empno.substr(6,2)
+ 		ls_temp = parseInt(ls_temp,10) 	 		
+ 	}
+ 	else {
+ 		ls_temp = 0
+ 	}
+ 	
+ 	//ls_temp1 = ds_1.RowPosition
+ 	var j=0			//추가된 로우수 구하기
+ 	for(var i=1;i<=ds_1.CountRow;i++) {
+ 		if (ds_1.RowStatus(i) == 1){
+ 			j++
+ 			ls_temp1 = j
+ 		}
+ 	}
+ 	ls_temp = ls_temp + ls_temp1 + ""
+
+ 	ls_seq = ls_seq.substr(0, ls_seq.length - ls_temp.length)
+   ls_seq = ls_seq + ls_temp
+	
+	is_empno = is_yy + is_mm + ls_seq
+	ds_1.NameValue(ds_1.RowPosition, "emp_no") = is_empno
+	ds_1.NameValue(ds_1.RowPosition,'ins_tag') = 'Y'
+	ds_1.NameValue(ds_1.RowPosition,'ret_tag') = 'N'
+	
+	
+	//ds_1.NameValue(ds_1.RowPosition,'c_user_id') = is_empno		//권한테이블 강제Insert(z_authority_user)
+	
+		
+ 	fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function	fn_SetColumn()									//cursor지정
+//------------------------------------------------------------------------
+{
+	gd_1.Focus()
+	gd_1.SetColumn("emp_no")
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_date = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+
+   is_yy = is_work_date.substr(0,4)
+  	is_mm = is_work_date.substr(5,2)
+
+  	
+   btnquery_onclick()   
+} 
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+ 	ds_1.AddRow()
+ 	init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                       // 삽입
+//------------------------------------------------------------------------
+{
+ 	btnadd_onclick()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if (ds_1.NameValue(ds_1.RowPosition,'ret_tag') == 'Y'){		// 저장되어 DB에서 조회된 로우인 경우
+	 	alert('사번은 저장하신 이후에는 삭제하실 수 없습니다.')
+		return 	
+	}
+	else{
+		ds_1.DeleteRow(ds_1.RowPosition)
+	}
+	
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+   var i
+	 
+   if (ds_1.IsUpdated){
+	  for (i=1; i<=ds_1.CountRow ;i++) {
+	    if (ds_1.RowStatus(i) == 1){		//새로 추가된 로우만 체크
+ 		
+		    is_empno = ds_1.NameValue(i, "emp_no")
+		    if (is_empno == '' || is_empno == null){
+		    	 alert('사번은 필수 입력사항입니다.')
+				 gd_1.Focus()
+		    	 ds_1.RowPosition = i
+	       	 gd_1.SetColumn("emp_no");
+		       return
+		    }
+		    
+		    is_resident_no = ds_1.NameValue(i, "resident_no") 
+			 if (is_resident_no == "") {
+			 	alert("주민등록번호는 필수 입력 사항입니다.")
+			 	gd_1.Focus()
+		      ds_1.RowPosition = i
+			 	gd_1.SetColumn("resident_no");
+		       return
+			 }
+		    
+		    is_emp_name = ds_1.NameValue(i, "emp_name") 
+			 if (is_emp_name == "") {
+			 	alert("성명은 필수 입력 사항입니다.")
+			 	gd_1.Focus()
+		      ds_1.RowPosition = i
+			 	gd_1.SetColumn("emp_name");
+		       return
+			 }
+			 
+//		 // G/W의 사용자ID 연계부분
+//          is_userid = ds_1.NameValue(i, "c_user_id")
+//		    if (is_userid == '' || is_userid == null){
+//		    	 alert('사용자ID는 필수 입력사항입니다.')
+//				 gd_1.Focus()
+//		    	 ds_1.RowPosition = i
+//	       	 gd_1.SetColumn("c_user_id");
+//		       return
+//		    }
+//
+//		    // 권한테이블 중복 체크
+//		    ll_dup = f_ds_select_q("ds_select2","select a.empno select_1 " +
+//							  						  	 "  from z_authority_user a " +
+//							  						    " where a.empno = '" + is_empno + "' " )
+//		    if (ll_dup > 0) {
+//		       alert(is_empno + "는 이미 사용자권한에 등록되어 있습니다.\n사번을 다시 입력하십시오.")
+//		       return
+//		       //ds_1.NameValue(i,"ins_tag") = 'N'		// 권한테이블에 있는 경우 권한테이블에는 Insert하지 않기위함.
+//		    }
+//		    ll_dup = f_ds_select_q("ds_select3","select a.empno select_1 " +
+//							  						  	 "  from z_authority_user a " +
+//							  						    " where a.user_id = '" + is_userid + "' " +
+//							  						    "   and a.using_tag = 'Y' " )
+//		    if (ll_dup > 0) {
+//		       alert(is_userid + "는 이미 사용자권한에서 사용자ID로 등록되어 있습니다.\n사용자ID를 다시 입력하십시오.")
+//		       return
+//		       //ds_1.NameValue(i,"ins_tag") = 'N'		// 권한테이블에 있는 경우 권한테이블에는 Insert하지 않기위함.
+//		       
+//		    }
+//	
+//			 // 홈페이지 아이디 중복 체크	    
+//	       gf_create_file("userid_search.txt",is_userid)
+//	       send_arg=is_empno  
+//		  	 result = window.showModalDialog("http://www.worldro.net/userid_search.htm",send_arg,"dialogWidth:1px;dialogHeight:1px");
+//	       ls_ret = gf_read_file("userid_search.txt")
+//	       if (ls_ret == 'YES'){
+//	       	 alert("사용중인 아이디가 존재하므로 사용하실 수 없습니다.")
+//	       	 return
+//	       }
+//	       else{
+//	       	 alert("사용가능")
+//	       }
+//	     	 gf_delete_file("userid_search.txt")
+	
+		    // 사번 중복 체크
+		    ll_dup = f_ds_select_q("ds_select1","select a.emp_no select_1 " +
+							  						  	 "  from p_pers_master a " +
+							  						    " where a.emp_no = '" + is_empno + "' " )
+		    if (ll_dup > 0) {
+		       alert("사번이 중복되었습니다: 사번을 수정하십시요.")
+				 gd_1.Focus()
+		       ds_1.RowPosition = i
+	       	 gd_1.SetColumn("emp_no");
+		       return
+		    }
+		    
+			 ds_1.NameValue(i, "b_emp_no") = is_empno
+			 ds_1.NameValue(i, "b_regist_date") = is_regist_date
+
+			 // 권한테이블(z_authority_user)에 Insert하는 문장			 
+//			 ds_1.NameValue(i, "c_emp_no") = is_empno
+//			 ds_1.NameValue(i, "c_user_id") = is_userid
+//			 ds_1.NameValue(i, "c_password") = is_userid
+//			 ds_1.NameValue(i, "c_name") = is_emp_name
+//			 ds_1.NameValue(i, "c_dept_code") = ' '		 
+	  	 }
+	  }
+	  
+     is_tr_chk = 'N'
+     if (confirm("변경되었습니다 저장하시겠습니까?")) {
+        tr_1.Post()
+        if (is_tr_chk == 'Y')
+           btnquery_onclick()
+     }
+   } 
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+      window.returnValue = ""
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   
+   em_select_yymm.text = is_work_date
+   is_regist_date = is_work_date
+   
+   tr_1.Action = is_tr_1_addr
+   select_yymm()
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+      if (em_select_yymm.Modified){ 
+	   	select_yymm()
+	   }
+</SCRIPT>  
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+      if (kcode == 13 ){ 
+      	select_yymm()
+	   }
+</SCRIPT>	   
+<script language=JavaScript for=gd_1 event=CanColumnPosChange(row,colid)>
+	if (colid == 'resident_no'){
+		ls_resino = ds_1.NameValue(row,colid)
+		if (ls_resino == '') return true
+		if (ls_resino.substr(6,1) != "-") {
+		 	alert("주민등록번호는 '-'를 반드시 입력하여야 합니다.")
+		 	return false
+		}
+		
+		ls_resino1 = ls_resino.substr(0,6)
+		ls_resino2 = ls_resino.substr(7,7)
+		ls_resino = ls_resino1 + ls_resino2
+		ll_return = jumin_check(ls_resino)
+      
+      if (ll_return == true) {
+      	return true
+      }
+      else{
+      	if(confirm('주민등록번호가 잘못되었습니다. \n그래도 등록하시겠습니까?')){
+      		return true
+      	}
+      	else{
+	      	return false
+	      }      	
+      }	   
+	}
+	else{ return true }
+return true
+	
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	if (row < 1) return
+  	
+	if (ds_1.NameValue(row,"ret_tag") == 'Y' ){	//새로 추가된 로직이 아니면 수정 불가능
+		gd_1.Editable = false		
+	}
+	else{
+		gd_1.Editable = true
+	}
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnSuccess()>
+  is_tr_chk = 'Y'
+</SCRIPT>
+
+<OBJECT id=ds_select
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_select1
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_select2
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_select3
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_pers_empno_new_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111; LEFT: 10px; WIDTH: 170px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="center">&nbsp작업년월</div></td>
+          	 <td >
+			       <OBJECT id=em_select_yymm style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="6">
+						    <PARAM NAME="Format" VALUE="YYYY.MM">
+					       <param name=ClipMode  value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				 	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_yymm.text = result.substr(0,8);} ; select_yymm()"
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 200px; WIDTH: 700px; POSITION: absolute; TOP: 12px; HEIGHT: 10px">
+    <LABEL id=Label_1  
+        	style="LEFT: 20px; WIDTH: 700px; Color:Red; font-size:12px; "><&nbsp;보안문제로 시스템이 정상적으로 작동하지 않을 경우 전산실로 문의해 주시기 바랍니다>
+    </LABEL>
+</DIV>
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1000px; POSITION: absolute; TOP: 35px;
+    HEIGHT: 99%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='사번' ID=emp_no  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name='주민등록번호' ID=resident_no BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+	  <C> Name='성명' ID=emp_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name='사용자ID' ID=c_user_id Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

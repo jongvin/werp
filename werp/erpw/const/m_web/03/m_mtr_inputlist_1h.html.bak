@@ -1,0 +1,379 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_mtr_inputlist_1h.html								-->
+<!-- 2. 유형(시나리오): 조회														-->
+<!-- 3. 기 능 정 의   : 품목별 입고검색  		         	      		-->
+<!-- 4. 변 경 이 력   : 권미생 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_dept_code = ''
+var is_dept_name = '전체현장'
+var is_sbcr_code = ''
+var is_mtrcode = ''
+var ilIndex = 1
+
+var is_ds_1_addr = gs_home + '/const/m_web/03/m_mtr_inputlist_1q.jsp?arg_mtrcode='
+var is_ds_2_addr = gs_home + '/const/m_web/03/m_mtr_inputlist_2q.jsp?arg_mtrcode='
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 현장별조회
+//------------------------------------------------------------------------
+{
+	is_from_dt = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+	is_to_dt = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+
+	if (ilIndex == 1){
+		ds_1.DataID = is_ds_1_addr + is_mtrcode + '&arg_ssize=' + is_ssize + '&arg_dept=' + is_dept_code +
+							'&arg_sbcr=' + is_sbcr_code +	'&arg_from_dt=' + is_from_dt +	
+							'&arg_to_dt=' + is_to_dt
+		ds_1.SyncLoad=true
+		ds_1.Reset()
+	}else{
+		ds_2.DataID = is_ds_2_addr + is_mtrcode + '&arg_ssize=' + is_ssize + '&arg_dept=' + is_dept_code +
+							'&arg_sbcr=' + is_sbcr_code +	'&arg_from_dt=' + is_from_dt +	
+							'&arg_to_dt=' + is_to_dt
+		ds_2.SyncLoad=true
+		ds_2.Reset()
+	}	
+		
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기
+//----------------------------------------------------------------
+{
+	if (ilIndex == 1){
+		gd_1.SetExcelTitle(0, "");
+		gd_1.SetExcelTitle(1, "value:품목별 입고검색; font-face:굴림체; font-size:20pt; font-color:black;font-bold; font-underline; bgcolor:white; align:center; line-color:black;line-width:1pt; skiprow:0;");
+		gd_1.SetExcelTitle(1, "value:" + mtr_name.value+'/'+mtr_name.value+'/'+is_from_dt+'~'+is_to_dt+'/'+is_dept_name+'/'+sbcr_name.value + "; font-face:굴림체; font-size:12pt; font-color:black; font-underline; bgcolor:white; align:left; line-color:black;line-width:1pt; skiprow:0;");
+   	gd_1.GridToExcel('현장별','c:\aa.xls',0)  
+   }else{
+		gd_2.SetExcelTitle(0, "");
+		gd_2.SetExcelTitle(1, "value:품목별 입고검색; font-face:굴림체; font-size:20pt; font-color:black;font-bold; font-underline; bgcolor:white; align:center; line-color:black;line-width:1pt; skiprow:0;");
+		gd_2.SetExcelTitle(1, "value:" + mtr_name.value+'/'+mtr_name.value+'/'+is_from_dt+'~'+is_to_dt+'/'+is_dept_name+'/'+sbcr_name.value + "; font-face:굴림체; font-size:12pt; font-color:black; font-underline; bgcolor:white; align:left; line-color:black;line-width:1pt; skiprow:0;");
+   	gd_2.GridToExcel('업체별','c:\aa.xls',0)  
+	}  
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if(result == false){
+		is_dept_code = ''
+		dept_name.value = '전체현장'
+		return
+	}
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+}   
+//---------------------------------------------------------------------------
+function mtrname_find()                       //자재코드 찾기 
+//---------------------------------------------------------------------------
+{
+	ls_mtr_name=mtr_name.value
+	result = window.showModalDialog(gs_home + "/const/m_web/00/m_code_material_find_1h.html",ls_mtr_name,"dialogWidth:550px;dialogHeight:510px");
+
+	if(result == ""){
+		is_mtrcode = ''
+		mtr_name.value = '전체품목'
+		return
+	}
+
+	array = result.split("@");
+	is_mtrcode 			= array[0];   // 코드 
+	mtr_name.value 	= array[1];  // 명칭
+	
+  	ll_cnt = f_ds_select_q("ds_ssize", " select ssize select_1 " +
+												  "  from (select 1 tag, '전체' ssize from dual " +
+      										  "        union all " +
+      										  "        select distinct 2 tag, ssize from m_code_material " +
+      										  "        where mtrcode = '" + is_mtrcode + "' " +
+      										  "          and ssize is not null " +       
+      										  " order by tag) ")
+
+// 철근,레미콘은 그룹핑검색
+	if (is_mtrcode.substr(0,8) == '00100110' || is_mtrcode.substr(0,8) == '00100510'){
+		is_mtrcode = is_mtrcode.substr(0,8)
+		if (is_mtrcode.substr(0,8) == '00100110')
+			mtr_name.value = '철근류'
+		else
+			mtr_name.value = '레미콘류'
+	}		
+				
+}   
+//---------------------------------------------------------------------------
+function sbcr_code_find()                       //업체코드 찾기 
+//---------------------------------------------------------------------------
+{
+	ls_sbcr_name=sbcr_name.value
+	result = window.showModalDialog(gs_home + "/const/m_web/00/m_vender_find_2h.html",ls_sbcr_name,"dialogWidth:700px;dialogHeight:510px");
+
+	if(result == ""){
+		is_sbcr_code = ''
+		sbcr_name.value = '전체품목'
+		return
+	}
+
+	array = result.split("@");
+	is_sbcr_code 		= array[0];   // 코드 
+	sbcr_name.value 	= array[1];  // 명칭
+
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+
+	dept_name.value 	= is_dept_name
+	mtr_name.value 	= '전체품목'
+	sbcr_name.value 	= '전체업체'
+
+	em_from_date.text = is_work_date.substr(0,7) + '.01'
+	is_from_dt = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+ 	ll_cnt = f_ds_select_q("ds_date", " select to_char(last_day('" + is_work_date + "'),'yyyy.mm.dd') select_1 from dual") //마직막날짜
+	em_to_date.text = ds_date.NameValue(1,"select_1")
+	is_to_dt = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+
+// 규격콤보
+  	ll_cnt = f_ds_select_q("ds_ssize", " select ssize select_1 " +
+												  "  from (select 1 tag, '전체' ssize from dual " +
+      										  "        union all " +
+      										  "        select distinct 2 tag, ssize from m_code_material " +
+      										  "        where ssize is not null " +       
+      										  " order by tag) ")
+  	ccom_ssize.Index = 0
+   is_ssize = ''
+
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=ccom_ssize event=onCloseUp()>  // 규모변경
+	if (ccom_ssize.CodeValue == '전체' )
+		is_ssize=''
+	else
+	   is_ssize= ccom_ssize.CodeValue
+	
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1> //탭페이지변경
+	ilIndex = nIndex
+	btnquery_onclick()
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+      <Param Name="SubsumExpr" VALUE="100:long_name">
+</OBJECT>
+<OBJECT id=ds_2 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+      <Param Name="SubsumExpr" VALUE="100:sbcr_name">
+</OBJECT>
+
+<OBJECT id=ds_date
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_ssize
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%" height="100%" cellspacing="0" cellpadding="0" >
+	<tr height="55px">
+	   <td class=td_green>
+			<table BORDER="0"  CELLSPACING="0" cellpadding="0" class=main_table>
+				<tr height="20px"> 
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>품명</td>
+					<td width="166px">
+						<INPUT id=mtr_name size="25"></td>
+					<td width="60px">
+						<INPUT type=button  class="img_btnFind"  value=검색 onclick=mtrname_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>규격</td>
+					<td width="166px">
+						<comment id="__NSID__"><OBJECT id=ccom_ssize style="WIDTH: 160px; color=#CC3333"
+						classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+						<PARAM NAME="ComboDataID" VALUE="ds_ssize">
+						<PARAM NAME="CodeCColumn" VALUE="select_1">
+						<PARAM NAME="DataCColumn" VALUE="select_1">
+						<param name=Auto       value=true>
+						<PARAM NAME="Enable" VALUE="-1" ></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					<td width="60px">&nbsp;</td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>기간</td>
+					<td width="100px" colspan=2 > 
+						<comment id="__NSID__"><OBJECT id=em_from_date tabindex=6 
+						style="WIDTH: 95px; background: white;"
+						classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						<PARAM NAME="Alignment" VALUE="1">
+						<param name=Format value="YYYY.MM.DD">
+						<param name=ReadOnly   value=false>
+						<param name=Numeric value=false></OBJECT></comment> <script> __ws__(__NSID__);</script> </td>
+					<td width="15px">~</td>
+					<td width="*">
+						<comment id="__NSID__"><OBJECT id=em_to_date tabindex=6 
+						style="WIDTH: 95px; background: white;"
+						classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						<PARAM NAME="Alignment" VALUE="1">
+						<param name=Format value="YYYY.MM.DD">
+						<param name=ReadOnly   value=false>
+						<param name=Numeric value=false></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+				</tr>                 
+				<tr height="20px">           
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>현장명</td>
+					<td>
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" size=25  onkeyDown="keyDown()"></td>
+					<td>
+						<INPUT type=button  class="img_btnFind"  value=검색 onclick=dept_code_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td><td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>업체명</td>
+					<td>
+						<INPUT id=sbcr_name size=25></td>
+					<td>
+						<INPUT type=button  class="img_btnFind"  value=검색 onclick=sbcr_code_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"></td>
+					<td colspan="7" align="right">
+				 	   <INPUT  type=button  class="img_btn5_1"  value=엑셀내리기 onclick=excel_down() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>
+				</tr>                 
+			</table>
+		</td>
+	</tr>
+	<tr height="*">
+		<td>
+			<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+				<tr height="20px">
+					<td>
+						<comment id="__NSID__"><OBJECT id=tb_1 
+						    style="FONT-SIZE: 12px; Z-INDEX: 200; WIDTH: 100%; HEIGHT: 20px" 
+						    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+						  <param name="BackColor"  value="#BBE0F4">
+						  <param name="TextColor"  value="BLACK">
+						  <PARAM NAME="Format" VALUE="
+						    <T>divid=tab_page_1 title=현장별</T>
+						    <T>divid=tab_page_2 title=업체별</T>
+						    ">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+				</tr>
+				<tr height="*">
+					<td>
+						<DIV id=tab_page_1 
+						style="Z-INDEX: 111; WIDTH: 100%; POSITION: absolute; HEIGHT: 100%;" >
+							<comment id="__NSID__"><OBJECT id=gd_1 
+							style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%;" 
+							classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+								<PARAM NAME="MultiRowSelect" VALUE="-1">
+								<PARAM NAME="AutoInsert" VALUE="-1">
+								<PARAM NAME="BorderStyle"  VALUE=1>
+								<PARAM NAME="AllShowEdit" VALUE="-1">
+								<PARAM NAME="Editable" VALUE="0">
+								<param name="ViewSummary"    value=1>
+								<PARAM NAME="ColSizing" VALUE="-1">
+								<PARAM NAME="Format" VALUE="
+									<C> Name='현장명' id={IF(level=100,long_name&&' 소  계',long_name)} suppress=1 bgcolor={decode(curlevel,100,'#e4cbdf','#ffffff')}   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180
+										SumText='합 계'  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='품명' id={IF(level=100,' ',name)}  BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=130
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='규격' id={IF(level=100,' ',ssize)}	 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='단위' id={IF(level=100,' ',unitcode)}	 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='입고일자' ID={IF(level=100,' ',inputdate)} BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='입고단가' ID=unitprice SubSumText={(subsum(amt)/subsum(qty))} BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText={(sum(amt)/sum(qty))}  SumColor=Black SumBgColor=Pink  </C>
+									<C> Name='입고수량' ID=qty dec=2 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+									<C> Name='입고금액' ID=amt BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+								">
+								<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+						</DIV>
+						
+						<DIV id=tab_page_2 
+						style="Z-INDEX: 111; WIDTH: 100%; POSITION: absolute; HEIGHT: 100%;" >
+							<comment id="__NSID__"><OBJECT id=gd_2 
+							style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+							classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+								<PARAM NAME="MultiRowSelect" VALUE="0">
+								<PARAM NAME="AutoInsert" VALUE="-1">
+								<PARAM NAME="BorderStyle"  VALUE=1>
+								<PARAM NAME="AllShowEdit" VALUE="-1">
+								<PARAM NAME="Editable" VALUE="0">
+								<param name="ViewSummary"    value=1>
+								<PARAM NAME="ColSizing" VALUE="-1">
+								<PARAM NAME="Format" VALUE="
+									<C> Name='현장명' id={IF(level=100,sbcr_name&&' 소  계',long_name)} suppress=1 bgcolor={decode(curlevel,100,'#e4cbdf','#ffffff')}   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180
+										SumText='합 계'  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='품명' id=name  BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=130
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='규격' id=ssize	 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='단위' id=unitcode	 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='입고일자' ID=inputdate BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80
+										SumText=''  SumColor=Black SumBgColor=Pink   </C>
+									<C> Name='입고단가' ID=unitprice SubSumText={(subsum(amt)/subsum(qty))} BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText={sum(amt)/sum(qty)}  SumColor=Black SumBgColor=Pink  </C>
+									<C> Name='입고수량' ID=qty dec=2 BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+									<C> Name='입고금액' ID=amt BgColor={decode(curlevel,100,'#e4cbdf',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 
+										SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+									">
+								<PARAM NAME="DataID" VALUE="ds_2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+						</DIV>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table></div>
+</BODY></HTML>

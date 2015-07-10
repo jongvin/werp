@@ -1,0 +1,32 @@
+웹화면에서 현재의 진행상황을 보여주기(꽁수)
+웹화면에서 루프를 돌리면서 현재 진행되고 있는 상황을 보여주기가 쉽지가 않다.
+그 이유는 화면이 refresh 되지 않기 때문인데.
+이 것을 극복하는 방법은
+1. setInterval을 사용하여 백그라운드로 1회 실행시키는 함수로 작성한다.
+2. 가우스의 그리드는 매번 데이타셋에 변화가 생기면 자동으로 웹화면의 refresh를 기다리지 않고 refresh되는 특성을 활용하여
+   메세지를 출력한다.
+
+샘플은 외주관리 밑에 있는 WAcSSubOrderRegister.jsp에 있다.
+여기서 
+FindExecItemAndAddChild에서 addOneChilds함수를 호출하기 위해 setInterval 함수를 쓰는 부분
+
+	liCopyInterval = window.setInterval("addOneChilds("+arrRtn.selectedrow+","+arrRtn.copyrsrc+")", 1);
+
+과 gridMSG라는 그리드를 사용하여 메세지를 출력하는 부분 
+			function	PrintMessage(asMSG)
+			{
+				dsMSG.ClearData();
+				dsMSG.addRow();
+				dsMSG.NameString(dsMSG.RowPosition,"MSG") = asMSG;
+			}
+과
+
+gridMSG의 프로퍼티들중에
+
+	<param name=Enable  value="0">					==>Enable을 끄고
+	<param name=BorderStyle  value="0">				==>보더를 없애고
+	<param name=ViewHeader  value="false">			==>헤더를 없애고
+	<param name=RowHeight  value="18">				==>행의 높이를 고정하고
+	<param name=IndWidth  value="0">				==>인디게이터의 출력을 막고
+
+이 부분 들이 중요하다.

@@ -1,0 +1,345 @@
+SELECT 
+ 	S.COMP_CODE,  
+ 	S.ACC_CODE, 
+ 	S.CUST_CODE,  
+ 	S.CUST_NAME, 
+ 	( 
+ 		CASE  
+ 			WHEN S.TG = 'A' THEN S.MAKE_DT 
+ 			WHEN S.MAKE_DT IS NOT NULL THEN S.MAKE_DT 
+ 			WHEN S.MAKE_DT6  IS NOT NULL THEN SUBSTR(S.MAKE_DT6,1,4)||'년 '||SUBSTR(S.MAKE_DT6,5,6)||'월 계' 
+ 			WHEN S.CUST_CODE  IS NOT NULL THEN S.CUST_NAME||' 계' 
+ 			WHEN S.ACC_CODE  IS NOT NULL THEN S.ACC_NAME||' 계' 
+ 			WHEN S.COMP_CODE IS NOT NULL THEN '총 계' 
+ 			ELSE NULL 
+ 		END 
+ 	) MAKE_DT, 
+ 	S.MAKE_DT6, 
+ 	( 
+ 		CASE  
+ 			WHEN S.TG = 'A' THEN 'A' 
+ 			WHEN S.MAKE_DT IS NOT NULL THEN 'B' 
+ 			WHEN S.MAKE_DT6  IS NOT NULL THEN 'A' 
+ 			WHEN S.CUST_CODE  IS NOT NULL THEN 'C' 
+ 			WHEN S.ACC_CODE  IS NOT NULL THEN 'C' 
+ 			WHEN S.COMP_CODE IS NOT NULL THEN 'D' 
+ 			ELSE NULL 
+ 		END 
+ 	) TG, 
+ 	S.ACC_NAME,  
+ 	S.ACC_REMAIN_POSITION,  
+ 	S.ACC_REMAIN_POSITION_NM,  
+ 	S.KEEP_DT,  
+ 	--S.KEEP_SEQ,  
+ 	--S.KEEP_SLIPNO,  
+ 	S.MAKE_SLIPNO,  
+ 	S.SLIP_ID,  
+ 	S.SLIP_IDSEQ,  
+ 	--S.SUMMARY1,  
+ 	S.DEPT_CODE,  
+ 	S.DEPT_NAME,  
+ 	--S.BANK_CODE,  
+ 	--S.BANK_NAME,  
+ 	S.DB_AMT,  
+ 	S.CR_AMT,  
+ 	S.MAKE_COMP_CODE,  
+ 	S.MAKE_SEQ,  
+ 	S.SLIP_KIND_TAG,  
+ 	S.REMAIN_DETAIL,  
+ 	S.Running_Total 
+ FROM 
+ ( 
+ 	SELECT 
+ 		S.COMP_CODE,  
+ 		S.ACC_CODE, 
+ 		S.MAKE_DT6, 
+ 		MAX(S.TG) TG,  
+ 		S.ACC_NAME,  
+ 		S.ACC_REMAIN_POSITION,  
+ 		S.ACC_REMAIN_POSITION_NM,  
+ 		S.KEEP_DT,  
+ 		--S.KEEP_SEQ,  
+ 		--S.KEEP_SLIPNO,  
+ 		S.MAKE_SLIPNO,  
+ 		S.SLIP_ID,  
+ 		S.SLIP_IDSEQ,  
+ 		--S.SUMMARY1,  
+ 		S.DEPT_CODE,  
+ 		S.DEPT_NAME,  
+ 		S.CUST_CODE,  
+ 		S.CUST_NAME,  
+ 		--S.BANK_CODE,  
+ 		--S.BANK_NAME,  
+ 		SUM(S.DB_AMT) DB_AMT,  
+ 		SUM(S.CR_AMT) CR_AMT,  
+ 		S.MAKE_COMP_CODE,  
+ 		S.MAKE_DT,  
+ 		S.MAKE_SEQ,  
+ 		S.SLIP_KIND_TAG,  
+ 		SUM(S.REMAIN_DETAIL) REMAIN_DETAIL, 
+ 		DECODE(S.Running_Total, NULL, SUM(S.REMAIN_DETAIL), S.REMAIN_DETAIL) Running_Total 
+ 	FROM 
+ 	( 
+ 		SELECT 
+ 			S.COMP_CODE,  
+ 			S.ACC_CODE, 
+ 			S.TG,  
+ 			S.ACC_NAME,  
+ 			S.ACC_REMAIN_POSITION,  
+ 			S.ACC_REMAIN_POSITION_NM,  
+ 			F_T_Cust_Mask(S.CUST_CODE) CUST_CODE,  
+ 			S.CUST_NAME,  
+ 			F_T_Datetostring(S.KEEP_DT) KEEP_DT,  
+ 			--S.KEEP_SEQ,  
+ 			--S.KEEP_SLIPNO,  
+ 			S.MAKE_SLIPNO,  
+ 			S.SLIP_ID,  
+ 			S.SLIP_IDSEQ,  
+ 			--S.SUMMARY1,  
+ 			S.DEPT_CODE,  
+ 			S.DEPT_NAME,  
+ 			--S.BANK_CODE,  
+ 			--S.BANK_NAME,  
+ 			S.DB_AMT,  
+ 			S.CR_AMT,  
+ 			S.MAKE_COMP_CODE,  
+ 			S.MAKE_DT6, 
+ 			S.MAKE_DT,  
+ 			S.MAKE_SEQ,  
+ 			S.SLIP_KIND_TAG,  
+ 			S.REMAIN_DETAIL  ,  
+ 			SUM(S.REMAIN_DETAIL) Over ( 
+ 				PARTITION BY 
+ 					S.COMP_CODE, 
+ 					S.ACC_CODE, 
+ 					S.CUST_CODE 
+ 				ORDER BY  
+ 					S.COMP_CODE,  
+ 					S.ACC_CODE, 
+ 					S.CUST_CODE,  
+ 					S.TG,  
+ 					S.MAKE_DT,  
+ 					S.SLIP_IDSEQ  
+ 				RANGE 	BETWEEN 	Unbounded Preceding AND	CURRENT ROW 
+ 			) Running_Total  
+ 		FROM 
+ 		(  
+ 			SELECT 
+ 				A.COMP_CODE,  
+ 				'A' TG,  
+ 				A.ACC_CODE,  
+ 				A.ACC_NAME,  
+ 				'' ACC_REMAIN_POSITION,  
+ 				'' ACC_REMAIN_POSITION_NM,  
+ 				A.CUST_CODE,  
+ 				A.CUST_NAME,  
+ 				NULL KEEP_DT,  
+ 				--0 KEEP_SEQ,  
+ 				--'' KEEP_SLIPNO,  
+ 				'' MAKE_SLIPNO,  
+ 				0  SLIP_ID,  
+ 				0  SLIP_IDSEQ,  
+ 				--'' SUMMARY1,  
+ 				'' DEPT_CODE,  
+ 				'' DEPT_NAME,  
+ 				--'' BANK_CODE,  
+ 				--'' BANK_NAME,  
+ 				0 DB_AMT,  
+ 				0 CR_AMT,  
+ 				'' MAKE_COMP_CODE,  
+ 				NULL MAKE_DT6, 
+ 				'<이전 잔액>' MAKE_DT,  
+ 				0  MAKE_SEQ,  
+ 				''  SLIP_KIND_TAG,  
+ 				A.REMAIN_DETAIL  
+ 			FROM  
+ 			(  
+ 				SELECT  
+ 					A.COMP_CODE,  
+ 					a.ACC_CODE,  
+ 					z.ACC_NAME ACC_NAME, 
+ 					c.CUST_CODE,  
+ 					c.CUST_NAME,  
+ 					SUM( 
+  					CASE  
+  					WHEN	A.MAKE_DT < F_T_StringToDate(:DT_F)  THEN  
+  						DECODE(d.ACC_REMAIN_POSITION,'D',NVL(a.DB_AMT,0)-NVL(a.CR_AMT,0),NVL(a.CR_AMT,0)-NVL(a.DB_AMT,0))  
+  					ELSE  
+  						0  
+  					END 
+ 					) REMAIN_DETAIL  
+ 				FROM 
+					T_ACC_SLIP_BODY1 A, 
+					T_CUST_CODE C, 
+					T_ACC_CODE D, 
+ 					( 
+ 					SELECT  
+ 						DISTINCT a.ACC_CODE, NVL(c.CUST_CODE, ' ') CUST_CODE
+ 					FROM 
+						T_ACC_SLIP_BODY1 A, 
+						T_CUST_CODE C, 
+						T_ACC_CODE D 
+ 					WHERE 
+ 						A.CUST_SEQ = C.CUST_SEQ (+)
+						AND A.ACC_CODE = D.ACC_CODE 
+						AND A.COMP_CODE =  :COMP_CODE  
+ 						AND A.DEPT_CODE LIKE  :DEPT_CODE  || '%' 
+ 						AND c.CUST_CODE LIKE  :CUST_CODE  || '%'   
+ 						AND A.ACC_CODE LIKE  :ACC_CODE  || '%'   
+ 						AND MAKE_DT BETWEEN F_T_Stringtodate( :DT_F ) AND F_T_Stringtodate( :DT_T ) 
+ 						AND TRANSFER_TAG = 'F' 
+ 						AND KEEP_DT IS NOT NULL 
+ 						AND SLIP_KIND_TAG <> 'D' 
+ 					) B, 
+ 					T_ACC_CODE Z 
+ 				WHERE 
+ 					A.CUST_SEQ = C.CUST_SEQ (+)
+					AND A.ACC_CODE = D.ACC_CODE 
+					AND A.ACC_CODE = B.ACC_CODE 
+ 					AND NVL(c.CUST_CODE, ' ') = B.CUST_CODE 
+ 					AND a.ACC_CODE = Z.ACC_CODE 
+ 					AND A.COMP_CODE =  :COMP_CODE  
+ 					AND a.DEPT_CODE LIKE  :DEPT_CODE  || '%'  
+ 					AND NVL(c.CUST_CODE, ' ') LIKE  :CUST_CODE  || '%' 
+ 					AND a.ACC_CODE LIKE :ACC_CODE  || '%' 
+ 					AND 
+ 					( 
+ 						( 
+ 						 	( A.MAKE_DT <  :DT_F  ) 
+ 							AND 
+ 							( TO_CHAR(A.MAKE_DT,'YYYYMMDD') LIKE SUBSTR( :DT_T  , 1, 4) ||'%' ) 
+ 						) 
+ 						OR 
+ 						(  
+ 						  	( A.MAKE_DT BETWEEN  F_T_Stringtodate( :DT_F ) AND F_T_Stringtodate( :DT_T )  ) 
+ 						  	AND 
+ 							( A.TRANSFER_TAG = 'F' ) 
+ 						) 
+ 					) 
+ 					AND A.KEEP_DT IS NOT NULL 
+ 					AND A.SLIP_KIND_TAG <> 'D' 
+ 				GROUP BY 
+ 					A.COMP_CODE,  
+ 					a.ACC_CODE, 
+ 					Z.ACC_NAME, 
+ 					z.ACC_LVL, 
+ 					c.CUST_CODE,  
+ 					c.CUST_NAME 
+ 			) A 
+ 			UNION ALL  
+ 			SELECT 
+ 				A.COMP_CODE,  
+ 				'B' TG,  
+ 				d.ACC_CODE,  
+ 				d.ACC_NAME,  
+ 				d.ACC_REMAIN_POSITION,  
+ 				F.CODE_LIST_NAME  ACC_REMAIN_POSITION_NM,  
+ 				c.CUST_CODE,  
+ 				c.CUST_NAME,  
+ 				A.KEEP_DT,  
+ 				--A.KEEP_SEQ,  
+ 				--A.KEEP_SLIPNO,  
+ 				A0.MAKE_SLIPNO,  
+ 				A.SLIP_ID,  
+ 				a.SLIP_IDSEQ,  
+ 				--a.SUMMARY1,  
+ 				e.DEPT_CODE,  
+ 				e.DEPT_NAME,  
+ 				--a.BANK_CODE,  
+ 				--a.BANK_NAME,  
+ 				a.DB_AMT,  
+ 				a.CR_AMT,  
+ 				A.MAKE_COMP_CODE,  
+ 				TO_CHAR(A.MAKE_DT,'YYYYMM') MAKE_DT6, 
+ 				F_T_Datetostring(A.MAKE_DT) MAKE_DT,  
+ 				A0.MAKE_SEQ,  
+ 				A.SLIP_KIND_TAG,  
+ 				DECODE(d.ACC_REMAIN_POSITION,'D',NVL(a.DB_AMT,0)-NVL(a.CR_AMT,0),NVL(a.CR_AMT,0)-NVL(a.DB_AMT,0)) REMAIN_DETAIL  
+ 			FROM 
+				T_ACC_SLIP_HEAD A0, 
+				T_ACC_SLIP_BODY1 A, 
+				T_CUST_CODE C, 
+				T_ACC_CODE D,
+				T_DEPT_CODE E,
+ 				(  
+ 					SELECT  
+ 						F.CODE_LIST_ID ,  
+ 						F.CODE_LIST_NAME  
+ 					FROM	V_T_CODE_LIST F  
+ 					WHERE	F.CODE_GROUP_ID = 'ACC_REMAIN_POSITION'  
+ 				) F 
+ 			WHERE 
+ 				A0.SLIP_ID = a.SLIP_ID
+				AND A.CUST_SEQ = C.CUST_SEQ (+)
+				AND A.ACC_CODE = D.ACC_CODE 
+				AND A.DEPT_CODE = E.DEPT_CODE (+)
+				AND d.ACC_REMAIN_POSITION = F.CODE_LIST_ID(+)  
+ 				AND A.COMP_CODE =  :COMP_CODE  
+ 				AND A.DEPT_CODE LIKE  :DEPT_CODE  || '%'   
+ 				AND NVL(c.CUST_CODE, ' ') LIKE  :CUST_CODE  || '%' 
+ 				AND a.ACC_CODE LIKE  :ACC_CODE  || '%' 
+ 				AND A.MAKE_DT BETWEEN F_T_Stringtodate( :DT_F ) AND F_T_Stringtodate( :DT_T )  
+ 				AND A.TRANSFER_TAG = 'F' 
+ 				AND A.KEEP_DT IS NOT NULL			 
+ 				AND A.SLIP_KIND_TAG <> 'D' 
+ 		) S 
+ 	) S 
+ 	GROUP BY GROUPING SETS 
+ 	( 
+ 		( 
+ 			S.COMP_CODE,  
+ 			S.ACC_CODE, 
+ 			S.CUST_CODE,  
+ 			S.CUST_NAME,  
+ 			S.TG,  
+ 			S.ACC_NAME,  
+ 			S.ACC_REMAIN_POSITION,  
+ 			S.ACC_REMAIN_POSITION_NM,  
+ 			S.MAKE_COMP_CODE,  
+ 			S.MAKE_DT6, 
+ 			S.MAKE_DT,  
+ 			S.MAKE_SEQ,  
+ 			S.SLIP_KIND_TAG,  
+ 			S.KEEP_DT,  
+ 			--S.KEEP_SEQ,  
+ 			--S.KEEP_SLIPNO,  
+ 			S.MAKE_SLIPNO,  
+ 			S.SLIP_ID,  
+ 			S.SLIP_IDSEQ,  
+ 			--S.SUMMARY1,  
+ 			S.DEPT_CODE,  
+ 			S.DEPT_NAME,  
+ 			--S.BANK_CODE,  
+ 			--S.BANK_NAME,  
+ 			S.DB_AMT,  
+ 			S.CR_AMT,  
+ 			S.REMAIN_DETAIL,  
+ 			S.Running_Total  
+ 		), 
+ 		( 
+ 			s.COMP_CODE, 
+ 			s.ACC_CODE,  
+ 			S.ACC_NAME, 
+ 			S.CUST_CODE,  
+ 			S.CUST_NAME,  
+ 			s.MAKE_DT6 
+ 		), 
+ 		( 
+ 			s.COMP_CODE, 
+ 			s.ACC_CODE, 
+ 			S.ACC_NAME, 
+ 			S.CUST_CODE,  
+ 			S.CUST_NAME 
+ 		), 
+ 		( 
+ 			s.COMP_CODE, 
+ 			s.ACC_CODE, 
+ 			S.ACC_NAME 
+ 		), 
+ 		( 
+ 			s.COMP_CODE 
+ 		) 
+ 	) 
+ ) S 
+ WHERE 
+ 	NOT( S.TG='A' AND S.MAKE_DT IS NULL ) 

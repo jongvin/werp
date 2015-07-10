@@ -1,0 +1,423 @@
+<%@ page import="com.cj.common.*, com.cj.database.*, com.cj.util.*, com.gauce.*, com.gauce.io.*, java.sql.*" errorPage="../common/Error.jsp" contentType="text/html;charset=euc-kr"%>
+<%
+/**************************************************************************/
+/* 1. 프 로 그 램 id : 
+/* 2. 유형(시나리오) : Select Page
+/* 3. 기  능  정  의 : 
+/* 4. 변  경  이  력 : 홍길동 작성(2006-05-15)
+/* 5. 관련  프로그램 : 
+/* 6. 특  기  사  항 : 
+/**************************************************************************/
+ 
+	CITGauceInfo GauceInfo = null;
+	
+	CITData lrReturnData = null;
+	GauceDataSet lrDataset = null;
+
+	String	strSql = "";
+	String	strAct = "";
+	
+	try
+	{
+		GauceInfo = CITCommon.initServerPage(request, response, session);
+		
+		CITData lrArgData = new CITData();
+		
+		strAct = CITCommon.toKOR(request.getParameter("ACT"));
+		
+		if (strAct.equals("MAIN"))
+		{
+			String strBASE_AMT = CITCommon.toKOR(request.getParameter("BASE_AMT"));
+			String strWORK_YM_TO = CITCommon.toKOR(request.getParameter("WORK_YM_TO"));
+			String strRECEIVE_TAG = CITCommon.toKOR(request.getParameter("RECEIVE_TAG"));
+			String strCOMP_CODE = CITCommon.toKOR(request.getParameter("COMP_CODE"));
+			String strDEPT_CODE = CITCommon.toKOR(request.getParameter("DEPT_CODE"));
+			
+			strSql  = " Select \n";
+			strSql += " 	Nvl(a.RECEIVE_TAG,'*') RECEIVE_TAG, \n";
+			strSql += " 	Nvl(Case When a.Grp1 = 1 And a.Grp2 = 0 Then a.RECEIVE_TAG_NAME||' 계' Else a.DEPT_NAME End,'*') DEPT_NAME, \n";
+			strSql += " 	Nvl(Case When a.Grp2 = 1 Then '총   계' Else a.RECEIVE_TAG_NAME End,'*') RECEIVE_TAG_NAME, \n";
+			strSql += " 	Nvl(a.DEPT_CODE,'*') DEPT_CODE, \n";
+			strSql += " 	SubStrb(Case When b.LV <= 6 Then '당월' Else '누계' End,1,10) GB1, \n";
+			strSql += " 	SubStrb(Case When b.LV In (1,2,3,7,8,9) Then '상반기' When b.LV In (4,5,6,10,11,12) Then '하반기' Else Null End,1,10) GB1_1, \n";
+			strSql += " 	SubStrb(Case When b.LV In (1,4,7,10) Then '발생' When b.LV In (2,5,8,11) Then '회수' When b.LV In (3,6,9,12) Then '차' Else Null End,1,10) GB2, \n";
+			strSql += " 	SubStrb(Case When b.LV <= 6 Then '최초' Else '변경' End,1,10) GB3, \n";
+			strSql += " 	Case When b.LV = 1 Then a.F_CONS_AMT When b.LV = 7 Then a.CONS_AMT Else Null End CONS_AMT, \n";
+			strSql += " 	Case When b.LV = 1 Then a.SET_AMT_00 When b.LV = 2 Then a.RESET_AMT_00 When b.LV = 3 Then a.REMAIN_AMT_00 Else Null End AMT_00, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_01 When 2 Then a.RESET_AMT_01 When 3 Then a.REMAIN_AMT_01 When 4 Then a.SET_AMT_07 When 5 Then a.RESET_AMT_07 When 6 Then a.REMAIN_AMT_07 When 7 Then a.R_SET_AMT_01 When 8 Then a.R_RESET_AMT_01 When 9 Then a.R_REMAIN_AMT_01 When 10 Then a.R_SET_AMT_07 When 11 Then a.R_RESET_AMT_07 When 12 Then a.R_REMAIN_AMT_07 Else Null End AMT_01, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_02 When 2 Then a.RESET_AMT_02 When 3 Then a.REMAIN_AMT_02 When 4 Then a.SET_AMT_08 When 5 Then a.RESET_AMT_08 When 6 Then a.REMAIN_AMT_08 When 7 Then a.R_SET_AMT_02 When 8 Then a.R_RESET_AMT_02 When 9 Then a.R_REMAIN_AMT_02 When 10 Then a.R_SET_AMT_08 When 11 Then a.R_RESET_AMT_08 When 12 Then a.R_REMAIN_AMT_08 Else Null End AMT_02, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_03 When 2 Then a.RESET_AMT_03 When 3 Then a.REMAIN_AMT_03 When 4 Then a.SET_AMT_09 When 5 Then a.RESET_AMT_09 When 6 Then a.REMAIN_AMT_09 When 7 Then a.R_SET_AMT_03 When 8 Then a.R_RESET_AMT_03 When 9 Then a.R_REMAIN_AMT_03 When 10 Then a.R_SET_AMT_09 When 11 Then a.R_RESET_AMT_09 When 12 Then a.R_REMAIN_AMT_09 Else Null End AMT_03, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_04 When 2 Then a.RESET_AMT_04 When 3 Then a.REMAIN_AMT_04 When 4 Then a.SET_AMT_10 When 5 Then a.RESET_AMT_10 When 6 Then a.REMAIN_AMT_10 When 7 Then a.R_SET_AMT_04 When 8 Then a.R_RESET_AMT_04 When 9 Then a.R_REMAIN_AMT_04 When 10 Then a.R_SET_AMT_10 When 11 Then a.R_RESET_AMT_10 When 12 Then a.R_REMAIN_AMT_10 Else Null End AMT_04, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_05 When 2 Then a.RESET_AMT_05 When 3 Then a.REMAIN_AMT_05 When 4 Then a.SET_AMT_11 When 5 Then a.RESET_AMT_11 When 6 Then a.REMAIN_AMT_11 When 7 Then a.R_SET_AMT_05 When 8 Then a.R_RESET_AMT_05 When 9 Then a.R_REMAIN_AMT_05 When 11 Then a.R_SET_AMT_11 When 11 Then a.R_RESET_AMT_11 When 12 Then a.R_REMAIN_AMT_11 Else Null End AMT_05, \n";
+			strSql += " 	Case b.LV When 1 Then a.SET_AMT_06 When 2 Then a.RESET_AMT_06 When 3 Then a.REMAIN_AMT_06 When 4 Then a.SET_AMT_12 When 5 Then a.RESET_AMT_12 When 6 Then a.REMAIN_AMT_12 When 7 Then a.R_SET_AMT_06 When 8 Then a.R_RESET_AMT_06 When 9 Then a.R_REMAIN_AMT_06 When 12 Then a.R_SET_AMT_12 When 12 Then a.R_RESET_AMT_12 When 12 Then a.R_REMAIN_AMT_12 Else Null End AMT_06, \n";
+			strSql += " 	Case When b.LV = 1 Then a.SET_AMT_13 When b.LV = 2 Then a.RESET_AMT_13 When b.LV = 3 Then a.REMAIN_AMT_13 Else Null End AMT_13, \n";
+			strSql += " 	Case When b.LV = 1 Then a.SET_AMT_14 When b.LV = 2 Then a.RESET_AMT_14 When b.LV = 3 Then a.REMAIN_AMT_14 Else Null End AMT_14 \n";
+			strSql += " From \n";
+			strSql += " 	( \n";
+			strSql += " 		Select \n";
+			strSql += " 			b.RECEIVE_TAG, \n";
+			strSql += " 			b.DEPT_CODE, \n";
+			strSql += " 			Grouping(b.DEPT_CODE) Grp1, \n";
+			strSql += " 			Grouping(b.RECEIVE_TAG) Grp2, \n";
+			strSql += " 			b.DEPT_NAME, \n";
+			strSql += " 			b.RECEIVE_TAG_NAME, \n";
+			strSql += " 			Round(Sum(b.F_CONS_AMT) / ? ) F_CONS_AMT, \n";
+			strSql += " 			Round(Sum(b.CONS_AMT) / ? ) CONS_AMT, \n";
+			strSql += " 			Sum(a.SET_AMT_00) SET_AMT_00, \n";
+			strSql += " 			Sum(a.SET_AMT_01) SET_AMT_01, \n";
+			strSql += " 			Sum(a.SET_AMT_02) SET_AMT_02, \n";
+			strSql += " 			Sum(a.SET_AMT_03) SET_AMT_03, \n";
+			strSql += " 			Sum(a.SET_AMT_04) SET_AMT_04, \n";
+			strSql += " 			Sum(a.SET_AMT_05) SET_AMT_05, \n";
+			strSql += " 			Sum(a.SET_AMT_06) SET_AMT_06, \n";
+			strSql += " 			Sum(a.SET_AMT_07) SET_AMT_07, \n";
+			strSql += " 			Sum(a.SET_AMT_08) SET_AMT_08, \n";
+			strSql += " 			Sum(a.SET_AMT_09) SET_AMT_09, \n";
+			strSql += " 			Sum(a.SET_AMT_10) SET_AMT_10, \n";
+			strSql += " 			Sum(a.SET_AMT_11) SET_AMT_11, \n";
+			strSql += " 			Sum(a.SET_AMT_12) SET_AMT_12, \n";
+			strSql += " 			Sum(a.SET_AMT_01) R_SET_AMT_01, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0)) R_SET_AMT_02, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0)) R_SET_AMT_03, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0)) R_SET_AMT_04, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0)) R_SET_AMT_05, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0)) R_SET_AMT_06, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0)) R_SET_AMT_07, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0) + Nvl(a.SET_AMT_08,0)) R_SET_AMT_08, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0) + Nvl(a.SET_AMT_08,0) + Nvl(a.SET_AMT_09,0)) R_SET_AMT_09, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0) + Nvl(a.SET_AMT_08,0) + Nvl(a.SET_AMT_09,0) + Nvl(a.SET_AMT_10,0)) R_SET_AMT_10, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0) + Nvl(a.SET_AMT_08,0) + Nvl(a.SET_AMT_09,0) + Nvl(a.SET_AMT_10,0) + Nvl(a.SET_AMT_11,0)) R_SET_AMT_11, \n";
+			strSql += " 			Sum(Nvl(a.SET_AMT_01,0) + Nvl(a.SET_AMT_02,0) + Nvl(a.SET_AMT_03,0) + Nvl(a.SET_AMT_04,0) + Nvl(a.SET_AMT_05,0) + Nvl(a.SET_AMT_06,0) + Nvl(a.SET_AMT_07,0) + Nvl(a.SET_AMT_08,0) + Nvl(a.SET_AMT_09,0) + Nvl(a.SET_AMT_10,0) + Nvl(a.SET_AMT_11,0) + Nvl(a.SET_AMT_12,0)) R_SET_AMT_12, \n";
+			strSql += " 			Sum(a.SET_AMT_13) SET_AMT_13, \n";
+			strSql += " 			Sum(a.SET_AMT_14) SET_AMT_14, \n";
+			strSql += " 			Sum(a.RESET_AMT_00) RESET_AMT_00, \n";
+			strSql += " 			Sum(a.RESET_AMT_01) RESET_AMT_01, \n";
+			strSql += " 			Sum(a.RESET_AMT_02) RESET_AMT_02, \n";
+			strSql += " 			Sum(a.RESET_AMT_03) RESET_AMT_03, \n";
+			strSql += " 			Sum(a.RESET_AMT_04) RESET_AMT_04, \n";
+			strSql += " 			Sum(a.RESET_AMT_05) RESET_AMT_05, \n";
+			strSql += " 			Sum(a.RESET_AMT_06) RESET_AMT_06, \n";
+			strSql += " 			Sum(a.RESET_AMT_07) RESET_AMT_07, \n";
+			strSql += " 			Sum(a.RESET_AMT_08) RESET_AMT_08, \n";
+			strSql += " 			Sum(a.RESET_AMT_09) RESET_AMT_09, \n";
+			strSql += " 			Sum(a.RESET_AMT_10) RESET_AMT_10, \n";
+			strSql += " 			Sum(a.RESET_AMT_11) RESET_AMT_11, \n";
+			strSql += " 			Sum(a.RESET_AMT_12) RESET_AMT_12, \n";
+			strSql += " 			Sum(a.RESET_AMT_01) R_RESET_AMT_01, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0)) R_RESET_AMT_02, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0)) R_RESET_AMT_03, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0)) R_RESET_AMT_04, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0)) R_RESET_AMT_05, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0)) R_RESET_AMT_06, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0)) R_RESET_AMT_07, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0) + Nvl(a.RESET_AMT_08,0)) R_RESET_AMT_08, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0) + Nvl(a.RESET_AMT_08,0) + Nvl(a.RESET_AMT_09,0)) R_RESET_AMT_09, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0) + Nvl(a.RESET_AMT_08,0) + Nvl(a.RESET_AMT_09,0) + Nvl(a.RESET_AMT_10,0)) R_RESET_AMT_10, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0) + Nvl(a.RESET_AMT_08,0) + Nvl(a.RESET_AMT_09,0) + Nvl(a.RESET_AMT_10,0) + Nvl(a.RESET_AMT_11,0)) R_RESET_AMT_11, \n";
+			strSql += " 			Sum(Nvl(a.RESET_AMT_01,0) + Nvl(a.RESET_AMT_02,0) + Nvl(a.RESET_AMT_03,0) + Nvl(a.RESET_AMT_04,0) + Nvl(a.RESET_AMT_05,0) + Nvl(a.RESET_AMT_06,0) + Nvl(a.RESET_AMT_07,0) + Nvl(a.RESET_AMT_08,0) + Nvl(a.RESET_AMT_09,0) + Nvl(a.RESET_AMT_10,0) + Nvl(a.RESET_AMT_11,0) + Nvl(a.RESET_AMT_12,0)) R_RESET_AMT_12, \n";
+			strSql += " 			Sum(a.RESET_AMT_13) RESET_AMT_13, \n";
+			strSql += " 			Sum(a.RESET_AMT_14) RESET_AMT_14, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_00) REMAIN_AMT_00, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_01) REMAIN_AMT_01, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_02) REMAIN_AMT_02, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_03) REMAIN_AMT_03, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_04) REMAIN_AMT_04, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_05) REMAIN_AMT_05, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_06) REMAIN_AMT_06, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_07) REMAIN_AMT_07, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_08) REMAIN_AMT_08, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_09) REMAIN_AMT_09, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_10) REMAIN_AMT_10, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_11) REMAIN_AMT_11, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_12) REMAIN_AMT_12, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_01) R_REMAIN_AMT_01, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0)) R_REMAIN_AMT_02, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0)) R_REMAIN_AMT_03, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0)) R_REMAIN_AMT_04, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0)) R_REMAIN_AMT_05, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0)) R_REMAIN_AMT_06, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0)) R_REMAIN_AMT_07, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0) + Nvl(a.REMAIN_AMT_08,0)) R_REMAIN_AMT_08, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0) + Nvl(a.REMAIN_AMT_08,0) + Nvl(a.REMAIN_AMT_09,0)) R_REMAIN_AMT_09, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0) + Nvl(a.REMAIN_AMT_08,0) + Nvl(a.REMAIN_AMT_09,0) + Nvl(a.REMAIN_AMT_10,0)) R_REMAIN_AMT_10, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0) + Nvl(a.REMAIN_AMT_08,0) + Nvl(a.REMAIN_AMT_09,0) + Nvl(a.REMAIN_AMT_10,0) + Nvl(a.REMAIN_AMT_11,0)) R_REMAIN_AMT_11, \n";
+			strSql += " 			Sum(Nvl(a.REMAIN_AMT_01,0) + Nvl(a.REMAIN_AMT_02,0) + Nvl(a.REMAIN_AMT_03,0) + Nvl(a.REMAIN_AMT_04,0) + Nvl(a.REMAIN_AMT_05,0) + Nvl(a.REMAIN_AMT_06,0) + Nvl(a.REMAIN_AMT_07,0) + Nvl(a.REMAIN_AMT_08,0) + Nvl(a.REMAIN_AMT_09,0) + Nvl(a.REMAIN_AMT_10,0) + Nvl(a.REMAIN_AMT_11,0) + Nvl(a.REMAIN_AMT_12,0)) R_REMAIN_AMT_12, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_13) REMAIN_AMT_13, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_14) REMAIN_AMT_14 \n";
+			strSql += " 		From \n";
+			strSql += " 			( \n";
+			strSql += " 				Select \n";
+			strSql += " 					a.DEPT_CODE, \n";
+			strSql += " 					Sum(Case When a.WORK_YM < SubStrb( ? ,1,4)||'01' Then a.SET_AMT Else 0 End ) SET_AMT_00, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '01' Then a.SET_AMT Else 0 End ) SET_AMT_01, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '02' Then a.SET_AMT Else 0 End ) SET_AMT_02, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '03' Then a.SET_AMT Else 0 End ) SET_AMT_03, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '04' Then a.SET_AMT Else 0 End ) SET_AMT_04, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '05' Then a.SET_AMT Else 0 End ) SET_AMT_05, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '06' Then a.SET_AMT Else 0 End ) SET_AMT_06, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '07' Then a.SET_AMT Else 0 End ) SET_AMT_07, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '08' Then a.SET_AMT Else 0 End ) SET_AMT_08, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '09' Then a.SET_AMT Else 0 End ) SET_AMT_09, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '10' Then a.SET_AMT Else 0 End ) SET_AMT_10, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '11' Then a.SET_AMT Else 0 End ) SET_AMT_11, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '12' Then a.SET_AMT Else 0 End ) SET_AMT_12, \n";
+			strSql += " 					Sum(Case When SubStrb(a.WORK_YM,1,4) = SubStrb( ? ,1,4) Then a.SET_AMT Else 0 End ) SET_AMT_13, \n";
+			strSql += " 					Sum(a.SET_AMT) SET_AMT_14, \n";
+			strSql += " 					Sum(Case When a.WORK_YM < SubStrb( ? ,1,4)||'01' Then a.RESET_AMT Else 0 End ) RESET_AMT_00, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '01' Then a.RESET_AMT Else 0 End ) RESET_AMT_01, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '02' Then a.RESET_AMT Else 0 End ) RESET_AMT_02, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '03' Then a.RESET_AMT Else 0 End ) RESET_AMT_03, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '04' Then a.RESET_AMT Else 0 End ) RESET_AMT_04, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '05' Then a.RESET_AMT Else 0 End ) RESET_AMT_05, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '06' Then a.RESET_AMT Else 0 End ) RESET_AMT_06, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '07' Then a.RESET_AMT Else 0 End ) RESET_AMT_07, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '08' Then a.RESET_AMT Else 0 End ) RESET_AMT_08, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '09' Then a.RESET_AMT Else 0 End ) RESET_AMT_09, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '10' Then a.RESET_AMT Else 0 End ) RESET_AMT_10, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '11' Then a.RESET_AMT Else 0 End ) RESET_AMT_11, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '12' Then a.RESET_AMT Else 0 End ) RESET_AMT_12, \n";
+			strSql += " 					Sum(Case When SubStrb(a.WORK_YM,1,4) = SubStrb( ? ,1,4) Then a.RESET_AMT Else 0 End ) RESET_AMT_13, \n";
+			strSql += " 					Sum(a.RESET_AMT) RESET_AMT_14, \n";
+			strSql += " 					Sum(Case When a.WORK_YM < SubStrb( ? ,1,4)||'01' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_00, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '01' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_01, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '02' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_02, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '03' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_03, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '04' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_04, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '05' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_05, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '06' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_06, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '07' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_07, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '08' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_08, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '09' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_09, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '10' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_10, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '11' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_11, \n";
+			strSql += " 					Sum(Case When a.WORK_YM >= SubStrb( ? ,1,4)||'01' And SubStrb(a.WORK_YM,5,2) = '12' Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_12, \n";
+			strSql += " 					Sum(Case When SubStrb(a.WORK_YM,1,4) = SubStrb( ? ,1,4) Then a.REMAIN_AMT Else 0 End ) REMAIN_AMT_13, \n";
+			strSql += " 					Sum(a.REMAIN_AMT) REMAIN_AMT_14 \n";
+			strSql += " 				From \n";
+			strSql += " 					( \n";
+			strSql += " 						Select \n";
+			strSql += " 							a.DEPT_CODE, \n";
+			strSql += " 							To_Char(a.MAKE_DT,'YYYYMM') WORK_YM, \n";
+			strSql += " 							Round(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then	 \n";
+			strSql += " 										a.DB_AMT \n";
+			strSql += " 									Else \n";
+			strSql += " 										Nvl(a.DB_AMT,0) - Nvl(a.CR_AMT,0) \n";
+			strSql += " 								End \n";
+			strSql += " 							) /  ?  ) SET_AMT, \n";
+			strSql += " 							Round(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then \n";
+			strSql += " 										a.CR_AMT \n";
+			strSql += " 									Else \n";
+			strSql += " 										0 \n";
+			strSql += " 								End \n";
+			strSql += " 							) /  ?  ) RESET_AMT, \n";
+			strSql += " 							Round((Nvl(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then	 \n";
+			strSql += " 										a.DB_AMT \n";
+			strSql += " 									Else \n";
+			strSql += " 										Nvl(a.DB_AMT,0) - Nvl(a.CR_AMT,0) \n";
+			strSql += " 								End \n";
+			strSql += " 							),0) -  \n";
+			strSql += " 							Nvl(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then \n";
+			strSql += " 										a.CR_AMT \n";
+			strSql += " 									Else \n";
+			strSql += " 										0 \n";
+			strSql += " 								End \n";
+			strSql += " 							),0)) /  ?  ) REMAIN_AMT \n";
+			strSql += " 						From	t_acc_slip_body1 a \n";
+			strSql += " 						Where	a.KEEP_DT Is Not Null \n";
+			strSql += " 						And		a.TRANSFER_TAG = 'F' \n";
+			strSql += " 						And		a.COMP_CODE = ? \n";
+			strSql += " 						And		a.ACC_CODE In ( \n";
+			strSql += " 							'111070200'		--공사미수금세금계산 \n";
+			strSql += " 						) \n";
+			strSql += " 						Group By \n";
+			strSql += " 							a.DEPT_CODE, \n";
+			strSql += " 							To_Char(a.MAKE_DT,'YYYYMM') \n";
+			strSql += " 					) a \n";
+			strSql += " 				Where	a.WORK_YM <=  ?  \n";
+			strSql += " 				Group By \n";
+			strSql += " 					a.DEPT_CODE \n";
+			strSql += " 			) a, \n";
+			strSql += " 			V_T_DEPT_CONTRACT_NP b \n";
+			strSql += " 		Where	b.DEPT_CODE = a.DEPT_CODE (+) \n";
+			strSql += " 		And		Nvl(b.RECEIVE_TAG,'%') Like  ?  || '%' \n";
+			strSql += " 		And		b.DEPT_CODE Like  ?  || '%' \n";
+			strSql += " 		Group By Grouping Sets \n";
+			strSql += " 		( \n";
+			strSql += " 			( \n";
+			strSql += " 				b.RECEIVE_TAG, \n";
+			strSql += " 				b.RECEIVE_TAG_NAME, \n";
+			strSql += " 				b.DEPT_CODE, \n";
+			strSql += " 				b.DEPT_NAME \n";
+			strSql += " 			), \n";
+			strSql += " 			( \n";
+			strSql += " 				b.RECEIVE_TAG, \n";
+			strSql += " 				b.RECEIVE_TAG_NAME \n";
+			strSql += " 			), \n";
+			strSql += " 			( \n";
+			strSql += " 				1 \n";
+			strSql += " 			) \n";
+			strSql += " 		) \n";
+			strSql += " 		Order By \n";
+			strSql += " 			b.RECEIVE_TAG, \n";
+			strSql += " 			b.DEPT_CODE \n";
+			strSql += " 	) a, \n";
+			strSql += " 	( \n";
+			strSql += " 		Select \n";
+			strSql += " 			Level Lv \n";
+			strSql += " 		From	Dual \n";
+			strSql += " 		Connect By Level <= 12 \n";
+			strSql += " 	) b \n";
+			strSql += " Order By \n";
+			strSql += " 	a.RECEIVE_TAG, \n";
+			strSql += " 	a.DEPT_CODE, \n";
+			strSql += " 	b.LV \n";
+			strSql += "  \n";
+			strSql += "  ";
+			
+			lrArgData.addColumn("1BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("2BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("3WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("4WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("5WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("6WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("7WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("8WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("9WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("10WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("11WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("12WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("13WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("14WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("15WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("16WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("17WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("18WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("19WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("20WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("21WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("22WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("23WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("24WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("25WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("26WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("27WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("28WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("29WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("30WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("31WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("32WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("33WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("34WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("35WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("36WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("37WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("38WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("39WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("40WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("41WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("42WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("43WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("44WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("45BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("46BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("47BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("COMP_CODE", CITData.VARCHAR2);
+			lrArgData.addColumn("48WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("49RECEIVE_TAG", CITData.VARCHAR2);
+			lrArgData.addColumn("50DEPT_CODE", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("1BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("2BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("3WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("4WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("5WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("6WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("7WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("8WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("9WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("10WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("11WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("12WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("13WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("14WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("15WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("16WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("17WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("18WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("19WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("20WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("21WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("22WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("23WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("24WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("25WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("26WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("27WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("28WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("29WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("30WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("31WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("32WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("33WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("34WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("35WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("36WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("37WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("38WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("39WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("40WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("41WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("42WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("43WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("44WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("45BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("46BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("47BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("COMP_CODE", strCOMP_CODE);
+			lrArgData.setValue("48WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("49RECEIVE_TAG", strRECEIVE_TAG);
+			lrArgData.setValue("50DEPT_CODE", strDEPT_CODE);
+			try
+			{
+				lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+				
+
+
+				
+				lrDataset = CITCommon.toGauceDataSet(lrReturnData);
+				GauceInfo.response.enableFirstRow(lrDataset);
+				lrDataset.flush();
+			}
+			catch (Exception ex)
+			{
+				if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+				GauceInfo.response.writeException("USER", "900001","MAIN Select 오류-> "+ ex.getMessage());
+			}
+		}
+	}
+	catch (Exception ex)
+	{
+		if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+		GauceInfo.response.writeException("SYS", "100001", "페이지 초기화 오류 -> " + ex.getMessage());
+	}
+	finally
+	{
+		try
+		{
+			CITCommon.finalServerPage(GauceInfo);
+		}
+		catch (Exception ex)
+		{
+			if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+			GauceInfo.response.writeException("SYS", "100002", "페이지 종료 오류 -> " + ex.getMessage());
+		}
+	}
+%>

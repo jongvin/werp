@@ -1,0 +1,1025 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : a_as_req_input_1h.html										-->
+<!-- 2. 유형(시나리오): 조회 및 입력												-->
+<!-- 3. 기 능 정 의   : 		      					-->
+<!-- 4. 변 경 이 력   : 황보은영 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_empno =  top.frames['security'].empno.value 
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+
+var is_ds_1_addr = gs_home + '/const/a_web/02/a_as_req_input_1q.jsp?arg_search='
+var is_tr_1_addr = gs_home + '/const/a_web/02/a_as_req_input_1tr.jsp'
+
+var il_focus = "1"
+var ls_yymmdd = ""
+var arg = ""
+var ls_dong = ""
+var ls_ho = ""
+var ls_floor = ""
+var ls_proc_code = ""
+var is_filter = "1"
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회
+//------------------------------------------------------------------------
+{	
+/*	if (ds_1.IsUpdated) {
+		if (ds_1.CountRow == "1") {
+			if (!confirm("새로 추가된 내용이 저장되지 않았습니다\n\n계속 진행하시겠습니까?")) 
+				return
+		}
+      else {
+			alert("변경된 내용을 저장하시기 바랍니다")
+			return
+		}
+	} */
+	
+	ds_1.DataID = is_ds_1_addr + "dept_code ='" + is_dept_code + "' and proc_code='" + ls_proc_code + "' "
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	if ( ds_1.CountRow < 1 )
+		btnadd_onclick()
+		
+
+	show[0].checked = true                         // 전체체크
+	is_filter = "1"
+	ds_1.Filter()
+	
+	query_dongho()
+}
+
+//------------------------------------------------------------------------
+function query_dongho()                     // 조회
+//------------------------------------------------------------------------
+{
+	var ls_where = ""
+	ls_dong  = tx_dong.value
+	ls_ho    = tx_ho.value
+	ls_floor = tx_floor.value
+	
+	if (ls_dong != "" )
+		is_dong = "dong='" + ls_dong + "' "
+	else
+		is_dong = "dong is null "
+		
+	if (ls_ho != "" )
+		is_ho = "ho='" + ls_ho + "' "
+	else
+		is_ho = "ho is null "
+	
+	if (ls_floor != "" )
+		is_floor = "floor='" + ls_floor + "' "
+	else
+		is_floor = "floor is null "
+		
+	ls_where = is_dong + " and " + is_ho + " and " + is_floor
+	
+	var ll_cnt = f_ds_select_q("ds_dongho", "select loc_useq select_1, res_name select_2, res_phone select_3 " +
+	                                           " from a_as_location where dept_code='" + is_dept_code + "' and " + ls_where )
+	                                           
+	
+	if (ds_dongho.NameValue(ds_dongho.RowPosition, "select_2") == undefined)
+		tx_real_req_name.value = ""
+	else
+		tx_real_req_name.value = ds_dongho.NameValue(ds_dongho.RowPosition, "select_2")
+		
+	if (ds_dongho.NameValue(ds_dongho.RowPosition, "select_3") == undefined)
+		tx_real_req_phone.value = ""
+	else
+		tx_real_req_phone.value = ds_dongho.NameValue(ds_dongho.RowPosition, "select_3")
+		
+	tx_real_req_name.disabled = true
+	tx_real_req_phone.disabled = true
+}
+//------------------------------------------------------------------------
+function btnquery_onclick_select()                     // 조회
+//------------------------------------------------------------------------
+{	
+	ds_1.DataID = is_ds_1_addr + "dept_code ='" + is_dept_code + "' and proc_code='" + ls_proc_code + "' "
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	if ( ds_1.CountRow < 1 )
+		btnadd_onclick()		
+
+	show[0].checked = true                         // 전체체크
+	is_filter = "1"
+	ds_1.Filter()
+}
+//------------------------------------------------------------------------
+function btnquery_onclick_radio()                   // radio 조회  
+//------------------------------------------------------------------------
+{		
+	if (show[0].checked == true) {
+	
+		is_filter = "1"
+		ds_1.Filter()
+	
+		gd_1.ColumnProp("donghofloor", "show") = true
+//		radio_dongho1.disabled = true
+
+		radio_dongho1.disabled = true
+		radio_dongho2.disabled = true
+
+		return
+	}
+	
+	if (show[1].checked == true) {
+	
+		is_filter = "2"
+		ds_1.Filter()
+		
+		gd_1.ColumnProp("donghofloor", "show") = false
+//		radio_dongho.disabled = false
+		radio_dongho1.disabled = false
+		radio_dongho2.disabled = false		
+		return
+	}			
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	em_req_date.text = ls_yymmdd
+	ds_1.NameValue(ds_1.RowPosition, "proc_code") = ds_proc_code.NameValue(ds_proc_code.RowPosition, "select_1")
+	ds_1.NameValue(ds_1.RowPosition, "dept_code") = is_dept_code
+	ds_1.NameValue(ds_1.RowPosition, "loc_useq")  = ""
+	ds_1.NameValue(ds_1.RowPosition, "sbcr_useq") = ""
+	ds_1.NameValue(ds_1.RowPosition, "insert_user") = gs_empno
+	ds_1.NameValue(ds_1.RowPosition, "update_user") = gs_empno	
+	ds_1.NameValue(ds_1.RowPosition, "prog_st") = 1		
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	
+	btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function res_info_find_where()                        
+//---------------------------------------------------------------------------
+{	
+	var ls_where = ""
+	ls_dong  = tx_dong.value
+	ls_ho    = tx_ho.value
+	ls_floor = tx_floor.value
+/*
+	if (ls_dong == "" && ls_ho == "" && ls_floor == "") {
+		alert("검색 조건을 입력하세요")
+		tx_dong.focus()
+		return
+	}
+
+	if (tx_dong.value.length != 0 && tx_dong.value.length != 4) {
+		alert("동을 4자로 입력하십이요")
+		tx_dong.focus()
+		return
+	}
+	if (tx_ho.value.length != 0 && tx_ho.value.length != 4) {
+		alert("호를 4자로 입력하십이요")
+		tx_ho.focus()
+		return
+	}
+*/	
+		if (ls_dong != "" )
+			is_dong = "dong='" + ls_dong + "' "
+		else
+			is_dong = "dong is null "
+			
+		if (ls_ho != "" )
+			is_ho = "ho='" + ls_ho + "' "
+		else
+			is_ho = "ho is null "
+		
+		if (ls_floor != "" )
+			is_floor = "floor='" + ls_floor + "' "
+		else
+			is_floor = "floor is null "
+			
+		ls_where = is_dong + " and " + is_ho + " and " + is_floor
+
+			
+	res_info_find(ls_where)		
+}
+//---------------------------------------------------------------------------
+function res_info_find(is_where)                        
+//---------------------------------------------------------------------------
+{	
+
+	ls_dongho = is_where
+	var ll_cnt = f_ds_select_q("ds_res_info", "select loc_useq select_1, res_name select_2, res_phone select_3 " +
+	                                           " from a_as_location where dept_code='" + is_dept_code + "' and " + ls_dongho )                         
+	if ( ll_cnt == 0 ) {
+		res_info_find_pop()
+		return
+	}
+
+
+	
+	ds_1.NameValue(ds_1.RowPosition, "loc_useq")  = ds_res_info.NameValue(ds_res_info.RowPosition, "select_1")
+	ds_1.NameValue(ds_1.RowPosition, "req_name")  = ds_res_info.NameValue(ds_res_info.RowPosition, "select_2")
+	ds_1.NameValue(ds_1.RowPosition, "req_phone") = ds_res_info.NameValue(ds_res_info.RowPosition, "select_3")
+	ds_1.NameValue(ds_1.RowPosition, "dong")      = ls_dong
+	ds_1.NameValue(ds_1.RowPosition, "ho")        = ls_ho
+	ds_1.NameValue(ds_1.RowPosition, "floor")     = ls_floor
+	
+	show[1].checked = true
+//	radio_dongho.disabled = false
+
+	radio_dongho1.disabled = false
+	radio_dongho2.disabled = false
+
+	is_filter = "3"
+	ds_1.Filter()
+	
+	
+}
+//---------------------------------------------------------------------------
+function res_info_find_pop()                        
+//---------------------------------------------------------------------------
+{
+	//alert("등록된 계약자 정보가 없습니다: 선택하시기 바랍니다")
+	
+	var ls_result = window.showModalDialog("a_as_req_input_popup_1h.html", gs_home+'@'+ is_dept_code,"resizable:no;scroll:no;status:no;help:no;dialogHeight:550px;dialogWidth:750px");
+	
+	is_loc_useq = ls_result
+	ll_cnt = f_ds_select_q("ds_pop_loc", "select loc_useq select_1, res_name select_2, res_phone select_3, dong select_4, ho select_5, floor select_6" +
+                                        "  from a_as_location where dept_code='" + is_dept_code + "' and loc_useq='" + is_loc_useq + "' " )
+	
+//  ds_1.reset()                              // 초기화 (없는 계약자 정보의 처음 row까지 저장됨)
+	
+	if (ll_cnt == 0 ) {
+		btnadd_onclick()
+		ds_1.NameValue(ds_1.RowPosition, "dong")      = ls_dong
+		ds_1.NameValue(ds_1.RowPosition, "ho")        = ls_ho
+		ds_1.NameValue(ds_1.RowPosition, "floor")     = ls_floor
+   	return
+   }
+	ls_dong  = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_4")
+	ls_ho    = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_5")
+	ls_floor = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_6")
+   
+  
+	ds_1.NameValue(ds_1.RowPosition, "loc_useq")  = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_1")
+	ds_1.NameValue(ds_1.RowPosition, "req_name")  = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_2")
+	ds_1.NameValue(ds_1.RowPosition, "req_phone") = ds_pop_loc.NameValue(ds_pop_loc.RowPosition, "select_3")
+	ds_1.NameValue(ds_1.RowPosition, "dong")      = ls_dong
+	ds_1.NameValue(ds_1.RowPosition, "ho")        = ls_ho
+	ds_1.NameValue(ds_1.RowPosition, "floor")     = ls_floor
+
+   show[1].checked = true
+//	radio_dongho.disabled = false
+
+	radio_dongho1.disabled = false
+	radio_dongho2.disabled = false
+	is_filter = "3"
+	ds_1.Filter()	
+	
+   if (ds_1.CountRow == 0)
+   	btnadd_onclick()
+
+	show_dongho()
+}
+//---------------------------------------------------------------------------
+function res_info_find_kill_focus()                        
+//---------------------------------------------------------------------------
+{	
+	var ls_where = ""
+	ls_dong = tx_dong.value
+	ls_ho = tx_ho.value
+	ls_floor = tx_floor.value
+	
+	if (ls_dong != "" )
+			is_dong = "dong='" + ls_dong + "' "
+		else
+			is_dong = "dong is null "
+			
+		if (ls_ho != "" )
+			is_ho = "ho='" + ls_ho + "' "
+		else
+			is_ho = "ho is null "
+		
+		if (ls_floor != "" )
+			is_floor = "floor='" + ls_floor + "' "
+		else
+			is_floor = "floor is null "
+			
+		ls_where = is_dong + " and " + is_ho + " and " + is_floor
+		
+	var ll_cnt = f_ds_select_q("ds_res_info", "select loc_useq select_1, res_name select_2, res_phone select_3 " +
+	                                           " from a_as_location where dept_code='" + is_dept_code + "' and " + ls_where )                         
+	if ( ll_cnt == 0 ) {
+		return
+	}
+	
+	show[1].checked = true
+//	radio_dongho.disabled = false
+
+	radio_dongho1.disabled = false
+	radio_dongho2.disabled = false	
+	is_filter = "3"
+	ds_1.Filter()
+	
+	ds_1.NameValue(ds_1.RowPosition, "loc_useq")  = ds_res_info.NameValue(ds_res_info.RowPosition, "select_1")
+	ds_1.NameValue(ds_1.RowPosition, "req_name")  = ds_res_info.NameValue(ds_res_info.RowPosition, "select_2")
+	ds_1.NameValue(ds_1.RowPosition, "req_phone") = ds_res_info.NameValue(ds_res_info.RowPosition, "select_3")
+	ds_1.NameValue(ds_1.RowPosition, "dong")      = ls_dong
+	ds_1.NameValue(ds_1.RowPosition, "ho")        = ls_ho
+	ds_1.NameValue(ds_1.RowPosition, "floor")     = ls_floor
+	show_dongho()	
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if (il_focus == 1) {
+		ds_1.InsertRow(1)
+		init_move()
+		tx_dong.focus()
+	}
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	btnadd_onclick()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if (ds_1.NameValue(ds_1.RowPosition, "prog_st") == "1" )
+		if (!confirm("접수된 내역입니다: 삭제하시겠습니까?")) 
+			return
+	if (ds_1.NameValue(ds_1.RowPosition, "prog_st") == "2" )
+//		if (!confirm("계획처리 진행중인 내역입니다: 삭제하시겠습니까?")) 
+			return
+	if (ds_1.NameValue(ds_1.RowPosition, "prog_st") == "3" )
+//		if (!confirm("완료된 내역입니다: 삭제하시겠습니까?")) 
+			return
+				
+	ds_1.DeleteRow(ds_1.RowPosition)
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{	
+	if (il_focus == 1) {
+	
+		if (ds_1.IsUpdated) {
+		
+		   if ( ds_1.CountRow > 0 )
+		   {
+		   	if (tx_dong.value.length == 0 && tx_ho.value.length == 0 && tx_floor.value.length == 0) {
+					alert("접수하려는 동, 호, 층의 정보를 입력하십시요")
+					tx_dong.focus()
+					return
+				}
+				if (tx_dong.value == "" && tx_ho.value == "" && tx_floor.value == "") {
+					alert("접수하려는 동, 호, 층의 정보를 입력하십시요")
+					tx_dong.focus()
+					return
+				}
+				if (tx_dong.value.length != 0 && tx_dong.value.length != 4) {
+					alert("동을 4자로 입력하십이요")
+					tx_dong.focus()
+					return
+				}
+				if (tx_ho.value.length != 0 && tx_ho.value.length != 4) {
+					alert("호를 4자로 입력하십이요")
+					tx_ho.focus()
+					return
+				}
+		
+	
+				if ( !f_check_date(em_plan_date.text.substr(0,8)) || (em_plan_date.text.substr(8,2) > 23) || (em_plan_date.text.substr(10,2) > 59) || ( em_plan_date.text.replace(' ','').length != 12) ) {
+					alert("입력하신 방문예정 일이 올바르지 않습니다")
+					em_plan_date.focus()
+					return
+				}			
+			}
+				
+							
+			if (confirm("변경되었습니다 저장하시겠습니까?")) {
+
+        		tr_1.Post()
+        	}
+   	}
+	}
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+}
+//---------------------------------------------------------------------
+function get_focus(focus)   // 각각의 gd에 focus를 부여함.
+//---------------------------------------------------------------------
+{
+	il_focus = focus
+}
+//---------------------------------------------------------------------
+function show_dongho()
+//---------------------------------------------------------------------
+{
+	r_dong = ds_1.NameValue(ds_1.RowPosition, "dong")
+	if (r_dong == "")
+		r_dong = "----"
+		
+	r_ho = ds_1.NameValue(ds_1.RowPosition, "ho")
+	if (r_ho == "")
+		r_ho = "----"
+		
+	r_floor = ds_1.NameValue(ds_1.RowPosition, "floor")
+	if (r_floor != "")
+		r_floor = r_floor + "층"	
+			
+// 2006.3.17 이준구 수정
+//	radio_dongho.value = r_dong + "동 " + r_ho + "호 "	+ r_floor
+
+	radio_dongho1.value = r_dong 
+	radio_dongho2.value = r_ho 
+
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function f_request()
+//---------------------------------------------------------------------------
+{
+	top.frames['main_ct'].location.href(gs_home + "/const/a_web/03/a_as_request_wbs_plan_1h.html"+ "?" + "r")
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1');
+	var xArr   = new Array(false);
+	var yArr   = new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+}
+//---------------------------------------------------------------------------
+function copy()
+//---------------------------------------------------------------------------
+{
+	arr = new Array()
+	
+   arr[0] = ds_1.NameValue(ds_1.RowPosition,'req_date')
+   arr[1] = ds_1.NameValue(ds_1.RowPosition,'donghofloor')
+   arr[2] = ds_1.NameValue(ds_1.RowPosition,'req_name')
+   arr[3] = ds_1.NameValue(ds_1.RowPosition,'req_phone')
+   arr[4] = ds_1.NameValue(ds_1.RowPosition,'plan_visit_date')
+   arr[5] = ds_1.NameValue(ds_1.RowPosition,'plan_proc_date')
+   arr[6] = ds_1.NameValue(ds_1.RowPosition,'res_comp_date')
+   arr[7] = ds_1.NameValue(ds_1.RowPosition,'code_cau')
+   arr[8] = ds_1.NameValue(ds_1.RowPosition,'code_pos')
+   arr[9] = ds_1.NameValue(ds_1.RowPosition,'code_wbs')
+   arr[10] = ds_1.NameValue(ds_1.RowPosition,'code_cat')
+   arr[11] = ds_1.NameValue(ds_1.RowPosition,'req_desc')
+   arr[12] = ds_1.NameValue(ds_1.RowPosition,'dong')
+   arr[13] = ds_1.NameValue(ds_1.RowPosition,'ho')
+   arr[14] = ds_1.NameValue(ds_1.RowPosition,'floor')
+
+
+   
+
+	if (ds_1.CountRow == 0)				 // 한건도 없을경우는  0 
+	{                                       
+		btnadd_onclick()   
+		return
+	}  
+	ds_1.InsertRow(ds_1.RowPosition)  
+	
+	
+	ds_1.NameValue(ds_1.RowPosition, "proc_code") = ds_proc_code.NameValue(ds_proc_code.RowPosition, "select_1")
+	ds_1.NameValue(ds_1.RowPosition, "dept_code") = is_dept_code
+	ds_1.NameValue(ds_1.RowPosition, "loc_useq")  = ""
+	ds_1.NameValue(ds_1.RowPosition, "sbcr_useq") = ""
+	ds_1.NameValue(ds_1.RowPosition, "insert_user") = gs_empno
+	ds_1.NameValue(ds_1.RowPosition, "update_user") = gs_empno	
+		
+	ds_1.NameValue(ds_1.RowPosition,'req_date') = arr[0]
+   ds_1.NameValue(ds_1.RowPosition,'donghofloor') = arr[1]
+   ds_1.NameValue(ds_1.RowPosition,'req_name') = arr[2] 
+   ds_1.NameValue(ds_1.RowPosition,'req_phone') = arr[3]  
+   ds_1.NameValue(ds_1.RowPosition,'prog_st') = 1
+   ds_1.NameValue(ds_1.RowPosition,'plan_visit_date') = arr[4]
+   ds_1.NameValue(ds_1.RowPosition,'plan_proc_date') = arr[5]
+   ds_1.NameValue(ds_1.RowPosition,'res_comp_date') = arr[6]
+   ds_1.NameValue(ds_1.RowPosition,'code_cau') = arr[7]
+   ds_1.NameValue(ds_1.RowPosition,'code_pos') = arr[8]
+   ds_1.NameValue(ds_1.RowPosition,'code_wbs') = arr[9]
+   ds_1.NameValue(ds_1.RowPosition,'code_cat') = arr[10]
+   ds_1.NameValue(ds_1.RowPosition,'req_desc') =  arr[11]
+   ds_1.NameValue(ds_1.RowPosition,'dong') = arr[12]
+   ds_1.NameValue(ds_1.RowPosition,'ho') = arr[13]
+   ds_1.NameValue(ds_1.RowPosition,'floor')=arr[14]
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+//	f_set_resize()
+	
+	ls_temp = top.frames['security'].gs_sysdate.value  // 시스템 년월 선언.
+  	ls_yymmdd = ls_temp.substr(0,4) + ls_temp.substr(5,2) + ls_temp.substr(8,2)
+  
+	dept_name.value = is_dept_name
+
+	ll_cau = f_ds_select_q("ds_code_cau", "select code select_1, name select_2 from a_as_comm_code where class='4' order by name")
+	ll_cat = f_ds_select_q("ds_code_cat", "select code select_1, name select_2 from a_as_comm_code where class='3' order by name")
+	ll_pos = f_ds_select_q("ds_code_pos", "select code select_1, name select_2 from a_as_comm_code where class='1' order by name")
+	ll_wbs = f_ds_select_q("ds_code_wbs", "select code select_1, name select_2 from a_as_comm_code where class='2' order by name")
+	
+	ll_proc = f_ds_select_q("ds_proc_code", "select proc.code select_1, proc.name select_2 from (select '1' code, 'D-40' name from dual union " +
+																															"  select '2' code, 'D-30' name from dual union " +
+																															"  select '3' code, 'D-20' name from dual union " +
+																															"  select '4' code, '입주' name from dual union " +
+	   																													"  select '5' code, 'AS기간' name from dual) proc ")
+	   																													
+	ls_proc_code = ds_proc_code.NameValue(ds_1.RowPosition, "select_1")
+	ccom_proc_code.DataValue = 'AS기간'
+	tr_1.Action = is_tr_1_addr
+
+
+	btnquery_onclick()
+
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=CanRowPosChange(row)>
+	if (ds_1.IsUpdated) {
+//		alert("변경된 내용을 저장하시기 바랍니다")
+//		return false
+	}	
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+	if (row < 1) return	
+	show_dongho()
+	if (ds_1.NameValue(row, "prog_st") == "3") {
+		em_req_date.Enable    = false 
+		tx_req_name.disabled  = true 
+		tx_req_phone.disabled = true 
+		tx_dong.disabled  = true  
+		tx_ho.disabled  = true  
+		tx_floor.disabled  = true  
+		tx_req_desc.disabled  = true  
+		em_plan_date.Enable   = false 
+//		em_plan_date_time.Enable = false 
+		ccom_cau.Enable          = false 
+		ccom_pos.Enable          = false 
+		ccom_wbs.Enable          = false 
+		ccom_cat.Enable          = false
+	}
+	else {
+		em_req_date.Enable    = true 
+		tx_req_name.disabled  = false 
+		tx_req_phone.disabled = false 
+		tx_dong.disabled = false 
+		tx_ho.disabled = false 
+		tx_floor.disabled = false 
+		tx_req_desc.disabled  = false  
+		em_plan_date.Enable   = true 
+//		em_plan_date_time.Enable = true 
+		ccom_cau.Enable          = true 
+		ccom_pos.Enable          = true 
+		ccom_wbs.Enable          = true 
+		ccom_cat.Enable          = true
+	}
+	
+	query_dongho()
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=onFilter(row)>
+	f_dong = ds_1.NameValue(ds_1.RowPosition, "dong")
+	f_ho   = ds_1.NameValue(ds_1.RowPosition, "ho")
+	f_floor = ds_1.NameValue(ds_1.RowPosition, "floor")
+	
+	switch(is_filter) {
+		case "1" :
+			return true;
+			break;
+		case "2" :
+			if (ds_1.NameValue(row, "dong") == f_dong && ds_1.NameValue(row, "ho") == f_ho && ds_1.NameValue(row, "floor") == f_floor)
+				return true;
+			else
+				return false;
+			break;
+		case "3" :
+			if (ds_1.NameValue(row, "dong") == ls_dong && ds_1.NameValue(row, "ho") == ls_ho && ds_1.NameValue(row, "floor") == ls_floor)
+				return true;
+			else
+				return false;
+			break;
+	}
+</SCRIPT>
+<script language=JavaScript for=ccom_proc_code event=onDropDown()>
+	if (ds_1.IsUpdated) {
+		if (ds_1.CountRow == "1") {
+			alert("새로이 추가된 내용을 저장하지 않으면 삭제됩니다")
+			return
+		}
+      else {
+			alert("변경된 내용을 저장하지 않으면 삭제됩니다")
+			return
+		}
+	}
+</script>
+<script language=JavaScript for=ccom_proc_code event=onSelChange()>
+	gd_1.ReDraw = false
+	ls_proc_code = ds_proc_code.NameValue(ds_proc_code.RowPosition, "select_1")
+	btnquery_onclick_select()
+	gd_1.ReDraw = true
+</script>
+
+<!-- onKillFocus .. onKillFocus .. onKillFocus .. onKillFocus .. onKillFocus -->
+<SCRIPT language=JavaScript for=tx_dong event=onKillFocus()>
+	res_info_find_kill_focus()
+</SCRIPT>
+<SCRIPT language=JavaScript for=tx_ho event=onKillFocus()>
+	res_info_find_kill_focus()
+</SCRIPT>
+<SCRIPT language=JavaScript for=tx_floor event=onKillFocus()>
+	res_info_find_kill_focus()
+</SCRIPT> 
+ 
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+    <param name=SortExpr       value="-req_date">
+    <param name=UseFilter	value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_dongho 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_res_info 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>    
+<comment id="__NSID__"><OBJECT id=ds_code_cau 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_code_pos 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_code_wbs 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_code_cat 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script> 
+<comment id="__NSID__"><OBJECT id=ds_proc_code 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script> 
+<comment id="__NSID__"><OBJECT id=ds_pop_loc 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>    
+             
+<comment id="__NSID__"><OBJECT id=tr_1
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:a_as_req_input_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr>
+		<td class="td_green" height="20px">
+			<table border=0 cellpadding=0 cellspacing=0 class=main_table>
+				<tr>
+					<td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" >
+					</td>
+					<td class="font_green_bold" width="53" >현장명</td>
+       			<td width="171">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+					</td>
+					<td width="138">
+						<input type="button" value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="21"><img src="../../../image/bullet3.gif" align="absmiddle" >
+					<td width="55" class="font_green_bold" >관리구분
+					</td>
+					<td>
+						<comment id="__NSID__"><object id=ccom_proc_code
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+					      height=100 width=80 VIEWASTEXT>
+							<PARAM NAME="Alignment"        VALUE="1">
+							<param name=ComboDataID        value=ds_proc_code>
+					      <param name=CodeCColumn        value=select_1>
+					      <param name=DataCColumn        value=select_2>
+					      <param name=ReadOnlyBackColor  value="#F2F2F2">
+					      <param name=Auto               value=false>
+						</object></comment> <script> __ws__(__NSID__);</script>					
+					</td>
+					<td width="352"> 
+						<table width="100%" height="100%" >
+							<TR>
+								<td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>			
+								<TD WIDTH="59" class="font_green_bold">
+									접수내역
+								</TD>
+								<TD WIDTH="22">
+									<input type="radio" name="show" value="1" onclick="btnquery_onclick_radio()"></TD>
+								<td width="25"> 전체 </td>  
+								<TD WIDTH="21">
+									<input type="radio" name="show" value="2" onclick="btnquery_onclick_radio()">
+								</TD>
+<!--								<td width="80">	
+									<input type="text" name="radio_dongho" style="border: 1 solid white" disabled="true">
+								</TD> -->
+								<td width="39">	
+									<input type="text" name="radio_dongho1" size=4  disabled="true"></td>
+								<td width="14">동</td>
+								</TD>
+								<td width="35">	
+									<input type="text" name="radio_dongho2" size=4  disabled="true"></TD>
+								<td>호</td>
+							</TR>
+						</TABLE>
+					</td>	
+					<td width="*" align="right">
+						<input type="button" value="계획조회" onclick=f_request() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>		
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="20px">
+		<td>
+			<table>
+				<tr>
+					<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+					</td>
+					<td class="font_green_bold" width="53" >접수내역</td>
+				</tr>
+			</table>		
+		</td>
+	</tr>
+   <tr height="20px">
+      <td>
+			<TABLE BORDER="3" WIDTH="100%" ALIGN="CENTER" CELLPADDING="0" CELLSPACING="0" STYLE="FONT-SIZE: 12px">
+		   	<TR align="center">   		
+		   		<TD BGCOLOR="#BBE0F4" width="10%" height="28">접수일</TD>
+		   		<TD width="10%">
+		   			<comment id="__NSID__"><OBJECT id=em_req_date style="WIDTH: 100%; FONT-SIZE: 12px" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							<param name=Format value="YYYY-MM-DD">
+				         <param name=ReadOnlyBackColor  value=silver>
+				         <param name=Alignment      value=1>
+				         <param name=Numeric value=false>
+							<param name=PromptChar   value="_">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</TD>
+					
+		   		<TD BGCOLOR="#BBE0F4" width="10%">신청자 </TD>
+		   		<TD width="10%">
+		   			<input type="text" id=tx_req_name style="WIDTH: 100%; FONT-SIZE: 12px" size=12></TD>
+		   		
+		   		<TD BGCOLOR="#BBE0F4" width="10%">전화번호</TD>
+		   		<TD width="10%"><input type="text" id="tx_req_phone" style="WIDTH: 100%;"></TD>
+		   		
+		   		<TD WIDTH="10%" BGCOLOR="#BBE0F4">실소유주명</TD>
+		   		<TD WIDTH="10%">
+		   			<input type="text" id=tx_real_req_name style="WIDTH: 100%; FONT-SIZE: 12px" size=12></TD>
+		   			
+		   		<TD WIDTH="10%" BGCOLOR="#BBE0F4">실소유주 연락처</TD>
+		   		<TD WIDTH="10%">
+		   			<input type="text" id="tx_real_req_phone" style="WIDTH: 100%;"></TD>
+		   	</TR> 
+		   	  
+				<TR>
+		   		<TD BGCOLOR="#BBE0F4" width="10%" height="28" align="center">*동</TD>
+		   		<TD width="10%" colspan="2">
+		   			<input type="text" id=tx_dong style="WIDTH: 50%; FONT-SIZE: 12px; text-align: center;" maxlength="4">
+				   </TD>
+				   
+		   		<TD BGCOLOR="#BBE0F4" width="10%" align="center">*호</TD>
+		   		<TD width="10%" colspan="2">
+		   			<input type="text" id=tx_ho style="WIDTH: 50%; FONT-SIZE: 12px; text-align: center;" maxlength="4">
+		   		</TD>
+		   		
+		   		<TD BGCOLOR="#BBE0F4" width="10%" align="center">*층</TD>
+		   		<TD width="10%" colspan="2">
+		   			<input type="text" id=tx_floor style="WIDTH: 50%; FONT-SIZE: 12px; text-align: center;" maxlength="4">
+		   		</TD>
+		   		
+		   		<TD>
+		   			<table width="100%" BORDER="0"  align="center" cellpadding="0" CELLSPACING="0" style="FONT-SIZE: 12px">
+							<tr>
+								<td>	
+									&nbsp;&nbsp;<input id=bt_opinion_list type="button" value="계약자조회" onclick="res_info_find_where()" class=img_btn5_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+								</td>
+							</tr>	
+						</table>
+		   		</TD>
+		   	</TR>			   
+		   	<TR>
+		   		<TD BGCOLOR="#BBE0F4" align="center" width="128"> 상세내역</TD>
+		   		<TD colspan="10">
+		   			<textarea rows="10" cols="120" id=tx_req_desc maxLength="200" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)"></textarea>
+		   		</TD>
+		   	</TR>
+		   </TABLE>
+		</td>   
+	</tr>
+	<tr height="93" valign="top" >
+		<td>
+			<TABLE BORDER="3" WIDTH="100%" ALIGN="CENTER" CELLPADDING="0" CELLSPACING="0" STYLE="FONT-SIZE: 12px">
+		   	<TR align="center">
+		   		<TD BGCOLOR="#BBE0F4" height="28">*방문예정일</TD>
+		   		<TD width="360">
+		   			<comment id="__NSID__"><OBJECT id=em_plan_date style="WIDTH: 150; FONT-SIZE: 12px" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle">
+							<param name=Format value="0000-00-00 00:00">
+				         <param name=ReadOnlyBackColor  value=silver>
+				         <param name=Alignment      value=1>
+				         <param name=Numeric value=false>
+							<param name=PromptChar   value="_">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<!--						<comment id="__NSID__"><OBJECT id=em_plan_date_time style="WIDTH: 50; FONT-SIZE: 12px" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle">
+							<param name=ReadOnlyBackColor  value=silver>
+							<param name=Alignment value=1>
+							<param name=Numeric value=false>
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>시 예정 -->
+						&nbsp;&nbsp; 예) 오후 3시 : 15시
+		   		</TD>
+		   		<TD colspan="2"></TD>
+		   	</TR>
+		   	<TR align="center" height="28">
+		   		<TD BGCOLOR="#BBE0F4" width="140px" align="center">하자원인</TD>
+		   		<TD>
+		   			<comment id="__NSID__"><object id=ccom_cau
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+		               height=200 width=150 VIEWASTEXT>
+							<PARAM NAME="Alignment"        VALUE="1">
+							<param name=ComboDataID        value=ds_code_cau>
+		               <param name=CodeCColumn        value=select_1>
+		               <param name=DataCColumn        value=select_2>
+		               <param name=ReadOnlyBackColor  value="#F2F2F2">
+		               <param name=Auto               value=false>
+						</object></comment> <script> __ws__(__NSID__);</script>
+		   		</TD>
+		   		<TD BGCOLOR="#BBE0F4" width="140px">하자부위</TD>
+		   		<TD>
+		   			<comment id="__NSID__"><object id=ccom_pos
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+		               height=250 width=150 VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<param name=ComboDataID         value=ds_code_pos>
+		               <param name=CodeCColumn        value=select_1>
+		               <param name=DataCColumn         value=select_2>
+		               <param name=ReadOnlyBackColor     value="#F2F2F2">
+		               <param name=Auto     value=false>
+						</object></comment> <script> __ws__(__NSID__);</script>	
+		   		</TD>
+		   	</TR>
+		   	<TR align="center">
+		   		<TD BGCOLOR="#BBE0F4" height="28" >하자공종</TD>
+		   		<TD>
+		   			<comment id="__NSID__"><object id=ccom_wbs
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+		               height=250 width=150 VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<param name=ComboDataID         value=ds_code_wbs>
+		               <param name=CodeCColumn        value=select_1>
+		               <param name=DataCColumn         value=select_2>
+		               <param name=ReadOnlyBackColor     value="#F2F2F2">
+		               <param name=Auto     value=false>
+						</object></comment> <script> __ws__(__NSID__);</script>
+		   		</TD>
+		   		<TD BGCOLOR="#BBE0F4">하자유형</TD>
+		   		<TD>
+		   			<comment id="__NSID__"><object id=ccom_cat
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+		               height=250 width=150 VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<param name=ComboDataID         value=ds_code_cat>
+		               <param name=CodeCColumn        value=select_1>
+		               <param name=DataCColumn         value=select_2>
+		               <param name=ReadOnlyBackColor     value="#F2F2F2">
+		               <param name=Auto     value=false>
+						</object></comment> <script> __ws__(__NSID__);</script>
+		   		</TD>
+		   	</TR>
+		   </TABLE>
+		</td>
+	</tr>
+	<tr height="20">
+		<td>
+			<table width="100%" height="100%" >
+				<TR>
+					<td width="13"><img src="../../../image/bullet1.gif" align="absmiddle" ></td>			
+					<TD WIDTH="40" class="font_green_bold">내역</TD>
+					<td align="right" >
+						<input type="button" value="내역복사" onclick=copy() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+				</TR>
+			</TABLE>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width="100%" height="100%" >
+		   	<tr>
+		   		<td>
+						<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+						    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 100%; POSITION: relative ; HEIGHT: 100%" 
+						    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49  VIEWASTEXT>
+							<PARAM NAME="MultiRowSelect" VALUE="-1">
+							<PARAM NAME="AutoInsert" VALUE="-1">
+						    <PARAM NAME="BorderStyle"  VALUE=1>    
+						    <param name="SortView"  value="Left">
+							<PARAM NAME="AllShowEdit" VALUE="-1">
+							<PARAM NAME="Editable" VALUE="false">
+							<PARAM NAME="ColSizing" VALUE="-1">
+							<PARAM NAME="Format" VALUE="
+							<C> Name='접수일'  ID=req_date Mask='XXXX.XX.XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 Align=center</C>
+							<C> Name='동호'    ID=donghofloor Edit='none' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 Align=center</C>
+							<C> Name='신청자'  ID=req_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+							<C> Name='처리상태' ID=prog_st Value={Decode(prog_st, '1', '접수', '2', '계획', '3', '완료')}BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+							<C> Name='방문예정일시'  ID=plan_visit_date Mask='XXXX.XX.XX XX:XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=95 Align=center </C>
+							<C> Name='방문일시'  ID=plan_proc_date  Mask='XXXX.XX.XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=84 Align=center </C>
+							<C> Name='처리일'  ID=res_comp_date Mask='XXXX.XX.XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=84 Align=center </C>
+							<C> Name='하자원인' Edit='none' ID=code_cau  EditStyle=lookup Data='ds_code_cau:select_1:select_2' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=85 </C>
+							<C> Name='하자부위' Edit='none' ID=code_pos  EditStyle=lookup Data='ds_code_pos:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=85 </C>
+							<C> Name='하자공종' Edit='none' Id=code_wbs  EditStyle=lookup Data='ds_code_wbs:select_1:select_2' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=85 </C>
+							<C> Name='하자유형' Edit='none' ID=code_cat  EditStyle=lookup Data='ds_code_cat:select_1:select_2' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=85 </C>
+							<C> Name='하자상세내역'  ID=req_desc BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100</C>
+							">
+							<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+				</tr>
+			</table>	
+   	</td>
+   </tr>
+</table>   			
+	
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: -241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+ 	<PARAM NAME="BindInfo" VALUE="
+ 		<C> Col=req_date Ctrl=em_req_date Param=text Enable=enable </C>
+ 		<C> Col=req_name Ctrl=tx_req_name Param=value Enable=enable </C>
+ 		<C> Col=req_phone Ctrl=tx_req_phone Param=value Enable=enable </C>
+ 		<C> Col=dong Ctrl=tx_dong Param=value Enable=enable </C>
+ 		<C> Col=ho Ctrl=tx_ho Param=value Enable=enable </C>
+ 		<C> Col=floor Ctrl=tx_floor Param=value Enable=enable </C>
+ 		<C> Col=req_desc Ctrl=tx_req_desc Param=value Enable=enable </C>
+ 		<C> Col=plan_visit_date Ctrl=em_plan_date Param=text Enable=enable </C>
+ 		<C> Col=plan_visit_date_time Ctrl=em_plan_date_time Param=text Enable=enable </C>
+ 		<C> Col=code_cau Ctrl=ccom_cau Param=codevalue Enable=enable </C>
+ 		<C> Col=code_pos Ctrl=ccom_pos Param=codevalue Enable=enable </C>
+ 		<C> Col=code_wbs Ctrl=ccom_wbs Param=codevalue Enable=enable </C>
+ 		<C> Col=code_cat Ctrl=ccom_cat Param=codevalue Enable=enable </C>
+ 	">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>  
+</div>
+</BODY></HTML>

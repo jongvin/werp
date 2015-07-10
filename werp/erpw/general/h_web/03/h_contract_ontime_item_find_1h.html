@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_contract_ontime_item_find_1h.html								-->
+<!-- 2. 유형(시나리오): 별도품목찾기(분양)										-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   :  임종빈 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 별도품목 입력</TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = '/general/h_web/03/h_contract_ontime_item_find_1q.jsp?arg_dept_code='
+var is_confirm_check = 'no'
+var is_dept_code,is_sell_code, is_dongho, is_seq, is_pyong
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		Button_confirm_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID = gs_home + is_ds_1_addr + is_dept_code + "&arg_sell_code=" + is_sell_code+ 
+                                                                                                              "&arg_dongho=" + is_dongho+
+																																				  "&arg_seq=" + is_seq+ 
+																																				  "&arg_pyong=" + is_pyong
+  
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  var i, ls_amt, ls_vat
+  ls_return = is_confirm_check
+
+  for ( i= 1 ; i <= ds_1.countrow; i++){
+			if ( (ds_1.namevalue(	i, 'selected') == 'T'  ) && (ds_1.rowstatus(i)== 3)){
+				if (ds_1.namevalue(i, 'norm_prem_tag') == '01'){ 
+					ls_amt = ds_1.namevalue(i, 'amt_norm');
+               ls_vat   = ds_1.namevalue(i, 'amt_norm_vat');
+				}
+				else{
+					ls_amt = ds_1.namevalue(i, 'amt_prem');
+               ls_vat   = ds_1.namevalue(i, 'amt_prem_vat');
+				}
+				ls_return = ls_return + "@"+ 
+				                     ds_1.namevalue(i, 'pyong') + "@"+ 
+				                     ds_1.namevalue(i, 'opt_name') + "@"+ 
+                                 ds_1.namevalue(i, 'opt_base') + "@"+ 
+											ds_1.namevalue(i, 'opt_finish') + "@"+ 
+											ds_1.namevalue(i, 'opt_ref') + "@"+ 
+											ls_amt + "@"+ 
+											ls_vat + "@"+ 
+											ds_1.namevalue(i, 'norm_prem_tag');
+			}
+
+  }
+  
+
+ window.returnValue = ls_return
+ window.close();
+}
+//------------------------------------------------------------------------------
+function f_ds_select_q(ls_ds,ls_sql)
+//------------------------------------------------------------------------------
+{
+var i,j,ll_find,ll_from,ls_colcnt,ll_cnt
+  ll_find = 0
+  ll_from = ls_sql.lastIndexOf("select_")
+  for(i=ll_from ; i < ls_sql.length ; i++) {
+     if  (ls_sql.substr(i,1) == "_") { 
+         for (j=i; j < ls_sql.length ; j++) {
+             if (ls_sql.substr(j,1) == " ") {
+                 ll_find = 1
+                 break
+             }    
+         }
+     }
+   if (ll_find == 1) break
+  }      
+  ls_colcnt = ls_sql.substr(i+1, j-i)
+  
+//         eval("sa_key = sa_key + " + arg_ds + ".NameValue(ll_start_1,'" + array[ll_loop] + "')") 
+  i = parseInt(ls_colcnt,10)
+  eval(ls_ds + '.DataID="/werp/erpw/comm_function/comm_select_' + i + 'q.jsp?in_sql=' + ls_sql + '"')
+  eval(ls_ds + ".SyncLoad = true")
+  eval(ls_ds + ".reset()")
+  eval("ll_cnt = " + ls_ds + ".CountRow")
+  return ll_cnt
+}  
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+	
+	array = result.split("@");
+	gs_home = array[0]                  // 0: 홈 디렉토리 
+	is_dept_code = array[1]
+	is_sell_code  = array[2]
+	is_dongho      = array[3]
+	is_seq             = array[4]
+	is_pyong         = array[5]
+	
+
+	f_ds_select_q("ds_opt_name","select code select_1, code_name select_2 from h_code_common where code_div = '29' order by code")
+	f_ds_select_q("ds_opt_base","select code select_1, code_name select_2 from h_code_common where code_div = '30' order by code")
+	f_ds_select_q("ds_opt_finish","select code select_1, code_name select_2 from h_code_common where code_div = '31' order by code")
+	f_ds_select_q("ds_opt_ref","select code select_1, code_name select_2 from h_code_common where code_div = '32' order by code")
+
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_opt_name
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	  <comment id="__NSID__"><Object id=ds_opt_base
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	  <comment id="__NSID__"><Object id=ds_opt_finish
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	  <comment id="__NSID__"><Object id=ds_opt_ref
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<BR>    
+
+<input type="button" value="확인" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 670px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 720px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+         
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 810px; POSITION: absolute; TOP: 35px; HEIGHT: 400px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE=true>
+	 <param name="MultiRowSelect"   value="0">
+	<PARAM NAME="Editable" VALUE=true>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name='평형' ID=pyong Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 EditStyle=Lookup Data='ds_pyong:select_1:select_2' edit=none </C>
+	  <C> Name='옵션실명' ID=opt_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 EditStyle=Lookup Data='ds_opt_name:select_1:select_2' edit=none</C>
+	  <C> Name='옵션기본' ID=opt_base  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 EditStyle=Lookup Data='ds_opt_base:select_1:select_2' edit=none</C>
+	  <C> Name='옵션마감' ID=opt_finish  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 EditStyle=Lookup Data='ds_opt_finish:select_1:select_2' edit=none</C>
+	  <C> Name='옵션구분' ID=opt_ref  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 EditStyle=Lookup Data='ds_opt_ref:select_1:select_2' edit=none</C>
+	  <C> Name='금액' ID=amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 Value={DECODE(norm_prem_tag,'01',amt_norm,amt_prem)} 
+				SumText=@sum SumColor=Black SumBgColor=Pink edit=none</C>
+		  <C> Name='VAT' ID=vat  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 Value={DECODE(norm_prem_tag,'01',amt_norm_vat,amt_prem_vat)}
+				SumText=@sum SumColor=Black SumBgColor=Pink edit=none</C>	
+	  <C> Name='일반/최상' ID=norm_prem_tag  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=100 EditStyle=Combo Data='01:일반가,02:최상가'</C>
+	  <C> Name='선택' ID=selected  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=30 EditStyle=CheckBox </C>
+	   ">
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

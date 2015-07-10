@@ -1,0 +1,70 @@
+<%@ page session="true" import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%><%@
+ include file="../../../comm_function/conn_q_pool.jsp"%><%
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+     String arg_dept_code = req.getParameter("arg_dept_code");
+     String arg_waste_code = req.getParameter("arg_waste_code");
+ //---------------------------------------------------------- 
+     dSet.addDataColumn(new GauceDataColumn("dept_code",GauceDataColumn.TB_STRING,7));
+     dSet.addDataColumn(new GauceDataColumn("waste_matter_code",GauceDataColumn.TB_STRING,2));
+     dSet.addDataColumn(new GauceDataColumn("seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("gen_dt",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("mat_status",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("gen_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("tot_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("self_disp_dt",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("self_disp_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("mid_disp_method",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("mid_disp_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("fin_disp_method",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("fin_disp_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("self_tot_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("commit_dt",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("commit_amt",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("commit_carrier",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("commit_disp",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("commit_method",GauceDataColumn.TB_STRING,30));
+     dSet.addDataColumn(new GauceDataColumn("commit_tot",GauceDataColumn.TB_DECIMAL,10,3));
+     dSet.addDataColumn(new GauceDataColumn("keep_amt",GauceDataColumn.TB_DECIMAL,10,3));
+    String query = "  SELECT a.dept_code,                                              " + 
+     "                       a.waste_matter_code,													" + 
+     "                       a.seq,																		" + 
+     "                       to_char(a.gen_dt, 'yyyy.mm.dd') gen_dt,							" + 
+     "                       a.mat_status,															" + 
+     "                       a.gen_amt,																" + 
+     "                       (select sum(gen_amt) 													" +
+     "                          from v_waste_matter 												" +
+     "                         where gen_dt <= a.gen_dt and 									" +
+     "                               dept_code=a.dept_code and 								" +
+     "                               waste_matter_code=a.waste_matter_code					" +
+     "                       ) tot_amt,																" + 
+     "                       to_char(a.self_disp_dt, 'yyyy.mm.dd') self_disp_dt,			" + 
+     "                       a.self_disp_amt,														" + 
+     "                       a.mid_disp_method,														" + 
+     "                       a.mid_disp_amt,															" + 
+     "                       a.fin_disp_method,														" + 
+     "                       a.fin_disp_amt,															" + 
+     "                       (select sum(self_disp_amt) 											" +
+     "                          from v_waste_matter 												" +
+     "                         where gen_dt <= a.gen_dt and 									" +
+     "                               dept_code=a.dept_code and 								" +
+     "                               waste_matter_code=a.waste_matter_code					" +
+     "                       ) self_tot_amt,															" + 
+     "                       to_char(a.commit_dt, 'yyyy.mm.dd') commit_dt,					" + 
+     "                       a.commit_amt,															" + 
+     "                       a.commit_carrier,														" + 
+     "                       a.commit_disp,															" + 
+     "                       a.commit_method,														" + 
+     "                       (select sum(commit_amt) 												" +
+     "                          from v_waste_matter 												" +
+     "                         where gen_dt <= a.gen_dt and 									" +
+     "                               dept_code=a.dept_code and 								" +
+     "                               waste_matter_code=a.waste_matter_code					" +
+     "                       ) commit_tot,															" + 
+     "                       a.keep_amt 																" +       
+     "                  FROM v_waste_matter a  														" +
+     "                 WHERE a.dept_code='" + arg_dept_code + "' and							" +
+     "                       a.waste_matter_code='" + arg_waste_code + "'					" +
+     "              ORDER BY a.dept_code ASC,														" + 	
+     "                       a.waste_matter_code ASC,												" + 
+     "                       a.gen_dt ASC         													";
+%><%@ include file="../../../comm_function/conn_q_end.jsp"%>

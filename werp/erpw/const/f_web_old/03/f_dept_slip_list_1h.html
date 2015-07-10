@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_receipt_list_1h.html									-->
+<!-- 2. 유형(시나리오): 조회 															-->
+<!-- 3. 기 능 정 의   : 전도금 정산/청구  조회									-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_yymm 	= is_work_date.substr(0,7)
+var is_long_name = ''
+
+var is_ds_1_addr = gs_home + '/const/f_web/03/f_dept_slip_list_1q.jsp?arg_comp='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+   var ls_comp = ''
+   ls_comp = 	sel_comp.CodeValue
+   if ( ls_comp == ' ') {
+   	ls_comp = ''
+   }
+	ds_1.DataID = is_ds_1_addr + ls_comp + '&arg_date=' + is_yymm + '.01' + '&arg_dept=' + is_long_name
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+}     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	if (dept_name.value == '') {
+		is_long_name = ''
+	}
+	else {
+		is_long_name = dept_name.value
+	}
+	btnquery_onclick()
+}     
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+   ds_1.ClearData()
+
+   btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+
+//	dept_name.value = is_dept_name
+	f_select_q("select comp_code select_1, comp_name select_2 from z_code_comp order by comp_code"); //사업장구분
+ 	em_select_yymm.text = is_yymm
+	btnquery_onclick()
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+   if (em_select_yymm.Modified){ 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=sel_comp event=onSelChange()>
+	btnquery_onclick()
+</SCRIPT>
+
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT> </OBJECT>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 555px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+					<td width="10%" BGCOLOR="#53A9FF" style="COLOR: WHITE"><div align="right">사업장</div></td>
+					<td width="40%" >
+						<comment id="__NSID__"><OBJECT id=sel_comp width=100%
+				                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+				             <PARAM NAME="ComboDataID" VALUE="ds_select">
+				             <PARAM NAME="CodeCColumn" VALUE="select_1">
+				             <PARAM NAME="DataCColumn" VALUE="select_2">
+				             <param name=Auto       value=true>
+					         <param name=Enable     value=true></OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+             <td   width="10%" BGCOLOR="#53A9FF" style="COLOR: WHITE"> 
+                 <div align="right">현장명</div></td>
+             <td width="40%" >
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+						<input id=dept_name_button type="button" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+        </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111; LEFT: 570px; WIDTH: 160px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">기준년월</div></td>
+          	 <td width="63%" >
+			       <comment id="__NSID__"><OBJECT id=em_select_yymm style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="6">
+						    <PARAM NAME="Format" VALUE="YYYY.MM">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px">
+					</td>
+         </tr>                 
+      </table>
+</DIV> 
+    
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 30px; HEIGHT: 590px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='현장명' ID=long_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=240 </C> 
+	  <G> Name='외  주' HeadBgColor=#BBE0F4  HeadColor=BLACK>
+	  <C> Name='외주기성' ID=s1_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+     </G>
+	  <G> Name='자  재' HeadBgColor=#BBE0F4  HeadColor=BLACK>
+	  <C> Name='대금청구' ID=m1_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+	  <C> Name='출고대체' ID=m2_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+	  <C> Name='손료' ID=m3_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+     </G>
+	  <G> Name='자금청구' HeadBgColor=#BBE0F4  HeadColor=BLACK>
+	  <C> Name='예비비청구' ID=f1_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+	  <C> Name='미지급청구' ID=f2_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+	  <C> Name='예비비정산' ID=f3_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+	  <C> Name='수익금전표' ID=f4_tag Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 
+	  		EditStyle=Combo Data='1:미처리,2:결재중,3:결재완료,4:없음 '</C>
+     </G>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>

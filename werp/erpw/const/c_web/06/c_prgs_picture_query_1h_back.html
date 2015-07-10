@@ -1,0 +1,540 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_prgs_picture_dept_1h.html 	-->
+<!-- 2. 유형(시나리오): 조감도 및 현장 사진											-->
+<!-- 3. 기 능 정 의   : 현장 사진 (현장별 조회)               	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var id_date
+var is_ds_1_addr = 'c_prgs_picture_query_1q.jsp?arg_dept_code='         
+var is_dept_code = ""
+var is_dept_name = ""
+var is_url_addr = ""
+var il_pic_sel = 16
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_start_date=" + em_select_yymm.text
+ds_1.SyncLoad=true
+ds_1.Reset()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function bt_const_parent()                        //공사현황 총괄 들어가기 
+//---------------------------------------------------------------------------
+{
+ window.close();  
+}  
+
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   btnquery_onclick()
+}   
+//-------------------------------------------------------------------------------
+function click_show(arg_addr,arg_text)                  //그림을 클릭하였을경우  
+//--------------------------------------------------------------------------------
+{
+   ls_temp = arg_addr
+
+   if (ls_temp.substr(ls_temp.length - 9,5) == 'blank') 
+       return  
+
+   if (ls_temp.substr(ls_temp.length - 3,3) == 'wmv') 
+      window.open(ls_temp,'','')
+   else   
+      window.showModalDialog("c_picture_detail_1h.html",ls_temp+"@" + arg_text,"dialogWidth:900px;dialogHeight:700px");
+    
+//   window.open(ls_temp,'','')
+//   if (ls_temp.substr(ls_temp.length - 3,3) == 'wmv') {
+//      wmv_show.style.visibility="visible"
+//      document.links[0].href=ls_temp
+//      alert(document.links[0].href)
+//      window.open(ls_temp,'','')
+//   }
+//   else   
+//      wmv_show.style.visibility="hidden"
+}   
+//-------------------------------------------------------------------------------
+function function_show(arg_row)                  //그림을 여러장 보여주기  
+//--------------------------------------------------------------------------------
+{
+   if (arg_row < 1 ) return;
+   ls_temp="../../../image/icon/blank.gif"
+   
+
+ document.images.pic_16_1.src = ls_temp;  pic_16_1.style.cursor='arrow';
+ document.images.pic_16_2.src = ls_temp;  pic_16_2.style.cursor='arrow';
+ document.images.pic_16_3.src = ls_temp;  pic_16_3.style.cursor='arrow';
+ document.images.pic_16_4.src = ls_temp;  pic_16_4.style.cursor='arrow';
+ document.images.pic_16_5.src = ls_temp;  pic_16_5.style.cursor='arrow';
+ document.images.pic_16_6.src = ls_temp;  pic_16_6.style.cursor='arrow';
+ document.images.pic_16_7.src = ls_temp;  pic_16_7.style.cursor='arrow';
+ document.images.pic_16_8.src = ls_temp;  pic_16_8.style.cursor='arrow';
+ document.images.pic_16_9.src = ls_temp;  pic_16_9.style.cursor='arrow';
+ document.images.pic_16_10.src = ls_temp; pic_16_10.style.cursor='arrow';
+ document.images.pic_16_11.src = ls_temp; pic_16_11.style.cursor='arrow';
+ document.images.pic_16_12.src = ls_temp; pic_16_12.style.cursor='arrow';
+ document.images.pic_16_13.src = ls_temp; pic_16_13.style.cursor='arrow';
+ document.images.pic_16_14.src = ls_temp; pic_16_14.style.cursor='arrow';
+ document.images.pic_16_15.src = ls_temp; pic_16_15.style.cursor='arrow';
+ document.images.pic_16_16.src = ls_temp; pic_16_16.style.cursor='arrow';
+
+ tx_16_1.value=""
+ tx_16_2.value=""
+ tx_16_3.value=""
+ tx_16_4.value=""
+ tx_16_5.value=""
+ tx_16_6.value=""
+ tx_16_7.value=""
+ tx_16_8.value=""
+ tx_16_9.value=""
+ tx_16_10.value=""
+ tx_16_11.value=""
+ tx_16_12.value=""
+ tx_16_13.value=""
+ tx_16_14.value=""
+ tx_16_15.value=""
+ tx_16_16.value=""
+
+
+ document.images.pic_4_1.src = ls_temp; pic_4_1.style.cursor='arrow';
+ document.images.pic_4_2.src = ls_temp; pic_4_2.style.cursor='arrow';
+ document.images.pic_4_3.src = ls_temp; pic_4_3.style.cursor='arrow';
+ document.images.pic_4_4.src = ls_temp; pic_4_4.style.cursor='arrow';
+ tx_4_1.value=""
+ tx_4_2.value=""
+ tx_4_3.value=""
+ tx_4_4.value=""
+
+ document.images.pic_1_1.src = ls_temp;pic_1_1.style.cursor='arrow'; 
+ tx_1_1.value=""
+
+   ll_row = arg_row
+   j = 0
+
+   for (i=ll_row; i <= ds_1.CountRow; i++) {
+       j = j + 1
+
+       if (ccom_pic_sel.CodeValue == '16') {
+          if (j > 16) break;
+       }
+       
+       if (ccom_pic_sel.CodeValue == '04') {
+          if (j > 4) break;
+       }
+       
+       if (ccom_pic_sel.CodeValue == '01') {
+          if (j > 1) break;
+       }
+       
+       
+       ls_temp   = is_url_addr + ds_1.NameValue(i,"url")
+       ls_memo   = ds_1.NameValue(i,"memo")
+       switch (ccom_pic_sel.CodeValue) {
+              case "16":
+                    switch (j) {
+                        case 1: document.images.pic_16_1.src = ls_temp; tx_16_1.value=ls_memo; pic_16_1.style.cursor='hand'; break;
+                        case 2: document.images.pic_16_2.src = ls_temp; tx_16_2.value=ls_memo; pic_16_2.style.cursor='hand'; break;
+                        case 3: document.images.pic_16_3.src = ls_temp; tx_16_3.value=ls_memo; pic_16_3.style.cursor='hand'; break;
+                        case 4: document.images.pic_16_4.src = ls_temp; tx_16_4.value=ls_memo; pic_16_4.style.cursor='hand'; break;
+                        case 5: document.images.pic_16_5.src = ls_temp; tx_16_5.value=ls_memo; pic_16_5.style.cursor='hand'; break;
+                        case 6: document.images.pic_16_6.src = ls_temp; tx_16_6.value=ls_memo; pic_16_6.style.cursor='hand'; break;
+                        case 7: document.images.pic_16_7.src = ls_temp; tx_16_7.value=ls_memo; pic_16_7.style.cursor='hand'; break;
+                        case 8: document.images.pic_16_8.src = ls_temp; tx_16_8.value=ls_memo; pic_16_8.style.cursor='hand'; break;
+                        case 9: document.images.pic_16_9.src = ls_temp; tx_16_9.value=ls_memo; pic_16_9.style.cursor='hand'; break;
+                        case 10: document.images.pic_16_10.src = ls_temp; tx_16_10.value=ls_memo; pic_16_10.style.cursor='hand'; break;
+                        case 11: document.images.pic_16_11.src = ls_temp; tx_16_11.value=ls_memo; pic_16_11.style.cursor='hand'; break;
+                        case 12: document.images.pic_16_12.src = ls_temp; tx_16_12.value=ls_memo; pic_16_12.style.cursor='hand'; break;
+                        case 13: document.images.pic_16_13.src = ls_temp; tx_16_13.value=ls_memo; pic_16_13.style.cursor='hand'; break;
+                        case 14: document.images.pic_16_14.src = ls_temp; tx_16_14.value=ls_memo; pic_16_14.style.cursor='hand'; break;
+                        case 15: document.images.pic_16_15.src = ls_temp; tx_16_15.value=ls_memo; pic_16_15.style.cursor='hand'; break;
+                        case 16: document.images.pic_16_16.src = ls_temp; tx_16_16.value=ls_memo; pic_16_16.style.cursor='hand'; break;
+                     }              
+                         break;
+              case "04":
+                    switch (j) {
+                        case 1: document.images.pic_4_1.src = ls_temp; tx_4_1.value=ls_memo; pic_4_1.style.cursor='hand'; break;
+                        case 2: document.images.pic_4_2.src = ls_temp; tx_4_2.value=ls_memo; pic_4_2.style.cursor='hand'; break;
+                        case 3: document.images.pic_4_3.src = ls_temp; tx_4_3.value=ls_memo; pic_4_3.style.cursor='hand'; break;
+                        case 4: document.images.pic_4_4.src = ls_temp; tx_4_4.value=ls_memo; pic_4_4.style.cursor='hand'; break;
+                     }              
+                         break;
+              case "01":
+                    switch (j) {
+                        case 1: document.images.pic_1_1.src = ls_temp; tx_1_1.value=ls_memo; break;
+                     }              
+                         break;
+
+       }
+    }       
+}   
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+
+  ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='02'") // url + home
+
+ if (ll_cnt == 0) 
+    alert("SYSTEM 정보가 설치 되어있지 않습니다")
+    
+  is_url_addr = ds_select.NameValue(1,"select_2")
+
+
+var array = new Array();
+
+ result = readCookie("@c_prgs_picture_query_1h@")
+ if(result == "err") return;
+
+ array = result.split("@");
+ is_dept_code  = array[0];   // 부서 코드 
+ dept_name.value = array[1]       //부서 명칭
+  is_yymmdd = ""
+  is_yymmdd = array[2]    //날짜.
+
+  if (is_yymmdd == "") return
+ em_select_yymm.text = is_yymmdd.substr(0,4) + is_yymmdd.substr(5,2)
+ btnquery_onclick()
+// ccom_pic_sel.Index = 0;
+}
+</SCRIPT>
+
+<script language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+if  (kcode == 13) select_yymm()
+</script>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>   
+<script language=JavaScript for=ccom_pic_sel event=onSelChange()>
+  il_pic_sel = ccom_pic_sel.CodeValue
+  if (ccom_pic_sel.CodeValue == '16') {
+        show_12.style.visibility="visible"
+        show_4.style.visibility="hidden"
+        show_1.style.visibility="hidden"
+  }
+  if (ccom_pic_sel.CodeValue == '04') {
+        show_12.style.visibility="hidden"
+        show_4.style.visibility="visible"
+        show_1.style.visibility="hidden"
+  }
+  if (ccom_pic_sel.CodeValue == '01') {
+        show_12.style.visibility="hidden"
+        show_4.style.visibility="hidden"
+        show_1.style.visibility="visible"
+  }
+  function_show(ds_1.RowPosition)
+  
+        
+</SCRIPT>
+     	
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+   if (row < 1) return
+   function_show(row)
+</SCRIPT> 
+
+</HEAD>
+<BODY  style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1)  oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message(tr_1) : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+ <comment id="__NSID__"><Object id=ds_sysdate
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_prgs_picture_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<!--InputFile Component-->
+<comment id="__NSID__"><object id="if_1" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object></comment> <script> __ws__(__NSID__);</script>
+	
+<LABEL id=Label_1  
+    style="WIDTH: 75px; LEFT: 13px;POSITION: absolute; HEIGHT: 25px; TOP:9px">&nbsp;&nbsp;현장명:
+</LABEL>
+
+<INPUT id=dept_name
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 81px; POSITION: absolute; TOP: 5px"
+   >
+    
+<LABEL id=Label_1 
+        style="LEFT: 280px; POSITION: absolute; TOP: 11px">년월:</LABEL>
+
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+       style="Z-INDEX: 100; LEFT: 330px; WIDTH: 57px; POSITION: absolute; TOP: 9px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Text" VALUE="____-__">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="6">
+	    <PARAM NAME="Format" VALUE="0000-00">
+       <param name=ClipMode       value=false>
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	    
+	    
+<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+					if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()" 
+       style=" LEFT: 390px; WIDTH: 20px; POSITION: absolute; TOP: 6px; HEIGHT:20px">
+       
+<input type="button_query1" value=" 닫 기" tabindex=99
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 770px; POSITION: absolute; WIDTH: 40px; TOP: 7px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_const_parent()>
+	    
+<DIV id=div_pic_sel
+      style="Z-INDEX: 105; LEFT: 865px; WIDTH: 138px; POSITION: absolute; TOP: 7px; HEIGHT: 18px">
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+                         <td width="40%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                              <div align="right">사진장수</div></td>
+                        <td width="60%"> 
+					              <comment id="__NSID__"><OBJECT id=ccom_pic_sel width=80px 
+					                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					                      <param name=Index     value=0>
+					       	        <param name=Data     value="16^16 장,04^04 장,01^1 장"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+        </tr>
+      </table>
+</div>        
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 4px; WIDTH: 280px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 600px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='날 자' ID=yymmdd  Mask='XXXX-XX-XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name='메 모'  ID=memo    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=160 </C>
+	  ">
+<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=wmv_show style="FONT-SIZE:24px; Z-INDEX: 100; LEFT: 500px; WIDTH: 200px; POSITION: absolute; TOP: 250px; HEIGHT: 20px ;VISIBILITY: hidden;">
+	
+<A  HREF='erpw/install/ADE_setup.exe' >동영상자료 보기</A><BR>  
+</DIV>
+
+
+<DIV id=show_12 style="FONT-SIZE:12px; Z-INDEX: 130; LEFT: 285px; WIDTH: 720px; POSITION: absolute; TOP: 30px; HEIGHT: 620px ">
+       <table cellspacing="10" width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_1" onclick=click_show(document.images.pic_16_1.src,tx_16_1.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px; " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_1></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr ><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_2"  onclick=click_show(document.images.pic_16_2.src,tx_16_2.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_2 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_3"  onclick=click_show(document.images.pic_16_3.src,tx_16_3.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_3 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_4"  onclick=click_show(document.images.pic_16_4.src,tx_16_4.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_4 ></td></tr></table></TD> 
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_5"  onclick=click_show(document.images.pic_16_5.src,tx_16_5.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_5 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_6"  onclick=click_show(document.images.pic_16_6.src,tx_16_6.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_6 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_7"  onclick=click_show(document.images.pic_16_7.src,tx_16_7.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_7 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_8"  onclick=click_show(document.images.pic_16_8.src,tx_16_8.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_8 ></td></tr></table></TD> 
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_9" onclick=click_show(document.images.pic_16_9.src,tx_16_9.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_9 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_10" onclick=click_show(document.images.pic_16_10.src,tx_16_10.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_10></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_11" onclick=click_show(document.images.pic_16_11.src,tx_16_11.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_11></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_12" onclick=click_show(document.images.pic_16_12.src,tx_16_12.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_12></td></tr></table></TD> 
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_13" onclick=click_show(document.images.pic_16_13.src,tx_16_13.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_13 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_14" onclick=click_show(document.images.pic_16_14.src,tx_16_14.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_14></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_15" onclick=click_show(document.images.pic_16_15.src,tx_16_15.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_15></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_16_16" onclick=click_show(document.images.pic_16_16.src,tx_16_16.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 150px; HEIGHT: 98px;   " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_16_16></td></tr></table></TD> 
+         </tr>                 
+      </table>
+</DIV>
+
+
+<DIV id=show_4 style="FONT-SIZE:12px; Z-INDEX: 130; LEFT: 285px; WIDTH: 720px; POSITION: absolute; TOP: 30px; HEIGHT: 620px ;VISIBILITY: hidden;">
+       <table cellspacing="10" width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_4_1" onclick=click_show(document.images.pic_4_1.src,tx_4_1.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 250px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_1 size=45 ></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr ><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_4_2" onclick=click_show(document.images.pic_4_2.src,tx_4_2.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 250px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_2 size=45></td></tr></table></TD> 
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_4_3" onclick=click_show(document.images.pic_4_3.src,tx_4_3.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 250px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_3 size=45></td></tr></table></TD> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_4_4" onclick=click_show(document.images.pic_4_4.src,tx_4_4.value) 
+				            style="LEFT:1px; TOP:1px;  WIDTH: 330px; HEIGHT: 250px;  " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_4_4 size=45></td></tr></table></TD> 
+         </tr>                 
+      </table>
+</DIV>
+
+<DIV id=show_1 style="FONT-SIZE:12px; Z-INDEX: 130; LEFT: 285px; WIDTH: 720px; POSITION: absolute; TOP: 30px; HEIGHT: 620px ;VISIBILITY: hidden;">
+       <table cellspacing="10" width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+             <td> 
+                <table width="100%" height="100%" ><tr><td>
+				          <IMG SRC="../../../image/icon/blank.gif" NAME="pic_1_1" onclick=click_show(document.images.pic_1_1.src,tx_1_1.value)
+				            style="LEFT:1px; TOP:1px;  WIDTH: 680px; HEIGHT: 550px; cursor: hand; " ></td></tr>
+                   <tr height="4%"><td>
+				          <INPUT id=tx_1_1 size=95></td></tr></table></TD> 
+         </tr>                 
+      </table>
+</DIV>
+
+
+
+
+
+</BODY></HTML>
+
+
+
+
+
+
+

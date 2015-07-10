@@ -1,0 +1,62 @@
+표준내역코드로 작성된 자료를 올리기 
+
+1. EXCEL 자료
+2. EXCEL LAYOUT
+   1. 순번/ 대분류(건/토/기/전)/대분류명/중분류/중분료명/소분류/소분류명/표준내역코드/표준내역명칭/규격/단위
+   2. 텝으로분리되는 TXT로 저장할것. 
+3. Y_TEMP_STAND 에 파워빌더로 IMPORT
+3. 코드 dup 체크
+   select *
+  from y_temp_stand aa
+  where (select count(g_4)
+          from y_temp_stand bb
+         where bb.g_4 = aa.g_4) > 1 ;   
+4. NAME KEY 조합    
+   update Y_TEMP_STAND set  KEY_NAME = 
+        REPLACE(TRIM(G_1) || TRIM(G_4_NAME) || TRIM(G_4_SSIZE) || TRIM(G_4_UNIT),' ','');
+        COMMIT;
+5. Y_STAND_PARENT에 올리기전에 LENGTH를 체크한다.
+     SELECT * from  y_temp_stand
+       where lengthb(g_1_name) > 50
+          or lengthb(g_2_name) > 50
+          or lengthb(g_3_name) > 50
+          or lengthb(g_4_name) > 50 
+          or lengthb(g_4_ssize) > 40 
+          or lengthb(g_4_unit) > 10;
+
+        
+5. y_stand_parent에 넣기
+  5-1) 대분류
+   insert into y_stand_parent 
+      select g_1,100,1,g_1_name,'','',''
+         from y_temp_stand
+        group by g_1,g_1_name;
+   commit;  
+  5-2) 중분류        
+   insert into y_stand_parent 
+      select  g_2 ,1000,2,g_2_name,'','',''
+         from y_temp_stand
+        group by  g_2,g_2_name;
+   commit;        
+  5-2) 소분류        
+   insert into y_stand_parent 
+      select  g_3 ,10000,3,g_3_name,'','',''
+         from y_temp_stand
+        group by  g_3,g_3_name;
+   commit;        
+   
+  5-3) 파워빌더에서 y_stand_parent를 조회한후
+       high_detail_code로 sort 한다음
+       순번을 수정한다.
+       
+6. y_stand_detail에 넣기 
+  insert into y_stand_detail
+      select g_3, g_4,'U','',g_4_name,g_4_ssize,g_4_unit,
+             0,0,0,0,0,key_name,'','',''
+        from y_temp_stand;
+      commit;        
+              
+7. 다른 파트
+   DELETE FROM Y_TEMP_stand ;
+   COMMIT;    
+   

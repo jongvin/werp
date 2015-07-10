@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_code_labor_find_1h.html 								-->
+<!-- 2. 유형(시나리오): 출역자 찾기													-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   : 김동우 작성													-->
+<!--                    이준구 수정  ( 2006.03.07)                      -->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<TITLE> 근로자 찾기 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'l_code_labor_find_1q.jsp?arg_dept_code='
+var is_confirm_check = 'no'
+var is_dept_code = ""
+var is_work_date = ""
+var is_section = ""
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID =  is_ds_1_addr + is_dept_code + '&arg_date=' + is_work_date + 
+                 '&arg_name=' + Textbox_1.value + '&arg_section=' + is_section
+                 
+//  alert(ds_1.dataid);
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'civil_register_number') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'labor_name') + '@'   +
+              ds_1.NameValue(ds_1.RowPosition,'job_name') + '@'     +
+              ds_1.NameValue(ds_1.RowPosition,'unitcost') + '@'     +
+              ds_1.NameValue(ds_1.RowPosition,'spec_no_seq') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'spec_unq_num') + '@' +
+              ds_1.NameValue(ds_1.RowPosition,'name') + '@' +
+              ds_1.NameValue(ds_1.RowPosition,'safety_man') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'spec_name') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'entrance_date') + '@'               
+              
+          
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	 
+	if (result == "") return 
+	
+	array = result.split("@");
+	is_dept_code = array[0]
+	is_work_date = array[1]
+	is_section = array[2]	
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>  
+
+<BODY style="FONT-SIZE: 12px" onload=window_onload()  onunload=window_onunload() oncontextmenu="return false" >
+<div class= main_div>
+	<table width="100%" height="100%" cellpadding=0  cellspacing=0>
+		<tr>
+			<td>
+				<table width="100%" height="100%" cellpadding=0  cellspacing=0>
+					<tr>
+		            <td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+					   <td class=font_green_bold>성명</td>
+						<td>
+							<INPUT id=Textbox_1 
+						    style="Z-INDEX: 100; FONT-SIZE: 12px;"
+						    onkeyDown="keyDown()">
+						</td>
+						<td align="right">
+							<INPUT id=Button_query class="img_btn2_1" 
+							    onclick=btnquery_onclick() type=button value='조회'>      
+							<INPUT id=Button_confrim class="img_btn2_1" 
+							    onclick=Button_confirm_onclick() type=button value='확인'>     
+							<INPUT id=Button_close class="img_btn2_1" 
+							    onclick=Button_close_onclick() type=button value='닫 기'>   
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td height="5"></td>
+		</tr>
+		<tr height="100%" >
+			<td>	
+				<comment id="__NSID__"><OBJECT id=gd_1 
+				    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 100% ;  HEIGHT: 100%" 
+				    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					<PARAM NAME="AutoInsert" VALUE="0">
+					<PARAM NAME="AllShowEdit" VALUE="0">
+					 <param name="MultiRowSelect"   value="0">
+				   <PARAM NAME="BorderStyle"  VALUE=1>
+					<PARAM NAME="Editable" VALUE="0">
+					<PARAM NAME="ColSizing" VALUE="-1">
+				   <Param Name="SortView"     value="Left">
+					<PARAM NAME="DataID" VALUE="ds_1">
+					<PARAM NAME="Format" VALUE="
+					   <C> Name='주민번호' ID=civil_register_number align=center  sort=true Mask='XXXXXX-XXXXXXX' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+					   <C> Name='성    명' ID=labor_name sort=true align=center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+					   <C> Name='직 종 명' ID=job_name sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=105 </C>
+					   <C> Name='단    가' ID=unitcost sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 </C>
+					   
+					   ">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+				<!--<LABEL id=Label_2  
+				    style="WIDTH: 400px; POSITION: absolute; HEIGHT: 30px; TOP:419px">&nbsp;&nbsp;&nbsp;&nbsp;본사 미승인 및 블랙리스트는 조회 안됨.
+				</LABEL>-->
+			</td>
+		</tr>
+	</table>
+</div>
+
+</BODY></HTML>

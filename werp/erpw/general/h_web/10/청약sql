@@ -1,0 +1,33 @@
+SELECT  a.dept_code ,
+     	         a.cust_code ,
+     	         a.spouse_rrn ,
+     	         a.spouse_name ,
+     	         a.pyong ,
+     	         a.style ,
+     	         a.classify ,
+     	         a.class ,
+     	         to_char(a.subs_date,'YYYY.MM.DD') subs_date,
+     	         a.subs_order ,
+     	         a.deposit_no ,
+     	         a.subs_amt ,
+     	         a.bank_head_code ,
+     	         d.bank_head_name ,
+     	         a.refund_deposit_no ,
+     	         a.remark ,
+               to_char(a.prize_date,'YYYY.MM.DD') prize_date,  
+     	         c.class_name,  
+     	         b.cust_name,    
+     	         b.cust_div     ,
+     	         nvl(a.preparation_order,0) preparation_order  
+          FROM h_subs_master a,
+               h_code_cust  b,  
+               h_code_class c,  
+               erpc.am_code_bank_head d  
+         WHERE ( a.bank_head_code = d.bank_head_code (+)) and  
+               ( a.dept_code = c.dept_code (+) and  
+                 a.sell_code = c.sell_code (+) and  
+                 a.class     = c.class (+) ) and 01
+               ( b.cust_code = a.cust_code ) and  
+               ( ( a.dept_code = '620001') and   
+                 ( a.sell_code = '01') )      
+            ORDER BY a.subs_no 

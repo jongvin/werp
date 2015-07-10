@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_pgrm_title_copy_1.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 그룹의 tree 구조 복사										-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_dept_code=""               //부서 코드 
+var il_chg_no_seq=0               //변경 차수의 내부 순번
+
+var is_ds_1_addr = 'y_chg_budget_parent_1q.jsp?arg_dept_code='
+var is_ds_2_addr =  'y_chg_budget_parent_1q.jsp?arg_dept_code='
+var is_confirm_check = 'no'    //복사할것인지 check no는 복사를 안하겠다.
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_1.DataID = is_ds_1_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  il_chg_no_seq
+ds_2.DataID = is_ds_2_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  il_chg_no_seq
+
+ds_1.SyncLoad=true
+ds_2.SyncLoad=true
+ds_1.reset()
+ds_2.reset()   
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=1 ; i <= ds_1.CountRow ;i++){
+        if (ds_1.RowMark(i) == 1)
+           ls_return = ls_return + ds_1.ExportData(i,1,true)
+     }          
+  }               
+    
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{  
+	 gs_home = window.dialogArguments;
+	 var result;
+	  var array = new Array();
+	 result = window.dialogArguments;
+	 if (result == "") return 
+	 array = result.split("@");
+	 is_dept_code =  array[0]         // 부서코드 
+	ls_str = "select max(chg_no_seq) select_1  from y_chg_degree  where dept_code  = '" + is_dept_code + "'" 
+	ll_cnt = f_select1_q(ls_str)
+	il_chg_no_seq = parseInt(ds_select1.NameValue(1,"select_1"),10)
+	
+	if (!(il_chg_no_seq > -1)) { 
+		alert("해당현장으로 작성된내역이없습니다.")
+		Button_close_onclick()
+		return
+	}
+
+   ll_cnt = f_ds_select_q("ds_division","select division select_1 , division_name select_2 from y_code_division order by division")
+	btnquery_onclick()
+
+    ds_1copy.DataID = is_ds_1_addr + " " + "&arg_chg_no_seq=" 
+    ds_1copy.reset()                   
+
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript event="OnColumnChanged(row, colid)" for=ds_1>
+ds_2.NameValue(row,colid) = ds_1.NameValue(row,colid)
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnDblClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+if (row < 1)  return
+ds_2.RowPosition = ds_1.RowPosition
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_division 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select1 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1copy 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<INPUT id=Button_confrim 
+    style="Z-INDEX: 106; LEFT: 580px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_confirm_onclick() type=button value='복 사'>     
+<INPUT id=Button_close 
+    style="Z-INDEX: 106; LEFT: 640px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_close_onclick() type=button value='닫 기'>    
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 2px; WIDTH: 220px; POSITION: absolute; TOP: 30px; HEIGHT: 620px"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="TextColumn" VALUE="name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="llevel">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_2>
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=gd_1 
+   style="Z-INDEX: 310; LEFT: 223; WIDTH: 780px; POSITION: absolute; TOP: 30px; HEIGHT: 620px" 
+   classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+  <PARAM NAME="AutoInsert" VALUE="0">
+  <PARAM NAME="BorderStyle"  VALUE=4>
+  <PARAM NAME="AllShowEdit" VALUE="0">
+  <param name="MultiRowSelect"   value="-1">
+  <PARAM NAME="Editable" VALUE="0">
+  <PARAM NAME="ColSizing" VALUE="-1">
+  <PARAM NAME="DataID" VALUE="ds_1">
+  <PARAM NAME="Format" VALUE="
+     <FC> Name='1' ID=tree_1 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='1','■','')} Width=11</FC>	   
+     <FC> Name='2' ID=tree_2 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='2','■','')}  Width=11</FC>	   
+     <FC> Name='3' ID=tree_3 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='3','■','')}  Width=11</FC>	   
+     <FC> Name='4' ID=tree_4 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='4','■','')}  Width=11</FC>	   
+     <FC> Name='5' ID=tree_5 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='5','■','')}  Width=11</FC>	   
+     <FC> Name='6' ID=tree_6 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='6','■','')}  Width=11</FC>	   
+     <FC> Name='7' ID=tree_7 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='7','■','')}  Width=11</FC>	   
+     <FC> Name='8' ID=tree_8 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='8','■','')}  Width=11</FC>	   
+     <FC> Name='9' ID=tree_9 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='9','■','')}  Width=11</FC>	   
+     <FC> Name='*' ID=tree_10 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='10','■','')}  Width=11</FC>	   
+     <C> Name='직/간' ID=direct_class EditStyle=Combo Data='1:직접비,2:간접비'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=60 </C>
+     <C> Name=순번 ID=no_seq BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=60 </C>
+     <C> Name=레벨 ID=llevel BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=30 </C>&#13;&#10;&#9; 
+     <C> Name='명   칭' ID=name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=220 </C>
+	  <C> Name='집계분류' ID=division EditStyle=Lookup Data='ds_division:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+     <C> Name='표준공종명' ID=wbs_name Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=220 </C>
+     ">
+  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

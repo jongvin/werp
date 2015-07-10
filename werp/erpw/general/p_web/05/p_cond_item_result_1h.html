@@ -1,0 +1,1139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : p_cond_item_result_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 조건검색 등록및 조회      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_cond_item_result_parent = gs_home + '/general/p_web/05/p_cond_item_result_parent_1q.jsp?arg_no_seq='         
+var is_tr_cond_item_result_parent = gs_home + '/general/p_web/05/p_cond_item_result_parent_1tr.jsp'
+
+var is_ds_1 = gs_home + '/general/p_web/05/p_cond_item_result_head_1q.jsp?arg_no_seq='         
+var is_tr_1 = gs_home + '/general/p_web/05/p_cond_item_result_head_1tr.jsp'         
+var is_ds_2 = gs_home + '/general/p_web/05/p_cond_item_result_content_1q.jsp?arg_no_seq='     
+var is_tr_2 = gs_home + '/general/p_web/05/p_cond_item_result_content_1tr.jsp'
+
+       
+var is_ds_4 = gs_home + '/general/p_web/05/p_cond_item_rpt_1q.jsp?arg_no='         
+var is_ds_cond_item = gs_home + "/general/p_web/05/p_cond_item_1q.jsp?arg_item_div=" 
+var is_format = " <C> Name='코드 ' ID=select_1 Width=60   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C> " + 
+            	 " <C> Name='코드명' ID=select_2    Width=140 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C> "
+var is_where=""
+var is_select=""
+var il_seq=0
+var is_outer_check='NO'
+var is_head_sort=" "
+var is_jojik = 'N'        // 조직코드를 조건으로 선택되었을경우 'Y'
+var is_jojik_select='N'   // 조직코드를 출력항목으로 선택되었을경우 'Y'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ds_2.SyncLoad=true
+ds_2.Reset()
+
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+ ds_2.AddRow()
+ init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+ if (ds_2.RowPosition == 0){     //한건도 없을경우는  0 
+   btnadd_onclick()
+   return
+ }  
+ ds_2.InsertRow(ds_2.RowPosition)
+ init_move()
+}
+//------------------------------------------------------------------------
+function init_move()                    // 추가/삽입 공통 로직.
+//------------------------------------------------------------------------
+{
+ ds_2.NameValue(ds_2.RowPosition,'item_compute') = "="
+ if (ds_2.RowPosition == 1)
+    ds_2.NameValue(ds_2.RowPosition,'item_logic') = "and"
+ if (ds_2.RowPosition > 1) 
+     if (ds_2.NameValue(ds_2.RowPosition - 1,'item_logic') == "")
+         ds_2.NameValue(ds_2.RowPosition - 1,'item_logic') = "and"
+     
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  if  (gd_2.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_2.CountRow ;i >0 ;i--)
+     {
+        if (ds_2.RowMark(i) == 1)
+               ds_2.DeleteRow(i)
+    }   
+    ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)  //삭제작업완료후 MARK
+   }
+  else
+     ds_2.DeleteRow(ds_2.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+ condition_create()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_cond_item.Undo(ds_cond_item.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_cond_item.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------------------
+function code_query(ls_item_code,ls_display)                 // 코드파일 조회. 
+//-----------------------------------------------------------------------------
+{ var ll_row,is_dataset,ls_item_code,ll_cnt,ls_dataset,ls_temp_data
+  ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)
+  ls_item_code = ds_cond_item.NameValue(ll_row,'item_code')
+  ls_dataset = "ds_code_" + ls_item_code
+  if (ls_display == 'YES') {
+     gd_3.DataID=""
+     gd_3.Format=""
+     gd_3.Format=is_format
+  }   
+  if (ds_cond_item.NameValue(ll_row,'code_table_name') == '') {        //코드테이블이 없을경우처리
+     eval("ll_cnt = " + ls_dataset + ".CountRow")
+     if (ll_cnt == 0) {
+        if (ds_cond_item.NameValue(ll_row,'item_type') != '4') {          // 리스트 타입이 아니면
+            if (ls_display == 'YES') {
+               gd_3.DataID ="ds_temp"
+               ds_temp.ClearData()
+            }   
+            return
+        }    
+        if (ls_display == 'YES') {
+              gd_3.DataID =ls_dataset        
+        }           
+        ll_cnt = f_ds_select_q(ls_dataset,"select listitem_code select_1, listitem_name select_2 " + 
+                                      "  from p_cond_item_list where item_code = '" + ls_item_code + "' ")
+    }
+    else 
+        if (ls_display == 'YES') {
+           gd_3.ReDraw=false
+           gd_3.DataID = 'ds_temp'
+           ds_temp.ClearData()
+           eval("ls_temp_data = " + ls_dataset + ".ExportData(1,9999,true)")
+           ds_temp.ImportData(ls_temp_data)
+           ds_temp.ResetStatus()
+           gd_3.ReDraw=true
+        }    
+  }   
+  else {
+    eval("ll_cnt = " + ls_dataset + ".CountRow")
+    if (ll_cnt == 0) {
+        if (ls_display == 'YES') {
+           gd_3.DataID =ls_dataset 
+        }   
+        ll_cnt = f_ds_select_q(ls_dataset,"select  " + ds_cond_item.NameValue(ll_row,"code_name") + "  select_1, " + 
+                                       ds_cond_item.NameValue(ll_row,"attr_name") + " select_2 " + 
+                                       " from " + ds_cond_item.NameValue(ll_row,"code_table_name") + 
+                                       " order by " +  ds_cond_item.NameValue(ll_row,"code_name") )
+    }
+    else   
+        if (ls_display == 'YES') {
+           gd_3.ReDraw=false
+           gd_3.DataID = 'ds_temp'
+           ds_temp.ClearData()
+           eval("ls_temp_data = " + ls_dataset + ".ExportData(1,9999,true)")
+           ds_temp.ImportData(ls_temp_data)
+           ds_temp.ResetStatus()
+           gd_3.ReDraw=true
+        }    
+   }     
+}
+//---------------------------------------------------------------------------
+function ds_1_conv()                       // 조건항목 체크 만들기
+//---------------------------------------------------------------------------
+{
+  var i,j,k,l
+  i = ds_cond_item.CountRow      //전체 항목수 
+  j = i % 8   //나머지  
+  k = i / 8
+  k = parseInt(k,10)
+  if (j !=0)  // 나머지가 0이아니면 +1함 
+    k++
+  l=0
+  gd_1.ReDraw=false
+  for (i=1;i<=k;i++) {
+     ds_1.AddRow()
+     for (j=1;j<=8;j++) {    
+        l++
+        if (l > ds_cond_item.CountRow) break
+        ds_1.NameValue(ds_1.RowPosition,'item_code_' + j) = ds_cond_item.NameValue(l,'item_code')
+        ds_1.NameValue(ds_1.RowPosition,'item_check_' + j) = 'F'
+        ds_1.NameValue(ds_1.RowPosition,'item_name_' + j) = ds_cond_item.NameValue(l,'item_name')
+     }
+  }      
+  ds_1.ResetStatus()
+  gd_1.ReDraw=true
+  ds_1.RowPosition = 1
+} 
+//---------------------------------------------------------------------------
+function gd_4_exe()                      // 실행 
+//---------------------------------------------------------------------------
+{  var ret,i,ls_format
+   is_jojik='N'    //조직코드를 조건으로 선택하지 않았다는 sw
+   is_jojik_select='N'  //조직코드를 출력항목으로 선택하지않았다는 sw
+   ds_4.ClearData()
+   ret=where_statement_check()     // where 문장 추출
+
+   if (ret == false)
+      return
+
+   select_where_check()            // where문장에 있는 item은 자동으로 항목을 선택한것으로 간주 
+   select_statement_check()        // select 문장 추출
+   order_by_statement_check()      // sort 문장 추출
+   if (il_seq <= 1) {
+      alert("항목을 최소 2건이상 선택을 하십시요")
+      return
+   }   
+
+   // gd_4의 format 문장 추출   
+   ls_format=""
+   for (i=0;i<gd_4_form.length;i++) {
+      ls_format = ls_format + gd_4_form[i] + "\n "
+   }   
+   // outer join시 or 문장이 where에 들어가면 에러가 남으로 좌 우괄로를 반드시 입력하여야하는 체크 로직 
+   var ls_data_check
+   ls_data_check=""
+   if (is_outer_check == 'YES') {
+      for (i=1;i<ds_2.CountRow;i++) {
+          if (ds_2.NameValue(i,'item_logic') == 'or')
+             ls_data_check = "1"
+          if (ds_2.NameValue(i,'left_1') == "(" || ds_2.NameValue(i,'left_2') == "(")   {
+             ls_data_check = ""
+             break;
+          }   
+       }
+   }
+   if (ls_data_check == "1") {
+      alert("반드시 좌괄호 우괄호를 입력하셔야 합니다")         
+      return
+   }
+   //  조직코드항목을 조건으로 선택하였다면 반드시 출력항목으로도 선택되어야 함.    
+   if (is_jojik == 'Y')   {  //조직코드를 조건으로 선택 하였다면 반드시 출력항목으로 조직코드를 선택하여야 한다.
+      if (is_jojik_select == 'Y') {} // 출력항목이 선택되었음
+      else {
+         alert('조직코드를 출력항목으로 선택하십시요')
+         return
+      }
+   }  
+	
+	if (il_seq > 35){
+		alert('항목을 35개 이하로 선택하셔야 합니다!')
+		return
+	}
+	
+   gd_4.Format = ls_format
+   is_select = is_select.replace(/%/g,"@")
+   ls_data = is_ds_4 + il_seq + "&arg_sql=" + is_select
+   ds_4.DataID=ls_data
+
+   ds_4.SyncLoad=true
+   ds_4.Reset()
+
+}
+//---------------------------------------------------------------------------
+function where_statement_check()                      // where 문장 추출
+//---------------------------------------------------------------------------
+{
+  var i,ll_left_1,ll_left_2,ll_right_1,ll_right_2,ls_item_code
+  var ll_row
+  ll_left_1=ll_left_2=ll_right_1=ll_right_2=0
+  ds_2.NameValue(ds_2.CountRow,'item_logic') = ""       // ds_2의 마지막문장의 and / or 는 자동으로 지움 
+  is_where = ""
+  for (i=1;i<=ds_2.CountRow;i++) {
+      if (ds_2.NameValue(i,'left_1') == '(')  ll_left_1++         // 좌우 괄호 갯수 체크 
+      if (ds_2.NameValue(i,'left_2') == '(')  ll_left_2++
+      if (ds_2.NameValue(i,'right_1') == ')')  ll_right_1++
+      if (ds_2.NameValue(i,'right_2') == ')')  ll_right_2++
+      
+      if (ds_2.NameValue(i,'left_1') != "") 
+         if (ds_2.NameValue(i,'left_1') != "(") {
+            alert_error("좌대괄호값이 틀립니다",i,"left_1")
+            return false
+         }         
+      if (ds_2.NameValue(i,'left_2') != "") 
+         if (ds_2.NameValue(i,'left_2') != "(") {
+            alert_error("좌괄호값이 틀립니다",i,"left_2")
+            return false
+         }         
+      if (ds_2.NameValue(i,'right_1') != "") 
+         if (ds_2.NameValue(i,'right_1') != ")") {
+            alert_error("우대괄호값이 틀립니다",i,"right_1")
+            return false
+         }         
+      
+      if (ds_2.NameValue(i,'right_2') != "") 
+         if (ds_2.NameValue(i,'right_2') != ")") {
+            alert_error("우괄호값이 틀립니다",i,"right_2")
+            return false
+         }         
+      
+      ls_item_code = ds_2.NameValue(i,'item_name')         // drop down이기때문에 item_name속에는 코드가 들어있슴
+      if (ls_item_code == "") {
+         alert_error("검색항목을 선택하십시요",i,"item_name")
+         return false
+      }   
+      if (ds_2.NameValue(i,'item_cond') == "") {
+         alert_error("데이타값란에 값이 없습니다",i,"item_cond")
+         return false
+      }   
+      if (i != ds_2.CountRow) {
+         if (ds_2.NameValue(i,'item_logic') == "") {
+            alert_error("논리연산자란에 값이 없습니다",i,"item_logic")
+            return false
+         }
+      }      
+      
+      ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)    // ls_item_code로 조건항목이 있는 테이블의 row를 구함
+      is_where = is_where + ds_2.NameValue(i,"left_1")
+      is_where = is_where + ds_2.NameValue(i,"left_2")
+      if (ds_cond_item.NameValue(ll_row,'table_name') == 'view_dept_code')
+          is_jojik = 'Y'       //조직도코드를 조건으로 선택하였다.(이때는 반드시 출력항목에 조직도가 선택되어져야한다.
+
+      is_where = " " + is_where  + ds_cond_item.NameValue(ll_row,'table_name') + '.' + ds_cond_item.NameValue(ll_row,'col_name')  
+      is_where = " " + is_where + " " + ds_2.NameValue(i,'item_compute')  + " " 
+      if (ds_cond_item.NameValue(ll_row,'item_type') == '2')    //숫자 
+         is_where = " " + is_where  + ds_2.NameValue(i,'item_cond') 
+      else {
+         if (ds_cond_item.NameValue(ll_row,'code_table_name') != "" || 
+             ds_cond_item.NameValue(ll_row,'item_type') == '4')   //코드테이블이 존재하거나 타입이 리스트일경우.
+            is_where = " " + is_where +  "'" + ds_2.NameValue(i,'item_cond_code')  + "'"
+         else      
+            is_where = " " + is_where +  "'" + ds_2.NameValue(i,'item_cond')  + "'"
+      }      
+      is_where = " " + is_where + ds_2.NameValue(i,"right_2")
+      is_where = is_where + ds_2.NameValue(i,"right_1") + " "
+      if (ds_2.NameValue(i,'item_logic') != "")
+         is_where =  is_where + ds_2.NameValue(i,'item_logic') + " "
+      is_where = is_where + "\n"
+  }       
+  if (ll_left_1 != ll_right_1) {
+     alert("좌대괄호숫자(" + ll_left_1 +")와 우대괄호수자(" + ll_right_1 + ")가 동일해야합니다")
+     return false
+  }   
+  if (ll_left_2 != ll_right_2) {
+     alert("좌괄호숫자(" + ll_left_2 +")와 우괄호수자(" + ll_right_2 + ")가 동일해야합니다")
+     return false
+  }   
+  return true
+
+}
+//---------------------------------------------------------------------------
+function select_where_check()            // where문장에 있는 item은 자동으로 항목을 선택한것으로 간주 
+//---------------------------------------------------------------------------
+{ 
+ var i,j,k
+ for (i=1;i<=ds_2.CountRow;i++) {          // 조건을 등록 
+    for (j=1;j<=ds_1.CountRow; j++) {      // 선택항목의 세로줄 
+       for (k=1;k<=8;k++) {                // 선택항목1줄당 옆으로 8개 
+           if (ds_1.NameValue(j,'item_code_' + k) == ds_2.NameValue(i,'item_name')) 
+               ds_1.NameValue(j,'item_check_' + k) = 'T'
+       }        
+    }
+ }
+}
+//---------------------------------------------------------------------------
+function select_statement_check()                      // select statement문장 
+//---------------------------------------------------------------------------
+{ 
+  var i,j,ls_item_code,ll_row,ll_match,ls_col_name
+  gd_4_form = new Array();
+  is_from = new Array()
+  is_select="select "
+  il_seq = 0
+  is_outer_check='NO'
+
+  for (i=1;i<=ds_1.CountRow;i++) {           // 1 row당 8개 컬럼이므로 내부에서 8번 루핑.
+     for(j=1;j<=8;j++) {
+        ls_item_code = ds_1.NameValue(i,'item_code_' + j)
+        if(ls_item_code == "") break
+        if (ds_1.NameValue(i,'item_check_' + j) == 'T') {}   // 선택한것인지 체크 
+        else continue
+        code_query(ls_item_code,'NO')       // 코드성일경우에 dataset에 코드를 읽어놓음 
+        
+        ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)  // ls_item_code로 조건항목이 있는 테이블의 row를 구함
+
+        if (ds_cond_item.NameValue(ll_row,'table_name') == 'view_dept_code') {  //조직코드항목을 선택하였다.
+           is_jojik_select='Y'
+        }
+        ll_match=0
+        for (k=0;k<is_from.length;k++) {              // from절의 테이블 존재 여부 체크
+           if (is_from[k] == ds_cond_item.NameValue(ll_row,'table_name')) {
+              ll_match=1
+              break
+           }
+        }
+
+        if (ll_match == 0) {
+           is_from[is_from.length] =  ds_cond_item.NameValue(ll_row,'table_name')   
+        }
+
+        il_seq++         // 선택한 컬럼의 총갯수 및 순서 정보  
+        if (ds_cond_item.NameValue(ll_row,'item_type') == '3') {
+           is_select = is_select + "to_char(" +  ds_cond_item.NameValue(ll_row,'table_name') + "."
+           ls_col_name = ds_cond_item.NameValue(ll_row,'col_name') + ",'yyyy.mm.dd') " + " select_" + il_seq             //ls_item_code
+        }
+        else {
+           is_select = is_select +  ds_cond_item.NameValue(ll_row,'table_name') + "."
+           ls_col_name = ds_cond_item.NameValue(ll_row,'col_name') + " select_" + il_seq             //ls_item_code
+        }   
+        is_select = is_select + ls_col_name + ","
+        gd_4_form[il_seq-1] = "<C> Name='" + ds_cond_item.NameValue(ll_row,'item_name') + "' "
+           
+        gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "ID=" + "select_" + il_seq + " " 
+        gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "Width=" +   ds_cond_item.NameValue(ll_row,'width') + " " 
+        if ((il_seq - 1) == 0) 
+            gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "Sumtext='총건수'" + " "
+        if ((il_seq - 1) == 1) 
+            gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "Sumtext=@count" + " "
+          
+        if (ds_cond_item.NameValue(ll_row,'code_table_name')  != "" ||
+            ds_cond_item.NameValue(ll_row,'item_type') == '4') {
+            gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "EditStyle=Lookup Data='ds_code_" + ls_item_code + ":select_1:select_2'" + " " 
+        }    
+        gd_4_form[il_seq-1] =gd_4_form[il_seq-1] + "BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND  </C> "
+    }    
+ }   
+    //----------------------from 문장 추출 ------------------------
+ is_select = is_select.substr(0,is_select.length -1) + "\n"
+ is_select = is_select + " from " + "\n"
+ for (i=0;i<is_from.length;i++) {
+    is_select = is_select + is_from[i] + "," 
+    if (is_from[i] == 'p_pers_master') continue
+    is_outer_check='YES'             // outer join
+    if (is_from[i] == 'view_dept_code') {           //조직도 코드 
+       is_where = "p_pers_master.dept_code = " + is_from[i] + ".dept_code (!) and " + is_where 
+    }   
+    else
+       is_where = "p_pers_master.resident_no = " + is_from[i] + ".resident_no (!) and " + is_where 
+ }
+ if (ds_2.CountRow == 0) {   //조건을 한건도 선택하지않았을경우에는 where 와 and을 제외 
+       if (is_from.length == 1) {
+          is_where = is_where.substr(0,is_where.length -3)   // and 제외
+       }
+       else {
+          is_where = " where " + is_where
+          is_where = is_where.substr(0,is_where.length -4)   // and 제외
+       }      
+ }   
+ else
+  is_where = " where " + is_where   
+
+ is_select = is_select.substr(0,is_select.length -1) + "\n"   //마지막 ","을 없앰
+ is_select = is_select + is_where     
+}
+//---------------------------------------------------------------------------
+function order_by_statement_check()   //소트  문장 
+//---------------------------------------------------------------------------
+{
+  var ls_sort,ls_item_code,ll_row
+  ls_sort = ""
+  ls_item_code = ccom_sort_1.CodeValue
+  if (chk_basic.checked) {              // 기본소트가 되어있는경우
+//     ls_sort = ' p_pers_master.comp_code,'
+//     if (is_jojik == 'Y')
+//        ls_sort = ls_sort + 'view_dept_code.level_code,'
+     ls_sort = ''
+     ls_sort = ls_sort + 'p_pers_master.work_dept_code,p_pers_master.dept_code,p_pers_master.grade_code' 
+  }
+  if (ls_item_code == "") {
+     is_select  = is_select + ' ORDER BY ' + ls_sort
+   return       
+  }
+  ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)
+  if (chk_basic.checked) 
+     ls_sort = ls_sort + ',' + ds_cond_item.NameValue(ll_row,'table_name') + "."
+  else     
+     ls_sort =  ds_cond_item.NameValue(ll_row,'table_name') + "."
+     
+  ls_sort = ls_sort + ds_cond_item.NameValue(ll_row,'col_name')
+
+  ls_item_code = ccom_sort_2.CodeValue
+  if (ls_item_code == "") {
+     is_select  = is_select + ' ORDER BY ' + ls_sort
+     return
+  }
+  
+  ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)
+  ls_sort = ls_sort + "," + ds_cond_item.NameValue(ll_row,'table_name') + "."
+  ls_sort = ls_sort + ds_cond_item.NameValue(ll_row,'col_name')
+  
+  ls_item_code = ccom_sort_3.CodeValue
+  if (ls_item_code == "") {
+     is_select  = is_select + ' ORDER BY ' + ls_sort
+     return
+  }
+  
+  ll_row = ds_cond_item.NameValueRow('item_code',ls_item_code)
+  ls_sort = ls_sort + "," + ds_cond_item.NameValue(ll_row,'table_name') + "."
+  ls_sort = ls_sort + ds_cond_item.NameValue(ll_row,'col_name')
+  is_select  = is_select + ' ORDER BY ' + ls_sort
+  ds_4.SortExpr = ""
+}
+
+//---------------------------------------------------------------------------
+function alert_error(ls_message,ll_row,ls_colname)   //에러 메세지
+//---------------------------------------------------------------------------
+{
+  alert(ls_message)
+  ds_2.RowPosition = ll_row
+  gd_2.Focus()
+  gd_2.SetColumn(ls_colname)
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+var temp_1
+ temp_1 = "조건"
+   gd_4.RunExcelSheet(temp_1)
+   
+}
+//---------------------------------------------------------------------------
+function condition_create()                      // 조건목록 등록 
+//---------------------------------------------------------------------------
+{
+   var ls_title=''
+   ls_title =prompt("조건저장을위한 제목을 입력하십시요",ls_title)
+
+   if (ls_title == null)	//취소
+      return
+   ds_cond_item_result_parent.DataID = is_ds_cond_item_result_parent + '99999999'
+   ds_cond_item_result_parent.SyncLoad = true
+   ds_cond_item_result_parent.Reset()
+   ds_cond_item_result_parent.AddRow()
+   
+   ll_cnt = f_ds_select_q('ds_max','select max(no_seq) select_1 from p_cond_item_result_parent')
+   if (ds_max.NameValue(1,'select_1') == '')
+      ll_cnt = 0
+   else {
+      ll_cnt = ds_max.NameValue(1,'select_1')
+      ll_cnt = parseInt(ll_cnt,10)
+   }
+   ll_cnt = ll_cnt + 1     
+   ds_cond_item_result_parent.NameValue(ds_cond_item_result_parent.RowPosition,'no_seq') = ll_cnt
+   ds_cond_item_result_parent.NameValue(ds_cond_item_result_parent.RowPosition,'name') = ls_title
+   
+   tr_cond_item_result_parent.Action = is_tr_cond_item_result_parent
+   tr_cond_item_result_parent.Post()
+   
+   var i
+   ds_1.ResetStatus()
+   for (i=1;i<=ds_1.CountRow;i++) {                     //선택된 컬럼을 저장 
+      ds_1.NameValue(i,'no_seq') = ll_cnt
+      ds_1.NameValue(i,'seq') = i
+      ds_1.UserStatus(i) = 1
+   }
+   tr_1.Action = is_tr_1
+   tr_1.Post()   
+   
+   ds_2.ResetStatus()
+   for (i=1;i<=ds_2.CountRow;i++) {                     //입력된조건을 저장 
+      ds_2.NameValue(i,'no_seq') = ll_cnt
+      ds_2.NameValue(i,'seq') = i
+      ds_2.UserStatus(i) = 1
+   }
+   tr_2.Action = is_tr_2
+   tr_2.Post()   
+}
+//---------------------------------------------------------------------------
+function condition_retrieve()                      // 등록된 조건 목록 조회
+//---------------------------------------------------------------------------
+{
+ var ls_result
+ ls_result = window.showModalDialog("p_cond_item_result_find_1h.html",
+												gs_home,"dialogWidth:385px;dialogHeight:565px");
+ if (ls_result == '') return 
+  ds_1.DataID = is_ds_1  + ls_result
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+												
+  ds_2.DataID = is_ds_2 + ls_result       //조건항목입력창  
+  ds_2.SyncLoad=true
+  ds_2.Reset()
+  
+  gd_4_exe()    //조건 실행
+
+}
+//-------------------------------------------------------------------------------
+function all_ok()                  		//전체선택
+//--------------------------------------------------------------------------------
+{
+	var i
+	
+	for (i=1;i<=ds_1.CountRow;i++) {
+		 ds_1.NameValue(i, "item_check_" + i) = 'T' 
+   }   
+}
+//-------------------------------------------------------------------------------
+function all_cancel()                  //전체취소
+//--------------------------------------------------------------------------------
+{
+	var i
+	
+	for (i=1;i<=ds_1.CountRow;i++) {
+		 ds_1.NameValue(i, "item_check_" + i) = 'F' 
+   }   
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+
+  ds_cond_item.DataID=is_ds_cond_item + "  item_div = '1' or item_div = '2' or item_div='3' "               //조건항목 전체 읽기 
+  ds_cond_item.SyncLoad=true
+  ds_cond_item.Reset()
+
+  
+  ds_1.DataID = is_ds_1 + "0"       //조건항목을 옆으로 벌리기 
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+  
+  ds_cond_item_cond.DataID=is_ds_cond_item + "  item_div = '1' or item_div = '2'  "   //조건항목만 읽기 
+  ds_cond_item_cond.SyncLoad=true
+  ds_cond_item_cond.Reset()
+   
+  ds_1_conv()  
+  
+  var ls_temp_data                     // sort와 suppress item
+  ls_temp_data = ds_cond_item.ExportData(1,9999,true)
+
+  ds_sort_1.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_sort_1.ImportData(ls_temp_data)
+  ds_sort_1.InsertRow(1)
+  ds_sort_1.ResetStatus()
+
+  ds_sort_2.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_sort_2.ImportData(ls_temp_data)
+  ds_sort_2.InsertRow(1)
+  ds_sort_2.ResetStatus()
+  
+  ds_sort_3.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_sort_3.ImportData(ls_temp_data)
+  ds_sort_3.InsertRow(1)
+  ds_sort_3.ResetStatus()
+  
+  ds_suppress_1.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_suppress_1.ImportData(ls_temp_data)
+  ds_suppress_1.InsertRow(1)
+  ds_suppress_1.ResetStatus()
+
+  ds_suppress_2.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_suppress_2.ImportData(ls_temp_data)
+  ds_suppress_2.InsertRow(1)
+  ds_suppress_2.ResetStatus()
+  
+  ds_suppress_3.SetDataHeader("item_code:STRING(2),item_name:STRING(60)")
+  ds_suppress_3.ImportData(ls_temp_data)
+  ds_suppress_3.InsertRow(1)
+  ds_suppress_3.ResetStatus()
+
+  
+  
+  ds_2.DataID = is_ds_2  + "0"       //조건항목입력창  
+  ds_2.SyncLoad=true
+  ds_2.Reset()
+  ds_2.ResetStatus()
+  
+  f_ds_select_q("ds_temp","select ' ' select_1, ' ' select_2 from dual")  //코드조회화면을 clear하기 위해서 
+  ds_temp.DeleteRow(1) 
+  
+}
+</SCRIPT>
+<script language=JavaScript for=gd_4 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_head_sort == "+" + colid)
+   	  ds_4.SortExpr = "-" + colid;
+  	   else
+   	  ds_4.SortExpr = "+" + colid;
+   	  
+  	  is_head_sort = ds_4.SortExpr;
+  	  ds_4.Sort();
+  }   
+</script>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_cond_item.RowPosition == ds_cond_item.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_cond_item.RowPosition++
+}
+</script>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  var ls_item_code
+   if (ds_1.NameValue(row,'item_name_' + colid.substr(colid.length -1 ,1)) == '')
+   return
+   if (ds_1.NameValue(row,'item_check_' + colid.substr(colid.length -1 ,1)) == 'T')
+      ds_1.NameValue(row,'item_check_' + colid.substr(colid.length -1 ,1)) = 'F'
+   else {
+      ds_1.NameValue(row,'item_check_' + colid.substr(colid.length -1 ,1)) = 'T'
+      ls_item_code =   ds_1.NameValue(row,'item_code_' + colid.substr(colid.length -1 ,1))
+   }   
+   ds_1.ResetStatus()   
+</script>
+<script language=JavaScript for=ds_2 event=OnColumnChanged(row,colid)>
+  var ls_item_code
+  if (colid == 'item_name') {
+     ls_item_code = ds_2.NameValue(row,'item_name')   // drop down이기때문에 item_name속에는 코드가 들어있슴
+     code_query(ls_item_code,'YES')
+  }     
+  if (colid == 'item_compute') {
+     if (ds_2.NameValue(row,colid) == 'like') {
+        ls_temp = ds_2.NameValue(row,'item_cond') 
+        ds_2.NameValue(row,'item_cond') = "%" + ls_temp + "%"
+     }
+   }        
+</script>
+<script language=JavaScript for=ds_2 event=OnRowPosChanged(row)>
+ if (row < 1) return
+ var ls_item_code
+  if (ds_2.NameValue(row,'item_name') == "" ) {
+             gd_3.DataID = "ds_temp"                  
+  }                            
+  else {
+     ls_item_code = ds_2.NameValue(row,'item_name')
+     code_query(ls_item_code,'YES')
+  }
+</script>
+<script language=JavaScript for=gd_3 event=OnDblClick(row,colid)>
+var ls_dataset
+ls_dataset = gd_3.DataID
+eval("ds_2.NameValue(ds_2.RowPosition,'item_cond') = " + ls_dataset +  ".NameValue(row,'select_2')")
+eval("ds_2.NameValue(ds_2.RowPosition,'item_cond_code') = " + ls_dataset + ".NameValue(row,'select_1')")
+</script>
+<script language=JavaScript for=gd_4 event=OnDblClick(row,colid)>
+	if  (ds_4.RowPosition < 1) return
+	var i,ls_colid
+	var ls_emp_no=""
+	for(i=1;i<=ds_4.CountColumn;i++) {
+	   ls_colid = ds_4.ColumnID(i)
+	   if (gd_4.ColumnProp(ls_colid, 'Name') == '사번') {
+	     ls_emp_no = ds_4.NameValue(row,ls_colid)
+	   }
+	}
+   if (ls_emp_no == "") {
+      alert("사번 항목을 선택하여 실행하여주십시요")
+      return
+   }   
+	var result;
+	var send_arg;
+	var array = new Array();
+	send_arg = gs_home + '@' + 'Y' + '@' + ls_emp_no
+	result = window.showModalDialog(gs_home + "/general/p_web/02/p_pers_master_emp_1h.html",
+												send_arg,"dialogWidth:1015px;dialogHeight:710px");
+
+</script>
+
+
+
+</HEAD>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_cond_item event=OnLoadError()>
+  alert("Error Code : " + ds_cond_item.ErrorCode + "\n" + "Error Message : " + ds_cond_item.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code (ds_2): " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_4 event=OnLoadError()>
+  alert("Error Code (ds_4): " + ds_4.ErrorCode + "\n" + "Error Message : " + ds_4.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code (tr_2): " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_cond_item_result_parent event=OnLoadError()>
+  alert("Error Code (ds_cond_item_result_parent): " + ds_cond_item_result_parent.ErrorCode + "\n" + "Error Message : " + ds_cond_item_result_parent.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_cond_item_result_parent event=OnFail()>
+  alert("Error Code(tr_cond_item_result_parent) : " + tr_cond_item_result_parent.ErrorCode + "\n" + "Error Message : " + tr_cond_item_result_parent.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<OBJECT id=ds_max
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_cond_item_result_parent
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_cond_item_result_parent 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_cond_item_result_parent_1tr=ds_cond_item_result_parent)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_cond_item_result_head_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_cond_item_result_content_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+
+<OBJECT id=ds_sort_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sort_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sort_3
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_suppress_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_suppress_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_suppress_3
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=ds_cond_item 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_cond_item_cond 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_4
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_rpt
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_temp
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_list
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_code_01 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_02 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_03 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_04 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_05 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_06 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_07 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_08 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_09 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_10 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_11 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_12 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_13 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_14 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_15 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_16 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_17 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_18 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_19 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_20 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_21 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_22 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_23 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_24 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_25 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_26 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_27 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_28 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_29 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_30 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_31 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_32 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_33 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_34 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_35 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_36 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_37 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_38 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_39 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_40 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_41 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_42 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_43 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_44 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_45 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_46 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_47 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_48 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_49 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_50 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_51 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_52 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_53 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_54 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_55 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_56 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_57 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_58 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_59 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_60 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_61 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_62 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_63 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_64 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_65 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_66 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_67 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_68 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_69 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_70 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_71 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_72 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_73 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_74 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_75 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_76 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_77 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_78 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_79 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_80 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_81 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_82 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_83 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_84 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_85 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_86 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_87 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_88 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_89 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_90 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_91 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_92 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_93 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_94 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_95 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_96 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_97 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_98 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_code_99 style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<DIV id=div_sort
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 10px; WIDTH: 430px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" >
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+               <td    BGCOLOR="#CA7944" style="COLOR: BLACK"  > 
+                    <div align="right">Sort</div></td>
+              <td > 
+	              <OBJECT id=ccom_sort_1  width=130px 
+	                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	       	        <PARAM NAME="ComboDataID" VALUE="ds_sort_1">
+		              <PARAM NAME="CodecColumn" VALUE="item_code">
+		              <PARAM NAME="DatacColumn" VALUE="item_name">
+                    <param name=Index    value=0>
+		              <PARAM NAME="Enable" VALUE="-1"></OBJECT></td>
+              <td > 
+	              <OBJECT id=ccom_sort_2  width=130px 
+	                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	       	        <PARAM NAME="ComboDataID" VALUE="ds_sort_2">
+		              <PARAM NAME="CodecColumn" VALUE="item_code">
+		              <PARAM NAME="DatacColumn" VALUE="item_name">
+                    <param name=Index    value=0>
+		              <PARAM NAME="Enable" VALUE="-1"></OBJECT></td>
+              <td > 
+	              <OBJECT id=ccom_sort_3  width=130px 
+	                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	       	        <PARAM NAME="ComboDataID" VALUE="ds_sort_3">
+		              <PARAM NAME="CodecColumn" VALUE="item_code">
+		              <PARAM NAME="DatacColumn" VALUE="item_name">
+                    <param name=Index    value=0>
+		              <PARAM NAME="Enable" VALUE="-1"></OBJECT></td>
+        </tr>
+      </table>
+</div>        
+<DIV id=div_check
+  style="Z-INDEX: 107; LEFT: 450px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+  <INPUT type="checkbox"  defaultChecked=true checked=true id=chk_basic name=chk_basic_name ><SPAN style="cursor:hand">기본소트</SPAN>
+</div> 	
+	
+<DIV id=gd_4_button 
+  style="Z-INDEX: 107; LEFT: 550px; WIDTH: 500px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+  <input id=bt_query_4 type="button" value="&nbsp;실&nbsp;&nbsp;행&nbsp;" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=gd_4_exe()>
+  <input id=bt_query_1 type="button" value="조건등록조회" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=condition_retrieve()>
+  <input id=bt_query_1 type="button" value="조건등록" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=condition_create()>
+  <input id=bt_query_5 type="button" value="엑셀내리기" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=excel_down()>
+	
+	<input id=bt_confirm_all type="button" value="전체선택" 
+	      style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; visibility:hidden;
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	      "  onclick=all_ok()>
+	<input id=bt_cancel_all type="button" value="전체해제" 
+	      style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; visibility:hidden;
+	            border:1 #A1A9A9 solid"   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	      "  onclick=all_cancel()>
+</div> 	
+<OBJECT id=gd_1
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1006px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 200px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1"> 
+   <param name="ViewHeader"       value=false>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='  ' ID=item_check_1 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_1 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_2 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_2 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_3 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_3 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_4 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_4 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_5 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_5 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_6 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_6 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_7 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_7 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='  ' ID=item_check_8 Width=20 EditStyle=CheckBox   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='명 칭' ID=item_name_8 Edit=None Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+<OBJECT id=gd_2
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 760px; POSITION: absolute; TOP: 232px;
+    HEIGHT: 170px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1"> 
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='좌대괄호  ' ID=left_1 Width=60   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='좌괄호' ID=left_2     Width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='검색항목' ID=item_name  Width=160  EditStyle=Lookup Data='ds_cond_item_cond:item_code:item_name'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='연산자' ID=item_compute EditStyle=Combo Data='=:=,>:>,<:<,>=:>=,<=:<=,<>:<>,like:like,not like:not like ' Width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name=' 데이타 값 ' ID=item_cond Width=150    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='우괄호' ID=right_2  Width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='우대괄호  ' ID=right_1 Width=60    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  <C> Name='논리연산자' ID=item_logic EditStyle=Combo Data='and:and,or:or' Width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_2"></OBJECT>
+<OBJECT id=gd_3
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 764px; WIDTH: 244px; POSITION: absolute; TOP: 232px;
+    HEIGHT: 170px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0"> 
+ 	<PARAM NAME="ColSizing" VALUE="0">
+	<PARAM NAME="Format" VALUE="
+	  ">
+	<PARAM NAME="DataID" VALUE=""></OBJECT>
+<OBJECT id=gd_4
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1006px; POSITION: absolute; TOP: 404px; 
+    HEIGHT: 37%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0"> 
+   <param name="ViewSummary"    value=1>
+ 	<PARAM NAME="ColSizing" VALUE="-1">
+ 	<param name="DragDropEnable" value=1>
+	<PARAM NAME="Format" VALUE="
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_4"></OBJECT>
+
+</BODY></HTML>

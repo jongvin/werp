@@ -1,0 +1,2246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- *************************************************************		-->
+<!-- 1. 프로그램 id   : c_month_tot_list_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 주간 공사현황      	-->
+<!-- 4. 변 경 이 력   :  												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_ds_1_addr = gs_home + '/const/c_web/07/c_month_tot_list_1q.jsp?arg_dept_code='
+var is_ds_2_addr = gs_home + '/const/c_web/07/c_month_tot_list_amt_1q.jsp?arg_dept_code='
+var is_ds_3_addr = gs_home + '/const/c_web/07/c_month_tot_list_amt_2q.jsp?arg_dept_code='
+var is_ds_4_addr = gs_home + '/const/c_web/07/c_month_tot_list_amt_3q.jsp?arg_dept_code='
+var is_tr_1_addr = gs_home + '/const/c_web/07/c_month_tot_list_1tr.jsp'
+var is_yymm 
+var gs_home 
+var is_work_date
+var is_url_addr
+var is_initial_year
+var is_last_year
+var is_current_yymm
+var is_next_yymm
+var il_chg_no_seq
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript> 
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  ll_cnt = f_ds_select_q("ds_closing", "select bonsa_close select_1, cost_close select_2 from c_spec_const_closing " +
+                                       "where dept_code='" + is_dept_code + "' and yymm='" + is_yymm + ".01" + "' ")
+
+  sel_closing1.value = ds_closing.NameValue(ds_closing.RowPosition, "select_2")		//현장
+  sel_closing2.value = ds_closing.NameValue(ds_closing.RowPosition, "select_1")		//본사
+  
+
+  ds_1.DataID=is_ds_1_addr + is_dept_code + '&arg_yymm=' + is_yymm + '.01'
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+  
+  
+  ds_2.DataID=is_ds_2_addr + is_dept_code + "&arg_won=" + select_won.value
+  ds_2.SyncLoad=true
+  ds_2.Reset()
+  
+  cnt_count_1()
+  
+  ds_3.DataID=is_ds_3_addr + is_dept_code + '&arg_yymm=' + is_yymm.replace(/\./gi, "") + "&arg_won=" + select_won.value
+  ds_3.SyncLoad=true
+  ds_3.Reset()
+  
+  cnt_count_2()
+  
+  ds_4.DataID=is_ds_4_addr + is_dept_code + "&arg_won=" + select_won.value
+  ds_4.SyncLoad=true
+  ds_4.Reset()
+  
+  cnt_count_3()
+  
+  if (sel_closing1.value == "Y") {
+  		tx_cnt_bigo1.disabled = true
+		tx_cnt_bigo2.disabled = true   
+		tx_cnt_bigo3.disabled = true      
+		tx_cnt_amt_bigo.disabled = true
+		tx_wbs_progress_month.disabled = true
+		tx_wbs_progress_next.disabled = true
+		tx_safety_month.disabled = true
+		tx_safety_next.disabled = true
+		tx_q_month.disabled = true
+		tx_q_next.disabled = true
+		tx_problem_bigo.disabled = true
+		tx_opinion_bigo.disabled = true
+		tx_decision_bigo.disabled = true
+		em_sum_amt_int.Enable = false
+		tx_delay_date.disabled = true
+  }
+  else {
+  		tx_cnt_bigo1.disabled = false
+		tx_cnt_bigo2.disabled = false   
+		tx_cnt_bigo3.disabled = false      
+		tx_cnt_amt_bigo.disabled = false
+		tx_wbs_progress_month.disabled = false
+		tx_wbs_progress_next.disabled = false
+		tx_safety_month.disabled = false
+		tx_safety_next.disabled = false
+		tx_q_month.disabled = false
+		tx_q_next.disabled = false
+		tx_problem_bigo.disabled = false
+		tx_opinion_bigo.disabled = false
+		tx_decision_bigo.disabled = false
+		em_sum_amt_int.Enable = true
+		tx_delay_date.disabled = false
+  }
+  
+  ll_cnt = f_ds_select_q("ds_dept", "select to_char(const_start_date, 'yyyy.mm.dd') || ' - ' || to_char(const_end_date, 'yyyy.mm.dd') select_1, " +
+  												"       proj_charge select_2 from z_code_dept where dept_code = '" + is_dept_code + "' ")
+	tx_const_dt.value = '공사기간 : ' + ds_dept.NameValue(1, "select_1")
+	tx_supervisor.value = '현장소장 : ' + ds_dept.NameValue(1, "select_2")
+}
+//----------------------------------------------------------------------------
+function cnt_count_1()
+//-----------------------------------------------------------------------------
+{
+	ls_a_cnt = parseInt(em_a_cnt.text)
+	ls_a_exe = parseInt(em_a_exe.text)
+	ls_a_amt = parseInt(em_a_amt.text)
+	ls_b_cnt = parseInt(em_b_cnt.text)
+	ls_b_exe = parseInt(em_b_exe.text)
+	ls_d_amt = parseInt(em_d_amt.text)
+	ls_d_cnt = parseInt(em_d_cnt.text)
+	ls_d_exe = parseInt(em_d_exe.text)
+	
+	em_a_cnt_2.text = ls_a_cnt - ls_a_amt
+	em_a_exe_2.text = ls_a_exe - ls_a_amt
+	em_d_cnt_2.text = ls_d_cnt - ls_d_amt
+	em_d_exe_2.text = ls_d_exe - ls_d_amt
+	em_c_cnt.text = ls_d_cnt - ls_b_cnt
+	em_c_exe.text = ls_d_exe - ls_b_exe
+	
+	
+	em_a_exe_rate.text = Fn_count_rate(em_a_exe.text, em_a_cnt.text)
+	em_a_amt_rate.text = Fn_count_rate(em_a_amt.text, em_a_exe.text)
+	em_a_cnt_rate2.text = Fn_count_rate(em_a_cnt_2.text, em_a_cnt.text)
+	em_a_exe_rate2.text = Fn_count_rate(em_a_exe_2.text, em_a_exe.text)
+	em_b_exe_rate.text = Fn_count_rate(em_b_exe.text, em_b_cnt.text)
+	em_d_exe_rate.text = Fn_count_rate(em_d_exe.text, em_d_cnt.text)
+	em_d_amt_rate.text = Fn_count_rate(em_d_amt.text, em_d_exe.text)
+	em_d_cnt_rate2.text = Fn_count_rate(em_d_cnt_2.text, em_d_cnt.text)
+	em_d_exe_rate2.text = Fn_count_rate(em_d_exe_2.text, em_d_exe.text)
+		
+}
+
+//----------------------------------------------------------------------------
+function cnt_count_2()
+//-----------------------------------------------------------------------------
+{	
+	em_cnt2_last.text 	= parseInt(em_cnt_last.text) - parseInt(em_amt_last.text)
+	em_cnt2_year.text 	= parseInt(em_cnt_year.text) - parseInt(em_amt_year.text)
+	em_cnt2_plan1.text 	= parseInt(em_cnt_plan1.text) - parseInt(em_amt_plan1.text)
+	em_cnt2_plan2.text 	= parseInt(em_cnt_plan2.text) - parseInt(em_amt_plan2.text)
+	em_cnt2_real1.text 	= parseInt(em_cnt_real1.text) - parseInt(em_amt_real1.text)
+	em_cnt2_real2.text 	= parseInt(em_cnt_real2.text) - parseInt(em_amt_real2.text)
+
+	em_exe2_last.text 	= parseInt(em_exe_last.text) - parseInt(em_amt_last.text)
+	em_exe2_year.text 	= parseInt(em_exe_year.text) - parseInt(em_amt_year.text)
+	em_exe2_plan1.text 	= parseInt(em_exe_plan1.text) - parseInt(em_amt_plan1.text)
+	em_exe2_plan2.text 	= parseInt(em_exe_plan2.text) - parseInt(em_amt_plan2.text)
+	em_exe2_real1.text 	= parseInt(em_exe_real1.text) - parseInt(em_amt_real1.text)
+	em_exe2_real2.text 	= parseInt(em_exe_real2.text) - parseInt(em_amt_real2.text)
+
+	em_cnt2_sum.text = parseInt(em_cnt_sum.text) - parseInt(em_amt_sum.text)
+	em_exe2_sum.text = parseInt(em_exe_sum.text) - parseInt(em_amt_sum.text)
+	
+
+	em_cnt_plan_rate1.text = Fn_count_rate(em_cnt_real1.text, em_cnt_plan1.text)
+	em_cnt_plan_rate2.text = Fn_count_rate(em_cnt_real2.text, em_cnt_plan2.text)
+	em_exe_plan_rate1.text = Fn_count_rate(em_exe_real1.text, em_exe_plan1.text)
+	em_exe_plan_rate2.text = Fn_count_rate(em_exe_real2.text, em_exe_plan2.text)
+	em_amt_plan_rate1.text = Fn_count_rate(em_amt_real1.text, em_amt_plan1.text)
+	em_amt_plan_rate2.text = Fn_count_rate(em_amt_real2.text, em_amt_plan2.text)
+	em_cnt2_plan_rate1.text = Fn_count_rate(em_cnt2_real1.text, em_cnt2_plan1.text)
+	em_cnt2_plan_rate2.text = Fn_count_rate(em_cnt2_real2.text, em_cnt2_plan2.text)
+	em_exe2_plan_rate1.text = Fn_count_rate(em_exe2_real1.text, em_exe2_plan1.text)
+	em_exe2_plan_rate2.text = Fn_count_rate(em_exe2_real2.text, em_exe2_plan2.text)
+// 매출액 공정율  2006.06.07 용화백 팀장님 지시 ( 김상필님 참고 )
+//	em_cnt_wbs_plan_rate.text = Fn_count_rate(parseInt(em_cnt_last.text)+parseInt(em_cnt_plan2.text), em_d_cnt.text)
+//	em_cnt_wbs_real_rate.text = Fn_count_rate(parseInt(em_cnt_last.text)+parseInt(em_cnt_real2.text), em_d_cnt.text)
+	
+// 실행액 공정율
+	em_cnt_wbs_plan_rate.text = Fn_count_rate(parseInt(em_exe_last.text)+parseInt(em_exe_plan2.text), em_d_exe.text)
+	em_cnt_wbs_real_rate.text = Fn_count_rate(parseInt(em_exe_last.text)+parseInt(em_exe_real2.text), em_d_exe.text)
+	
+	
+	
+}
+
+//----------------------------------------------------------------------------
+function cnt_count_3()
+//-----------------------------------------------------------------------------
+{
+	em_sum_amt_4.text = parseInt(em_cnt_sum.text) - parseInt(em_sum_amt_1.text)
+	em_sum_amt_all.text = parseInt(em_sum_amt_3.text) - parseInt(em_amt_sum.text)
+}
+//----------------------------------------------------------------------------
+function Fn_count_rate(fir_text, sec_text)
+//-----------------------------------------------------------------------------
+{
+	i = 0
+	j = 999.99
+	z = -999.99
+	ls_res = ""
+	ls_fir = parseInt(fir_text)
+	ls_sec = parseInt(sec_text)
+	
+	if (ls_fir == 0)
+		return i;
+	if (ls_sec == 0)
+		return i;
+		
+	ls_res = ls_fir / ls_sec * 100
+	
+	if (ls_res > 999.99)
+		return j;
+	else if (ls_res < -999.99)
+		return z;
+	else
+		return ls_res; 
+}
+
+//----------------------------------------------------------------------------
+function date_convert()                 //  날짜 셋팅 
+//-----------------------------------------------------------------------------
+{
+  is_initial_year = em_select_yymm.text.substr(0,4) + '.01.01'
+  is_last_year = em_select_yymm.text.substr(0,4) + '.12.01'
+  is_current_yymm = em_select_yymm.text.substr(0,7) + '.01'
+  ll_cnt = f_ds_select_q("ds_temp","select to_char(add_months(to_date('" + is_current_yymm + "'),1),'yyyy.mm.dd') select_1 from dual ") 
+  is_next_yymm = ds_temp.NameValue(1,'select_1')
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+	btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function bt_profit()                     // 현장별 손익현황  
+//------------------------------------------------------------------------
+{
+   if (ds_1.CountRow < 1) {
+      alert("선택한 현장이 없습니다")
+      return
+   }   
+   is_ea = '1000000'
+   il_screen_yymm = 1
+   makeCookie("@c_spec_const_wbs_amt@",is_dept_code+ "@" + is_dept_name + "@" + il_screen_yymm + "@" +  is_ea )
+   makeCookie("@c_spec_const_parent_yymmdd@", em_select_yymm.text)
+   window.showModalDialog("../06/c_spec_const_wbs_amt_1h.html","","dialogWidth:1012px;dialogHeight:690px");
+}
+
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) {
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+			tr_1.Post()
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function Fn_request()                       // 본사제출
+//---------------------------------------------------------------------------
+{
+	if (confirm("제출 후 수정은 불가능합니다. 제출하시겠습니까?"))
+		f_update_sql_multy("update c_spec_const_closing set cost_close='Y' where dept_code='" + is_dept_code + "' and yymm='" + is_yymm + ".01" + "' ")
+		
+	
+	btnquery_onclick()
+}
+
+//---------------------------------------------------------------------------
+function chg_no_seq_rtn()                      // 경영계획 차수 구하기 
+//---------------------------------------------------------------------------
+{
+
+  ll_cnt = f_ds_select_q("ds_chg_no_seq"," SELECT DEPT_CODE select_1,NVL(MAX(CHG_NO_SEQ),0) select_2 " + 
+                                            " FROM C_COST_DEGREE " + 
+                                            " WHERE DEPT_CODE = '" + is_dept_code + "' " + 
+                                            "   AND APPROVE_CLASS = '4' " + 
+                                            "   AND APPROVE_DT < ADD_MONTHS('" +  em_select_yymm.text + '.01' + "',1) " + 
+                                            "       GROUP BY DEPT_CODE ") 
+  if (ll_cnt == 0) {
+     alert('실행/원가계획/도급기성 에서 차수가 등록안되었거나 \n' + 
+           ' 승인이 되지않았거나 승인날짜가 조회월보다 크며는 계획을가져올수없습니다')
+     il_chg_no_seq = 0      
+  }
+  else
+  il_chg_no_seq = ds_chg_no_seq.NameValue(1,'select_2')  
+
+}
+
+//------------------------------------------------------------------------
+function redraw_won()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (select_won.value == 1000000) {
+	
+	}
+	
+	
+	if (select_won.value == 100000000) {
+	}
+}
+
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	
+	ls_temp = top.frames['security'].gs_sysdate.value
+
+	tr_1.Action = is_tr_1_addr
+
+	em_select_yymm.text = ls_temp.substr(0,4) + '.' + ls_temp.substr(5,2)
+   is_yymm = ls_temp.substr(0,4) + '.' + ls_temp.substr(5,2)
+
+	dept_name.value = is_dept_name
+	
+	btnquery_onclick()
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+	alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+	alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_4 event=OnLoadError()>
+	alert("Error Code(ds_4) : " + ds_4.ErrorCode + "\n" + "Error Message : " + ds_4.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_chg_no_seq event=OnLoadError()>
+	alert("Error Code(ds_chg_no_seq) : " + ds_chg_no_seq.ErrorCode + "\n" + "Error Message : " + ds_chg_no_seq.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  	alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+    if (em_select_yymm.Modified) { 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+    if ((em_select_yymm.Modified) && kcode == 13 ) { 
+	   select_yymm() 
+	}
+</SCRIPT>
+
+<script language=JavaScript for=tb_1 event=OnSelChanged(index)>
+	if (index == 1)
+		select_div.visibility = ""
+	
+	if (index == 2)
+		select_div.visibility = "hidden"
+</script>
+
+
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_chg_no_seq
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_4 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_temp 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_closing 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_month_tot_list_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="23px">
+		<TD class=td_green>
+			<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>현장명</td>
+             	<td width="166px">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()"></td>
+					<td width="80px">
+						<input id=dept_name_button type="button" value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="56px" class=font_green_bold>조회년월</td>
+					<td width="85px">
+						<comment id="__NSID__"><OBJECT id=em_select_yymm style="WIDTH: 80px; background: white;" 
+						      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							    <PARAM NAME="Alignment" VALUE="1">
+							    <PARAM NAME="IsComma" VALUE="0">
+							    <PARAM NAME="MaxLength" VALUE="6">
+							    <PARAM NAME="Format" VALUE="YYYY-MM">
+								 <PARAM NAME="PromptChar" VALUE="">
+						       <param name=ClipMode       value=false>
+							    <PARAM NAME="Numeric" VALUE="0">
+							    <PARAM NAME="SelectAll" VALUE="-1">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					<td width="40px">
+						<input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yymm(); 
+						if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="60px" class=font_green_bold>마감여부</td>
+					<td width="32px">현장</td>
+					<td width="70px">
+						<select id="sel_closing1" disabled=true>
+							<option value="Y">마감
+							<option value="N">미마감
+						</select>
+					</td>
+					<td width="32px">본사</td>
+					<td width="70px">
+						<select id="sel_closing2" disabled=true>
+							<option value="Y">마감
+							<option value="N">미마감
+						</select>
+					</td>
+					<td width="*" align="right">
+						<input type="button" value="본사제출" class=img_btn4_1 onclick="Fn_request()" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">&nbsp;&nbsp;
+					</td>
+	         </tr>
+	      </table>
+	   </td>
+	</tr>
+	<tr height="*">
+		<td>
+			<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+				<tr height="20px">
+					<td width="100px">
+						<comment id="__NSID__"><OBJECT id=tb_1 
+						    style="FONT-SIZE: 12px; width=100%; height: 100%;" 
+						    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+						  <param name="BackColor"  value="#BBE0F4">
+						  <param name="TextColor"  value="BLACK">
+						  <PARAM NAME="Format" VALUE="
+						    <T>divid=tab_page_1 title=현황1</T>
+						    <T>divid=tab_page_2 title=현황2</T>
+						  ">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*" align="center">
+						<input type="text" id="tx_const_dt" size=30 style="border: solid 1 white; text-align: center" readonly ></td>
+					<td width="150px" align="right">
+						<input type="text" id="tx_supervisor" style="border: solid 1 white; text-align: right;" readonly ></td>
+				</tr>
+				<tr height="*">
+					<td colspan="3">
+						<div id="tab_page_1" style="width: 100%; height: 100%; position: absolute;">
+							<table border="0" width="100%" height="100%" cellspacing="0">
+								<tr height="20px">
+									<td colspan="2">
+										<table width="100%" border="0" cellspacing="0" cellpadding="0">
+											<tr>
+												<td width="15px"><img src="../../../image/bullet1.gif"></td>
+												<td width="110px" class=font_green_bold>준공추정 현황</td>
+												<td width="*" align="right">
+													<div id=select_div>
+													<select id=select_won onChange=btnquery_onclick()>
+														<option value=1> 원
+														<option value=1000> 천원
+														<option value=1000000 selected> 백만원
+														<option value=100000000> 억원
+													</select>
+													</div>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr height="30%">
+									<td colspan="2">
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="120px">구분</td>
+												<td width="80px">도급A</td>
+												<td width="80px">실행B</td>
+												<td width="80px">원가</td>
+												<td width="80px">도급손익</td>
+												<td width="80px">실행손익</td>
+												<td width="*">주요 설계변경 및 향후일정</td>
+											</tr>
+											<tr>
+												<td BGCOLOR="#BBE0F4">계약/품의[최초]</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_cnt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_exe
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_amt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_cnt_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_exe_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+
+												<td rowspan="7">
+													<textarea id="tx_cnt_bigo1" rows="10"cols="68" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4" align="right">도급/실행대비</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_cnt_rate  
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_exe_rate 
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_amt_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_cnt_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_a_exe_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">계약/품의[현재]</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_b_cnt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_b_exe
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_amt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_cnt_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_exe_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4" align="right">도급/실행대비</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_b_cnt_rate  
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_b_exe_rate 
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_amt_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_cnt_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_b_exe_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">설계변경 예정</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_c_cnt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_c_exe
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_c_amt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_c_cnt_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+												<td>
+													<!--<comment id="__NSID__"><OBJECT id=em_c_exe_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>-->
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">준공추정</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_cnt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_exe
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_amt
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_cnt_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_exe_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4" align="right">도급/실행대비</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_cnt_rate  
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_exe_rate 
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_amt_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_cnt_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_d_exe_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+
+
+								<tr height="10%">
+									<td width="80%">
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="120px" rowspan="2">세전손익 추정</td>
+												<td width="80px">매출손익</td>
+												<td width="80px">판매관리비</td>
+												<td width="80px">영업외 비용</td>
+												<td width="80px">계</td>
+												<td width="80px">세전손익</td>
+												<td width="80px">분양율</td>
+
+												<td width="*" rowspan="3" bgcolor="white">
+													<textarea id="tx_cnt_bigo2" rows="4" cols="22" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+
+											</tr>
+
+
+											<tr>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_amt1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_amt2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_amt3
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_amt4
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_sale_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+
+											<tr>
+												<td BGCOLOR="#BBE0F4" align="right">매출액대비</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_rate1  
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_rate2 
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_rate3
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_sum
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_e_rate4
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td></td>
+											</tr>
+										</table>
+									</td>
+
+									<td width="20%">
+										<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px">
+												<td>
+													<table border="0" cellspacing="0" cellpadding="0">
+														<tr>
+															<td width="15px"><img src="../../../image/bullet1.gif"></td>
+															<td class=font_green_bold>인당 생산성</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr height="*">
+												<td>
+													<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+														<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+															<td width="30px">구분</td>
+															<td width="28%">투입인원</td>
+															<td width="28%">당월</td>
+															<td width="28%">월평균</td>
+														</tr>
+														<tr>
+															<td></td>
+															<td></td>
+															<td></td>
+															<td></td>
+														</tr>
+														<tr>
+															<td></td>
+															<td></td>
+															<td></td>
+															<td></td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr height="20px">
+									<td colspan="2">
+										<table border="0" cellspacing="0" cellpadding="0">
+											<tr>
+												<td width="15px"><img src="../../../image/bullet1.gif"></td>
+												<td width="110px" class=font_green_bold>공사진행 현황</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr height="30%">
+									<td colspan="2">
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="120px" rowspan="3">구분</td>
+												<td width="80px" rowspan="3">전년도실적</td>
+												<td colspan="7">당년도</td>
+												<td width="80px" rowspan="3">실적누계</td>
+												<td width="*" colspan="2">실행공정율</td>
+											</tr>
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="80px" rowspan="2">년간계획</td>
+												<td colspan="2">계획</td>
+												<td colspan="2">실적</td>
+												<td colspan="2">계획대비</td>
+												<td colspan="2">(관리POINT ±3%, 준공추정기준)</td>
+											</tr>
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="60px">당월</td>
+												<td width="80px">누계</td>
+												<td width="80px">당월</td>
+												<td width="80px">누계</td>
+												<td width="50px">당월</td>
+												<td width="50px">누계</td>
+												<td width="80px">계획</td>
+												<td width="80px">실적</td>
+											</tr>
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">매출액(A)</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_last
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_year
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_plan1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_plan2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_real1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_real2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_plan_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_plan_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_wbs_plan_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt_wbs_real_rate
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">실행액(B)</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_last
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_year
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_plan1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_plan2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_real1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_real2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_plan_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_plan_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+
+												<td colspan="2" rowspan="4">
+													<textarea id=tx_cnt_bigo3 rows="5" cols="28" maxlength="500" style="font: 12px"></textarea>
+												</td>
+
+											</tr>
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">예정원가(C)</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_last
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_year
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_plan1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_plan2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_real1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_real2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_plan_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_plan_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">매출손익(A - C)</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_last
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_year
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_plan1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_plan2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_real1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_real2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_plan_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_plan_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_cnt2_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+											<tr>
+												<td BGCOLOR="#BBE0F4">실행손익(B - C)</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_last
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_year
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_plan1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_plan2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_real1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_real2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_plan_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_plan_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_exe2_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+											
+											<tr>
+												<td BGCOLOR="#BBE0F4">세전손익</td>
+												<td colspan="8">
+													도급손익 - 판매관리비 (도급기성고 7%) - 영업외 비용
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_real_sum
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+
+												</td>
+
+										</table>
+									</td>
+								</tr>
+								<tr height="20px">
+									<td colspan="2">
+										<table border="0" cellspacing="0" cellpadding="0">
+											<tr>
+												<td width="15px"><img src="../../../image/bullet1.gif"></td>
+												<td width="110px" class=font_green_bold>자금수지 현황</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr height="20%">
+									<td colspan="2">
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td colspan="2">세금계산서 발행</td>
+												<td colspan="2">청구기준</td>
+												<td colspan="2">실수금</td>
+												<td width="70px" rowspan="3">미확정매출</td>
+												<td colspan="2">기성확정 및 수금</td>
+												<td colspan="2">자금수지</td>
+
+												<td width="*" rowspan="5" bgcolor="white">
+													<textarea id="tx_cnt_amt_bigo" rows="6" cols="12" maxlength="500" style="font: 12px"></textarea>
+												</td>
+
+											</tr>
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="80px">최근</td>
+												<td width="100px">발행금액</td>
+												<td width="80px">최근발행</td>
+												<td width="80px">매출기성</td>
+												<td width="80px">최근</td>
+												<td width="80px">수금액</td>
+												<td width="60px">기성</td>
+												<td width="60px">확정기성</td>
+												<td width="70px" rowspan="2">연체이자</td>
+												<td width="90px" rowspan="2">계</td>
+											</tr>
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td>발행일</td>
+												<td>누계</td>
+												<td>기준월</td>
+												<td>누계</td>
+												<td>수금일</td>
+												<td>누계</td>
+												<td>확정율</td>
+												<td>수금율</td>
+											</tr>
+
+
+											<tr>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_yymm style="WIDTH: 100%;" 
+														  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															<PARAM NAME="Alignment" VALUE="1">
+															<PARAM NAME="IsComma" VALUE="0">
+															<PARAM NAME="MaxLength" VALUE="8">
+															<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+															<PARAM NAME="PromptChar" VALUE="">
+														    <param name="ClipMode"       value=false>
+															<PARAM NAME="Numeric" VALUE="0">
+															<PARAM NAME="SelectAll" VALUE="-1">
+															<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_1
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_stand_yymm style="WIDTH: 100%;" 
+														  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															<PARAM NAME="Alignment" VALUE="1">
+															<PARAM NAME="IsComma" VALUE="0">
+															<PARAM NAME="MaxLength" VALUE="8">
+															<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+															<PARAM NAME="PromptChar" VALUE="">
+														    <param name="ClipMode"       value=false>
+															<PARAM NAME="Numeric" VALUE="0">
+															<PARAM NAME="SelectAll" VALUE="-1">
+															<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_2
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_amt_real_yymm style="WIDTH: 100%;" 
+														  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															<PARAM NAME="Alignment" VALUE="1">
+															<PARAM NAME="IsComma" VALUE="0">
+															<PARAM NAME="MaxLength" VALUE="8">
+															<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+															<PARAM NAME="PromptChar" VALUE="">
+														    <param name="ClipMode"       value=false>
+															<PARAM NAME="Numeric" VALUE="0">
+															<PARAM NAME="SelectAll" VALUE="-1">
+															<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_3
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_4
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_rate2
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_rate3
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_int
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_all
+														style="WIDTH: 100%; " 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="13">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+											</tr>
+
+
+											<tr>
+												<td colspan="6">
+													<input type="text" id="tx_cnt_stand" style="width: 100%" disabled>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_sum_amt_rate1
+														style="WIDTH: 100%;" 
+														classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="2">
+														<PARAM NAME="MaxDecimalPlace" VALUE="2">
+														<PARAM NAME="MaxLength" VALUE="3">
+														<PARAM NAME="SelectAll" VALUE="-1">
+														<PARAM NAME="PromptChar" VALUE="">
+														<PARAM NAME="Enable"      VALUE="false">
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td></td>
+												<td></td>
+												<td><input type="text" id="tx_delay_date" style="width: 100%" maxlength="20"></td>
+												<td></td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</div>
+						
+
+						<div id=tab_page_2 style="width: 100%; height: 100%; position: absolute;">
+							<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+								<tr height="20px">
+									<td>
+										<table border="0" cellspacing="0" cellpadding="0">
+											<tr>
+												<td width="15px"><img src="../../../image/bullet1.gif"></td>
+												<td width="110px" class=font_green_bold>품질안전관리</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+
+								<tr height="46%">
+									<td>
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="100px">항목</td>
+												<td width="45%">당월</td>
+												<td width="45%">익월</td>
+											</tr>
+											<tr height="39%">
+												<td BGCOLOR="#BBE0F4" align="center">주요공정진행</td>
+												<td>
+													<textarea id="tx_wbs_progress_month" rows="6" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+												<td>
+													<textarea id="tx_wbs_progress_next" rows="6" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+											</tr>
+											<tr height="30%">
+												<td BGCOLOR="#BBE0F4" align="center">안전관리</td>
+												<td>
+													<textarea id="tx_safety_month" rows="4" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+												<td>
+													<textarea id="tx_safety_next" rows="4" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+											</tr>
+											<tr height="30%">
+												<td BGCOLOR="#BBE0F4" align="center">품질관리<br>환경관리</td>
+												<td>
+													<textarea id="tx_q_month" rows="4" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+												<td>
+													<textarea id="tx_q_next" rows="4" cols="69" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr height="20px">
+									<td>
+										<table border="0" cellspacing="0" cellpadding="0">
+											<tr>
+												<td width="15px"><img src="../../../image/bullet1.gif"></td>
+												<td width="110px" class=font_green_bold>현장 주요현안보고</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+
+								<tr height="*">
+									<td>
+										<table border="1" width="100%" height="100%" cellspacing="0" cellpadding="0">
+											<tr height="20px" BGCOLOR="#BBE0F4" align="center">
+												<td width="33%">현안(예상) 문제점</td>
+												<td width="33%">현장(소장) 대책 및 의견</td>
+												<td width="34%">지원(부서) 및 결정요망 사항</td>
+											</tr>
+											<tr height="*">
+												<td>
+													<textarea id="tx_problem_bigo" rows="16" cols="50" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+												<td>
+													<textarea id="tx_opinion_bigo" rows="16" cols="50" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+												<td>
+													<textarea id="tx_decision_bigo" rows="16" cols="51" maxlength="1000" style="font: 12px"></textarea>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<comment id="__NSID__"><OBJECT id=bd_data_1 
+    	style="Z-INDEX: 108; WIDTH: 100%; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=cnt_bigo1     	        Ctrl=tx_cnt_bigo1        Param=value Enable=enable</C>
+	  <C>Col=cnt_bigo2     	        Ctrl=tx_cnt_bigo2        Param=value Enable=enable</C>
+	  <C>Col=cnt_bigo3     	        Ctrl=tx_cnt_bigo3        Param=value Enable=enable</C>
+	  <C>Col=cnt_amt_bigo     	     Ctrl=tx_cnt_amt_bigo     Param=value Enable=enable</C>
+	  <C>Col=wbs_progress_month     Ctrl=tx_wbs_progress_month   Param=value Enable=enable</C>
+	  <C>Col=wbs_progress_next      Ctrl=tx_wbs_progress_next   Param=value Enable=enable</C>
+	  <C>Col=safety_month     	     Ctrl=tx_safety_month    Param=value Enable=enable</C>
+	  <C>Col=safety_next     	     Ctrl=tx_safety_next    Param=value Enable=enable</C>
+	  <C>Col=q_month     	        Ctrl=tx_q_month         Param=value Enable=enable</C>
+	  <C>Col=q_next     	           Ctrl=tx_q_next         Param=value Enable=enable</C>
+	  <C>Col=problem_bigo     	     Ctrl=tx_problem_bigo    Param=value Enable=enable</C>
+	  <C>Col=opinion_bigo     	     Ctrl=tx_opinion_bigo    Param=value Enable=enable</C>
+	  <C>Col=decision_bigo       	  Ctrl=tx_decision_bigo   Param=value Enable=enable</C>
+	  <C>Col=delay_int       	     Ctrl=em_sum_amt_int     Param=text  Enable=enable</C>
+	  <C>Col=delay_date       	     Ctrl=tx_delay_date      Param=value Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=bd_data_2 
+    	style="Z-INDEX: 108; WIDTH: 100%; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=min_cnt_amt     	        Ctrl=em_a_cnt        Param=text Enable=false</C>
+	  <C>Col=min_amt     	           Ctrl=em_a_exe        Param=text Enable=false</C>
+	  <C>Col=min_result_amt     	     Ctrl=em_a_amt        Param=text Enable=false</C>
+	  <C>Col=max_cnt_amt     	        Ctrl=em_b_cnt        Param=text Enable=false</C>
+	  <C>Col=max_amt     	           Ctrl=em_b_exe        Param=text Enable=false</C>
+	  <C>Col=max_result_amt     	     Ctrl=em_d_amt        Param=text Enable=false</C>
+	  <C>Col=mmax_cnt_amt     	        Ctrl=em_d_cnt        Param=text Enable=false</C>
+	  <C>Col=mmax_amt     	           Ctrl=em_d_exe        Param=text Enable=false</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=bd_data_3 
+    	style="Z-INDEX: 108; WIDTH: 100%; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_3">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=cnts_pre    	           Ctrl=em_cnt_last        Param=text Enable=false</C>
+	  <C>Col=cntp_this    	  			  Ctrl=em_cnt_year        Param=text Enable=false</C>
+	  <C>Col=cntp    					     Ctrl=em_cnt_plan1       Param=text Enable=false</C>
+	  <C>Col=cntp_sum		    	   	  Ctrl=em_cnt_plan2       Param=text Enable=false</C>
+	  
+	  <C>Col=cnts         	     		  Ctrl=em_cnt_real1       Param=text Enable=false</C>
+	  <C>Col=cnts_sum      	     		  Ctrl=em_cnt_real2       Param=text Enable=false</C>
+	  <C>Col=cnts_this	 				  Ctrl=em_cnt_sum			  Param=text Enable=false</C>
+
+
+	  <C>Col=exes_pre     	     		  Ctrl=em_exe_last        Param=text Enable=false</C>
+	  <C>Col=exep_this  	 				  Ctrl=em_exe_year        Param=text Enable=false</C>
+	  <C>Col=exep     	 				  Ctrl=em_exe_plan1       Param=text Enable=false</C>
+	  <C>Col=exep_sum     	  			  Ctrl=em_exe_plan2       Param=text Enable=false</C>
+
+	  <C>Col=exes 	         	  		  Ctrl=em_exe_real1       Param=text Enable=false</C>
+	  <C>Col=exes_sum         	  		  Ctrl=em_exe_real2       Param=text Enable=false</C>
+	  <C>Col=exes_this		 			  Ctrl=em_exe_sum         Param=text Enable=false</C>
+	  
+	  <C>Col=coss_pre			     	     Ctrl=em_amt_last        Param=text Enable=false</C>
+	  <C>Col=cosp_this		     	     Ctrl=em_amt_year        Param=text Enable=false</C>
+	  <C>Col=cosp				     	     Ctrl=em_amt_plan1       Param=text Enable=false</C>
+	  <C>Col=cosp_sum			     	     Ctrl=em_amt_plan2       Param=text Enable=false</C>
+
+	  <C>Col=coss     	    	 		  Ctrl=em_amt_real1       Param=text Enable=false</C>
+	  <C>Col=coss_sum     		     	  Ctrl=em_amt_real2       Param=text Enable=false</C>
+	  <C>Col=coss_this					  Ctrl=em_amt_sum         Param=text Enable=false</C>
+	  
+	  <C>Col=last_cnt2_cha	           Ctrl=em_cnt2_last 		  Param=text Enable=false</C>
+	  <C>Col=last_exe2_cha   			  Ctrl=em_exe2_last 		  Param=text Enable=false</C>
+	  <C>Col=plan_y_cnt2_cha 			  Ctrl=em_cnt2_year 		  Param=text Enable=false</C>
+	  <C>Col=plan_y_exe2_cha 			  Ctrl=em_exe2_year 		  Param=text Enable=false</C>
+	  <C>Col=plan_m_cnt2_cha 			  Ctrl=em_cnt2_plan1 	  Param=text Enable=false</C>
+	  <C>Col=plan_m_exe2_cha 			  Ctrl=em_exe2_plan1 	  Param=text Enable=false</C>
+	  <C>Col=plan_s_cnt2_cha 			  Ctrl=em_cnt2_plan2 	  Param=text Enable=false</C>
+	  <C>Col=plan_s_exe2_cha 			  Ctrl=em_exe2_plan2 	  Param=text Enable=false</C>
+	  <C>Col=cnt2_cha 					  Ctrl=em_cnt2_real1 	  Param=text Enable=false</C>
+	  <C>Col=exe2_cha 					  Ctrl=em_exe2_real1 	  Param=text Enable=false</C>
+	  <C>Col=s_cnt2_cha 					  Ctrl=em_cnt2_real2 	  Param=text Enable=false</C>
+	  <C>Col=s_exe2_cha 					  Ctrl=em_exe2_real2 	  Param=text Enable=false</C>
+                                                                         
+	" >                                                                   
+</OBJECT></comment> <script> __ws__(__NSID__);</script>                                                                
+                                                                         
+<comment id="__NSID__"><OBJECT id=bd_data_4                                                     
+    	style="Z-INDEX: 108; WIDTH: 100%; HEIGHT: 18px"                    
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_4">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=issue_date     	        Ctrl=em_amt_yymm         Param=text Enable=false</C>
+	  <C>Col=supply_amt     	        Ctrl=em_sum_amt_1        Param=text Enable=false</C>
+	  <C>Col=request_dt     	     	  Ctrl=em_stand_yymm       Param=text Enable=false</C>
+	  <C>Col=cnt_amt     	           Ctrl=em_sum_amt_2        Param=text Enable=false</C>
+	  <C>Col=received_date     	     Ctrl=em_amt_real_yymm    Param=text Enable=false</C>
+	  <C>Col=s_supply_amt     	        Ctrl=em_sum_amt_3        Param=text Enable=false</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</DIV>
+</BODY></HTML>

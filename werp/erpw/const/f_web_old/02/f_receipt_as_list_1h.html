@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_receipt_list_1h.html									-->
+<!-- 2. 유형(시나리오): 조회 															-->
+<!-- 3. 기 능 정 의   : 전도금 정산/청구  조회									-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_yymm = is_work_date.substr(0,7)
+
+var is_ds_1_addr = gs_home + '/const/f_web/02/f_receipt_as_list_1q.jsp?arg_dept='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (sel_bank_no.CodeValue == "") return;
+	is_dept_code = sel_dept_code.CodeValue
+	if (is_dept_code == "") {ds_1.ClearData(); return;}
+	ds_1.DataID = is_ds_1_addr + is_dept_code + '&arg_yymm=' + is_yymm
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	ll_row=ds_1.CountRow 
+	gd_1.ColumnProp('amt_cal', 'SumText') = gd_1.VirtualString(ll_row,'amt_cal')
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+}     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------
+function create_bank_no()                      //계좌번호 생성
+//----------------------------------------------------------------
+{
+	ll_Sql = "select distinct bank_account_number select_1 from f_dept_account where dept_code = 'A05266'";
+	ll_cnt = f_ds_select_q("ds_bank_no", ll_Sql)
+	sel_bank_no.Index = 0
+}
+//----------------------------------------------------------------
+function create_dept_no()                      //계좌별 현장 생성
+//----------------------------------------------------------------
+{
+	ll_Sql = "select a.wbs_code select_1, b.short_name select_2 from f_dept_account a left join z_code_dept b on a.wbs_code = b.dept_code where a.dept_code = 'A05266' " +
+	                                          "and a.bank_account_number = '" + sel_bank_no.CodeValue + "'";
+	ll_cnt = f_ds_select_q("ds_dept_code", ll_Sql)
+	if (ll_cnt <= 0) return;
+	is_dept_code = ""
+	ls_dept_name = ""
+	ll_Sql = ""
+	sel_dept_code.ClearData()
+	for(i=1;i<=ll_cnt;i++) {
+		is_dept_code = is_dept_code + "'" + ds_dept_code.NameValue(i,"select_1") + "',"
+		ls_dept_name = ls_dept_name + ds_dept_code.NameValue(i,"select_2") + ","
+		sel_dept_code.AddData("'" + ds_dept_code.NameValue(i,"select_1")  + "'",ds_dept_code.NameValue(i,"select_2"))
+	}
+	is_dept_code = is_dept_code + "' '"
+	sel_dept_code.InsertData(0,is_dept_code,ls_dept_name)
+	sel_dept_code.Index = 0
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+   ds_1.ClearData()
+
+   btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+
+  	em_select_yymm.text = is_yymm
+  	create_bank_no()
+  	sel_bank_no.Index = 0
+	btnquery_onclick()
+	create_dept_no()
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+   if (em_select_yymm.Modified){ 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=sel_bank_no event=onSelChange()>
+	create_dept_no()
+	btnquery_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=sel_dept_code event=onSelChange()>
+	btnquery_onclick()
+</SCRIPT>
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<Object id=ds_bank_no
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<Object id=ds_dept_code
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >품질안전팀(A/S)</td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111; LEFT: 660px; WIDTH: 160px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">기준년월</div></td>
+          	 <td width="63%" style="padding:0px;">
+			       <comment id="__NSID__"><OBJECT id=em_select_yymm style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="6">
+						    <PARAM NAME="Format" VALUE="YYYY.MM">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:18px">
+					</td>
+         </tr>                 
+      </table>
+</DIV> 
+
+<DIV id=div_bank_no style="Z-INDEX: 0; LEFT:2px; WIDTH: 1008px; POSITION: absolute; TOP: 32; HEIGHT: 30px;">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" >
+		<td width="8%" BGCOLOR="#BBE0F4" style="COLOR: black"><div align="right">대상현장</div></td>
+		<td width="92%" >
+			<comment id="__NSID__"><OBJECT id=sel_dept_code width=100%
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	                    <param name=Data     value="^전체">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+	</table>
+</DIV>
+
+<DIV id=div_bank_no style="Z-INDEX: 0; LEFT: 270px; WIDTH: 377px; POSITION: absolute; TOP: 2; HEIGHT: 24px;">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" >
+		<td width="20%" BGCOLOR="#BBE0F4" style="COLOR: black"><div align="right">계좌번호</div></td>
+		<td width="80%" >
+			<comment id="__NSID__"><OBJECT id=sel_bank_no width=100%
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_bank_no">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_1">
+	             <param name=Auto       value=false>
+		         <param name=Enable     value=true></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+	</table>
+</DIV>
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 77px; HEIGHT: 560px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='해당년월' ID=yymm align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 
+          SumText='합 계'  SumColor=Black SumBgColor=Pink </C> 
+	  <C> Name='미지급청구' ID=nopay_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 
+				SumText=@sum  SumColor=Black SumBgColor=Pink </C> 
+	  <G> Name='예비비 청구액' HeadBgColor=#BBE0F4  HeadColor=BLACK>
+	  <C> Name='수 시' ID=susi_amt   	 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 
+				SumText=@sum  SumColor=Black SumBgColor=Pink </C> 
+	  <C> Name='정 기' ID=jung_amt  	 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120
+				SumText=@sum  SumColor=Black SumBgColor=Pink </C> 
+     </G>
+	  <C> Name='예비비 정산액' ID=receipt_amt   	 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 
+				SumText=@sum  SumColor=Black SumBgColor=Pink </C> 
+	  <C> Name='수 익 금' ID=profit_amt  	 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120
+				SumText=@sum  SumColor=Black SumBgColor=Pink </C> 
+	  <C> Name='잔  액' ID=amt_cal  value={amt + 0} 	SumTextAlign=right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120
+				SumText=''  SumColor=Black SumBgColor=Pink </C> 
+	  <C> Name='' ID=text  	 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150
+				SumText=''  SumColor=Black SumBgColor=Pink </C> 
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>

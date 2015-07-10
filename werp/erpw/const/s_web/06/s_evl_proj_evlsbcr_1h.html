@@ -1,0 +1,655 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : s_req_insert_evl_1h.html							-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력							-->
+<!-- 3. 기 능 정 의   : 평가대상업체등록(외주) 	  							-->
+<!-- 4. 변 경 이 력   : 김 동우 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/s_web/06/s_evl_proj_evlsbcr_1q.jsp?arg_year='
+var is_ds_2_addr = gs_home + '/const/s_web/06/s_evl_evldept_3q.jsp?arg_year='
+var is_tr_1_addr = gs_home + '/const/s_web/06/s_evl_proj_evlsbcr_1tr.jsp'
+
+var is_year,is_degree,is_class,is_dept
+var is_work_date 
+var il_screen = 1
+var tr_fail=1                 // update정상:1  비정상:0
+var ib_once=true
+var is_html=""                    //되돌아갈 html주소 
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_2.DataID = is_ds_2_addr + is_year + '&arg_degree=' + is_degree + '&arg_class=' + is_class + '&arg_dept=' + is_dept
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+
+	ds_1.DataID = is_ds_1_addr + is_year + '&arg_degree=' + is_degree + '&arg_class=' + is_class + '&arg_dept=' + is_dept
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//------------------------------------------------------------------------
+function sbc_insert()                     // 업체복사
+//------------------------------------------------------------------------
+{
+	var arg_cmd,ls_f_date,ls_t_date,ll_cnt,ll_chk
+	var ls_t_id,ls_t_name,ls_a_id,ls_a_name,ls_m_id,ls_m_name,ls_e_id,ls_e_name,ls_c_id,ls_c_name,ls_j_id,ls_j_name
+	var ls_mat_id,ls_mat_name,ls_id2,ls_name2
+	
+	ls_t_id     = ds_2.NameValue(ds_2.RowPosition,'t_id')
+	ls_t_name   = ds_2.NameValue(ds_2.RowPosition,'t_name')
+	ls_a_id     = ds_2.NameValue(ds_2.RowPosition,'a_id')
+	ls_a_name   = ds_2.NameValue(ds_2.RowPosition,'a_name')
+	ls_m_id     = ds_2.NameValue(ds_2.RowPosition,'m_id')
+	ls_m_name   = ds_2.NameValue(ds_2.RowPosition,'m_name')
+	ls_e_id     = ds_2.NameValue(ds_2.RowPosition,'e_id')
+	ls_e_name   = ds_2.NameValue(ds_2.RowPosition,'e_name')
+	ls_c_id     = ds_2.NameValue(ds_2.RowPosition,'c_id')
+	ls_c_name   = ds_2.NameValue(ds_2.RowPosition,'c_name')
+	ls_j_id     = ds_2.NameValue(ds_2.RowPosition,'j_id')
+	ls_j_name   = ds_2.NameValue(ds_2.RowPosition,'j_name')
+	ls_mat_id   = ds_2.NameValue(ds_2.RowPosition,'mat_id')
+	ls_mat_name = ds_2.NameValue(ds_2.RowPosition,'mat_name')
+	ls_id2      = ds_2.NameValue(ds_2.RowPosition,'id2')
+	ls_name2    = ds_2.NameValue(ds_2.RowPosition,'name2')
+
+ 	arg_cmd = " insert into s_evl_proj_evlsbcr " +	
+				 " select '" + is_year + "'," + is_degree + ",'" + is_class + "'," + 
+				 "        a.dept_code,a.order_number,a.sbcr_code,b.sbcr_name,'N',c.profession_wbs_code, " +
+				 "        d.profession_wbs_name,a.sbc_name,a.order_class,'','','" + ls_id2 + "', '" + ls_name2 + "',0,0,0,0,'','' " +
+				 "   from s_cn_list a, " +
+				 "        s_sbcr b, " +
+				 " 		 s_order_list c, " +
+				 " 		 s_profession_wbs d " +
+				 "  where a.sbcr_code    = b.sbcr_code " +
+				 "    and c.profession_wbs_code = d.profession_wbs_code  " +
+				 "    and a.dept_code    = c.dept_code " +
+				 "    and a.order_number = c.order_number  " +
+				 "    and a.dept_code = '" + is_dept + "'"
+				 
+	f_update_sql(arg_cmd)
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_t_id + "', evl_name = '" + ls_t_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'T' "
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_a_id + "', evl_name = '" + ls_a_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'A'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_c_id + "', evl_name = '" + ls_c_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'C'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_e_id + "', evl_name = '" + ls_e_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'E'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_m_id + "', evl_name = '" + ls_m_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'M'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_j_id + "', evl_name = '" + ls_j_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'L'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_mat_id + "', evl_name = '" + ls_mat_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND substr(profession_wbs_code,1,1) = 'J'"
+	f_update_sql(arg_cmd)
+	
+	btnquery_onclick()
+	
+	ls_f_date = ds_2.NameValue(ds_2.RowPosition,"from_date")
+	ls_t_date = ds_2.NameValue(ds_2.RowPosition,"to_date")
+
+		
+	arg_cmd = "  UPDATE s_evl_proj_evlsbcr  " +
+     			 "     SET EVL_YN = 'Y'  " +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND order_number in (  SELECT max(order_number)  " +
+				 "									 FROM S_PAY  " + 
+				 "									WHERE DEPT_CODE = '" + is_dept + "'" + 
+				 "                           AND YYMM >= '" + ls_f_date + "'" + 
+				 "									  AND YYMM <= '" + ls_t_date + "'" +
+				 "                         group by order_number )" 
+             
+	f_update_sql(arg_cmd)
+
+	btnquery_onclick()
+
+}
+//------------------------------------------------------------------------
+function sbc_evl_id()                     // 평가자재지정
+//------------------------------------------------------------------------
+{
+	var arg_cmd,ls_f_date,ls_t_date,ll_cnt,ll_chk
+	var ls_t_id,ls_t_name,ls_a_id,ls_a_name,ls_m_id,ls_m_name,ls_e_id,ls_e_name,ls_c_id,ls_c_name,ls_j_id,ls_j_name
+	var ls_mat_id,ls_mat_name,ls_id2,ls_name2
+	
+	ls_t_id     = ds_2.NameValue(ds_2.RowPosition,'t_id')
+	ls_t_name   = ds_2.NameValue(ds_2.RowPosition,'t_name')
+	ls_a_id     = ds_2.NameValue(ds_2.RowPosition,'a_id')
+	ls_a_name   = ds_2.NameValue(ds_2.RowPosition,'a_name')
+	ls_m_id     = ds_2.NameValue(ds_2.RowPosition,'m_id')
+	ls_m_name   = ds_2.NameValue(ds_2.RowPosition,'m_name')
+	ls_e_id     = ds_2.NameValue(ds_2.RowPosition,'e_id')
+	ls_e_name   = ds_2.NameValue(ds_2.RowPosition,'e_name')
+	ls_c_id     = ds_2.NameValue(ds_2.RowPosition,'c_id')
+	ls_c_name   = ds_2.NameValue(ds_2.RowPosition,'c_name')
+	ls_j_id     = ds_2.NameValue(ds_2.RowPosition,'j_id')
+	ls_j_name   = ds_2.NameValue(ds_2.RowPosition,'j_name')
+	ls_mat_id   = ds_2.NameValue(ds_2.RowPosition,'mat_id')
+	ls_mat_name = ds_2.NameValue(ds_2.RowPosition,'mat_name')
+	ls_id2      = ds_2.NameValue(ds_2.RowPosition,'id2')
+	ls_name2    = ds_2.NameValue(ds_2.RowPosition,'name2')
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_t_id + "', evl_name = '" + ls_t_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'T' "
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_a_id + "', evl_name = '" + ls_a_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'A'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_c_id + "', evl_name = '" + ls_c_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'C'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_e_id + "', evl_name = '" + ls_e_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'E'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_m_id + "', evl_name = '" + ls_m_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'M'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_j_id + "', evl_name = '" + ls_j_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'L'"
+	f_update_sql(arg_cmd)
+	
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set evl_id = '" + ls_mat_id + "', evl_name = '" + ls_mat_name + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND DEPT_CODE = '" + is_dept + "'" +
+				 "     AND evl_id is null " +
+				 "     AND substr(profession_wbs_code,1,1) = 'J'"
+	f_update_sql(arg_cmd)
+
+	arg_cmd = " update s_evl_proj_evlsbcr " +
+	          "    set id2 = '" + ls_id2 + "', name2 = '" + ls_name2 + "'" +
+   			 "   WHERE EVL_YEAR = '" + is_year + "'" +
+				 "     AND DEGREE = " + is_degree +  
+				 "     AND EVL_CLASS = '" + is_class + "'" +
+				 "     AND id2 is null " +
+				 "     AND DEPT_CODE = '" + is_dept + "'" 
+	f_update_sql(arg_cmd)
+	
+	btnquery_onclick()
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var i
+	
+	if (ds_1.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+			for(i=1; i<= ds_1.CountRow; i++) {
+            if  (ds_1.NameValue(i,"evl_yn") == 'T')
+                ds_1.NameValue(i,"evl_yn") = 'Y'
+        }
+
+			tr_1.Post()
+			btnquery_onclick()
+	}
+}
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{	
+	if (focus == il_screen) {
+		return
+	}	
+	il_screen = focus
+}
+//----------------------------------------------------------------------------
+function sel_rtn()                     // 전체선택
+//---------------------------------------------------------------------------- 
+{
+	var i
+	if (ds_1.CountRow > 0){
+		for (i=1;i<=ds_1.CountRow;i++){
+			ds_1.NameValue(i,'evl_yn') = 'T';
+		}
+	}
+}
+//----------------------------------------------------------------------------
+function nosel_rtn()                     // 전체해제
+//---------------------------------------------------------------------------- 
+{
+	var i
+	if (ds_1.CountRow > 0){
+		for (i=1;i<=ds_1.CountRow;i++){
+			ds_1.NameValue(i,'evl_yn') = 'F';
+		}
+	}
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+	        }   
+ 
+	   }     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = ds_1.NameValue(ds_1.RowPosition,"sbcr_name")
+ gd_2.GridToExcel(temp_1,'c:\aa.xls',0)
+   
+}
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+	if (ds_1.IsUpdated ) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+				btnsave_onclick()
+	        }   
+ 
+	   }     
+
+	top.frames['main_ct'].location.href(is_html +"?"+'u')
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	is_work_date = f_sysdate()
+	tr_1.Action = is_tr_1_addr 
+
+
+	var result="";
+	var array = new Array();
+   result = readCookie("@s_evl_proj_evlsbcr@")
+	
+	array = result.split("@");
+        
+	is_year = array[0]
+	is_degree = array[1]
+	is_class = array[2]
+	is_dept  = array[3]
+	is_html      = array[6]	
+	
+
+	top.frames['main_title'].title_name.value =  " 평가대상 업체 등록 "         
+
+	btnquery_onclick()
+
+	if (ds_1.CountRow < 1) {
+		sbc_insert()
+	}
+	
+	il_screen = 1
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+	if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+	}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+	var ls_class,ls_seq,i,ll_rowcnt
+	
+//	if (colid == "evl_yn") {
+//	   if (ds_1.NameValue(row,colid) == 'T'){
+//			ds_1.NameValue(row,colid) = 'F'
+//     }
+//	   else {
+//				ds_1.NameValue(i,colid) = 'F'
+//      }
+//	}
+
+</SCRIPT>
+
+<SCRIPT language="javascript" for=gd_1 event=OnPopup(row,colid,data)>
+          	
+ if  (colid == "temp_col") {                                //평가자찾기
+		var result;
+		var send_arg;
+		var array = new Array();
+		send_arg = "@"
+		result = window.showModalDialog(gs_home + "/general/p_web/99/p_emp_no_find_1h.html", send_arg,"dialogWidth:690px;dialogHeight:500px");
+		
+		if(result == "") return;
+		array = result.split("@");
+		ds_1.NameValue(ds_1.RowPosition,"evl_id")   = array[0]
+		ds_1.NameValue(ds_1.RowPosition,"evl_name") = array[1]
+      return
+  }
+
+</SCRIPT>
+
+
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+{
+
+	if  (row < 1) return;
+}  
+</SCRIPT>
+</HEAD>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+	alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select1
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select2
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_evl_proj_evlsbcr_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<DIV id=gd_0_button 
+style="Z-INDEX: 107; LEFT: 520px; WIDTH: 480px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+		<INPUT  type=button  class="img_btn4_1"  value=전체선택 onclick=sel_rtn() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+		<INPUT  type=button  class="img_btn4_1"  value=전체해제 onclick=nosel_rtn() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+		<INPUT  type=button  class="img_btn6_1"  value=평가자재지정 onclick=sbc_evl_id() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+		<INPUT  type=button  class="img_btnClose"  value=닫기 onclick=close_rtn() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+</DIV>
+<DIV id=gd_2_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 30px; HEIGHT: 55px">
+	<table width="100%"  height="100%" BORDER="2"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td width="10%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK " colspan=2  > 
+				<div align="right">평가년도</div></td>
+			<td width="15%" colspan=3> 
+			  	<INPUT style="FONT-SIZE:12px;" id=tx_evl_year readonly tabIndex=1 size=15  ></td>
+			<td width="10%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK " colspan=2  > 
+				<div align="right">평가구분</div></td>
+			<td width="15%" colspan=3> 
+				<comment id="__NSID__"><OBJECT id=ccom_evl_class tabIndex=2
+					classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+                                        height=106 width=60px;>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME=Data VALUE="1^상반기,2^하반기,3^준공">
+					<PARAM NAME=Auto   VALUE=false>
+					<PARAM NAME=Enable   VALUE=false>
+					<param name=DataID           value=ds_2>
+					<param name=CodeColumn      value=evl_class>
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+			<td width="10%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK " colspan=2  > 
+				<div align="right">평가현장</div></td>
+			<td width="40%" colspan=8> 
+			  	<INPUT style="FONT-SIZE:12px;" id=tx_long_name readonly tabIndex=1 size=30  ></td>
+ 	   </tr>
+		<tr BGCOLOR="white"> 
+			<td width="10%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK " colspan=2  > 
+				<div align="right">평가기간</div></td>
+			<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+				<div align="right">From</div></td>
+			<td width="10%" colspan=2> 
+				<comment id="__NSID__"><OBJECT id=em_evl_f_date tabIndex=10 
+					style="WIDTH: 70px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="ReadOnly" VALUE=true>
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+			<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+				<div align="right">To</div></td>
+    		<td width="20%" colspan=4> 
+				<comment id="__NSID__"><OBJECT id=em_evl_t_date tabIndex=10 
+					style="WIDTH: 70px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="ReadOnly" VALUE=true>
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+			<td width="10%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK " colspan=2  > 
+				<div align="right">대상기간</div></td>
+			<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+				<div align="right">From</div></td>
+			<td width="10%" colspan=2> 
+				<comment id="__NSID__"><OBJECT id=em_from_date tabIndex=10 
+					style="WIDTH: 70px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="ReadOnly" VALUE=true>
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+			<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+				<div align="right">To</div></td>
+    		<td width="20%" colspan=4> 
+				<comment id="__NSID__"><OBJECT id=em_to_date tabIndex=10 
+					style="WIDTH: 70px;" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="1">
+					<PARAM NAME="ReadOnly" VALUE=true>
+					<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		  </tr>
+      </table>
+</DIV>
+
+
+<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 90px; HEIGHT: 560px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="0">
+	<PARAM NAME="Format" VALUE="
+     <FC> Name='선택'   id=evl_yn EditStyle=CheckBox Align=Center HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=105  </C>
+     <C> Name='발주공종' ID=profession_wbs_name Edit=None   HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200  </C>
+     <C> Name='계약명' ID=sbc_name Edit=None   HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=250  </C>
+     <C> Name='업체명' ID=sbcr_name Edit=None   HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200  </C>
+	  <C> Name='구분' ID=order_class Edit=None  Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+	  		EditStyle=Combo Data='1:외주,2:납품설치,3:납품 '</C>
+     <C> Name='평가자' ID=evl_name Edit=None  Align=Center  HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=110  </C>
+     <C> Name='▼' ID=temp_col EditStyle=Popup   HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=20  </C>
+	  ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=long_name       Ctrl=tx_long_name   Param=value Enable=enable</C>
+	   <C>Col=evl_year        Ctrl=tx_evl_year    Param=value Enable=enable</C>
+	   <C>Col=evl_f_date      Ctrl=em_evl_f_date  Param=text  Enable=enable</C>
+	   <C>Col=evl_t_date      Ctrl=em_evl_t_date  Param=text  Enable=enable</C>
+	   <C>Col=from_date       Ctrl=em_from_date   Param=text  Enable=enable</C>
+	   <C>Col=to_date         Ctrl=em_to_date     Param=text  Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

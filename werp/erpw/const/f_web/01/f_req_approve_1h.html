@@ -1,0 +1,500 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_req_approve_1h.html				-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					-->
+<!-- 3. 기 능 정 의   : 월자금청구내역 승인 프로세스  	  				-->
+<!-- 4. 변 경 이 력   :  작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_user = top.frames['security'].user_id.value
+var is_user_name = top.frames['security'].gs_name.value
+var is_ds_1_addr = gs_home + '/const/f_web/01/f_req_approve_1q.jsp?arg_approve_tag='
+var is_tr_1_addr = gs_home + '/const/f_web/01/f_req_monthly_cat_1tr.jsp'
+var is_format_1              
+var is_format_2              
+var is_class = "2"
+var is_work_date= top.frames['security'].gs_sysdate.value
+is_format_1 =
+"<C> Name='현 장 명' ID=long_name suppress=1 Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=170 sort=true</C> " +
+" 			  <C> Name=실행예산 ID=budget_amt  edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90  SumText=@sum</C> "   +
+" 			  <G> Name=청구   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=현금 ID=req_cash  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=카드 ID=req_card  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=미불금 ID=req_unp  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> Name=청구합계   value={req_cash+req_card+req_unp}  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 SumText={Sum(req_cash+req_card+req_unp)} </C> "   +
+" 			  </G>"   +
+" 			  <G> Name=수시   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=현금 ID=add_cash  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=카드 ID=add_card  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=미불금 ID=add_unp  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> Name=청구합계  id=add_sum value={add_cash+add_card+add_unp}  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 SumText={Sum(add_cash+add_card+add_unp)} </C> "   +
+" 			  </G>"   +
+" 			  <G> Name=송금액   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=1차 ID=trans_amt1  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 SumText=@sum </C> "   +
+"          <C> NAME=2차 ID=trans_amt2  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 SumText=@sum </C> "   +
+"          </G>"+
+ "<C> Name='비 고' ID=memo  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=100 </C> "
+
+is_format_2 =
+"<C> Name='현 장 명' ID=long_name suppress=1 Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=170 sort=true</C> " +
+" 			  <C> Name=실행예산 ID=budget_amt  edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90  SumText=@sum</C> "   +
+" 			  <G> Name=청구   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=현금 ID=req_cash  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=카드 ID=req_card  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=미불금 ID=req_unp  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> Name=청구합계   value={req_cash+req_card+req_unp}  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 SumText={Sum(req_cash+req_card+req_unp)} </C> "   +
+" 			  </G>"   +
+" 			  <G> Name=수시   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=현금 ID=add_cash  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=카드 ID=add_card  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> NAME=미불금 ID=add_unp  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 SumText=@sum </C> "   +
+"          <C> Name=청구합계  id=add_sum value={add_cash+add_card+add_unp}  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 SumText={Sum(add_cash+add_card+add_unp)} </C> "   +
+" 			  </G>"   +
+" 			  <G> Name=송금액   HeadBgColor=#BBE0F4  HeadColor=BLACK  </C> "   +
+"          <C> NAME=1차 ID=trans_amt1  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 SumText=@sum </C> "   +
+"          <C> NAME=2차 ID=trans_amt2  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 SumText=@sum </C> "   +
+"          </G>"+
+ "<C> Name='비 고' ID=memo  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=100 </C> "
+
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{ 
+	var ls_tmp = em_date.text
+	is_work_date = ls_tmp.substr(0,4)+'.'+ls_tmp.substr(4,2)+'.01'
+
+	ds_1.DataID = is_ds_1_addr + is_class +'&arg_mnth=' + is_work_date
+	//alert(ds_1.DataID)
+	ds_1.SyncLoad=false
+
+	setTimeout('ds_1.Reset()',1)
+
+	if (is_class == "2") {
+		ds_1.SortExpr = "-request_dt" 
+	}
+	else {
+		ds_1.SortExpr = "-approve_dt"
+	}
+	ds_1.Sort();
+	
+}
+//---------------------------------------------------------------------------
+function req_detail()                        //내역 들어가기
+//---------------------------------------------------------------------------
+{
+   if (ds_1.RowPosition < 1) {
+      alert("선택한 내역이 없기때문에 들어갈수 없습니다")
+      return
+   }
+//	makeCookie("@y_chg_degree@",ds_1.NameValue(ds_1.RowPosition,"dept_code") + "@" + 
+	is_dept_name = ds_1.NameValue(ds_1.RowPosition,"long_name")
+	makeCookie("@f_req_monthly@",ds_1.NameValue(ds_1.RowPosition,"dept_code") + "@" + is_dept_name + "@" + 
+                                   ds_1.NameValue(ds_1.RowPosition,"req_mnth")+"@" +
+                                   'f_req_approve_1h.html')
+	
+	top.frames['main_ct'].location.href(gs_home + "/const/f_web/01/f_req_monthly_1h.html" +"?"+'r')
+	
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+//	gd_1.SetColumn("vat");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	 Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+//	 ds_1.AddRow()
+//	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+//	 ds_1.InsertRow(ds_1.RowPosition)
+//	 init_move()
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+//	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+//	     for (i=ds_1.CountRow ;i >0 ;i--)
+//	     {
+//	        if (ds_1.RowMark(i) == 1)
+//	               ds_1.DeleteRow(i)
+//	    }   
+//	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+//	   } 
+//	  else
+//	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+//var ls_chk=0
+//	if (ds_1.IsUpdated){
+//	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+     		tr_1.Post()
+			btnquery_onclick()
+//	   }
+// 	} 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------
+function gd_1_request()                   //요청자료조회
+//----------------------------------------------------------------
+{		
+		is_class = "2"
+	   gd_1.format = is_format_1             
+	   //bt_sungin.style.visibility="visible"	
+		bt_approve.disabled=false
+		bt_cancel.disabled=true
+		bt_reject.disabled=false
+		bt_add.disabled=true
+	   btnquery_onclick()
+	
+}
+//----------------------------------------------------------------
+function gd_1_approve()                   //승인자료조회
+//----------------------------------------------------------------
+{		
+		is_class = "3"
+	   gd_1.format = is_format_2             
+	   //bt_sungin.style.visibility="hidden"	
+	   bt_approve.disabled=true
+		bt_cancel.disabled=false
+		bt_reject.disabled=true
+		bt_add.disabled=false
+	   btnquery_onclick()
+	
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+}     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function chg_budget()                        //내역 들어가기 
+//---------------------------------------------------------------------------
+{
+   if (ds_1.RowPosition < 1) { 
+      alert("선택한 내역이 없기때문에 들어갈수 없습니다")
+      return
+   }   
+//	makeCookie("@y_chg_degree@",ds_1.NameValue(ds_1.RowPosition,"dept_code") + "@" + 
+   is_dept_name = ds_1.NameValue(ds_1.RowPosition,"long_name")
+  makeCookie("@y_chg_budget_detail@",ds_1.NameValue(ds_1.RowPosition,"dept_code") + "@" + is_dept_name + "@" + 
+                                   ds_1.NameValue(ds_1.RowPosition,"chg_no_seq")+"@" +
+                                   ds_1.NameValue(ds_1.RowPosition,"chg_degree")+"@" +
+                                   ds_1.NameValue(ds_1.RowPosition,"approve_class") + "@" + 
+                                   'y_approve_process_1h.html')
+	if  (ds_1.NameValue(ds_1.RowPosition,"approve_class") != "1")
+		top.frames['main_ct'].location.href(gs_home + "/const/y_web/01/y_chg_budget_child_1h.html" +"?"+'r')
+	else
+		top.frames['main_ct'].location.href(gs_home + "/const/y_web/01/y_chg_budget_child_1h.html" +"?"+'u')
+}
+
+//-------------------------------------------------------------------------------
+function f_add()                  //Stored Procedure Call 
+//--------------------------------------------------------------------------------
+{
+	dept_code = ds_1.namevalue(ds_1.rowposition, 'dept_code')
+	req_mnth = ds_1.namevalue(ds_1.rowposition, 'req_mnth')
+
+	ds_spcall.DataID = 'f_req_approve_add_procedure.jsp?arg_dept_code=' + dept_code + 
+																											 '&arg_yyyymm=' + req_mnth
+				//alert(ds_spcall.DataID)
+				ds_spcall.SyncLoad = true
+				ds_spcall.reset()		
+				btnquery_onclick()
+}
+//-------------------------------------------------------------------------------
+function f_approve()                  //승인처리
+//--------------------------------------------------------------------------------
+{
+
+	
+	if (is_class != "2") {            //승인자료를 조회하고 있을경우 
+		alert("요청자료만 승인처리 가능합니다")
+		return
+	}
+	ll_row = ds_1.RowPosition
+	if (ll_row < 1) {
+		alert("승인할 자료를 선택하시오")
+		return
+	}
+	
+	ds_1.namevalue(ll_row, 'approve_tag') = '3'
+	btnsave_onclick() 
+}
+//-------------------------------------------------------------------------------
+function f_cancel()                  //승인취소
+//--------------------------------------------------------------------------------
+{
+
+	
+	if (is_class != "3") {            //승인자료를 조회하고 있을경우 
+		alert("승인자료만 취소처리 가능합니다")
+		return
+	}
+	ll_row = ds_1.RowPosition
+	if (ll_row < 1) {
+		alert("취소할 자료를 선택하시오")
+		return
+	}
+	
+	ds_1.namevalue(ll_row, 'approve_tag') = '1'
+	btnsave_onclick() 
+}
+
+//-------------------------------------------------------------------------------
+function f_reject()                  //Stored Procedure Call 
+//--------------------------------------------------------------------------------
+{
+
+	
+	if (is_class != "2") {            //승인자료를 조회하고 있을경우 
+		alert("요청자료만 요청취소 처리 가능합니다")
+		return
+	}
+	ll_row = ds_1.RowPosition
+	if (ll_row < 1) {
+		alert("취소할 자료를 선택하시오")
+		return
+	}
+	
+	ds_1.namevalue(ll_row, 'approve_tag') = '1'
+	btnsave_onclick() 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	
+	bt_add.disabled=true
+
+	tr_1.Action = is_tr_1_addr 
+        top.frames['main_title'].div_r.style.visibility="visible"
+        top.frames['main_title'].div_u.style.visibility="hidden"
+        gd_1.format = is_format_1 
+	
+	is_work_date = is_work_date.substr(0, 8)+'01'
+	em_date.text = is_work_date
+	
+	gd_1_request()
+	//btnquery_onclick()
+ 
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+	if (colid == 'memo') {
+		gd_1.editable = true
+		gd_1.SetColumn(colid)
+
+	}
+	else{
+		gd_1.editable = false
+	}
+
+</script>
+
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+
+  if (nIndex == 1 ) {
+		gd_1_request()
+	}
+	else{
+		gd_1_approve()	
+	}
+  
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError() >
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+ds_1.RowPosition=row
+//chg_budget()
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:f_req_monthly_cat_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px;margin=0" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >		  
+<div class=main_div>
+	<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width=58px  class=font_green_bold>
+									청구년월
+							</td>
+							<td width=70px>
+									
+									<comment id="__NSID__"><OBJECT id=em_date 
+											 style="WIDTH: 70px; HEIGHT: 20px; background: white;" 
+											classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+											 <PARAM NAME="Alignment" VALUE="1">
+											 <PARAM NAME="IsComma" VALUE="0">
+											 <PARAM NAME="MaxLength" VALUE="6">
+											 <PARAM NAME="Format" VALUE="YYYY-MM">
+											 <PARAM NAME="Numeric" VALUE="0">
+											 <PARAM NAME="SelectAll" VALUE="-1">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+							</td>
+							<td width=25px>
+									<input id=img_fr type=button class="img_btnCalendar_S"
+												onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+												OnClick="var result = gn_Cal_Yymm(); if(!is_null(result)){ em_date.text = result.substr(0,6); is_work_date = result;} ; btnquery_onclick();">
+									</td>
+							<td width="*">&nbsp;</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+
+		<TR height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="100px">
+								<comment id="__NSID__"><OBJECT id=tb_1 
+											 style=" WIDTH: 100%; HEIGHT: 100%" 
+											 classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+										  <param name="BackColor"  value="#BBE0F4">
+										  <param name="TextColor"  value="BLACK">
+										  <PARAM NAME="Format" VALUE="
+											 <T>divid=tab_page_1 title='요청'</T>
+											 <T>divid=tab_page_2 title='승인'</T>"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+							
+							<td width="*">&nbsp;</td>
+							<td width="*">
+									<input id=bt_add type="button" value="청구내역조회"  class="img_btn6_1"
+											  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=req_detail()>
+									<input id=bt_reject type="button" value=" 요청취소" class="img_btn4_1"
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=f_reject()>
+									<input id=bt_approve type="button" value="승인처리"  class="img_btn4_1"
+											  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=f_approve()>
+									<input id=bt_cancel type="button" value="승인취소"  class="img_btn4_1"
+											  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=f_cancel()>
+									<input id=bt_add type="button" value="수시청구승인"  class="img_btn6_1"
+											  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=f_add()>
+									
+									
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+					<comment id="__NSID__"><OBJECT id=gd_1 
+						 style=" WIDTH: 100%; HEIGHT: 100%" 
+						 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+						<PARAM NAME="MultiRowSelect" VALUE="0">
+						<PARAM NAME="AutoInsert" VALUE="0">
+						<PARAM NAME="AllShowEdit" VALUE=true>
+						<PARAM NAME="BorderStyle"  VALUE=1>
+						<PARAM NAME="Editable" VALUE=true>
+						<PARAM NAME="ColSizing" VALUE="-1">
+						<PARAM NAME="SortView"  VALUE="Left">
+						<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</TD>
+		</TR>
+	</TABLE>
+</div>
+</BODY></HTML>

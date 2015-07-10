@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_leadership_suc_1h.html	  		            -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : 월드진단 자기평가				                  -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_suc = top.frames['security'].empno.value
+var is_work_date			//작업일
+var is_eval_code = '03'	//평가종류는 월드진단 리더쉽역량
+var is_self_comp			//피평가자 사업체
+var is_self_dept			//피평가자 부서
+var is_self_grade			//피평가자 직위
+var is_self_title			//피평가자 직책
+var is_suc_present_yn	//제출여부
+var is_return
+var is_ds_1_addr = gs_home + '/general/p_web/14/p_eval_leadership_detail_1q.jsp?arg_eval_degree='         
+var is_tr_1_addr = gs_home + '/general/p_web/14/p_eval_leadership_detail_1tr.jsp'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+	self_list()				//피평가자 리스트 조회
+  	ds_list_init_query()
+	
+	if (ccom_self_evaluator.CodeValue == ""){
+		ds_1.ClearData()
+		return
+	}
+	
+	//평가
+	ds_1.DataID = is_ds_1_addr + ccom_eval_degree.CodeValue + "&arg_self_evaluator=" + ccom_self_evaluator.CodeValue
+   ds_1.SyncLoad=true
+	ds_1.Reset()	
+}	
+//------------------------------------------------------------------------
+function ds_list_init_query()						// 목록 기본정보 조회
+//------------------------------------------------------------------------
+{	
+
+	if (is_suc_present_yn == 'Y'){	//제출이면 수정못함
+		top.frames['main_title'].div_u.style.visibility = "hidden"	
+		top.frames['main_title'].div_r.style.visibility = "visible"	
+		bt_present_yn.style.visibility = "hidden"
+  		gd_1.Editable = false  		
+	}
+	else{
+		top.frames['main_title'].div_u.style.visibility = "visible"	
+		top.frames['main_title'].div_r.style.visibility = "hidden"	
+		bt_present_yn.style.visibility = "visible"
+  		gd_1.Editable = true 
+  	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  
+  for (i=1 ;i<=ds_1.CountRow ;i++) {
+		if (ds_1.NameValue(i,"self_eval_score") > 5){
+			alert("평가 점수는 5점 이하로만 입력하셔야 합니다.")
+			gd_1.Focus()
+			ds_1.RowPosition = i
+			gd_1.SetColumn("self_eval_score")
+			return
+		}
+  }
+  		
+  if (ds_1.IsUpdated){
+  		if (confirm("변경되었습니다 저장하시겠습니까?")){
+  			if (ds_1.IsUpdated) {
+				for (i=1 ;i<=ds_1.CountRow ;i++) {
+					if (ds_1.NameValue(i, "spec_no_seq") == 0){		//자동순번이 0이면 건수가 없는 것임.
+						ds_1.UserStatus(i) = 1
+						ds_1.NameValue(i,"eval_code") 	  = is_eval_code								//평가종류
+						ds_1.NameValue(i,"eval_degree") 	  = ccom_eval_degree.CodeValue			//평가차수
+						ds_1.NameValue(i,"self_evaluator") = ccom_self_evaluator.CodeValue		//피평가자
+						ds_1.NameValue(i,"spec_no_seq")    = ds_1.NameValue(i, "b_spec_no_seq")	//조회한 자동순번 셋팅 
+					}
+		   	}
+				tr_1.Post()
+		   }
+		   
+		   btnquery_onclick()	// UserStatus를 사용하여 insert로 변경한것을 원상태로 복구하기 위해 재조회
+		}
+  }
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//---------------------------------------------------------------------------
+function present_yn()							// 제출
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		alert("변경된 사항을 먼저 저장하십시오!")
+		return
+	}
+	
+	for (i=1 ;i<=ds_1.CountRow ;i++) {
+		if (ds_1.NameValue(i,"self_eval_score") == 0){
+			alert("자기평가점수가 입력되지 않았습니다.")
+			gd_1.Focus()
+			ds_1.RowPosition = i
+			gd_1.SetColumn("self_eval_score")
+			return
+		}
+	}
+	
+	//제출여부를 'Y'로 셋팅
+	if (confirm("제출한 이후에는 수정할 수 없게 됩니다.\n제출하시겠습니까?")){
+		arg_cmd = " update p_eval_leadership		" + 
+			  		 "    set suc_present_yn = 'Y', " +
+			  		 "        suc_present_date = '" + is_work_date + "' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+			  		 "    and self_evaluator = '" + ccom_self_evaluator.CodeValue + "' " 
+		f_update_sql(arg_cmd)
+		
+		btnquery_onclick()
+	}
+}
+//---------------------------------------------------------------------------
+function self_list()                      // 피평가자 리스트조회
+//---------------------------------------------------------------------------
+{
+	var ls_where
+	
+	ls_where = " and a.suc_evaluator = '" + is_suc + "' "
+
+	ll_cnt = f_ds_select_q("ds_select","select a.self_evaluator select_1, b.emp_name select_2, " +
+												  "       a.suc_present_yn select_3, c.long_name select_4, " +
+												  "       d.grade_name select_5  " +
+   											  "  from p_eval_leadership a, " +
+   											  "       (select distinct resident_no, emp_name from p_pers_master) b, " +
+   											  "       z_code_dept c, " +
+   											  "       p_code_grade d " +
+   											  " where a.self_evaluator = b.resident_no " +
+   											  "   and a.self_dept_code = c.dept_code " +
+   											  "   and a.self_grade_code = d.grade_code " +
+   											  "   and a.eval_code = '" + is_eval_code + "' " +
+   											  "	and a.eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+   											  "   " + ls_where + " ")
+   
+   if (ll_cnt > 0){
+	   ccom_self_evaluator.Enable=true
+	   tx_self_dept_name.value  = ds_select.NameValue(1,"select_4")
+		tx_self_grade_name.value = ds_select.NameValue(1,"select_5")
+		is_suc_present_yn = ds_select.NameValue(1,"select_3")
+		ccom_self_evaluator.Index = 0		
+		is_return = 'true'
+   }
+	else{
+		ccom_self_evaluator.Enable=false
+		tx_self_dept_name.value  = ''
+		tx_self_grade_name.value = ''
+		is_suc_present_yn 		 = ''
+		is_return = 'false'		//피평가자가 없으면 수정권한을 안주기 위한것.
+	}
+}
+//---------------------------------------------------------------------------
+function eval_degree()                      // 평가차수 조회
+//---------------------------------------------------------------------------
+{
+  ll_cnt = f_ds_select_q("ds_degree","select eval_degree   select_1 " +
+  												 "  from p_eval_degree " +
+  												 " where eval_code = '" + is_eval_code + "' " +
+  												 " order by eval_degree desc ")
+  eval_base()		//평가기준 조회  												 
+}  
+//---------------------------------------------------------------------------
+function eval_base()                      // 평가기준 조회
+//---------------------------------------------------------------------------
+{
+	ll_cnt = f_ds_select_q("ds_base","select base_code select_1, base_name select_2 " +
+  												 "  from p_eval_base " +
+  												 " where eval_code = '" + is_eval_code + "' " +
+  												 "   and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+  												 " order by base_code ")  
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  
+  is_work_date = f_sysdate()
+  tr_1.Action = is_tr_1_addr
+  
+  eval_degree() 	//평가차수 조회
+  ccom_eval_degree.Index = 0
+  
+  if (is_return == 'false'){		//피평가자 리스트가 없으면..
+  		alert('피평가자 리스트가 없습니다.')
+  		top.frames['main_title'].div_u.style.visibility = "hidden"	
+  		bt_present_yn.style.visibility = "hidden"
+  		return
+  }
+  
+  
+  btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {		// Enter키를 치면서 점수 입력 가능하게.
+	    ds_1.RowPosition++
+}
+</script>
+<script language=JavaScript for=ccom_eval_degree event=onCloseUp()>
+	eval_base()		//평가기준 조회
+	btnquery_onclick()
+</SCRIPT>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code ds_update: " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_code
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_degree
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_base
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_leadership_detail_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 640px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <td width="11%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가차수</div></td>
+          	 <td width="16%" >
+			       <OBJECT id=ccom_eval_degree width=100px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_degree">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_1">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+         	<td width="11%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+					<div align="right">피평가자</div></td>
+				<td width="16%">
+				  	<OBJECT id=ccom_self_evaluator width=130px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_select">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_2">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+		      <td width="46%" colspan=3>    
+				  	<INPUT id=tx_self_grade_name size=10  disabled >
+	     		  	<INPUT id=tx_self_dept_name  size=25  disabled ></td>
+			</tr>
+      </table>
+</DIV>
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 650px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_present_yn type="button" value="&nbsp;제&nbsp;&nbsp;&nbsp;출&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=present_yn()>
+</div>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 730px; WIDTH: 270px; POSITION: absolute; TOP: 11px; HEIGHT: 10px">
+    <LABEL id=Label_1  
+        	style="LEFT: 0px; WIDTH: 270px; Color:Red; font-size:12px; "><평가기준>&nbsp;5:탁월&nbsp;4:우수&nbsp;3:보통&nbsp;2:미흡&nbsp;1:부족
+    </LABEL>
+</DIV>
+	   
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 33px;
+    HEIGHT: 99%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <FC> Name='순번'  id=b_seq width=50  align=center Edit=None BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가구분'  id=b_section_item    suppress=1  Edit=None EditStyle=Combo Data='1:공통역량(태도),2:공통역량(능력),3:''' width=100  BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가기준'  id=b_base_code width=150    suppress=2 Edit=None EditStyle=Lookup Data='ds_base:select_1:select_2' BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가항목'  id=b_detail_item width=600   BgColor=#F2F2F2 Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <C> Name='평가'  id=self_eval_score width=60  align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

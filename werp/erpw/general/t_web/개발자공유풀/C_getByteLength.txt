@@ -1,0 +1,32 @@
+function C_getByteLength(asValue)
+{
+	var byteLength = 0;
+	var	lsEsc = "%B2%B3%B4%B7%A8%AD%B1%D7%F7%B0%A7%B8%A1%BF%A4%B6%AE%C6%D0%AA%3F%3F%D8%BA%DE%BD%BC%BE%E6%F0%F8%DF%FE%B9";
+	
+	for (var i = 0; i < asValue.length; i++)
+	{
+		var oneChar = escape(asValue.charAt(i));
+		
+		if (oneChar.length == 1 )
+		{
+			byteLength ++;
+		}
+		else if (oneChar.indexOf("%u") != -1)
+		{
+			byteLength += 2;
+		}
+		else if (oneChar.indexOf("%") != -1)
+		{
+			if(lsEsc.indexOf(oneChar) != -1)
+			{
+				byteLength += 2;
+			}
+			else
+			{
+				byteLength += oneChar.length / 3;
+			}
+		}
+	}
+	
+	return byteLength;
+}

@@ -1,0 +1,646 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : v_inter_audit_result_1h.html							-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 내부감사 점수 입력										-->
+<!-- 4. 변 경 이 력   : 이준구 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+
+var is_ds_1_addr = gs_home + '/const/v_web/02/v_inter_audit_result_1q.jsp'       
+var is_ds_2_addr = gs_home + '/const/v_web/02/v_inter_audit_result_2q.jsp'       
+var is_ds_3_addr = gs_home + '/const/v_web/02/v_inter_audit_result_3q.jsp'       
+                 
+var is_tr_1_addr = gs_home + '/const/v_web/02/v_inter_audit_result_1tr.jsp'    
+var is_tr_2_addr = gs_home + '/const/v_web/02/v_inter_audit_result_2tr.jsp'    
+var is_tr_3_addr = gs_home + '/const/v_web/02/v_inter_audit_result_3tr.jsp' 
+var il_screen = 1
+var is_sec
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+    sql = " SELECT  " +
+         " part_code select_1, " +
+         " part_name select_2 " +
+         "  FROM V_INTER_AUDIT_RESULT_MASTER " +
+         " WHERE to_char(year,'yyyy') =  '"+em_year.text+"' " +
+         " AND half_year =  '"+ccom_half_year.codevalue+"' " ;
+   
+   ll_cnt = f_ds_select_q("ds_10", sql )   
+		   
+	btnquery_onclick1()   
+}
+//------------------------------------------------------------------------
+function btnquery_onclick1()                     // 조회  
+//------------------------------------------------------------------------
+{
+    var seq = 0
+ 
+		ds_1.DataID = is_ds_1_addr + '?arg_part_code=' + ccom_part.codevalue + '&arg_year=' + em_year.text + '&arg_half_year=' + ccom_half_year.codevalue
+		ds_1.SyncLoad=true
+		ds_1.Reset()	
+		
+		ds_2.DataID = is_ds_2_addr + '?arg_part_code=' + ccom_part.codevalue + '&arg_year=' + em_year.text + '&arg_half_year=' + ccom_half_year.codevalue
+		ds_2.SyncLoad=true
+		ds_2.Reset()	
+		
+		if ( ds_1.CountRow > 0 )
+			ta_review.value = ds_1.NameValue(ds_1.RowPosition,"review") 
+      else
+         ta_review.value = ""
+        
+		if ( ds_2.CountRow > 0 )
+			div_btnquery_onclick()   
+		else
+		   ds_3.clearData()
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+		ds_3.DataID = is_ds_3_addr + '?arg_part_code=' + ccom_part.codevalue + '&arg_year=' + em_year.text + '&arg_half_year=' + ccom_half_year.codevalue
+							+ '&arg_half_year=' + ccom_half_year.codevalue +'&arg_seq=' + ds_2.NameValue(ds_2.RowPosition,"seq") 
+							+ '&arg_comm_section=' + ds_2.NameValue(ds_2.RowPosition,"comm_section")
+		ds_3.SyncLoad=true
+		ds_3.Reset()	
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+    
+	
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+		
+}
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	if ( il_screen  == 1 ){ ds_1.Undo(ds_1.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 2 ){ ds_2.Undo(ds_2.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 3 ){ ds_3.Undo(ds_3.RowPosition) }                                  //해당 row만 취소한다.
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if ( ds_1.IsUpdated ||ds_2.IsUpdated ||  ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+			if ( ds_1.IsUpdated )
+			{		
+				if (f_check_date(em_ins_dt.text) == false )
+				{
+					alert("점검일자를 바르게 입력해주세요.")
+					return ;
+				}
+				
+			 		tr_1.Post()           
+			}
+			if ( ds_2.IsUpdated )
+			{
+			   for ( i=0 ; i <= ds_2.CountRow ; i++ )
+			   {
+			      if ( ds_2.NameValue(i,"section") ==  ds_2.NameValue(ds_2.RowPosition,"section")) 
+			       { 	ds_2.NameValue(i,"opinion") =  ds_2.NameValue(ds_2.RowPosition,"opinion")}
+			   }
+				tr_2.Post()  
+				
+			}
+			if ( ds_3.IsUpdated )
+			{
+				tr_3.Post()  
+			}			
+			return true
+		}
+		else
+		   return false
+	}
+
+	
+}
+//------------------------------------------------------------------------
+function ret_date()                     
+//------------------------------------------------------------------------
+{
+		var result = gn_Cal_Yymm(); 
+		if(!is_null(result))
+		{ 
+			em_year.text = result.substr(0,4) ; 
+			btnquery_onclick()
+		}
+
+}
+//------------------------------------------------------------------------
+function ret_ins_date()                     
+//------------------------------------------------------------------------
+{
+		var result = gn_Cal_Yyyymmdd(); 
+		if(!is_null(result))
+		{ 
+			em_ins_dt.text = result.substr(0,8) ; 
+		}
+
+}
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+	if (is_sec == 'r') return   // 조회권한일경우 
+	
+	switch ( il_screen )
+	{
+	case 1:
+      break;
+	case 2:
+	   break;
+	case 3:
+	    break;
+	}
+
+} 
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  
+//   f_set_resize()
+
+   top.frames['main_title'].mouse_over()
+
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+	tr_3.Action = is_tr_3_addr
+		
+	is_sec = gf_initial_security()
+	is_temp = is_sec
+   if (is_sec != 'r') {
+     is_temp = 'u'
+   }	
+	if (is_sec == 'r') {
+	   button_1.style.visibility='hidden'
+	   button_3.style.visibility='hidden'
+	   button_4.style.visibility='hidden'
+	   button_5.style.visibility='hidden'
+	   button_6.style.visibility='hidden'
+	   button_7.style.visibility='hidden'
+	}
+
+   today = new Date();
+   
+   em_year.text  = today.getFullYear();
+   
+	ccom_half_year.index = 0
+
+	btnquery_onclick()
+
+}
+
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+/*	var objArr=new Array('gd_1','gd_2','gd_3');
+	var xArr =new Array(false,false,true);
+	var yArr =new Array(true,true,true);
+
+	f_reSize(objArr, xArr, yArr);
+*/
+}
+//------------------------------------------------------------------------
+function gd_input(obj_value)                    
+//------------------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"review") = 	ta_review.value
+} 
+//------------------------------------------------------------------------
+function gd_input1(obj_value)                    
+//------------------------------------------------------------------------
+{
+//	ds_1.NameValue(ds_1.RowPosition,"opinion") = ta_opinion.value
+}  
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event               							           -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code(tr_2) : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_3 event=OnFail()>
+  alert("Error Code(tr_3) : " + tr_3.ErrorCode + "\n" + "Error Message : " + tr_3.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ccom_part event=onCloseUp()>
+	btnquery_onclick1()
+</script>
+
+<script language=JavaScript for=ccom_half_year event=onCloseUp()>
+	btnquery_onclick()
+</script>
+
+<script language="javascript"  for=gd_1 event=OnClick(Row,Colid)>
+//	alert(btnsave_onclick());
+	
+	if ( btnsave_onclick() == 'false' )
+	   ds_2.Undo(ds_2.RowPosition) 
+/*	
+	if ( ds_3.IsUpdated )
+	{
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{	
+			tr_2.Post()  
+			ds_2.NameValue(ds_2.RowPosition,"point")  =  ds_3.NameValue(ds_3.RowPosition,"point")
+		} 
+	}
+*/
+	div_btnquery_onclick()
+</script>
+<SCRIPT language="javascript"  for=gd_2 event=OnClick(Row,Colid)>
+	if ( Colid == "select_type") 
+	{
+		for (i=1 ;i <= ds_3.CountRow + 1;i++ ) {
+			if(i == Row) 
+			{ds_3.NameValue(Row, "select_type") = 'T' }
+			else 
+			{ds_3.NameValue(i, "select_type") = 'F' }
+		}
+	}
+</SCRIPT>
+
+<script language=JavaScript for=gd_2 event=OnLButtonUp(row,colid,xpos,ypos)>
+
+ds_2.NameValue(ds_2.RowPosition,"point")  =  ds_3.NameValue(ds_3.RowPosition,"point")
+
+/*   if ( colid	== "select_type" )
+   {
+		if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+		{ 
+			tr_2.Post()  
+			
+			ds_2.NameValue(ds_2.RowPosition,"point")  =  ds_3.NameValue(ds_3.RowPosition,"point")
+       
+   	} 
+	}		
+*/	
+</script>
+<script language=JavaScript  for=gd_1 event=onKeyPress(keycode)>
+if ( keycode == 38 || keycode == 40 )
+	div_btnquery_onclick()
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>    
+<comment id="__NSID__"><OBJECT id=ds_10
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>    
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:v_inter_audit_result_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<comment id="__NSID__"><OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:v_inter_audit_result_2tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+
+<comment id="__NSID__"><OBJECT id=tr_3 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:v_inter_audit_result_3tr=ds_3)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>		
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->	
+
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr class=td_green >
+		<td colspan=3 height="22" >
+			<table width="100%" border=0 cellspacing="0" cellpadding="0">
+				<tr >
+					<td>	
+						<table height="20" border=0 style="border-collapse: collapse" style="font-size:12px" >
+							<tr>
+					         <td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+								<td height="20" width="32" class=font_green_bold>연도</td>
+					         <td > 
+									<comment id="__NSID__"><OBJECT id=em_year align="absmiddle"  onkeyup="btnquery_onclick()"
+									style="WIDTH: 80px; HEIGHT: 20px; background-color:white " size=12  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+									<param name=Format value="YYYY">
+									<param name=ReadOnlyBackColor  value=silver>
+									<param name=Alignment      value=1>
+									<param name=Numeric value=false>
+									<param name=PromptChar   value="_">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+									
+									<!--<input align="absmiddle" id="btn_cal" type="button"  class="img_btnCalendar_S" value="" style="position:relative; left:5px ; " onclick=ret_date() 
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">-->&nbsp;
+									<comment id="__NSID__"><OBJECT id=ccom_half_year width=100px  size=12 classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F align="absmiddle" >
+									<param name=Data  value="A^상반기,B^하반기">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+									
+								</td>
+							</tr>
+						</table>
+					</td>	
+					<td width="599">
+						<table height=20 border=0 cellpadding=0 cellspacing=0 bordercolordark="#C0C0C0" bordercolorlight="#C0C0C0">
+							<tr>
+					         <td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+								<td class=font_green_bold width="32" >부서</td>
+								<td>
+									<comment id="__NSID__"><OBJECT id=ccom_part width=150 
+									classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F >
+									<PARAM NAME="ComboDataID" VALUE="ds_10">
+									<PARAM NAME="CodeCColumn" VALUE="select_1">
+									<PARAM NAME="DataCColumn" VALUE="select_2">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+								</td>
+							</tr>
+						</table>	
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="22">
+		<td height="20" class="font_green_bold">
+			<table border=0 cellpadding=0 cellspacing=0 width="100%">
+				<tr>
+					<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+					</td>
+					<td class="font_green_bold" >구분내역</td>
+				</tr>
+			</table>
+		</td>
+		<td width="5"></td>		
+		<td>
+			<table border=0 cellpadding=0 cellspacing=0 width="100%">
+				<tr>
+					<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+					</td>
+					<td class="font_green_bold" >상세내역</td>
+				</tr>
+			</table>			
+		</td>
+		<td width="5"></td>
+	</tr>
+	<tr>
+		<td width="60%">	
+			<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+			    style="FONT-SIZE: 12px; Z-INDEX: 105; width=100% ; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_2">
+			   <param name=SortView  value="Left">
+				<param name=ViewSummary	value=1>
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=구분 ID=section   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80 Suppress=2 SumText='평균'  SumColor=Black SumBgColor=Pink</C> 
+				  <C> Name=점검내용 ID=ins_contents  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=239 Suppress=1 SumColor=Black SumBgColor=Pink</C> 
+				  <C> Name=점검기준 ID=ins_basis  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 SumColor=Black SumBgColor=Pink</C> 
+				  <C> Name=평점 ID=point  SumText=@avg  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center Width=59 SumColor=Black SumBgColor=Pink</C> 
+
+			     ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td width="5"></td>
+		<td  width="40%" valign="top"   >	
+			<table width="100%"  bordercolordark="#C0C0C0" border="0" style="border-collapse: collapse" cellpadding="0" cellspacing="0" >
+				<tr>
+					<td width="100%" height="150">
+						<table width="100%" height="100%" border=0 bordercolordark="#C0C0C0" style="border-collapse: collapse" cellpadding="0" >
+							<tr>
+								<td>
+									<comment id="__NSID__"><OBJECT id=gd_2 onfocus="get_focus(2)"
+									    style="FONT-SIZE: 12px; Z-INDEX: 105; width=100% ; HEIGHT: 100%" 
+									    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+										<PARAM NAME="MultiRowSelect" VALUE="0">
+										<PARAM NAME="AllShowEdit" VALUE="-1">
+									   <PARAM NAME="BorderStyle"  VALUE=1>
+										<PARAM NAME="Editable" VALUE="-1">
+										<PARAM NAME="ColSizing" VALUE="-1">
+										<PARAM NAME="DataID" VALUE="ds_3">
+									   <param name=SortView  value="Left">
+										<param name="UsingOneClick" value="1">
+										<PARAM NAME="Format" VALUE=" 
+   									  <C> Name=내역 ID=contents edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=225 </C> 
+										  <C> Name=배점 ID=point  edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=75 </C> 
+										  <C> Name=선택 ID=select_type   EditStyle='CheckBox' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=75 </C> 
+									     ">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script> 
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr height="20px">
+					<td>
+						<table border=0 cellpadding=0 cellspacing=0 width="100%">
+							<tr>
+								<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+								</td>
+								<td class="font_green_bold" >구분별 의견</td>
+							</tr>
+						</table>
+					</td>			
+				</tr>				
+				<tr>
+					<td>
+						<TEXTAREA id=ta_opinion maxLength='500' rows=9 cols=62 name="S4"  style="font-size:12px" onkeyup="LimitTextLength(this)" ></TEXTAREA>
+					</td>
+				</tr>
+				<tr height="5">
+					<td></td>
+				</tr>
+				<tr height="5">
+					<td>
+						<table border=0 cellpadding=0 cellspacing=0 width="100%">
+							<tr>
+								<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+								</td>
+								<td class="font_green_bold" >점검사항</td>
+							</tr>
+						</table>	
+					</td>
+				</tr>
+				<tr height="60">
+					<td>
+						<table  border="1" width="100%" height="100%" cellspacing="0" cellpadding="0"  >
+							<tr>
+							   <td align=right width="24%" BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+								점검일자&nbsp</td>
+								<td width="75%" align="left">
+									<comment id="__NSID__"><OBJECT id=em_ins_dt align="absmiddle" 
+									style="WIDTH: 86px; HEIGHT: 20px; FONT-SIZE: 13px" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+									<param name=Format value="YYYY-MM-DD">
+									<param name=ReadOnlyBackColor  value=silver>
+									<param name=Alignment      value=1>
+									<param name=Numeric value=false>
+									<param name=PromptChar   value="_">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+									<input id="btn_cal" type="button"  class="img_btnCalendar_S" style="position:relative; left:5px ; FONT-SIZE: 10px" onclick=ret_ins_date() 
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">&nbsp;&nbsp;
+								</td>	
+							</tr>
+							<tr>
+							   <td align=right width="24%" BGCOLOR="#BBE0F4" style="COLOR: BLACK" >
+								점검자&nbsp</td>
+								<td>
+								   <table  width="100%" height="20" border=0 cellpadding=0 cellspacing=0 style="font-size:12px">
+								   	<tr>
+										   <td align="left" width="9%" > 직위
+								   	   <td align="center" >
+								      		<comment id="__NSID__"><OBJECT id=em_position			style="WIDTH: 100px"
+												classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F >
+												<param name=SelectAll          value="1">
+												<param name=Alignment  value=0>
+												<param name=ReadOnlyBackColor  value=silver>
+												<param name=Numeric value=false>
+							               <param name=GeneralEdit   value="true">
+												</OBJECT></comment> <script> __ws__(__NSID__);</script>
+											</td>	
+										   <td align=right width="15%">
+											성명&nbsp;</td>
+										   <td align="center" width="105">
+								      		<comment id="__NSID__"><OBJECT id=em_inspector			style="WIDTH: 120px"
+												classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F >
+												<param name=SelectAll          value="1">
+												<param name=Alignment  value=0>
+												<param name=ReadOnlyBackColor  value=silver>
+												<param name=Numeric value=false>
+							               <param name=GeneralEdit   value="true">
+												</OBJECT></comment> <script> __ws__(__NSID__);</script>
+											</td>
+								   	</tr>
+								   </table>
+								</td>
+							</tr>
+						</table>
+					</td>	
+				</tr>
+				<tr  height="5">
+					<td></td>
+				</tr>
+				<tr height="20px">
+					<td>
+						<table border=0 cellpadding=0 cellspacing=0 width="100%">
+							<tr>
+								<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+								</td>
+								<td class="font_green_bold" >종합의견</td>
+							</tr>
+						</table>
+					</td>			
+				</tr>
+				<tr valign="top">	
+					<td>
+						<TEXTAREA id=ta_review maxLength='500' rows=9 cols=62 name="S3" style="font-size:12px" onkeyup="gd_input(this.value);LimitTextLength(this)" ></TEXTAREA>
+					</td>
+				</tr>
+			</table>
+		</td>				
+	</tr>				
+</table>
+
+
+<comment id="__NSID__"><OBJECT id=bd_data1 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 >
+		<PARAM NAME="DataID" VALUE="ds_1">
+		<PARAM NAME="BindInfo" VALUE="
+   	<C>Col=ins_dt Ctrl=em_ins_dt Param=text Enable=enable</C>
+   	<C>Col=position Ctrl=em_position Param=text Enable=enable</C>
+	  	<C>Col=inspector Ctrl=em_inspector Param=text Enable=enable</C>
+			">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=bd_data1 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 >
+		<PARAM NAME="DataID" VALUE="ds_2">
+		<PARAM NAME="BindInfo" VALUE="
+   	<C>Col=opinion  Ctrl=ta_opinion Param=Value </C>
+		">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</div>
+</BODY></HTML>

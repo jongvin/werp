@@ -1,0 +1,1 @@
+Create Sequence SQ_T_AUTO_B_F_GET;

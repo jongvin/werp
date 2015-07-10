@@ -1,0 +1,20 @@
+select  a.gubun,a.detail_name,a.mm,a.cnt, b.tot_cnt, trunc(a.cnt / b.tot_cnt * 100,1)  per
+from (
+    SELECT  trunc(a.receive_date,'mm') mm,nvl(b.sido,'00') gubun, b.sido detail_name,  count(nvl(b.sido,1)) cnt
+       from r1_proj a, z_code_zip b
+       where a.zip_number = b.zipcode
+         and a.receive_date >= '2005.01.01'
+         and a.receive_date < '2006.01.01'
+       group by trunc(a.receive_date,'mm'),nvl(b.sido,'00'),b.sido
+      ) a,
+   (
+    SELECT  trunc(a.receive_date,'mm') mm,count(a.receive_date) tot_cnt
+       from r1_proj a
+       where a.receive_date >= '2005.01.01'
+         and a.receive_date < '2006.01.01'
+       group by trunc(a.receive_date,'mm')) b
+  where a.mm = b.mm
+  order by a.gubun,a.mm ;
+
+
+;

@@ -1,0 +1,224 @@
+CREATE OR REPLACE PROCEDURE Sp_T_Set_Emp_Auth
+(
+	Ar_EMPNO			VARCHAR2,
+	Ar_OPTION			VARCHAR2,
+	Ar_CRTUSERNO		VARCHAR2
+)
+IS
+	lsDeptCode			Z_AUTHORITY_USER.DEPT_CODE%TYPE;
+	lsCompCode			T_COMPANY.COMP_CODE%TYPE;
+	lsTeamDeptCode	Z_AUTHORITY_USER.DEPT_CODE%TYPE;
+BEGIN
+	DELETE	T_EMPNO_AUTH_DEPT
+	WHERE	EMPNO = Ar_EMPNO;
+
+	DELETE	T_EMPNO_AUTH_COMP
+	WHERE	EMPNO = Ar_EMPNO;
+
+	IF Ar_OPTION = '1' THEN	--자기사업장 자기부서
+		BEGIN
+			SELECT
+				a.DEPT_CODE,
+				b.COMP_CODE
+			INTO
+				lsDeptCode,
+				lsCompCode
+			FROM	Z_AUTHORITY_USER a,
+					T_DEPT_CODE b
+			WHERE	a.EMPNO = Ar_EMPNO
+			AND		a.DEPT_CODE = b.DEPT_CODE;
+		EXCEPTION WHEN NO_DATA_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20009,'해당 사용자의 부서 및 사업장을 검색할 수 없습니다.');
+		END;
+		INSERT INTO T_EMPNO_AUTH_COMP
+		(
+			EMPNO,
+			COMP_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		VALUES
+		(
+			Ar_EMPNO,
+			lsCompCode,
+			Ar_CRTUSERNO,
+			SYSDATE
+		);
+		INSERT INTO T_EMPNO_AUTH_DEPT
+		(
+			EMPNO,
+			COMP_CODE,
+			DEPT_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		VALUES
+		(
+			Ar_EMPNO,
+			lsCompCode,
+			lsDeptCode,
+			Ar_CRTUSERNO,
+			SYSDATE
+		);
+	ELSIF Ar_OPTION = '2' THEN -- 자기 사업장 자기 팀
+		BEGIN
+			SELECT
+				a.DEPT_CODE,
+				b.COMP_CODE
+			INTO
+				lsDeptCode,
+				lsCompCode
+			FROM	Z_AUTHORITY_USER a,
+					T_DEPT_CODE b
+			WHERE	a.EMPNO = Ar_EMPNO
+			AND		a.DEPT_CODE = b.DEPT_CODE;
+		EXCEPTION WHEN NO_DATA_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20009,'해당 사용자의 부서 및 사업장을 검색할 수 없습니다.');
+		END;
+		INSERT INTO T_EMPNO_AUTH_COMP
+		(
+			EMPNO,
+			COMP_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		VALUES
+		(
+			Ar_EMPNO,
+			lsCompCode,
+			Ar_CRTUSERNO,
+			SYSDATE
+		);
+		
+		-- 상위부서에 팀이 있나...
+		SELECT
+			DEPT_CODE
+		INTO lsTeamDeptCode
+		FROM T_DEPT_CODE_ORG
+		WHERE DEPT_KIND_TAG='0300'
+		CONNECT BY DEPT_CODE=PRIOR P_DEPT_CODE
+		START WITH DEPT_CODE=lsDeptCode;
+		
+		IF lsTeamDeptCode IS NOT NULL THEN
+		   -- 팀이 존재하면 그 팀포함 하위부서 전부
+			INSERT INTO T_EMPNO_AUTH_DEPT
+			(
+				EMPNO,
+				COMP_CODE,
+				DEPT_CODE,
+				CRTUSERNO,
+				CRTDATE
+			)
+			SELECT
+				Ar_EMPNO,
+				lsCompCode,
+				DEPT_CODE,
+				Ar_CRTUSERNO,
+				SYSDATE
+			FROM T_DEPT_CODE_ORG
+			CONNECT BY P_DEPT_CODE=PRIOR DEPT_CODE
+			START WITH DEPT_CODE=lsTeamDeptCode;
+		ELSE
+			-- 아니면 자기부터 하위 전부
+			INSERT INTO T_EMPNO_AUTH_DEPT
+			(
+				EMPNO,
+				COMP_CODE,
+				DEPT_CODE,
+				CRTUSERNO,
+				CRTDATE
+			)
+			SELECT
+				Ar_EMPNO,
+				lsCompCode,
+				DEPT_CODE,
+				Ar_CRTUSERNO,
+				SYSDATE
+			FROM T_DEPT_CODE_ORG
+			CONNECT BY P_DEPT_CODE=PRIOR DEPT_CODE
+			START WITH DEPT_CODE=lsDeptCode;
+		END IF;
+	ELSIF Ar_OPTION = '3' THEN -- 자기 사업장 전 부서
+		BEGIN
+			SELECT
+				a.DEPT_CODE,
+				b.COMP_CODE
+			INTO
+				lsDeptCode,
+				lsCompCode
+			FROM	Z_AUTHORITY_USER a,
+					T_DEPT_CODE b
+			WHERE	a.EMPNO = Ar_EMPNO
+			AND		a.DEPT_CODE = b.DEPT_CODE;
+		EXCEPTION WHEN NO_DATA_FOUND THEN
+			RAISE_APPLICATION_ERROR(-20009,'해당 사용자의 부서 및 사업장을 검색할 수 없습니다.');
+		END;
+		INSERT INTO T_EMPNO_AUTH_COMP
+		(
+			EMPNO,
+			COMP_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		VALUES
+		(
+			Ar_EMPNO,
+			lsCompCode,
+			Ar_CRTUSERNO,
+			SYSDATE
+		);
+		INSERT INTO T_EMPNO_AUTH_DEPT
+		(
+			EMPNO,
+			COMP_CODE,
+			DEPT_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		SELECT
+			Ar_EMPNO,
+			COMP_CODE,
+			DEPT_CODE,
+			Ar_CRTUSERNO,
+			SYSDATE
+		FROM	T_DEPT_CODE a
+		WHERE	a.COMP_CODE = lsCompCode;
+	ELSIF Ar_OPTION = '4' THEN --전 사업장 전 부서
+		INSERT INTO T_EMPNO_AUTH_COMP
+		(
+			EMPNO,
+			COMP_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		SELECT
+			Ar_EMPNO,
+			COMP_CODE,
+			Ar_CRTUSERNO,
+			SYSDATE
+		FROM	T_COMPANY;
+		INSERT INTO T_EMPNO_AUTH_DEPT
+		(
+			EMPNO,
+			COMP_CODE,
+			DEPT_CODE,
+			CRTUSERNO,
+			CRTDATE
+		)
+		SELECT
+			Ar_EMPNO,
+			COMP_CODE,
+			DEPT_CODE,
+			Ar_CRTUSERNO,
+			SYSDATE
+		FROM	T_DEPT_CODE a
+		WHERE	EXISTS
+		(
+			SELECT
+				NULL
+			FROM	T_COMPANY b
+			WHERE	a.COMP_CODE = b.COMP_CODE
+		);
+	END IF;
+END;
+/

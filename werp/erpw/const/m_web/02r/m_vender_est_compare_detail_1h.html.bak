@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_vender_est_compare_detail_1h.html				-->
+<!-- 2. 유형(시나리오): 조회및 입력												-->
+<!-- 3. 기 능 정 의   : 자재업체별견적내역  		                		-->
+<!-- 4. 변 경 이 력   : 권미생 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var is_ds_1_addr = 'm_vender_est_compare_detail_1q.jsp?arg_date='      //견적 대비(cross tab)
+var is_yymm=""
+var ii_seq
+var is_title
+var is_html=""                    //되돌아갈 html주소 
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+   ds_1.DataID = is_ds_1_addr + is_yymm + '&arg_seq=' + ii_seq 
+   ds_1.SyncLoad=true
+   ds_1.Reset()  
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+//   rt_1.Preview()
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기
+//----------------------------------------------------------------
+{
+   if  (! confirm("작업이 끝날때까지 기다려주세요")) return
+   else
+      gd_1.GridToExcel('견적대비표','c:\aa.xls',0)   
+}
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+ top.frames['main_ct'].location.href(is_html +"?"+'u')
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	var result="";
+	var array = new Array();
+   	result = readCookie("@m_vender_est_compare_detail@")
+	array = result.split("@");
+	is_yymm      = array[0]
+	ii_seq       = array[1]
+	is_title     = array[2]
+	is_html      = array[3]	
+
+	top.frames['main_title'].title_name.value = " 견적대비 "         
+	dept_name.value = is_title + "[" + is_yymm + " - " + ii_seq + "]"
+	btnquery_onclick()
+}
+</SCRIPT>
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+	<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+		alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+	</SCRIPT>
+	<OBJECT id=ds_1
+		style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+		classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	</OBJECT>
+	<object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+		<param name=Logical value=true>
+		<param name=DataID  value="ds_1">
+		<param name=GroupExpr value="band_tag:estimatedetailseq:long_name:mtrcode:name:ssize:unitcode:qty:sysdate,sbcr_name,chgprice:comp_chgamt:comp_chgamt1">
+	</object>
+<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 10px; WIDTH: 408px; POSITION: absolute; TOP: 7px" readonly >
+<INPUT type=button  style="Z_INDEX: 108; LEFT: 500px; top:7px;POSITION: absolute; " class="img_btnClose"  value=닫기 onclick=close_rtn() >
+<INPUT id=bt_excel_gd_parent_query type=button   style="Z_INDEX: 108; LEFT: 550px; top:7px;POSITION: absolute; " class="img_btn2_1"  value=엑셀 onclick=excel_down() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+<OBJECT id=gd_1 style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2px; WIDTH:1005px; POSITION: absolute; TOP: 30px; HEIGHT: 95%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+    <PARAM name=SortView value="Right">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="rds_1">
+	<PARAM NAME="Format" VALUE=' 
+	<FC> Name="순번" ID=estimatedetailseq Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=30 </C>
+	<FC> Name="현장명" ID=long_name sort=true Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=150 </C>
+	<FC> Name="명칭" ID=name sort=true Edit=None  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=180 </C> 
+	<FC> Name="규격" ID=ssize sort=true Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=150 </C> 
+	<FC> Name="단위" ID=unitcode sort=true Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=40 </C> 
+	<FC> Name="수량" ID=qty sort=true Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor=#F2F2F2 Width=70 </C> 
+	<R> 
+		<G>name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK   
+		<C>ID=chgprice_$$     name=단가   width=70   HeadBgColor=#BBE0F4  HeadColor=BLACK </C> 
+		<C>ID=comp_chgamt_$$     name=금액   width=90   HeadBgColor=#BBE0F4  HeadColor=BLACK  SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+		</G>
+	</R>
+	'>
+</OBJECT>
+</BODY></HTML>

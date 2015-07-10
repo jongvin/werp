@@ -1,0 +1,582 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************				-->
+<!-- 1. 프로그램 id   : y_input_col_tag_1h.html					-->
+<!-- 2. 유형(시나리오): 조회및 수정															-->
+<!-- 3. 기 능 정 의   : 냉역조회 및 비목구분/분개내역 항목입력 -->
+<!-- 4. 변 경 이 력   :  임종빈 작성														-->
+<!-- 5. 관련프로그램  :																			-->
+<!-- 6. 특 기 사 항   :	-->
+<!-- *********************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE>내역분할 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_ds_1_addr = 'y_budget_child_div2_1q.jsp?arg_dept_code='
+var is_tr_1_addr = '/werp/erpw' + '/const/y_web/03/y_budget_child_div_1tr.jsp'
+var is_ds_seq_addr = '/werp/erpw' + '/const/y_web/00/y_spec_unq_no_1q.jsp'                 // seq_no구하기 
+//var is_tr_1_addr = 'y_budget_child_div_1tr.jsp'
+
+var is_dept_code			
+var is_chg_no_seq
+var is_spec_no_seq
+var is_spec_unq_num	
+var is_div_rel_num
+var is_empname			
+
+var is_amt 
+var is_qty
+
+is_format_1 = "<FC>show=false Name='' ID=detail_code edit=none color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </FC>" +
+              "<FC> Name='순번' ID=no_seq  edit=none color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=35 </FC> " + 
+	           "<FC>show=false Name='내역코드' ID=detail_code edit=none color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </FC>" +
+	           "<FC> Name='명  칭' ID=name edit=none color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=170 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink</FC>" +
+	           "<C> Name='규  격' ID=ssize  color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=155 </C>" +
+	           "<C> Name='단위' ID=unit edit=none color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+	           "<G> Name='실         행' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=qty color=@ucoltex BgColor=@ucolor_1 HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13 SumText=@sum  SumBgColor=Pink</C>" +
+	           "     <C> Name=단가 ID=price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Edit=None  Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=amt color=@ucoltex  Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "  <X> Name='  실         행 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=mat_price color=@ucoltex color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=mat_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +  
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G> " + 
+	           "   <G> Name='외주비' show=false BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=sub_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=sub_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "<G> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=cnt_qty color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=단가 ID=cnt_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_amt color=@ucoltex Edit=None  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "<X> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_mat_amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum      SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " 
+                               
+is_format_2 = "<FC> Name='순번' ID=no_seq color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=35 </FC> " + 
+	           "<FC> Name='내역코드' ID=detail_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </FC>" +
+	           "<FC> Name='명  칭' ID=name color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=200 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink</FC>" +
+	           "<C> Name='규  격' ID=ssize color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=120 </C>" +
+	           "<C> Name='단위' ID=unit color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+	           "<X> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=cnt_qty color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "   <G> Name='합  계' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_amt color=@ucoltex Edit=None  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_mat_amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                        SumText=@sum      SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " 
+                               
+is_format_3 = "<FC> Name='순번' ID=no_seq color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=50 </FC> " + 
+	           "<FC> Name='내역코드' ID=detail_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </FC>" +
+	           "<FC> Name='명    칭' ID=name color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=200 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink</FC>" +
+	           "<FC> Name='규  격' ID=ssize color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=120 </FC>" +
+	           "<C> Name='단 위' ID=unit color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+	           "<X> Name='  실         행' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=qty color=@ucoltex BgColor=@ucolor_1 HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "   <G> Name='  합  계 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  재  료 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=mat_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +  
+	           "   <G> Name='  노 무 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  외주비 ' show=false  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=sub_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=sub_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90" +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "   <G> Name='  경 비 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " 
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">                                
+                                
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  is_chg_no_seq + 
+              "&arg_spec_unq_num="  +  is_spec_unq_num+
+				  "&arg_div_rel_num=" + is_div_rel_num
+           
+	ds_1.SyncLoad=true
+	//gd_1.redraw = false
+	//alert(ds_1.dataid)
+	ds_1.reset()
+
+	is_qty = ds_1.Sum(ds_1.ColumnIndex('qty'),0,0);  
+	is_amt = ds_1.Sum(ds_1.ColumnIndex('amt'),0,0)
+
+	
+	memo.value = ' *합계가  원금액: '+is_amt+ ' 과 틀리면 저장되지않습니다* '
+}
+//---------------------------------------------------------------
+function Doit()
+//---------------------------------------------------------------
+{
+	
+	
+	if  (confirm("추가내역을 확정/저장 하시겠습니까?")) {
+				
+	        tr_1.Action = is_tr_1_addr
+			  //alert(tr_1.action)
+			  tr_1.Post()
+			window.returnValue = "ret";
+			  //window.close()
+			  
+			  /*
+			  ds_spcall.DataID = 'y_budget_div_procedure.jsp?arg_dept_code='+ is_dept_code +
+	                                                    '&arg_spec_unq_num=' + is_spec_unq_num + 
+	                                                    '&arg_qty_org=' +  em_qty_org.text+
+																		 '&arg_qty_new=' + em_qty_new.text+
+																		 '&arg_cnt_qty_org=' + em_cnt_qty_org.text+
+																		 '&arg_cnt_qty_new=' + em_cnt_qty_new.text+
+																		 '&arg_no_seq_new=' + tx_no_seq_new.value+
+																		 '&arg_empname=' + is_empname
+	        //alert(ds_spcall.dataid)
+	        ds_spcall.SyncLoad = true
+	        ds_spcall.reset()
+				*/
+	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_temp
+	if (ds_1.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			
+			var ls_amt = ds_1.NameSum('amt',0,0);
+			var ls_qty = ds_1.NameSum('qty',0,0);
+			
+			if (is_amt != ls_amt) {
+				alert('총금액이 변경되었습니다/저장불가')
+				return
+			}
+
+			for (i=ds_1.CountRow ;i >1 ;i--){  //순번체크
+				if ( ds_1.SysStatus(i) == 1){;
+
+					f_ds_select_q("ds_no_seq","select count(*) select_1  from y_budget_detail where dept_code ='"+is_dept_code+"'"+
+																																											 " and chg_no_seq ='"+is_chg_no_seq+"'"+
+																																											 " and spec_no_seq ='"+is_spec_no_seq+"'"+
+																																											 " and no_seq ='"+ds_1.namevalue(i,'no_seq')+"'") // 아파트 상가
+					if (ds_no_seq.namevalue(1,'select_1') > 0){
+						alert('내역에서 사용된순번입니다/ 순번을조정하세요')
+						ds_1.rowposition=i
+						gd_1.SetColumn('no_seq')
+						return
+					}
+				}
+
+			}
+
+			ds_seq.DataID = is_ds_seq_addr   
+			ds_seq.SyncLoad=true;                     // seq no 구하기
+
+			for (i=ds_1.CountRow ;i >0 ;i--){
+				
+				if ( ds_1.SysStatus(i) == 1){;
+					ds_seq.reset()
+					ds_1.NameValue(i,"spec_unq_num") = ds_seq.NameValue(1,"nextval")
+				}
+				ds_1.namevalue(i, 'div_rel_num') = ds_1.namevalue(1, 'spec_unq_num');
+				ds_1.namevalue(i, 'remark') = '내역분할'
+				
+			}
+			Doit()
+			is_div_rel_num = ds_1.namevalue(1, 'spec_unq_num')
+		}
+	}
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+	btnsave_onclick()
+	
+	window.close();
+}
+//----------------------------------------------------------------
+function btnadd_onclick()
+//----------------------------------------------------------------
+{	var row 
+
+	if ( !(ds_1.countrow > 0) ){  //기존에 조회된로우가 없으면 추가금지
+		return
+	}
+	
+	ds_1.addrow()
+
+	row = ds_1.rowposition;
+	
+	gd_1.redraw = false
+
+	//alert(ds_1.CountColumn)
+	for ( i=1; i<= ds_1.CountColumn; i++) {
+		ds_1.ColumnValue(row, i) =  ds_1.ColumnValue(1, i)
+	}
+	
+
+	ds_1.namevalue(row, 'no_seq') = ds_1.namevalue(row-1, 'no_seq')+1
+
+	ds_1.namevalue(row, 'qty') = 0;
+	ds_1.namevalue(row, 'price') = 0;
+
+	ds_1.namevalue(row, 'lab_price') = 0;
+	ds_1.namevalue(row, 'mat_price') = 0;
+	ds_1.namevalue(row, 'exp_price') = 0;
+	ds_1.namevalue(row, 'cnt_lab_price') = 0;
+	ds_1.namevalue(row, 'cnt_mat_price') = 0;
+	ds_1.namevalue(row, 'cnt_exp_price') = 0;
+	
+	gd_1.redraw = true
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	var ls_temp
+	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >1 ;i--)  //첫번재로우는 삭제불가
+	     {
+	        if (ds_1.RowMark(i) == 1){
+
+					var ls_amt = ds_1.namevalue(i, 'amt')
+					var ls_cnt_amt = ds_1.namevalue(i, 'cnt_amt')
+					
+					if (ls_amt > 0 || ls_cnt_amt>0){
+						alert('금액이 0이 아닙니다/삭제불가')
+						return
+					}
+						ds_1.DeleteRow(i)
+	        }
+	    }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	   } 
+	  else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	 gd_1.format = is_format_1
+	 
+
+	
+
+	result = window.dialogArguments;
+	if (result == "") return 
+	 //alert(result)
+	array = result.split("@");
+	 
+
+
+	is_dept_code			= array[0]
+	is_chg_no_seq	= array[1]
+	is_spec_no_seq = array[2]
+	is_spec_unq_num	= array[3]
+	is_div_rel_num = array[4]
+	//var ls_emp_name = array[3]
+
+	window.returnValue = "";
+	btnquery_onclick()
+    
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+<script language=JavaScript for=tr_1 event=OnSuccess()>
+	alert('저장 되었습니다')
+</script>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_no_seq event=OnLoadError()>
+  alert("Error Code : " + ds_no_seq.ErrorCode + "\n" + "Error Message : " + ds_no_seq.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=em_qty_org event=onKeyUp(kcode,scode)>
+	
+	if (is_qty < em_qty_org.text){
+		alert('원수량을 초과할수 없습니다')
+		em_qty_org.text = is_qty
+		em_qty_new.text = 0
+		return
+	}
+	em_qty_new.text = is_qty - em_qty_org.text
+
+</script>
+<script language=JavaScript for=em_qty_new event=onKeyUp(kcode,scode)>
+	if (is_qty < em_qty_new.text){
+		alert('원수량을 초과할수 없습니다')
+		em_qty_new.text = is_qty
+		em_qty_org.text = 0
+		return
+	}
+	em_qty_org.text = is_qty - em_qty_new.text
+
+</script>
+
+<script language=JavaScript for=em_cnt_qty_org event=onKeyUp(kcode,scode)>
+	
+	if (is_cnt_qty < em_cnt_qty_org.text){
+		alert('원수량을 초과할수 없습니다')
+		em_cnt_qty_org.text = is_cnt_qty
+		em_cnt_qty_new.text = 0
+		return
+	}
+	em_cnt_qty_new.text = is_cnt_qty - em_cnt_qty_org.text
+
+</script>
+<script language=JavaScript for=em_cnt_qty_new event=onKeyUp(kcode,scode)>
+	if (is_cnt_qty < em_cnt_qty_new.text){
+		alert('원수량을 초과할수 없습니다')
+		em_cnt_qty_new.text = is_cnt_qty
+		em_cnt_qty_org.text = 0
+		return
+	}
+	em_cnt_qty_org.text = is_cnt_qty - em_cnt_qty_new.text
+
+</script>
+
+<SCRIPT language=JavaScript  event=OnColumnChanged(row,colid) for=ds_1>
+
+//f_multiply(ds_1.NameValue(row,"exe_qty"),ds_1.NameValue(row,"exe_price"))
+if (colid == "cnt_qty") {
+   ds_1.NameValue(row,"cnt_mat_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_mat_price"))
+   ds_1.NameValue(row,"cnt_lab_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_lab_price"))
+   ds_1.NameValue(row,"cnt_exp_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_exp_price"))
+} 
+if (colid == "cnt_mat_price") {
+   ds_1.NameValue(row,"cnt_mat_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),  ds_1.NameValue(row,"cnt_mat_price"))
+}                                      
+if (colid == "cnt_lab_price") {
+   ds_1.NameValue(row,"cnt_lab_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),  ds_1.NameValue(row,"cnt_lab_price"))
+}                                      
+if (colid == "cnt_exp_price") {
+   ds_1.NameValue(row,"cnt_exp_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),  ds_1.NameValue(row,"cnt_exp_price"))
+}                                      
+if ((colid =="cnt_qty") || (colid == "cnt_mat_price") || (colid == "cnt_lab_price") || (colid == "cnt_exp_price")){
+   ds_1.NameValue(row,"cnt_amt") = ds_1.NameValue(row,"cnt_mat_amt")  + ds_1.NameValue(row,"cnt_lab_amt") +
+                                      ds_1.NameValue(row,"cnt_exp_amt") 
+   ds_1.NameValue(row,"cnt_price") = ds_1.NameValue(row,"cnt_mat_price") +  ds_1.NameValue(row,"cnt_lab_price") +
+                                      ds_1.NameValue(row,"cnt_exp_price")                                    
+}                                      
+// 실행의 수량이나 단가가 변경 되었을경우 처리
+if (colid == "qty") {
+   ds_1.NameValue(row,"mat_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"mat_price"))
+   ds_1.NameValue(row,"lab_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"lab_price"))
+   ds_1.NameValue(row,"exp_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"exp_price"))
+   ds_1.NameValue(row,"equ_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"equ_price"))
+   ds_1.NameValue(row,"sub_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"sub_price"))
+} 
+if (colid == "mat_price") {
+   ds_1.NameValue(row,"mat_amt") = f_multiply(ds_1.NameValue(row,"qty"),  ds_1.NameValue(row,"mat_price"))
+}                                      
+if (colid == "lab_price") {
+   ds_1.NameValue(row,"lab_amt") = f_multiply(ds_1.NameValue(row,"qty"),  ds_1.NameValue(row,"lab_price"))
+}                                      
+if (colid == "exp_price") {
+   ds_1.NameValue(row,"exp_amt") = f_multiply(ds_1.NameValue(row,"qty"),  ds_1.NameValue(row,"exp_price"))
+}                                      
+if (colid == "equ_price") {
+   ds_1.NameValue(row,"equ_amt") = f_multiply(ds_1.NameValue(row,"qty"),  ds_1.NameValue(row,"equ_price"))
+}                                      
+if (colid == "sub_price") {
+   ds_1.NameValue(row,"sub_amt") = f_multiply(ds_1.NameValue(row,"qty"),  ds_1.NameValue(row,"sub_price"))
+}                                      
+if ((colid =="qty") || (colid == "mat_price") || (colid == "lab_price") || (colid == "exp_price") ||
+    (colid =="equ_price") || (colid == "sub_price")) {
+   ds_1.NameValue(row,"amt") = ds_1.NameValue(row,"mat_amt")  + ds_1.NameValue(row,"lab_amt") + 
+                                  ds_1.NameValue(row,"exp_amt")  + ds_1.NameValue(row,"equ_amt") +
+                                  ds_1.NameValue(row,"sub_amt")
+   ds_1.NameValue(row,"price")  = ds_1.NameValue(row,"mat_price") +  ds_1.NameValue(row,"lab_price") + 
+                                  ds_1.NameValue(row,"exp_price") +   ds_1.NameValue(row,"equ_price") + 
+                                  ds_1.NameValue(row,"sub_price")                           
+}                                  
+
+
+    
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+	 <param name=UseFilter   value=true>
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_no_seq 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+	 <param name=UseFilter   value=true>
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_sysdate
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_budget_child_div_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin: 0;" onload=setTimeout('window_onload()',1)  oncontextmenu="return false" scroll=fasle>
+<div class=main_div>
+	<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR  height="20px">
+			<TD class=td_green>
+				<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+					<tr>
+						<td width="15px"><img src="../../../image/bullet3.gif"></td>
+						<td width="58px" class=font_green_bold>내역분개</td>
+						<td width="400px" class=font_green_bold><input class=font_green_bold id =memo type=text readonly style='width: 100%'></td>
+						<td width="*">&nbsp;</td>
+						<td width="280px">
+							<input id=bt_query type="button" value="조회"  class="img_btn2_1"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=btnquery_onclick()>
+							<input id=bt_query type="button" value="추가"  class="img_btn2_1"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=btnadd_onclick()>
+							<input id=bt_query type="button" value="삭제"  class="img_btn2_1"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=btndelete_onclick()>
+							<input id=bt_query type="button" value="저장"  class="img_btn2_1"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=btnsave_onclick()>
+							<input id=bt_query type="button" value="닫기"  class="img_btnClose"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_close_onclick()>
+							
+						</td>
+					</tr>
+				</table>
+			</TD>
+		</TR>
+		
+		<tr>
+			<td>
+				
+				  <comment id="__NSID__"><OBJECT id=gd_1 
+						style="Z-INDEX: 110;  WIDTH: 100%;  HEIGHT: 100%" 
+						classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					  <PARAM NAME="AutoInsert" VALUE="-1">
+					  <PARAM NAME="AllShowEdit" VALUE="-1">
+					  <PARAM NAME="Editable" VALUE=true>
+					  <PARAM NAME="BorderStyle"  VALUE=1>
+					  <param name="MultiRowSelect"   value="-1">
+					  <PARAM NAME="ColSizing" VALUE="-1">
+					  <param name="ViewSummary"    value=1>
+					  <param name="DragDropEnable" value=1>
+					  <PARAM NAME="DataID" VALUE="ds_1">
+					  <PARAM NAME="SortView"  VALUE="Left">
+					  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+		
+	</table>
+</div>
+     
+
+</BODY></HTML>

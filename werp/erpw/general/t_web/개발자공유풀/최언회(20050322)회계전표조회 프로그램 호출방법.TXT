@@ -1,0 +1,32 @@
+            G_Load(dsSLIP_URL, null);
+
+	   		if (dsSLIP_URL.CountRow != 1)
+	   		{
+	   			C_msgOk("전표조회용 URL이 등록되지 않았습니다.","확인");
+					return;
+	   		}
+
+            var vUSER_NO 		= USER_NO;
+            var vSlipId			= SLIP_ID;
+				var vSlipIdSeq 	= SLIP_IDSEQ;
+				var vMakeCompany	= 발의사업장;
+				var vMakeDept	 	= 발의부서;
+				var vMakeDt		 	= 발의일자;
+				var vMakeSeq	 	= 전표순번;
+				var vSLIP_URL	 	= dsSLIP_URL.NameString(dsSLIP_URL.RowPosition,"SLIP_URL");
+				var vRead_Only    = "Y"; //"Y" => 읽기전용, "N" => 읽기쓰기가능
+
+				URL = vSLIP_URL +  "?user_no="+vUSER_NO+
+                               "&sys_id=14" +
+                               "&SLIP_ID=" + vSlipId +
+                               "&SLIP_IDSEQ=" + vSlipIdSeq +
+                               "&MAKE_COMPANY=" + vMakeCompany +
+                               "&MAKE_DEPT=" + vMakeDept +
+                               "&MAKE_DT=" + vMakeDt +
+                               "&MAKE_SEQ=" + vMakeSeq +
+                               "&READ_ONLY="  + vRead_Only;
+
+            var lrArgs = new C_Dictionary();
+				var lrRet = null;
+
+           lrRet = window.showModalDialog(URL,lrArgs,"center:yes; dialogWidth:807px; dialogHeight:585px; status:no; help:no; scroll:no") ;

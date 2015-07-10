@@ -1,0 +1,95 @@
+1. 화면에서 조건이 다음과 같이 두가지 조건을 선택해서 조회할 경우
+
+<!-- 프로그래머 디자인 시작 //-->
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tr>
+		<td width="15"><img src="../images/z1_sub2_bullet.gif"></td>
+		<td width="60" class=font_green_bold >구분</td>
+		<td width="104">
+			<select  name="txtCODE_CLASS"  style="WIDTH: 100px">
+				<OPTION value=''> 전체</OPTION>
+				<OPTION value='1'> 카드번호</OPTION>
+				<OPTION value='2'> 신용카드명</OPTION>
+				<OPTION value='3'> 소유자</OPTION>
+			</select>
+		</td>
+		<td width="140"> <input name="txtCODE_NAME" type="text" Left class="box_ma5_white" VALUE="" style="width:130px"></td>
+		<td width="30">&nbsp;</td>
+		<td width="15"><img src="../images/z1_sub2_bullet.gif"></td>
+		<td width="60" class=font_green_bold>카드구분</td>
+		<td>
+			<select  id="txtCARD_CLS"  style="WIDTH: 100px">
+				<OPTION value=''> 전체</OPTION>
+				<OPTION value='1'> 법인</OPTION>
+				<OPTION value='2'> 개인</OPTION>
+			</select>
+		</td>
+	</tr>
+</table>
+<!-- 프로그래머 디자인 종료 //-->
+
+	
+2. 선택된 Value는 다음과 같이 넘긴다.
+
+function OnLoadBefore(dataset)
+{
+	if (dataset == dsMAIN)	//시스템명 가져오기
+	{
+        dataset.DataID = "WIaBaBaseCardCodeRegister_S.jsp?ACT=MAIN&txtCODE_CLASS="+txtCODE_CLASS.value+"&txtCODE_NAME="+txtCODE_NAME.value+"&txtCARD_CLS="+txtCARD_CLS.value;
+			alert(dataset.DataID+"111");                    
+	}
+}
+
+3. 조회 SQL은 다음과 같이 처리한다.
+
+	if (strAct.equals("MAIN"))
+	{
+		strCODE_CLASS = CITCommon.toKOR(request.getParameter("txtCODE_CLASS"));
+		strCODE_NAME = CITCommon.toKOR(request.getParameter("txtCODE_NAME"));
+		strCARD_CLS = CITCommon.toKOR(request.getParameter("txtCARD_CLS"));
+		
+		strSql  = " Select CARDNO, ";
+		strSql += "        To_Char(CRTUSERNO)  CRTUSERNO, ";
+		strSql += "        To_Char(MODUSERNO)  MODUSERNO, ";			
+		strSql += "        CARD_NAME, ";
+		strSql += "        OWNER, ";
+		strSql += "        CARD_CLS  ";
+		strSql += " From   TIA_ACC_CREDCARD ";
+		if(strCODE_CLASS.equals("1"))
+		{
+			strSql += "Where	CARDNO Like '%'||?||'%' ";
+			strSql += "AND  	CARD_CLS Like  '%'||?||'%'  ";									
+			lrArgData.addColumn("txtCODE_NAME", CITData.VARCHAR2);
+			lrArgData.addColumn("txtCARD_CLS", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("txtCODE_NAME", strCODE_NAME);
+			lrArgData.setValue("txtCARD_CLS", strCARD_CLS);				
+		}			
+		else if(strCODE_CLASS.equals("2"))
+		{
+			strSql += "Where	CARD_NAME Like '%'||?||'%' ";
+			strSql += "AND  	CARD_CLS Like  '%'||?||'%'  ";
+			lrArgData.addColumn("txtCODE_NAME", CITData.VARCHAR2);
+			lrArgData.addColumn("txtCARD_CLS", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("txtCODE_NAME", strCODE_NAME);
+			lrArgData.setValue("txtCARD_CLS", strCARD_CLS);								
+		}
+		else if(strCODE_CLASS.equals("3"))
+		{
+			strSql += "Where	OWNER Like '%'||?||'%' ";
+			strSql += "AND  	CARD_CLS Like  '%'||?||'%'  ";
+			lrArgData.addColumn("txtCODE_NAME", CITData.VARCHAR2);
+			lrArgData.addColumn("txtCARD_CLS", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("txtCODE_NAME", strCODE_NAME);
+			lrArgData.setValue("txtCARD_CLS", strCARD_CLS);							
+		}			
+		else
+		{
+			strSql += "Where  	CARD_CLS Like  '%'||?||'%'  ";
+			lrArgData.addColumn("txtCARD_CLS", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("txtCARD_CLS", strCARD_CLS);							
+		}						
+			strSql += " Order By CARDNO "; ";

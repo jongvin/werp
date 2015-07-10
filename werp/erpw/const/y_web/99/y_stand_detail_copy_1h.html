@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_stand_detail_copy_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 표준 자원 복사 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE>표준 내역 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_high_detail_code=""
+var is_ds_1_addr = 'y_stand_detail_1q.jsp?arg_high_detail_code='
+//-----------------------------------------------------------------------표준내역 집계구조 
+var is_ds_tree_1_addr =  'y_stand_parent_1q.jsp'       //트리에 data를 입력하는파일
+var is_confirm_check = 'no'
+var ls_return=""
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_1.DataID = is_ds_1_addr + ds_tree_1.NameValue(ds_tree_1.RowPosition,"high_detail_code")
+ds_1.SyncLoad=true
+ds_1.reset()
+}
+//---------------------------------------------------------------
+function tree_btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_tree_1.SyncLoad=true
+ds_tree_1.reset()   
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+makeCookie("@y_stand_detail_copy@", ds_tree_1.NameValue(ds_tree_1.RowPosition,'high_detail_code'))
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=1 ; i <= ds_1.CountRow ;i++){
+        if (ds_1.RowMark(i) == 1 || ds_1.NameValue(i,'qty') != 0)
+           ls_return = ls_return + ds_1.NameValue(i,'detail_code') + '@' + ds_1.NameValue(i,'res_class')   + '@' + 
+                                   ds_1.NameValue(i,'mat_code') + '@' + ds_1.NameValue(i,'name')  + '@' + 
+                                   ds_1.NameValue(i,'ssize') + '@' + ds_1.NameValue(i,'unit') + '@' + 
+                                   ds_1.NameValue(i,'mat_price') + '@' + ds_1.NameValue(i,'lab_price') + '@' + 
+                                   ds_1.NameValue(i,'exp_price') + '@' + ds_1.NameValue(i,'equ_price') + '@' + 
+                                   ds_1.NameValue(i,'sub_price') + '@' + ds_1.NameValue(i,'qty') + '@'
+                                                                 
+     }          
+  }               
+    
+}
+//--------------------------------------------------------------------
+function Button_copy()               //붙여넣기
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+ if (ls_return == "") {
+    if (ds_1.RowPosition > 0) {
+	    i = ds_1.RowPosition
+	    ls_return =  ds_1.NameValue(i,'detail_code') + '@' + ds_1.NameValue(i,'res_class')   + '@' + 
+	                                   ds_1.NameValue(i,'mat_code') + '@' + ds_1.NameValue(i,'name')  + '@' + 
+	                                   ds_1.NameValue(i,'ssize') + '@' + ds_1.NameValue(i,'unit') + '@' + 
+	                                   ds_1.NameValue(i,'mat_price') + '@' + ds_1.NameValue(i,'lab_price') + '@' + 
+	                                   ds_1.NameValue(i,'exp_price') + '@' + ds_1.NameValue(i,'equ_price') + '@' + 
+	                                   ds_1.NameValue(i,'sub_price') + '@' + ds_1.NameValue(i,'qty') + '@'
+    }
+ }    
+makeCookie("@y_stand_detail_copy@", ds_tree_1.NameValue(ds_tree_1.RowPosition,'high_detail_code'))
+
+ window.returnValue = ls_return
+ window.close();
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '003' order by etc_code")
+ ds_1.DataID = is_ds_1_addr+is_high_detail_code
+ ds_tree_1.DataID =  is_ds_tree_1_addr
+ tree_btnquery_onclick()
+// -------------------------이화면으로 다시 왔을경우 그전의 위치로 재셋팅하기위한 로직
+   var result="";
+	var array = new Array();
+	result = readCookie("@y_stand_detail_copy@")
+   if (result == "err") {
+      return
+   }   
+	else {   
+	   array = result.split("@");
+      lw_high_detail_code  = array[0] //상위 코드 
+      ds_tree_1.RowPosition = ds_tree_1.ValueRow(1,lw_high_detail_code)
+    }    
+}
+//------------------------------------------------------------------------
+function stand_search()                       //내역 찾기
+//------------------------------------------------------------------------
+{
+
+	var result;
+	var array = new Array();
+	result = window.showModalDialog("../00/y_stand_detail_find_1h.html","","dialogWidth:720px;dialogHeight:500px");
+	if(result == "") return;
+	array = result.split("@");
+
+   var ls_high_detail_code,ls_detail_code
+   ls_detail_code = array[0]   // 자재코드 
+   ls_high_detail_code = array[6]
+   ll_row = ds_tree_1.NameValueRow("high_detail_code",ls_high_detail_code)
+   ds_tree_1.RowPosition = ll_row
+   ll_row = ds_1.NameValueRow("detail_code",ls_detail_code)
+   ds_1.RowPosition = ll_row
+   gd_1.Focus()
+   ds_1.MarkRows(ll_row,ll_row)
+}
+
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+ 
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  {
+       return
+    }    
+    else{    
+        ds_1.RowPosition++
+    }    
+}
+</SCRIPT>
+
+<script language=JavaScript for=tree_1 event=OnSelChanged()>
+ if  ((ds_tree_1.CountRow == ds_tree_1.RowPosition) ||
+       (ds_tree_1.NameValue(ds_tree_1.RowPosition ,"stand_level") >= ds_tree_1.NameValue(ds_tree_1.RowPosition + 1,"stand_level")))
+        btnquery_onclick()
+      
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_tree_1 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<input type="button" value="복사" class="img_btn2_1"
+       style="POSITION: absolute;TOP:5px; LEFT:340px; "   
+        onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_confirm_onclick()>
+<input type="button" value="붙여넣기(복사로범위설정을 먼저하십시요)"  class="img_btn19_1"
+       style="POSITION: absolute;TOP:5px; LEFT:400px; "   
+        onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_copy()>
+<input type="button" value="닫기"  class="img_btnClose"
+       style="POSITION: absolute; TOP:5px; LEFT: 800px; "   
+         onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=Button_close_onclick()>
+       
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 13px; WIDTH: 400px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<input id=bt_mtc_find type="button" value="내역"  class="img_btnFind"
+	        onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=stand_search()>
+</DIV>
+
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 7px; WIDTH: 220px; POSITION: absolute; TOP: 30px; HEIGHT: 610px"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_tree_1">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="LevelColumn" VALUE="stand_level">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_tree_1">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+  <comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 230px; WIDTH: 740px; POSITION: absolute; TOP: 30px; HEIGHT: 610px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_1">
+	     <PARAM NAME="Format" VALUE="
+	        <FC> Name='코  드 ' ID=detail_code Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </FC>
+	        <FC> Name='자원 명칭' ID=name  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=250 </FC>
+	        <C> Name='규  격' ID=ssize  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	        <C> Name='단위' ID=unit Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 </C>
+	        <C> Name=수량 ID=qty  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	        <C> Name=자재코드 ID=mat_code Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+           ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

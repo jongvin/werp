@@ -1,0 +1,407 @@
+SELECT	AA.SLIP_ID , 
+       	AA.SLIP_IDSEQ , 
+       	AA.MAKE_SLIPLINE , 
+       	AA.ACC_CODE , 
+       	A1.ACC_NAME , 
+       	A1.ACC_REMAIN_POSITION , 
+       	AA.DB_AMT , 
+       	TO_CHAR(AA.DB_AMT, 'FM9,999,999,999,999') DB_AMT_D , 
+       	AA.CR_AMT , 
+       	TO_CHAR(AA.CR_AMT, 'FM9,999,999,999,999') CR_AMT_D , 
+       	--적요코드관리 
+       	A1.SUMMARY_CLS , 
+       	AA.SUMMARY_CODE , 
+       	AA.SUMMARY1 , 
+       	AA.SUMMARY2 , 
+       	AA.TAX_COMP_CODE , 
+       	A7.COMPANY_NAME TAX_COMP_NAME, 
+       	AA.COMP_CODE , 
+       	A8.COMPANY_NAME COMP_NAME, 
+       	--귀속부서 
+       	AA.DEPT_CODE , 
+       	A2.DEPT_NAME , 
+       	--부문코드 
+       	AA.CLASS_CODE , 
+       	A3.CLASS_CODE_NAME , 
+       	--증빙코드 
+       	AA.VAT_CODE , 
+       	A4.VAT_NAME , 
+       	F_T_Datetostring(AA.VAT_DT) VAT_DT , 
+       	TO_CHAR(AA.SUPAMT, 'FM9,999,999,999,999') SUPAMT , 
+       	TO_CHAR(AA.VATAMT, 'FM9,999,999,999,999') VATAMT , 
+       	A4.RCPTBILL_CLS , 
+       	A4.SUBTR_CLS , 
+       	A4.SALEBUY_CLS , 
+       	A4.VATOCCUR_CLS , 
+       	A4.SLIP_DETAIL_LIST , 
+       	A4.ACC_CODE VAT_ACC_CODE , 
+       	--예산관리 
+       	A1.BUDG_MNG , 
+       	--예산통제 
+       	A1.BUDG_EXEC_CLS , 
+       	--거래처코드관리 
+       	A1.CUST_CODE_MNG , 
+       	A1.CUST_CODE_MNG_TG , 
+       	TO_CHAR(AA.CUST_SEQ) CUST_SEQ , 
+       	F_T_Cust_Mask(A6.CUST_CODE) CUST_CODE , 
+       	--거래처명관리 
+       	A1.CUST_NAME_MNG , 
+       	A1.CUST_NAME_MNG_TG , 
+       	AA.CUST_NAME , 
+       	--은행관리 
+       	A1.BANK_MNG , 
+       	A1.BANK_MNG_TG , 
+       	AA.BANK_CODE , 
+       	A5.BANK_NAME , 
+       	--계좌관리 
+       	A1.ACCNO_MNG , 
+       	A1.ACCNO_MNG_TG , 
+       	AA.ACCNO , 
+       	--잔액관리 
+       	A1.ACC_REMAIN_MNG , 
+       	AA.RESET_SLIP_ID , 
+       	AA.RESET_SLIP_IDSEQ , 
+       	--당좌수표 
+       	A1.CHK_NO_MNG , 
+       	A1.CHK_NO_MNG_TG , 
+       	AA.CHK_NO , 
+       	F_T_Datetostring(B1.PUBL_DT) CHK_PUBL_DT , 
+       	--지급어음 
+       	A1.BILL_NO_MNG , 
+       	A1.BILL_NO_MNG_TG , 
+       	AA.BILL_NO , 
+       	--지급어음 설정 
+       	B2.CHK_BILL_NO BILL_NO_S , 
+       	F_T_Datetostring(B2.PUBL_DT) BILL_PUBL_DT , 
+       	F_T_Datetostring(B2.EXPR_DT) BILL_EXPR_DT , 
+       	--지급어음 반제 
+       	B3.CHK_BILL_NO BILL_NO_R , 
+       	F_T_Datetostring(B3.PUBL_DT) BILL_PUBL_DT_R , 
+       	F_T_Datetostring(B3.EXPR_DT) BILL_EXPR_DT_R , 
+       	F_T_Datetostring(B3.CHG_EXPR_DT) BILL_CHG_EXPR_DT_R , 
+       	--받을어음설정 
+       	A1.REC_BILL_NO_MNG , 
+       	A1.REC_BILL_NO_MNG_TG , 
+       	AA.REC_BILL_NO , 
+       	C1.REC_CHK_BILL_NO REC_BILL_NO_S , 
+       	F_T_Datetostring(C1.PUBL_DT) REC_BILL_PUBL_DT , 
+       	F_T_Datetostring(C1.EXPR_DT) REC_BILL_EXPR_DT , 
+       	--받을어음반제 
+       	C2.REC_CHK_BILL_NO REC_BILL_NO_R , 
+       	F_T_Datetostring(C2.PUBL_DT) REC_BILL_PUBL_DT_R , 
+       	F_T_Datetostring(C2.EXPR_DT) REC_BILL_EXPR_DT_R , 
+       	TO_CHAR(C2.PUBL_AMT, 'FM9,999,999,999,999') REC_BILL_PUBL_AMT_R , 
+       	F_T_Datetostring(C2.DISH_DT) REC_BILL_DISH_DT_R , 
+       	F_T_Datetostring(C2.TRUST_DT) REC_BILL_TRUST_DT_R , 
+       	C2.TRUST_BANK_CODE REC_BILL_TRUST_BANK_CODE_R, 
+       	C21.BANK_NAME REC_BILL_TRUST_BANK_NAME_R , 
+       	F_T_Datetostring(C2.DISC_DT) REC_BILL_DISC_DT_R , 
+       	C2.DISC_BANK_CODE REC_BILL_DISC_BANK_CODE_R, 
+       	C22.BANK_NAME REC_BILL_DISC_BANK_NAME_R , 
+       	TO_CHAR(C2.DISC_RAT, 'FM9,999,999,999,999') REC_BILL_DISC_RAT_R, 
+       	TO_CHAR(C2.DISC_AMT, 'FM9,999,999,999,999') REC_BILL_DISC_AMT_R, 
+       	--CP 매입 
+       	A1.CP_NO_MNG , 
+       	A1.CP_NO_MNG_TG , 
+       	AA.CP_NO , 
+       	--CP설정 
+       	D1.CP_NO CP_NO_S , 
+       	F_T_Datetostring(D1.PUBL_DT) CP_BUY_PUBL_DT, 
+       	F_T_Datetostring(D1.EXPR_DT) CP_BUY_EXPR_DT, 
+       	F_T_Datetostring(D1.DUSE_DT) CP_BUY_DUSE_DT, 
+       	TO_CHAR(D1.PUBL_AMT, 'FM9,999,999,999,999') CP_BUY_PUBL_AMT, 
+       	TO_CHAR(D1.INCOME_AMT, 'FM9,999,999,999,999') CP_BUY_INCOME_AMT, 
+       	D1.PUBL_PLACE CP_BUY_PUBL_PLACE, 
+       	D1.PUBL_NAME CP_BUY_PUBL_NAME, 
+       	D1.INTR_RAT CP_BUY_INTR_RAT, 
+       	D1.CUST_SEQ CP_BUY_CUST_SEQ, 
+       	F_T_Cust_Mask(D11.CUST_CODE) CP_BUY_CUST_CODE, 
+       	D11.CUST_NAME CP_BUY_CUST_NAME, 
+       	--CP반제 
+       	D2.CP_NO CP_NO_R , 
+       	F_T_Datetostring(D2.PUBL_DT) CP_BUY_PUBL_DT_R, 
+       	F_T_Datetostring(D2.EXPR_DT) CP_BUY_EXPR_DT_R, 
+       	F_T_Datetostring(D2.DUSE_DT) CP_BUY_DUSE_DT_R, 
+       	TO_CHAR(D2.PUBL_AMT, 'FM9,999,999,999,999') CP_BUY_PUBL_AMT_R, 
+       	TO_CHAR(D2.INCOME_AMT, 'FM9,999,999,999,999') CP_BUY_INCOME_AMT_R, 
+       	D2.PUBL_PLACE CP_BUY_PUBL_PLACE_R, 
+       	D2.PUBL_NAME CP_BUY_PUBL_NAME_R, 
+       	D2.INTR_RAT CP_BUY_INTR_RAT_R, 
+       	D2.CUST_SEQ CP_BUY_CUST_SEQ_R, 
+       	F_T_Cust_Mask(D21.CUST_CODE) CP_BUY_CUST_CODE_R, 
+       	D21.CUST_NAME CP_BUY_CUST_NAME_R, 
+       	TO_CHAR(D2.RESET_AMT, 'FM9,999,999,999,999') CP_BUY_RESET_AMT_R, 
+       	--유가증권 
+       	A1.SECU_MNG , 
+       	A1.SECU_MNG_TG , 
+       	AA.SECU_NO , 
+       	NVL(E1.REAL_SECU_NO,'')||NVL(E2.REAL_SECU_NO,'') SECU_REAL_SECU_NO, 
+       	--유가증권 설정 
+       	E1.SECU_NO SECU_NO_S , 
+       	E1.REAL_SECU_NO SECU_REAL_SECU_NO_S, 
+       	E1.SEC_KIND_CODE SECU_SEC_KIND_CODE, 
+       	E1.GET_DT SECU_GET_DT, 
+       	E1.GET_PLACE SECU_GET_PLACE, 
+       	TO_CHAR(E1.PERSTOCK_AMT, 'FM9,999,999,999,999') SECU_PERSTOCK_AMT , 
+       	TO_CHAR(E1.INCOME_AMT, 'FM9,999,999,999,999') SECU_INCOME_AMT, 
+       	TO_CHAR(E1.BF_GET_ITR_AMT, 'FM9,999,999,999,999') SECU_BF_GET_ITR_AMT, 
+       	TO_CHAR(E1.GET_ITR_AMT, 'FM9,999,999,999,999') SECU_GET_ITR_AMT, 
+       	F_T_Datetostring(E1.PUBL_DT) SECU_PUBL_DT , 
+       	E1.ITR_TAG SECU_ITR_TAG, 
+       	F_T_Datetostring(E1.EXPR_DT) SECU_EXPR_DT , 
+       	E1.INTR_RATE SECU_INTR_RATE , 
+       	--유가증권 반제 
+       	E2.SECU_NO SECU_NO_R , 
+       	E2.REAL_SECU_NO SECU_REAL_SECU_NO_R, 
+       	TO_CHAR(E2.PERSTOCK_AMT, 'FM9,999,999,999,999') SECU_PERSTOCK_AMT_R , 
+       	F_T_Datetostring(E2.PUBL_DT) SECU_PUBL_DT_R , 
+       	F_T_Datetostring(E2.EXPR_DT) SECU_EXPR_DT_R , 
+       	E2.INTR_RATE SECU_INTR_RATE_R , 
+       	TO_CHAR(E2.SALE_AMT, 'FM9,999,999,999,999') SECU_SALE_AMT_R , 
+       	F_T_Datetostring(E2.SALE_DT) SECU_SALE_DT_R , 
+       	F_T_Datetostring(E2.RETURN_DT) SECU_RETURN_DT_R , 
+       	E2.CONSIGN_BANK SECU_CONSIGN_BANK_R , 
+       	E3.BANK_NAME SECU_CONSIGN_BANK_NAME_R , 
+       	TO_CHAR(E2.SALE_ITR_AMT, 'FM9,999,999,999,999') SECU_SALE_ITR_AMT_R , 
+       	TO_CHAR(E2.SALE_TAX, 'FM9,999,999,999,999') SECU_SALE_TAX_R , 
+       	TO_CHAR(E2.SALE_LOSS, 'FM9,999,999,999,999') SECU_SALE_LOSS_R , 
+       	TO_CHAR(E2.SALE_NP_ITR_AMT, 'FM9,999,999,999,999') SECU_SALE_NP_ITR_AMT_R , 
+       	--차입 
+       	A1.LOAN_NO_MNG , 
+       	A1.LOAN_NO_MNG_TG , 
+       	AA.LOAN_REFUND_NO , 
+       	AA.LOAN_REFUND_SEQ , 
+       	--차입설정 
+       	F1.LOAN_NO LOAN_REFUND_NO_S, 
+       	F1.LOAN_REFUND_SEQ LOAN_REFUND_SEQ_S, 
+       	F_T_Datetostring(F1.TRANS_DT) LOAN_TRANS_DT, 
+       	F_T_Datetostring(F1.LOAN_FDT) LOAN_FDT , 
+       	F_T_Datetostring(F1.LOAN_EXPR_DT) LOAN_EXPR_DT , 
+       	F1.REAL_INTR_RATE LOAN_REAL_INTR_RATE , 
+       	F1.TITLE_INTR_RATE LOAN_TITLE_INTR_RATE , 
+       	--차입반제 
+       	F2.LOAN_NO LOAN_REFUND_NO_R , 
+       	F2.LOAN_REFUND_SEQ LOAN_REFUND_SEQ_R , 
+       	TO_CHAR(F2.REFUND_AMT, 'FM9,999,999,999,999') LOAN_REFUND_AMT_R , 
+       	F_T_Datetostring(F2.TRANS_DT) LOAN_TRANS_DT_R, 
+       	F_T_Datetostring(F2.REFUND_SCH_DT) LOAN_REFUND_SCH_DT_R , 
+       	TO_CHAR(F2.REFUND_SCH_ORG_AMT, 'FM9,999,999,999,999') LOAN_REFUND_SCH_ORG_AMT_R , 
+       	TO_CHAR(F2.REFUND_SCH_INTR_AMT, 'FM9,999,999,999,999') LOAN_REFUND_SCH_INTR_AMT_R , 
+       	DECODE(NVL(F2.REFUND_AMT,0), 0, NULL, F_T_Datetostring(F2.REFUND_INTR_DT)) LOAN_REFUND_DT_R , 
+       	--차입이자 
+       	F3.LOAN_NO LOAN_REFUND_NO_I , 
+       	F3.LOAN_REFUND_SEQ LOAN_REFUND_SEQ_I , 
+       	F_T_Datetostring(F3.REFUND_SCH_DT) LOAN_REFUND_SCH_DT_I , 
+       	F3.REFUND_SCH_ORG_AMT LOAN_REFUND_SCH_ORG_AMT_I , 
+       	DECODE(NVL(F3.INTR_AMT,0), 0, NULL, F_T_Datetostring(F3.REFUND_INTR_DT)) LOAN_INTR_DT_I , 
+       	--고정자산 
+       	A1.FIXED_MNG , 
+       	A1.FIXED_MNG_TG , 
+       	TO_CHAR(AA.FIX_ASSET_SEQ) FIX_ASSET_SEQ, 
+       	--적금 
+       	A1.DEPOSIT_PAY_MNG , 
+       	A1.DEPOSIT_PAY_MNG_TG , 
+       	AA.DEPOSIT_ACCNO , 
+       	AA.PAYMENT_SEQ , 
+       	F_T_Datetostring(G1.PAYMENT_SCH_DT) PAYMENT_SCH_DT , 
+       	TO_CHAR(G1.PAYMENT_SCH_AMT, 'FM9,999,999,999,999') PAYMENT_SCH_AMT , 
+       	F_T_Datetostring(G1.PAYMENT_DT) PAYMENT_DT , 
+       	TO_CHAR(G1.PAYMENT_AMT, 'FM9,999,999,999,999') PAYMENT_AMT , 
+       	--대금지불조건 
+       	A1.PAY_CON_MNG , 
+       	A1.PAY_CON_MNG_TG , 
+       	TO_CHAR(AA.PAY_CON_CASH, 'FM9,999,999,999,999') PAY_CON_CASH , 
+       	TO_CHAR(AA.PAY_CON_BILL, 'FM9,999,999,999,999') PAY_CON_BILL , 
+       	TO_CHAR(AA.PAY_CON_BILL_DAYS, 'FM9,999,999,999,999') PAY_CON_BILL_DAYS , 
+       	A1.BILL_EXPR_MNG , 
+       	A1.BILL_EXPR_MNG_TG , 
+       	F_T_Datetostring(AA.PAY_CON_BILL_DT) PAY_CON_BILL_DT , 
+       	--사원번호 
+       	A1.EMP_NO_MNG , 
+       	A1.EMP_NO_MNG_TG , 
+       	AA.EMP_NO , 
+       	ZZ.NAME EMP_NAME , 
+       	--지급희망일 
+       	A1.ANTICIPATION_DT_MNG , 
+       	A1.ANTICIPATION_DT_MNG_TG , 
+       	F_T_Datetostring(AA.ANTICIPATION_DT) ANTICIPATION_DT , 
+       	--현금영수증 
+       	DECODE(A4.SLIP_DETAIL_LIST,'P','T','F') CASH_MNG, 
+       	H1.CASH_SEQ, 
+       	H1.CASHNO CASH_CASHNO, 
+       	F_T_Datetostring(H1.USE_DT) CASH_USE_DT, 
+       	TO_CHAR(H1.TRADE_AMT, 'FM9,999,999,999,999') CASH_TRADE_AMT, 
+       	H1.REQ_TG CASH_REQ_TG, 
+       	--신용카드 
+       	DECODE(A4.SLIP_DETAIL_LIST,'C','T','F') CARD_MNG, 
+       	I1.CARD_SEQ, 
+       	I1.CARDNO CARD_CARDNO, 
+       	F_T_Datetostring(I1.USE_DT) CARD_USE_DT, 
+       	I1.HAVE_PERS CARD_HAVE_PERS, 
+       	TO_CHAR(I1.TRADE_AMT, 'FM9,999,999,999,999') CARD_TRADE_AMT, 
+       	I1.REQ_TG CARD_REQ_TG, 
+       	--관리항목 
+       	A1.MNG_NAME_CHAR1 , 
+       	A1.MNG_TG_CHAR1 , 
+       	AA.MNG_ITEM_CHAR1 , 
+       	A1.MNG_NAME_CHAR2 , 
+       	A1.MNG_TG_CHAR2 , 
+       	AA.MNG_ITEM_CHAR2 , 
+       	A1.MNG_NAME_CHAR3 , 
+       	A1.MNG_TG_CHAR3 , 
+       	AA.MNG_ITEM_CHAR3 , 
+       	A1.MNG_NAME_CHAR4 , 
+       	A1.MNG_TG_CHAR4 , 
+       	AA.MNG_ITEM_CHAR4 , 
+       	A1.MNG_NAME_NUM1 , 
+       	A1.MNG_TG_NUM1 , 
+       	TO_CHAR(AA.MNG_ITEM_NUM1, 'FM9,999,999,999,999') MNG_ITEM_NUM1 , 
+       	A1.MNG_NAME_NUM2 , 
+       	A1.MNG_TG_NUM2 , 
+       	TO_CHAR(AA.MNG_ITEM_NUM2, 'FM9,999,999,999,999') MNG_ITEM_NUM2 , 
+       	A1.MNG_NAME_NUM3 , 
+       	A1.MNG_TG_NUM3 , 
+       	TO_CHAR(AA.MNG_ITEM_NUM3, 'FM9,999,999,999,999') MNG_ITEM_NUM3 , 
+       	A1.MNG_NAME_NUM4 , 
+       	A1.MNG_TG_NUM4 , 
+       	TO_CHAR(AA.MNG_ITEM_NUM1, 'FM9,999,999,999,999') MNG_ITEM_NUM4 , 
+       	A1.MNG_NAME_DT1 , 
+       	A1.MNG_TG_DT1 , 
+       	F_T_Datetostring(AA.MNG_ITEM_DT1) MNG_ITEM_DT1 , 
+       	A1.MNG_NAME_DT2 , 
+       	A1.MNG_TG_DT2 , 
+       	F_T_Datetostring(AA.MNG_ITEM_DT2) MNG_ITEM_DT2 , 
+       	A1.MNG_NAME_DT3 , 
+       	A1.MNG_TG_DT3 , 
+       	F_T_Datetostring(AA.MNG_ITEM_DT3) MNG_ITEM_DT3 , 
+       	A1.MNG_NAME_DT4 , 
+       	A1.MNG_TG_DT4 , 
+       	F_T_Datetostring(AA.MNG_ITEM_DT4) MNG_ITEM_DT4 , 
+       	DECODE( AA.RESET_SLIP_ID, NULL, '', 0, '', F_T_Get_Make_Slipno(AA.RESET_SLIP_ID, AA.RESET_SLIP_IDSEQ) ) RESET_SLIPNO 
+ FROM	T_ACC_SLIP_BODY_INS AA, 
+ 		T_ACC_CODE A1, 
+ 		T_DEPT_CODE A2, 
+ 		T_CLASS_CODE A3, 
+ 		T_ACC_VAT_CODE A4, 
+ 		T_BANK_CODE A5, 
+ 		T_CUST_CODE A6, 
+ 		T_COMPANY A7, 
+ 		T_COMPANY A8, 
+ 		T_FIN_PAY_CHK_BILL B1, 
+ 		T_FIN_PAY_CHK_BILL B2, 
+ 		T_FIN_PAY_CHK_BILL B3, 
+ 		T_FIN_RECEIVE_CHK_BILL C1, 
+ 		T_FIN_RECEIVE_CHK_BILL C2, 
+			T_BANK_CODE C21, 
+			T_BANK_CODE C22, 
+ 		T_FIN_CP_BUY D1, 
+ 		T_CUST_CODE D11, 
+ 		T_FIN_CP_BUY D2, 
+ 		T_CUST_CODE D21, 
+ 		T_FIN_SECURTY E1, 
+ 		T_FIN_SECURTY E2, 
+ 		T_BANK_CODE E3, 
+			( 
+			SELECT 
+				A.*, 
+				B.LOAN_REFUND_SEQ, 
+				B.TRANS_DT, 
+				B.LOAN_AMT, 
+				B.LOAN_SLIP_ID, 
+				B.LOAN_SLIP_IDSEQ  
+			FROM 
+		 		T_FIN_LOAN_SHEET A, 
+		 		T_FIN_LOAN_REFUND_LIST B 
+			WHERE 
+				A.LOAN_NO = B.LOAN_NO 
+			) F1, 
+ 		T_FIN_LOAN_REFUND_LIST F2, 
+ 		T_FIN_LOAN_REFUND_LIST F3, 
+ 		T_DEPOSIT_PAYMENT_LIST G1, 
+ 		T_ACC_SLIP_EXPENSE_CASH H1, 
+ 		T_ACC_SLIP_EXPENSE_CARDS I1, 
+		(
+			SELECT	 
+				A.FIX_ASSET_SEQ,
+				A.ASSET_CLS_CODE,
+				A.ITEM_CODE,
+				A.ITEM_NM_CODE,
+				A.FIX_ASSET_NO,
+				A.ASSET_MNG_NO,
+				A.COMP_CODE,
+				F_T_Datetostring(A.GET_DT)  GET_DT,
+				A.ASSET_NAME,
+				A.ASSET_SIZE,
+				A.PRODUCTION,
+				A.CUST_SEQ,
+				B.CUST_NAME, 
+				F_T_Cust_Mask(B.CUST_CODE) CUST_CODE,
+				A.MNG_DEPT_CODE,
+				C.DEPT_NAME MNG_DEPT_NAME, 
+				A.DEPT_CODE,
+				D.DEPT_NAME
+			 FROM
+				T_FIX_SHEET A, 
+				T_CUST_CODE B, 
+				T_DEPT_CODE C, 
+				T_DEPT_CODE D
+			WHERE
+				A.CUST_SEQ=B.CUST_SEQ(+) 
+				AND	A.MNG_DEPT_CODE=C.DEPT_CODE(+) 
+				AND	A.DEPT_CODE=D.DEPT_CODE(+) 
+		) J1,
+ 		Z_AUTHORITY_USER ZZ 
+ WHERE	AA.ACC_CODE = A1.ACC_CODE 
+ AND		AA.DEPT_CODE = A2.DEPT_CODE 
+ AND		AA.CLASS_CODE = A3.CLASS_CODE(+) 
+ AND		AA.VAT_CODE = A4.VAT_CODE(+) 
+ AND		AA.BANK_CODE = A5.BANK_CODE(+) 
+ AND		AA.CUST_SEQ = A6.CUST_SEQ(+) 
+ AND		AA.TAX_COMP_CODE = A7.COMP_CODE(+) 
+ AND		AA.COMP_CODE = A8.COMP_CODE(+) 
+ AND		AA.SLIP_ID = B1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = B1.SLIP_IDSEQ(+) 
+ AND		B1.CHK_BILL_CLS(+) = 'C' 
+ AND		AA.SLIP_ID = B2.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = B2.SLIP_IDSEQ(+) 
+ AND		B2.CHK_BILL_CLS(+) = 'B' 
+ AND		AA.SLIP_ID = B3.RESET_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = B3.RESET_SLIP_IDSEQ(+) 
+ AND		B3.CHK_BILL_CLS(+) = 'B' 
+ AND		AA.SLIP_ID = C1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = C1.SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = C2.RESET_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = C2.RESET_SLIP_IDSEQ(+) 
+ AND		C2.TRUST_BANK_CODE = C21.BANK_CODE(+) 
+ AND		C2.DISC_BANK_CODE = C22.BANK_CODE(+) 
+ AND		AA.SLIP_ID = D1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = D1.SLIP_IDSEQ(+) 
+ AND		D1.CUST_SEQ = D11.CUST_SEQ(+) 
+ AND		AA.SLIP_ID = D2.RESET_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = D2.RESET_SLIP_IDSEQ(+) 
+ AND		D2.CUST_SEQ = D21.CUST_SEQ(+) 
+ AND		AA.SLIP_ID = E1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = E1.SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = E2.RESET_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = E2.RESET_SLIP_IDSEQ(+) 
+ AND		E2.CONSIGN_BANK = E3.BANK_CODE(+) 
+ AND		AA.SLIP_ID = F1.LOAN_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = F1.LOAN_SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = F2.REFUND_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = F2.REFUND_SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = F3.INTR_SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = F3.INTR_SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = G1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = G1.SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = H1.SLIP_ID(+) 
+ AND		AA.SLIP_IDSEQ = H1.SLIP_IDSEQ(+) 
+ AND		AA.SLIP_ID = I1.SLIP_ID(+)  
+ AND		AA.SLIP_IDSEQ = I1.SLIP_IDSEQ(+)  
+ AND		AA.FIX_ASSET_SEQ = J1.FIX_ASSET_SEQ(+)  
+ AND		AA.EMP_NO = ZZ.EMPNO(+) 
+ ORDER BY AA.MAKE_SLIPLINE 
+ 
+ 
+ 
+ 
+ aaa

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_attend_query_1h.html            	-->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : 휴가사용현황(연차이외)                             	-->
+<!-- 4. 변 경 이 력   : 권미생 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_work_date 
+var is_work_yymm
+var is_focus_enter='N'
+var is_ds_1_addr = gs_home + '/general/p_web/06/p_attend_query_1q.jsp?arg_work_yymm='   
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  ds_1.DataID     = is_ds_1_addr + is_work_yymm + "&arg_attend_code="  + ccom_attend_code.CodeValue
+  ds_1.SyncLoad   = true
+  ds_1.Reset()  
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_yymm = em_work_yymm.text.substr(0,4) + "." + em_work_yymm.text.substr(5,2)  + ".01"
+   ds_1.ClearData()
+   btnquery_onclick()
+}   
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+   ll_cnt = f_ds_select_q("ds_select1", " select attend_code select_1, attend_name select_2 " +
+   												 "   from p_code_attend " +
+   												 " union                " +
+   												 " select '', '전체' from dual " )
+	ccom_attend_code.Index=0
+	
+	is_work_date = f_sysdate()
+	is_work_yymm = is_work_date.substr(0,7) + ".01"
+	em_work_yymm.text = is_work_yymm
+
+	btnquery_onclick()
+   
+}
+</SCRIPT>
+
+</HEAD>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+
+<script language=JavaScript for=ccom_attend_code event=onCloseUp()>  // 근태구분 변경시 재조회
+	btnquery_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_work_yymm event=onKillFocus()>
+	if (is_focus_enter == em_work_yymm.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_work_yymm.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_work_yymm event=onKeyDown(kcode,scode)>
+	if (kcode == 13 ){ 
+		is_focus_enter=em_work_yymm.text
+		select_yymm()
+	}
+</SCRIPT>   
+
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 3px; WIDTH: 160px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+	       <div align="right">해당년월</div></td>
+	  	<td width="63%" >
+	       <OBJECT id=em_work_yymm style="WIDTH: 80px " 
+		 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		     <PARAM NAME="Alignment" VALUE="1">
+		     <PARAM NAME="IsComma" VALUE="0">
+			  <PARAM NAME="MaxLength" VALUE="6">
+			  <PARAM NAME="Format" VALUE="YYYY-MM">
+	        <param name=ClipMode       value=false>
+		     <PARAM NAME="Numeric" VALUE="0">
+		     <PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT>
+		<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+				if(!is_null(result)){ em_work_yymm.text = result.substr(0,8);} ; select_yymm()" 
+				style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111; LEFT: 180px; WIDTH: 145px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px; visibility:hidden " >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="center">&nbsp근태구분</div></td>
+          	 <td >
+	       <OBJECT id=ccom_attend_code style="WIDTH: 80px; color=#CC3333"
+	               classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       <PARAM NAME="ComboDataID" VALUE="ds_select1">
+	          <PARAM NAME="CodeCColumn" VALUE="select_1">
+	          <PARAM NAME="DataCColumn" VALUE="select_2">
+	          <param name=Auto       value=true>
+	          <param name=CodeColumn value=attend_code>
+	          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></td>
+         </tr>                 
+      </table>
+</DIV>   
+
+<OBJECT id=gd_1 
+      style="POSITION: absolute; LEFT: 2px; TOP: 35px; WIDTH: 1005px; HEIGHT: 99%; Z-INDEX: 102;FONT-SIZE: 12px " 
+      classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="SortView" VALUE="Right">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='성명'      id=emp_name  		sort=true  width=80  	suppress=1  	BgColor='ffffff'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name=''			  id=resident_no		width=0    suppress=1   BgColor='ffffff'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='시작일'    id=start_date  		sort=true  width=80 		align=center 	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='종료일'    id=end_date  		sort=true  width=80 		align=center 	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='근태일수'  id=attend_day  		sort=true  width=70 		align=center 	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='사유'      id=attend_reason 	sort=true  width=210 	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='부서'      id=dept_name  		sort=true  width=160  	BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='직위'  	  id=grade_name  		sort=true  edit=none 	width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='입력일시'  id=input_date  		sort=true  width=135  	align=center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  "> 
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

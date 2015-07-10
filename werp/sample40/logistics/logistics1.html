@@ -1,0 +1,792 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language=JavaScript>
+var tmp_arrival_1 = 0; var tmp_arrival_2 = 0; var tmp_arrival_3 = 0; var tmp_arrival_4 = 0; var tmp_arrival_5 = 0; var tmp_arrival_6 = 0;
+var tmp_arrival_7 = 0; var tmp_arrival_8 = 0; var tmp_arrival_9 = 0; var tmp_arrival_10 = 0; var tmp_arrival_11 = 0; var tmp_arrival_12 = 0;
+var tmp_on_time_1 = 0; var tmp_on_time_2 = 0; var tmp_on_time_3 = 0; var tmp_on_time_4 = 0; var tmp_on_time_5 = 0;  var tmp_on_time_6 = 0;
+var tmp_on_time_7 = 0; var tmp_on_time_8 = 0; var tmp_on_time_9 = 0; var tmp_on_time_10 = 0; var tmp_on_time_11 = 0;  var tmp_on_time_12 = 0;
+var tmp_late_1 = 0; var tmp_late_2 = 0; var tmp_late_3 = 0; var tmp_late_4 = 0; var tmp_late_5 = 0; var tmp_late_6 = 0;
+var tmp_late_7 = 0; var tmp_late_8 = 0; var tmp_late_9 = 0; var tmp_late_10 = 0; var tmp_late_11 = 0; var tmp_late_12 = 0;
+var count = 0;
+var flag = "";
+
+
+
+function fn_onload(){
+    MxDataSet_ImgDataSet.DataID = "./logistics1_tree.csv";
+    MxDataSet_ImgDataSet.reset();
+
+	MxDataSet_tree.DataID = "./logistics_tree.jsp";
+	MxDataSet_tree.reset();
+
+	Mxdataset1.dataid = "./logistics_select1.jsp?year="+select_1.value+"&gubun=DHL";
+	Mxdataset1.reset();
+
+	Mxdataset2.dataid = "./logistics_select2.jsp?year="+select_1.value+"&gubun=DHL";
+	Mxdataset2.reset();
+
+	MxTree_list.Focus();
+	MxTree_list.Index = 3;
+	MxTree_list.Expand(3);
+}
+
+function fn_Search(idx){
+	Mxdataset1.ClearData();
+	Mxdataset2.ClearData();
+
+	Mxdataset1.dataid = "./logistics_select1.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+	Mxdataset1.reset();
+
+	Mxdataset2.dataid = "./logistics_select2.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+	Mxdataset2.reset();
+
+	MxTree_list.Focus();
+	MxTree_list.Index = idx;
+	MxTree_list.Expand(3);
+
+	fn_ctrlKeyCol('none');
+}
+
+function fn_change(){
+	Mxdataset1.ClearData();
+	Mxdataset2.ClearData();
+
+	Mxdataset1.dataid = "./logistics_select1.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+	Mxdataset1.reset();
+
+	Mxdataset2.dataid = "./logistics_select2.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+	Mxdataset2.reset();
+
+	fn_ctrlKeyCol('none');
+}
+
+function fn_Print(){
+//	ln_Report_MakeData("pgm8_Rpt.csv");				//csv화일로 생성
+	ln_Report_Popup("Program8.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+//	fn_ctrlKeyCol('none');
+}
+
+function fn_Insert(){
+	Mxdataset2.addrow();
+	Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") = "ARRIVAL";
+	Mxdataset2.addrow();
+	Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") = "IN_TIME";
+	Mxdataset2.addrow();
+	Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") = "LATE";
+
+	fn_ctrlKeyCol('any');
+
+	MxGrid_2.SetColumn("ToSite");
+	Mxdataset2.rowposition = Mxdataset2.rowposition - 2;
+}
+
+function fn_Delete(){
+	if(confirm(gs_CallMsg('M006','-'))){
+		if(Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") == "ARRIVAL"){
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+		}else if(Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") == "IN_TIME"){
+			Mxdataset2.rowposition = Mxdataset2.rowposition - 1;
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+		}else if(Mxdataset2.NameValue(Mxdataset2.rowposition,"Category") == "LATE"){
+			Mxdataset2.rowposition = Mxdataset2.rowposition - 2;
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+			Mxdataset2.deleterow(Mxdataset2.rowposition);
+		}
+	
+		fn_ctrlKeyCol('none');
+	}
+}
+
+function fn_Save(){
+	var p = -1;
+	var idx = Mxdataset2.rowposition;
+	for(var k=1;k<=Mxdataset2.countrow;k++){
+		if(Mxdataset2.RowStatus(k) == 1 || Mxdataset2.RowStatus(k) == 2 || Mxdataset2.RowStatus(k) == 3){
+			if(Mxdataset2.NameValue(k,"ToSite") == null || Mxdataset2.NameValue(k,"ToSite") == "" || Mxdataset2.NameValue(k,"ToSite") == undefined){
+				alert("필수 입력항목입니다.");
+				MxGrid_2.SetColumn("ToSite");
+				Mxdataset2.rowposition = idx;
+				return false;
+				break;
+			}
+		}
+	}
+
+	for(var j=1;j<=Mxdataset2.countrow;j++){
+		if(Mxdataset2.RowStatus(j) == 1)	flag = "Ins";
+		else								flag = "";
+	}
+
+	if(flag == "Ins"){
+		for(var i=1;i<=count;i++){
+			if(Mxdataset2.NameValue(i,"ToSite") == Mxdataset2.NameValue(idx,"ToSite")){
+				alert("기존의 중복된 값이 있습니다\n다른 값을 입력하세요.");
+				MxGrid_2.SetColumn("ToSite");
+				Mxdataset2.rowposition = idx;
+				return false;
+				break;
+			}
+		}
+	}
+
+	MXtr.action = "/sample40/logistics/logistics_tr.jsp";
+	MXtr.Parameters = "year="+select_1.value+", gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+	MXtr.KeyValue = "JSP(I:dataset1=Mxdataset1,I:dataset2=Mxdataset2)";
+	if(confirm(gs_CallMsg('M007','-'))){
+		MXtr.post();
+	}
+
+	fn_ctrlKeyCol('none');
+}
+
+function fn_ctrlKeyCol(mode){
+	MxGrid_2.ColumnProp('ToSite','edit') = mode;
+	MxGrid_2.ColumnProp('Category','edit') = mode;
+}
+</script>
+
+<script language=JavaScript for=Mxdataset2 event=OnColumnChanged(row,colid)>
+/*
+var ecnt   = Mxdataset2.countrow/3;
+
+var idx_1    = 0;
+var idx_2    = 0;
+var idx_3    = 0;
+
+	for(var k=0;k<ecnt;k++){
+		idx_1 = 3*k+1;
+		idx_2 = 3*k+2;
+		idx_3 = 3*k+3;
+
+		if(colid == "January"){
+			tmp_arrival_1 += Mxdataset2.NameValue(idx_1,"January");
+		}
+		if(idx_1 > Mxdataset2.countrow || idx_2 > Mxdataset2.countrow || idx_3 > Mxdataset2.countrow) break;
+	}
+
+	Mxdataset1.NameValue(1,"January") = 0;
+	Mxdataset1.NameValue(1,"January") = tmp_arrival_1;
+
+	tmp_arrival_1 = 0;
+*/
+
+
+	for(var i=1;i<=Mxdataset2.countrow;i++){
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "January"){
+ 			tmp_arrival_1 += Mxdataset2.NameValue(i,"January");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "Feburary"){
+ 			tmp_arrival_2 += Mxdataset2.NameValue(i,"Feburary");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "March"){
+ 			tmp_arrival_3 += Mxdataset2.NameValue(i,"March");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "April"){
+ 			tmp_arrival_4 += Mxdataset2.NameValue(i,"April");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "May"){
+ 			tmp_arrival_5 += Mxdataset2.NameValue(i,"May");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "June"){
+ 			tmp_arrival_6 += Mxdataset2.NameValue(i,"June");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "July"){
+ 			tmp_arrival_7 += Mxdataset2.NameValue(i,"July");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "August"){
+ 			tmp_arrival_8 += Mxdataset2.NameValue(i,"August");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "September"){
+ 			tmp_arrival_9 += Mxdataset2.NameValue(i,"September");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "October"){
+ 			tmp_arrival_10 += Mxdataset2.NameValue(i,"October");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "November"){
+ 			tmp_arrival_11 += Mxdataset2.NameValue(i,"November");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "ARRIVAL" && colid == "December"){
+ 			tmp_arrival_12 += Mxdataset2.NameValue(i,"December");
+		}
+
+
+				if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "January"){
+ 			tmp_on_time_1 += Mxdataset2.NameValue(i,"January");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "Feburary"){
+ 			tmp_on_time_2 += Mxdataset2.NameValue(i,"Feburary");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "March"){
+ 			tmp_on_time_3 += Mxdataset2.NameValue(i,"March");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "April"){
+ 			tmp_on_time_4 += Mxdataset2.NameValue(i,"April");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "May"){
+ 			tmp_on_time_5 += Mxdataset2.NameValue(i,"May");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "June"){
+ 			tmp_on_time_6 += Mxdataset2.NameValue(i,"June");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "July"){
+ 			tmp_on_time_7 += Mxdataset2.NameValue(i,"July");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "August"){
+ 			tmp_on_time_8 += Mxdataset2.NameValue(i,"August");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "September"){
+ 			tmp_on_time_9 += Mxdataset2.NameValue(i,"September");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "October"){
+ 			tmp_on_time_10 += Mxdataset2.NameValue(i,"October");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "November"){
+ 			tmp_on_time_11 += Mxdataset2.NameValue(i,"November");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "IN_TIME" && colid == "December"){
+ 			tmp_on_time_12 += Mxdataset2.NameValue(i,"December");
+		}
+
+
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "January"){
+ 			tmp_late_1 += Mxdataset2.NameValue(i,"January");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "Feburary"){
+ 			tmp_late_2 += Mxdataset2.NameValue(i,"Feburary");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "March"){
+ 			tmp_late_3 += Mxdataset2.NameValue(i,"March");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "April"){
+ 			tmp_late_4 += Mxdataset2.NameValue(i,"April");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "May"){
+ 			tmp_late_5 += Mxdataset2.NameValue(i,"May");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "June"){
+ 			tmp_late_6 += Mxdataset2.NameValue(i,"June");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "July"){
+ 			tmp_late_7 += Mxdataset2.NameValue(i,"July");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "August"){
+ 			tmp_late_8 += Mxdataset2.NameValue(i,"August");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "September"){
+ 			tmp_late_9 += Mxdataset2.NameValue(i,"September");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "October"){
+ 			tmp_late_10 += Mxdataset2.NameValue(i,"October");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "November"){
+ 			tmp_late_11 += Mxdataset2.NameValue(i,"November");
+		}
+		if(Mxdataset2.NameValue(i,"Category") == "LATE" && colid == "December"){
+ 			tmp_late_12 += Mxdataset2.NameValue(i,"December");
+		}
+	}
+
+	if(colid == "January"){
+		Mxdataset1.NameValue(1,"January") 	= 0;
+		Mxdataset1.NameValue(2,"January") 	= 0;
+		Mxdataset1.NameValue(3,"January") 	= 0;
+
+		Mxdataset1.NameValue(1,"January") 	= tmp_arrival_1;
+		Mxdataset1.NameValue(2,"January") 	= tmp_on_time_1;
+		Mxdataset1.NameValue(3,"January") 	= tmp_late_1;
+	}else if(colid == "Feburary"){
+		Mxdataset1.NameValue(1,"Feburary") 	= 0;
+		Mxdataset1.NameValue(2,"Feburary") 	= 0;
+		Mxdataset1.NameValue(3,"Feburary") 	= 0;
+
+
+		Mxdataset1.NameValue(1,"Feburary") 	= tmp_arrival_2;
+		Mxdataset1.NameValue(2,"Feburary") 	= tmp_on_time_2;
+		Mxdataset1.NameValue(3,"Feburary") 	= tmp_late_2;
+	}else if(colid == "March"){
+		Mxdataset1.NameValue(1,"March") 	= 0;
+		Mxdataset1.NameValue(2,"March") 	= 0;
+		Mxdataset1.NameValue(3,"March") 	= 0;
+
+		Mxdataset1.NameValue(1,"March") 	= tmp_arrival_3;
+		Mxdataset1.NameValue(2,"March") 	= tmp_on_time_3;
+		Mxdataset1.NameValue(3,"March") 	= tmp_late_3;
+	}else if(colid == "April"){
+		Mxdataset1.NameValue(1,"April") 	= 0;
+		Mxdataset1.NameValue(2,"April") 	= 0;
+		Mxdataset1.NameValue(3,"April") 	= 0;
+
+		Mxdataset1.NameValue(1,"April") 	= tmp_arrival_4;
+		Mxdataset1.NameValue(2,"April") 	= tmp_on_time_4;
+		Mxdataset1.NameValue(3,"April") 	= tmp_late_4;
+	}else if(colid == "May"){
+		Mxdataset1.NameValue(1,"May") 	= 0;
+		Mxdataset1.NameValue(2,"May") 	= 0;
+		Mxdataset1.NameValue(3,"May") 	= 0;
+
+		Mxdataset1.NameValue(1,"May") 		= tmp_arrival_5;
+		Mxdataset1.NameValue(2,"May") 		= tmp_on_time_5;
+		Mxdataset1.NameValue(3,"May") 		= tmp_late_5;
+	}else if(colid == "June"){
+		Mxdataset1.NameValue(1,"June") 	= 0;
+		Mxdataset1.NameValue(2,"June") 	= 0;
+		Mxdataset1.NameValue(3,"June") 	= 0;
+
+		Mxdataset1.NameValue(1,"June") 		= tmp_arrival_6;
+		Mxdataset1.NameValue(2,"June") 		= tmp_on_time_6;
+		Mxdataset1.NameValue(3,"June") 		= tmp_late_6;
+	}else if(colid == "July"){
+		Mxdataset1.NameValue(1,"July") 	= 0;
+		Mxdataset1.NameValue(2,"July") 	= 0;
+		Mxdataset1.NameValue(3,"July") 	= 0;
+
+		Mxdataset1.NameValue(1,"July") 		= tmp_arrival_7;
+		Mxdataset1.NameValue(2,"July") 		= tmp_on_time_7;
+		Mxdataset1.NameValue(3,"July") 		= tmp_late_7;
+	}else if(colid == "August"){
+		Mxdataset1.NameValue(1,"August") 	= 0;
+		Mxdataset1.NameValue(2,"August") 	= 0;
+		Mxdataset1.NameValue(3,"August") 	= 0
+
+		Mxdataset1.NameValue(1,"August") 	= tmp_arrival_8;
+		Mxdataset1.NameValue(2,"August") 	= tmp_on_time_8;
+		Mxdataset1.NameValue(3,"August") 	= tmp_late_8;
+	}else if(colid == "September"){
+		Mxdataset1.NameValue(1,"September") = 0;
+		Mxdataset1.NameValue(2,"September") = 0;
+		Mxdataset1.NameValue(3,"September") = 0;
+
+		Mxdataset1.NameValue(1,"September") = tmp_arrival_9;
+		Mxdataset1.NameValue(2,"September") = tmp_on_time_9;
+		Mxdataset1.NameValue(3,"September") = tmp_late_9;
+	}else if(colid == "October"){
+		Mxdataset1.NameValue(1,"October") 	= 0;
+		Mxdataset1.NameValue(2,"October") 	= 0;
+		Mxdataset1.NameValue(3,"October") 	= 0;
+
+		Mxdataset1.NameValue(1,"October") 	= tmp_arrival_10;
+		Mxdataset1.NameValue(2,"October") 	= tmp_on_time_10;
+		Mxdataset1.NameValue(3,"October") 	= tmp_late_10;
+	}else if(colid == "November"){
+		Mxdataset1.NameValue(1,"November") 	= 0;
+		Mxdataset1.NameValue(2,"November") 	= 0;
+		Mxdataset1.NameValue(3,"November") 	= 0;
+
+		Mxdataset1.NameValue(1,"November") 	= tmp_arrival_11;
+		Mxdataset1.NameValue(2,"November") 	= tmp_on_time_11;
+		Mxdataset1.NameValue(3,"November") 	= tmp_late_11;
+	}else if(colid == "December"){
+		Mxdataset1.NameValue(1,"December") 	= 0;
+		Mxdataset1.NameValue(2,"December") 	= 0;
+		Mxdataset1.NameValue(3,"December") 	= 0;
+
+		Mxdataset1.NameValue(1,"December") 	= tmp_arrival_12;
+		Mxdataset1.NameValue(2,"December") 	= tmp_on_time_12;
+		Mxdataset1.NameValue(3,"December") 	= tmp_late_12;
+	}
+
+tmp_arrival_1 = 0;  tmp_arrival_2 = 0;  tmp_arrival_3 = 0;  tmp_arrival_4 = 0;  tmp_arrival_5 = 0;  tmp_arrival_6 = 0;
+tmp_arrival_7 = 0;  tmp_arrival_8 = 0;  tmp_arrival_9 = 0;  tmp_arrival_10 = 0;  tmp_arrival_11 = 0;  tmp_arrival_12 = 0;
+tmp_on_time_1 = 0;  tmp_on_time_2 = 0;  tmp_on_time_3 = 0;  tmp_on_time_4 = 0;  tmp_on_time_5 = 0;   tmp_on_time_6 = 0;
+tmp_on_time_7 = 0;  tmp_on_time_8 = 0;  tmp_on_time_9 = 0;  tmp_on_time_10 = 0;  tmp_on_time_11 = 0;   tmp_on_time_12 = 0;
+tmp_late_1 = 0;  tmp_late_2 = 0;  tmp_late_3 = 0;  tmp_late_4 = 0;  tmp_late_5 = 0;  tmp_late_6 = 0;
+tmp_late_7 = 0;  tmp_late_8 = 0;  tmp_late_9 = 0;  tmp_late_10 = 0;  tmp_late_11 = 0;  tmp_late_12 = 0;
+
+</script>
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+//	alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+
+<script LANGUAGE=javascript FOR=Mxdataset2 EVENT=OnLoadCompleted(rowcnt)>
+	count = rowcnt;
+	window.status = gs_CallMsg("M003", Mxdataset2.CountRow);
+</script>
+
+<script language=JavaScript for=MxTree_list event=OnItemClick(index)>
+	if(MxDataSet_tree.nameValue(MxDataSet_tree.rowposition,'v_level') == 3) {
+		Mxdataset1.ClearData();
+		Mxdataset2.ClearData();
+
+		Mxdataset1.dataid = "./logistics_select1.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+		Mxdataset1.reset();
+
+		Mxdataset2.dataid = "./logistics_select2.jsp?year="+select_1.value+"&gubun="+MxDataSet_tree.NameValue(MxDataSet_tree.rowposition,"A");
+		Mxdataset2.reset();
+	}
+	MxTree_list.Focus();
+	MxTree_list.Index = MxTree_list.rowposition;
+	MxTree_list.Expand(index);
+</script>
+
+<script language="JavaScript" for="MxGrid_1" event="OnScrolling(row, col, fromSetScrolling)">
+	MxGrid_2.SetScrolling(row, col);
+</script>
+
+<script language="JavaScript" for="MxGrid_2" event="OnScrolling(row, col, fromSetScrolling)">
+	MxGrid_1.SetScrolling(row, col);
+</script>
+
+<script language=JavaScript for=MxGrid_2 event=OnExit(row,colid,olddata)>
+	var idx = 0;
+	idx = row;
+
+	if(colid == "ToSite"){
+		if(Mxdataset2.NameValue(idx,"Category") == "ARRIVAL"){
+			Mxdataset2.NameValue(idx+1,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+			Mxdataset2.NameValue(idx+2,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+		}else if(Mxdataset2.NameValue(idx,"Category") == "IN_TIME"){
+			Mxdataset2.NameValue(idx-1,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+			Mxdataset2.NameValue(idx+1,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+		}else if(Mxdataset2.NameValue(idx,"Category") == "LATE"){
+			Mxdataset2.NameValue(idx-1,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+			Mxdataset2.NameValue(idx-2,"ToSite") = Mxdataset2.NameValue(idx,"ToSite");
+		}
+	}
+</script>
+
+<script language=JavaScript for=MXtr event=OnSuccess()>
+	window.status = gs_CallMsg('M005','-');
+</script>
+
+<script language=JavaScript for=MXtr event=OnFail()>
+//	alert(gs_CallMsg('M006','-'));
+	window.status = "";
+	alert(MXtr.ErrorMsg);
+</script>
+
+<script language=JavaScript for=MxDataSet_ImgDataSet event=OnDataError()>
+	alert("Error Code : " + MxDataSet_ImgDataSet.ErrorCode + "\n" +
+		  "Error Message : " + MxDataSet_ImgDataSet.ErrorMsg + "\n");
+</script>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<object id=Mxdataset1 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name="SyncLoad" 		 	value="true">
+</object>
+
+<object id=Mxdataset2 classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name="SyncLoad" 		 	value="true">
+</object>
+
+<object id=MxDataSet_ImgDataSet classid=CLSID:2B0B1D8B-CAAA-4e06-BD9A-A09A916BD67A>
+	<param name=SyncLoad	value="true">
+</object>
+
+<object id=MxDataSet_tree classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name="SyncLoad" 		 	value="true">
+</object>
+
+<!--TR Component-->
+<object id="MXtr" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5">
+  <param name="KeyName"   value="Toinb_dataid4">
+  <param name="Protocol"  value="1">
+</object>
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// -->
+</script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_onload();na_preload_img(false, '../images/direct_bu_color.gif', '../images/input_bu_color.gif', '../images/del_bu_color.gif', '../images/save_bu_color.gif', '../images/excel_bu_color.gif', '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm8_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>지점별 월별 배송현황</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+
+							<a href="#" OnMouseOut="na_restore_img_src('image1', 'document')" OnMouseOver="na_change_img_src('image1', 'document', '../images/direct_bu_color.gif', true)"><img src="../images/direct_bu.gif" width="61" height="20" border="0" name="image1" onclick="fn_Search(MxDataSet_tree.rowposition)"></a>
+							<!--input id="btn_1" value="조회" type="button" style="width:50px; height:20px; font-size:9pt;" onclick="fn_Search(MxDataSet_tree.rowposition)"-->
+
+							<a href="#" OnMouseOut="na_restore_img_src('image2', 'document')" OnMouseOver="na_change_img_src('image2', 'document', '../images/input_bu_color.gif', true)"><img src="../images/input_bu.gif" width="61" height="20" border="0" name="image2" onclick="fn_Insert()"></a>
+							<!--input id="btn_2" value="입력" type="button" style="width:50px; height:20px; font-size:9pt;" onclick="fn_Insert()"-->
+
+							<a href="#" OnMouseOut="na_restore_img_src('image3', 'document')" OnMouseOver="na_change_img_src('image3', 'document', '../images/del_bu_color.gif', true)"><img src="../images/del_bu.gif" width="61" height="20" border="0" name="image3" onclick="fn_Delete()"></a>
+							<!--input id="btn_3" value="삭제" type="button" style="width:50px; height:20px; font-size:9pt;" onclick="fn_Delete()"-->
+
+							<a href="#" OnMouseOut="na_restore_img_src('image4', 'document')" OnMouseOver="na_change_img_src('image4', 'document', '../images/save_bu_color.gif', true)"><img src="../images/save_bu.gif" width="61" height="20" border="0" name="image4" onclick="fn_Save()"></a>
+							<!--input id="btn_4" value="저장" type="button" style="width:50px; height:20px; font-size:9pt;" onclick="fn_Save()"-->
+
+							<a href="#" OnMouseOut="na_restore_img_src('image5', 'document')" OnMouseOver="na_change_img_src('image5', 'document', '../images/excel_bu_color.gif', true)"><img src="../images/excel_bu.gif" width="61" height="20" border="0" name="image5" onclick="ln_Excel(MxGrid_2,'지점별 월별 배송 현황')"></a>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30" colspan="2">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<font size="2">&nbsp;&nbsp;<b>조회기준</b></font>
+											</td>
+											<td width="51" height="25">
+												<p><select id="select_1" name="select_1" size="1" onchange="fn_change();">
+													<!>
+													<option value="2002">2002</option>
+													<option selected value="2003">2003</option>
+													<!>
+												   </select></p>
+											</td>
+											<td width="20" height="25">년</td>
+											<td width="15" height="25">
+											</td>
+											<td colspan=2 height="25">&nbsp;</td>
+											<!--td width="40">
+												<p><select name="select_1" size="1">
+													<option value="01">01</option>
+													<option value="02">02</option>
+													<option value="03">03</option>
+													<option value="04">04</option>
+													<option value="05">05</option>
+													<option value="06">06</option>
+													<option value="07">07</option>
+													<option value="08">08</option>
+													<option value="09">09</option>
+													<option value="10">10</option>
+													<option value="11">11</option>
+													<option value="12">12</option>
+													</select></p>
+											</td>
+											<td width="21">월</td>
+											<td width="546">&nbsp;</td-->
+										</tr>
+									</table></td>
+							</tr>
+							<tr>
+								<td width="180" height="463" rowspan="2" valign="top">
+
+									<table cellpadding="0" cellspacing="0" width="100%" height="100%">
+										<!--tr>
+											<td width="170" height="30">
+											<table cellpadding="0" cellspacing="0" align="center" width="143">
+													<tr>
+														<td width="76" height="25">
+															<p>부서활성화</p>
+			</td>
+														<td width="67" height="25">
+														<p><select id="sel_year" size="1" onChange="fn_TreeviewExpand()">
+																<option value="1">본부</option>
+																<option value="2">지사</option>
+																<option selected value="3">지점</option>
+														</select></p>
+														</td>
+													</tr>
+												</table>
+											</td>
+										</tr-->
+										<tr>
+											<td width="170" height="420">                                    <p><object classid="clsid:6DD1CE9F-1722-46f0-AF93-B2BC58383CD2" width="100%" height="100%" id="MxTree_list">
+												<param name="DataID" 		value="MxDataSet_tree">
+												<param name="BorderStyle" 	value="1">
+												<!--
+												<param name="HasButtons" 	value="false">
+												<param name="HasLines" 		value="false">
+												<param name="SingleExpand" 	value="false">
+												-->
+												<param name="TextColumn" 	value="v_title">
+												<param name="LevelColumn" 	value="v_level">
+												<param name="UseImage" 		value="true">
+												<param name="ImgDataID"		value="MxDataSet_ImgDataSet">
+												<param name="ImgDColumn"		value="ImgD">
+												<param name="ImgOColumn"		value="ImgO">
+												<param name="ImgCColumn"		value="ImgC">
+												<param name="ExpandLevel"		value="1">
+
+			<!--
+												<param name=DataID			value="gauce_DataSet">
+												<param name=TextColumn		value="Deptnm">
+												<param name=TypeColumn		value="Type">
+												<param name=LevelColumn		value="Level">
+												<param name=expandlevel		value="2">
+												<param name=ImgDataID		value="gauce_ImgDataSet">
+												<param name=ImgCColumn		value="ImgC">
+												<param name=ImgDColumn		value="ImgD">
+												<param name=ImgOColumn		value="ImgO">
+												<param name=UseImage		value="true">
+												-->
+									</object></p>
+			</td>
+										</tr>
+									</table>
+			</td>
+								<td width="610" height="88">
+									<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%"
+										style="font-size:9pt" id="MxGrid_1">
+										<param name="DataID"        	value="Mxdataset1">
+										<param name="HeadBorder"		value="4">
+										<param name="editable"      	value="false">
+										<param name="ColSizing"     	value="true">
+										<param name="BorderStyle"       value="1">
+										<param name="IndWidth"       	value="0">
+										<param name="LineColor"     	value="#FFFFFF">
+										<param name="HeadLineColor"		value="#FFFFFF">
+										<param name="Format" 			value="
+											<F>ID=ToSite	width=97 	name=ToSite		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF  suppress=1 bgcolor=#F5F0B0</F>
+											<F>ID=FromSite	width=65 	name=FromSite	align=center HeadBgColor=#908F8B HeadColor=#FFFFFF show=false BgColor=#FFFFCE</F>
+											<F>ID=SC		width=50 	name=SC			align=center HeadBgColor=#908F8B HeadColor=#FFFFFF show=false BgColor=#FFFFCE</F>
+											<F>ID=Category	width=95 	name=Category	align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor=#FFFFCE</F>
+											<C>ID=January	width=65	name=January	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(January>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=Feburary	width=65	name=Feburary	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(Feburary>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=March		width=65	name=March		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(March>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=April		width=65	name=April		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(April>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=May		width=65	name=May		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(May>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=June		width=65	name=June		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(June>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=July		width=65	name=July		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(July>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=August	width=65	name=August		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(August>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=September	width=65	name=September	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(September>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=October	width=65	name=October	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(October>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=November	width=65	name=November	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(November>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=December	width=65	name=December	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(December>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+										">
+									</object></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="610" height="333">
+									<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%"
+										style="font-size:9pt" id="MxGrid_2">
+										<param name="DataID"        	value="Mxdataset2">
+										<param name="HeadBorder"		value="4">
+										<param name="editable"      	value="true">
+										<param name="ColSizing"     	value="true">
+										<param name="BorderStyle"       value="1">
+										<param name="IndWidth"       	value="0">
+										<param name="TitleHeight"       value="0">
+										<param name="LineColor"     	value="#FFFFFF">
+										<param name="HeadLineColor"		value="#FFFFFF">
+										<param name="Format"        	value="
+											<F>ID=ToSite	width=97 	name=ToSite		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF  edit=none suppress=1 bgcolor=#F5F0B0</F>
+											<F>ID=FromSite	width=65 	name=FromSite	align=center HeadBgColor=#908F8B HeadColor=#FFFFFF show=false BgColor=#FFFFCE</F>
+											<F>ID=SC		width=50 	name=SC			align=center HeadBgColor=#908F8B HeadColor=#FFFFFF show=false BgColor=#FFFFCE</F>
+											<F>ID=Category	width=95 	name=Category	align=center HeadBgColor=#908F8B HeadColor=#FFFFFF  edit=none BgColor=#FFFFCE</F>
+											<C>ID=January	width=65	name=January	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(January>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=Feburary	width=65	name=Feburary	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(Feburary>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=March		width=65	name=March		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(March>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=April		width=65	name=April		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(April>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=May		width=65	name=May		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(May>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=June		width=65	name=June		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(June>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=July		width=65	name=July		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(July>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=August	width=65	name=August		align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(August>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=September	width=65	name=September	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(September>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=October	width=65	name=October	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(October>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=November	width=65	name=November	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(November>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=December	width=65	name=December	align=right HeadBgColor=#908F8B HeadColor=#FFFFFF  color={if(Category=='IN_TIME',if(December>=0,'blue','red'))}
+											BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+										">
+									</object></p>
+
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+				EXTRACT *
+				  FROM Mxdataset2
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

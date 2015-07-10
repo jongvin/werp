@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************** -->
+<!-- 1. 프로그램 id   : c_date_input_1h.html		     -->
+<!-- 2. 유형(시나리오): 계약날짜 입력	            					  -->
+<!-- 3. 기 능 정 의   : 														  -->
+<!-- 4. 변 경 이 력   :  황보은영 작성										  -->
+<!-- 5. 관련프로그램  :															  -->
+<!-- 6. 특 기 사 항   :															  -->
+<!-- ************************************************************** -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<TITLE>  </TITLE>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = ""
+var arg_name = ""
+var arg_receive = ""
+var is_check_receive = ""
+var ls_temp = ""
+var ls_last = ""
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()
+//------------------------------------------------------------------------
+{
+}
+
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	var ls_return = ""
+	
+	if (em_dd.text.length != 2) {
+		alert("날짜가 정확하지 않습니다")
+		em_dd.focus()
+		return
+	}
+	if (!f_check_date(em_yyyy.text+em_mm.text+em_dd.text)) {
+		alert("날짜가 정확하지 않습니다")
+		em_dd.focus()
+		return
+	}
+	ls_last_date = ls_last.substr(8,2)
+	if (parseInt(ls_last_date) >= em_dd.text) {
+		alert("입력일자가 최종 일자보다 큰 값이어야 합니다")
+		return
+	}
+	
+	ls_return = em_yyyy.text + "." + em_mm.text + "." + em_dd.text
+	window.returnValue = ls_return
+ 	window.close();
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	
+	if(result == "")
+		return
+	
+	array = result.split("@");
+	gs_home = array[0]
+	gs_temp = array[1]
+	ls_last = array[2]
+	
+	ls_temp = gs_temp  // 시스템 년월 선언.
+	
+	em_yyyy.text = ls_temp.substr(0,4)
+	em_mm.text = ls_temp.substr(5,2)
+	em_dd.text = ls_temp.substr(8,2)
+	em_dd.focus()
+}	
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div style="position: absolute; top: 30px; left: 35px">
+<table border="0" width=220px height=80px cellpadding="0" cellspacing="2" align="center" BGCOLOR="white">
+	<tr align="center"> 
+		<td width="100%" height="100%"  BGCOLOR="#DFE2F9">
+			<table border="0" width="100%" height="100%" cellpadding="0" cellspacing="2">
+				<tr>
+					<td style="COLOR: BLACK; FONT-SIZE: 12px" BGCOLOR="white" align="right">
+						전표일자&nbsp;
+					</td>
+					<td BGCOLOR="white">
+						<table border="0" height="100%" cellpadding="0" cellspacing="0" style="font: 12px">
+							<tr>
+								<td>&nbsp;
+									<comment id="__NSID__"><OBJECT id=em_yyyy style="WIDTH: 40px; HEIGHT: 20px; FONT-SIZE: 12px;" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle">
+										<param name=ReadOnlyBackColor value=silver>
+										<param name=Alignment         value=1>
+										<param name=Numeric           value=false>
+										<param name=Enable				value=false>
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>년
+									<comment id="__NSID__"><OBJECT id=em_mm style="WIDTH: 20px; HEIGHT: 20px; FONT-SIZE: 12px;" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle">
+										<param name=ReadOnlyBackColor value=silver>
+										<param name=Alignment         value=1>
+										<param name=Numeric           value=0>
+										<param name=format				value="00">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>월
+									<comment id="__NSID__"><OBJECT id=em_dd style="WIDTH: 20px; HEIGHT: 20px; FONT-SIZE: 12px;" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle">
+										<param name=ReadOnlyBackColor value=silver>
+										<param name=Alignment         value=1>
+										<param name=Numeric           value=0>
+										<param name=format				value="00">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>일
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" align="center" BGCOLOR="white">						
+						<input type="button" value="확인" onclick=Button_confirm_onclick() class=img_btnOk onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</div>
+</BODY>
+</HTML>

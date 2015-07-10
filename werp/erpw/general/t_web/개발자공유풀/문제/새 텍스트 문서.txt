@@ -1,0 +1,216 @@
+select
+	    SEQ,                                               
+	    MAKE_COMPANY,
+		KEEP_DT6,                                      
+	    KEEP_DT,                                           
+	    KEEP_SLIPNO,                                       
+	    SLIP_ID,                                           
+	    SLIP_IDSEQ,                                        
+	    MAKE_SLIPNO,                                       
+	    CUST_CODE,                                         
+	    CUST_NAME,                                         
+	    SUMMARY1,                                          
+	    SUMMARY2,                                          
+	    POSS_DEPT_PROJ,                                    
+	    PROJ_NAME,                                         
+	    ACC_CODE,                                          
+	    ACC_NAME,                                          
+	    sum(DB_AMT),                                            
+	    sum(CR_AMT),                                            
+	    sum(JAN_AMT),                                         
+	    LINE_FLAG
+from
+(
+	select                                                 
+	    SEQ,                                               
+	    MAKE_COMPANY,
+		SUBSTR(KEEP_DT,1,6) KEEP_DT6,                                      
+	    KEEP_DT,                                           
+	    KEEP_SLIPNO,                                       
+	    SLIP_ID,                                           
+	    SLIP_IDSEQ,                                        
+	    MAKE_SLIPNO,                                       
+	    CUST_CODE,                                         
+	    CUST_NAME,                                         
+	    SUMMARY1,                                          
+	    SUMMARY2,                                          
+	    POSS_DEPT_PROJ,                                    
+	    PROJ_NAME,                                         
+	    ACC_CODE,                                          
+	    ACC_NAME,                                          
+	    DB_AMT,                                            
+	    CR_AMT,                                            
+	    SUM(JAN_AMT)                                       
+	    OVER(                                              
+	        PARTITION BY MAKE_COMPANY, ACC_CODE 
+	        ORDER BY                                       
+	            MAKE_COMPANY, ACC_CODE, SEQ 
+	    ) JAN_AMT,                                         
+	    LINE_FLAG                                          
+	FROM                                                   
+	(                                                      
+	    SELECT                                             
+	        ROW_NUMBER()                                   
+	        OVER (                                         
+	            PARTITION BY a.MAKE_COMPANY, b.ACC_CODE    
+	            ORDER BY a.KEEP_DT                         
+	        ) SEQ,                                         
+	        a.MAKE_COMPANY,                                
+	        TO_CHAR(a.KEEP_DT,'YYYYMMDD') KEEP_DT,         
+	        a.KEEP_SLIPNO,                                 
+	        a.SLIP_ID,                                     
+	        b.SLIP_IDSEQ,                                  
+	        a.MAKE_SLIPNO,                                 
+	        b.CUST_CODE,                                   
+	        b.CUST_NAME,                                   
+	        b.POSS_DEPT_PROJ,                              
+	        d.PROJ_NAME,                                   
+	        b.SUMMARY1,                                    
+	        b.SUMMARY2,                                    
+	        b.ACC_CODE ACC_CODE,                                    
+	        c.ACC_NAME,                                    
+	        b.DB_AMT,                                      
+	        b.CR_AMT,                                      
+	        c.ACC_REMAIN_POSITION, --D:차변, C:대변        
+	        decode(                                        
+	            c.ACC_REMAIN_POSITION,                     
+	            'D', b.DB_AMT-b.CR_AMT,                    
+	            'C', b.CR_AMT-b.DB_AMT                     
+	        ) JAN_AMT,                                     
+	        'type2' LINE_FLAG                              
+	    FROM                                               
+	        TIA_ACC_SLIP_HEAD a,                           
+	        TIA_ACC_SLIP_BODY b,                           
+	        TIA_ACC_CODE c,                                
+	        TIA_PROJ_CODE d                                
+	    WHERE                                              
+	        a.SLIP_ID = b.SLIP_ID                          
+	        AND b.ACC_CODE = c.ACC_CODE                    
+	        AND a.MAKE_COMPANY = d.COMPANY_CODE            
+	        AND b.POSS_DEPT_PROJ = d.PROJ_CODE             
+	        AND a.MAKE_COMPANY = '100'      
+	        AND (((b.ACC_CODE = '1110101000')))                    
+	        AND (                                          
+	            a.KEEP_DT BETWEEN                          
+	                TO_DATE('20040101','YYYYMMDD')
+	            AND                                        
+	                TO_DATE('20050103','YYYYMMDD')  
+	            )                                          
+	    UNION ALL                                          
+	    SELECT                                             
+	        0 SEQ,                                         
+	        a.MAKE_COMPANY,                                
+	        SUBSTR(b.KEEP_DT,1,6)||'00' KEEP_DT,   
+	        '' KEEP_SLIPNO,                                
+	        0 SLIP_ID,                                     
+	        0 SLIP_IDSEQ,                                  
+	        '' MAKE_SLIPNO,                                
+	        '' CUST_CODE,                                  
+	        '' CUST_NAME,                                  
+	        '' POSS_DEPT_PROJ,                             
+	        '' PROJ_NAME,                                  
+	        '' SUMMARY1,                                   
+	        '' SUMMARY2,                                   
+	        a.ACC_CODE,                                    
+	        a.ACC_NAME,                                    
+	        0 DB_AMT,                                      
+	        0 CR_AMT,                                      
+	        '' ACC_REMAIN_POSITION, --D:차변, C:대변       
+	        a.JAN_AMT - b.JAN_AMT,                         
+	        'type1' LINE_FLAG                              
+	    FROM                                               
+	    (                                                  
+	    SELECT                                             
+	        a.MAKE_COMPANY,                                
+	        b.ACC_CODE ACC_CODE,                                    
+	        MAX(c.ACC_NAME) ACC_NAME,                      
+	        sum(                                           
+	          decode(                                      
+	              c.ACC_REMAIN_POSITION,--D:차변, C:대변   
+	              'D', b.DB_AMT-b.CR_AMT,                  
+	              'C', b.CR_AMT-b.DB_AMT                   
+	          )                                            
+	        ) JAN_AMT                                      
+	    FROM                                               
+	        TIA_ACC_SLIP_HEAD a,                           
+	        TIA_ACC_SLIP_BODY b,                           
+	        TIA_ACC_CODE c                                 
+	    WHERE                                              
+	        a.SLIP_ID = b.SLIP_ID                          
+	        AND b.ACC_CODE = c.ACC_CODE                    
+	        AND a.MAKE_COMPANY = '100'      
+	        AND (((b.ACC_CODE = '1110101000')))                    
+	        AND a.KEEP_DT <= TO_DATE('20050103','YYYYMMDD')
+	    GROUP BY                                           
+	        a.MAKE_COMPANY,                                
+	        b.ACC_CODE,                                    
+	        c.ACC_REMAIN_POSITION                          
+	    ) a,                                               
+	    (                                                  
+	    SELECT                                             
+	        a.MAKE_COMPANY,                                
+	        MIN(TO_CHAR(a.KEEP_DT,'YYYYMMDD')) KEEP_DT,                                
+	        b.ACC_CODE ACC_CODE,                                    
+	        sum(                                           
+	          decode(                                      
+	              c.ACC_REMAIN_POSITION,--D:차변, C:대변   
+	              'D', b.DB_AMT-b.CR_AMT,                  
+	              'C', b.CR_AMT-b.DB_AMT                   
+	          )                                            
+	        ) JAN_AMT                                      
+	    FROM                                               
+	        TIA_ACC_SLIP_HEAD a,                           
+	        TIA_ACC_SLIP_BODY b,                           
+	        TIA_ACC_CODE c                                 
+	    WHERE                                              
+	        a.SLIP_ID = b.SLIP_ID                          
+	        AND b.ACC_CODE = c.ACC_CODE                    
+	        AND a.MAKE_COMPANY = '100'      
+	        AND (((b.ACC_CODE = '1110101000')))                    
+	        AND (                                          
+	            a.KEEP_DT BETWEEN                          
+	                TO_DATE('20040101','YYYYMMDD')
+	            AND                                        
+	                TO_DATE('20050103','YYYYMMDD')  
+	            )                                          
+	    GROUP BY                                           
+	        a.MAKE_COMPANY,                                
+	        b.ACC_CODE,                                    
+	        c.ACC_REMAIN_POSITION                          
+	    ) b                                                
+	    WHERE                                              
+	        a.MAKE_COMPANY = b.MAKE_COMPANY                
+	        AND a.ACC_CODE = b.ACC_CODE                    
+	)
+)
+Group by Grouping sets
+(
+	(
+	    SEQ,                                               
+	    MAKE_COMPANY,
+		KEEP_DT6,                                      
+	    KEEP_DT,                                           
+	    KEEP_SLIPNO,                                       
+	    SLIP_ID,                                           
+	    SLIP_IDSEQ,                                        
+	    MAKE_SLIPNO,                                       
+	    CUST_CODE,                                         
+	    CUST_NAME,                                         
+	    SUMMARY1,                                          
+	    SUMMARY2,                                          
+	    POSS_DEPT_PROJ,                                    
+	    PROJ_NAME,                                         
+	    ACC_CODE,                                          
+	    ACC_NAME,                                          
+	    --sum(DB_AMT),                                            
+	    --sum(CR_AMT),                                            
+	    --sum(JAN_AMT),                                         
+	    LINE_FLAG
+	),
+	(
+	    MAKE_COMPANY,                                      
+	    KEEP_DT6,                                           
+	    ACC_CODE,                                          
+	    ACC_NAME                                          
+	)
+)

@@ -1,0 +1,613 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************** -->
+<!-- 1. 프로그램 id   : s_evl_close_1h.html	      		        -->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					     -->
+<!-- 3. 기 능 정 의   : 평가마감처리(외주관리)      	  				     -->
+<!-- 4. 변 경 이 력   : 김 동우 작성						              -->
+<!-- 5. 관련프로그램  :					          			              -->
+<!-- 6. 특 기 사 항   :					          			              -->
+<!-- *************************************************************  -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_emp_no    = top.frames['security'].empno.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date,is_year,is_degree,is_class='',is_long_name='',is_sbcr_name='',is_wbs=''
+var is_ds_1_addr = gs_home + '/const/s_web/06/s_evl_close_2q.jsp?arg_year='
+var is_ds_2_addr = gs_home + '/const/s_web/06/s_evl_close_1q.jsp?arg_year='
+var is_ds_3_addr = gs_home + '/const/s_web/06/s_evl_close_3q.jsp?arg_year='
+var is_tr_1_addr = gs_home + '/const/s_web/06/s_evl_evldept_1tr.jsp'
+var is_filter = "tot",is_chk
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_2.DataID = is_ds_2_addr + is_year + "&arg_class=" + is_class
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+
+	div_btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	var ls_year,ls_degree,ls_class
+	
+	if (ds_2.RowPosition < 1) {
+		ds_1.ClearData()
+		return 
+	}
+	
+	ls_year    = ds_2.NameValue(ds_2.RowPosition,'evl_year')
+	ls_degree  = ds_2.NameValue(ds_2.RowPosition,'degree')
+	ls_class   = ds_2.NameValue(ds_2.RowPosition,'evl_class')
+
+	ds_1.DataID = is_ds_1_addr + ls_year + '&arg_degree=' + ls_degree + '&arg_class=' + ls_class 
+	ds_1.SyncLoad=true
+	ds_1.Reset()	
+
+	ds_3.DataID = is_ds_3_addr + ls_year + '&arg_degree=' + ls_degree + '&arg_class=' + ls_class 
+	ds_3.SyncLoad=true
+	ds_3.Reset()	
+
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("seq");
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_chk=0,ls_spec_chk=0
+	
+	if (ds_1.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			tr_1.Post()
+    	}
+	}
+	return
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+	        }   
+ 
+	   }     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년도 선택 
+//--------------------------------------------------------------------------------
+{
+   is_year = em_select_yymm.text
+   ds_2.ClearData()
+   btnquery_onclick()
+ 
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = is_dept_name + '   [' + em_select_yymm.text + ']'
+ gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+   
+}
+//--------------------------------------------------------------------------
+function   rd_1_proc()
+//----------------------------------------------------------------
+{
+	bt_1.checked=true
+	bt_2.checked=false
+	bt_3.checked=false
+	bt_4.checked=false
+	is_filter = "1p"
+	filter_function()
+}
+//--------------------------------------------------------------------------
+function   rd_2_proc()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=true
+	bt_3.checked=false
+	bt_4.checked=false
+	is_filter = "2p"
+	filter_function()
+}
+//--------------------------------------------------------------------------
+function   rd_3_proc()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+	bt_3.checked=true
+	bt_4.checked=false
+	is_filter = "3p"
+	filter_function()
+}
+//--------------------------------------------------------------------------
+function   rd_tot_proc()
+//----------------------------------------------------------------
+{
+	bt_1.checked=false
+	bt_2.checked=false
+	bt_3.checked=false
+	bt_4.checked=true
+	is_filter = "tot"
+	filter_function()
+}
+//--------------------------------------------------------------------------
+function   filter_function()
+//----------------------------------------------------------------
+{
+	gd_2.ReDraw = false
+	ds_2.Filter()
+	gd_2.ReDraw = true
+}  
+//--------------------------------------------------------------------------
+function   sbcr1_search()
+//----------------------------------------------------------------
+{
+	if (tx_sbcr_name.value == '') {
+		is_sbcr_name = ''
+	}
+	else {
+		is_sbcr_name = tx_sbcr_name.value
+	}
+	div_btnquery_onclick()
+}
+//--------------------------------------------------------------------------
+function  proj_ok()
+//----------------------------------------------------------------
+{
+	var arg_cmd,ls_sa_rowposition
+
+	if (ds_2.RowPosition  < 1 ) return
+	
+	ls_year    = ds_2.NameValue(ds_2.RowPosition,'evl_year')
+	ls_degree  = ds_2.NameValue(ds_2.RowPosition,'degree')
+	ls_class   = ds_2.NameValue(ds_2.RowPosition,'evl_class')
+
+  	arg_cmd = " UPDATE S_EVL_EVLPLAN  " +
+     			 "	   SET PROJ_CLOSE = 'Y'  " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'"
+		 
+	f_update_sql(arg_cmd)
+
+	ls_sa_rowposition = ds_2.RowPosition;
+	
+	btnquery_onclick()
+	
+	ds_2.RowPosition = ls_sa_rowposition;
+
+}
+//--------------------------------------------------------------------------
+function  proj_cancel()
+//----------------------------------------------------------------
+{
+	var arg_cmd,ls_sa_rowposition
+	
+	if (ds_2.RowPosition  < 1 ) return
+
+	if  (confirm("현장마감 취소를 하시면 본사평가자료가 삭제 됩니다 계속하시겠습니까?")) {  
+	}   
+	else {
+		return
+	}
+	
+	ls_year    = ds_2.NameValue(ds_2.RowPosition,'evl_year')
+	ls_degree  = ds_2.NameValue(ds_2.RowPosition,'degree')
+	ls_class   = ds_2.NameValue(ds_2.RowPosition,'evl_class')
+
+  	arg_cmd = " UPDATE S_EVL_EVLPLAN  " +
+     			 "	   SET PROJ_CLOSE = 'N'  " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'" + 
+				 "@ delete from s_evl_bon_sbcrdetail " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'" + 
+				 "@ delete from s_evl_bon_evlsbcr " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'" 
+		 
+	f_update_sql_multy(arg_cmd)
+	ls_sa_rowposition = ds_2.RowPosition;
+	
+	btnquery_onclick()
+	
+	ds_2.RowPosition = ls_sa_rowposition;
+
+}
+//--------------------------------------------------------------------------
+function  bon_ok()
+//----------------------------------------------------------------
+{
+	var arg_cmd,ls_sa_rowposition
+
+	if (ds_2.RowPosition  < 1 ) return
+	
+	ls_year    = ds_2.NameValue(ds_2.RowPosition,'evl_year')
+	ls_degree  = ds_2.NameValue(ds_2.RowPosition,'degree')
+	ls_class   = ds_2.NameValue(ds_2.RowPosition,'evl_class')
+
+  	arg_cmd = " UPDATE S_EVL_EVLPLAN  " +
+     			 "	   SET BONSA_CLOSE = 'Y'  " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'"
+		 
+	f_update_sql(arg_cmd)
+
+	ls_sa_rowposition = ds_2.RowPosition;
+	
+	btnquery_onclick()
+	
+	ds_2.RowPosition = ls_sa_rowposition;
+
+}
+//--------------------------------------------------------------------------
+function  bon_cancel()
+//----------------------------------------------------------------
+{
+	var arg_cmd,ls_sa_rowposition
+
+	if (ds_2.RowPosition  < 1 ) return
+	
+	ls_year    = ds_2.NameValue(ds_2.RowPosition,'evl_year')
+	ls_degree  = ds_2.NameValue(ds_2.RowPosition,'degree')
+	ls_class   = ds_2.NameValue(ds_2.RowPosition,'evl_class')
+
+  	arg_cmd = " UPDATE S_EVL_EVLPLAN  " +
+     			 "	   SET BONSA_CLOSE = 'N'  " +
+				 "  WHERE EVL_YEAR =   '" + ls_year + "'" +
+				 "    and DEGREE =   " + ls_degree +
+				 "    and EVL_CLASS =  '" + ls_class + "'"
+		 
+	f_update_sql(arg_cmd)
+
+	ls_sa_rowposition = ds_2.RowPosition;
+	
+	btnquery_onclick()
+	
+	ds_2.RowPosition = ls_sa_rowposition;
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	is_work_date = f_sysdate()
+	tr_1.Action = is_tr_1_addr 
+
+	em_select_yymm.text = is_work_date.substr(0,4)
+	is_year = is_work_date.substr(0,4)
+
+	btnquery_onclick()
+
+}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_2>
+{
+	var ls_bonsa_close,ls_proj_close
+
+	if  (row < 1) return;
+	btnsave_onclick()
+	
+	div_btnquery_onclick()
+	bt_proj_ok.style.visibility="hidden" 	
+	bt_proj_cancel.style.visibility="hidden" 	
+	bt_bon_ok.style.visibility="hidden" 	
+	bt_bon_cancel.style.visibility="hidden" 	
+	gd_1.Editable=0
+	
+	ls_proj_close   = ds_2.NameValue(row,"proj_close")
+	ls_bonsa_close  = ds_2.NameValue(row,"bonsa_close")
+		
+	if ( ls_bonsa_close == 'Y') {
+   	bt_bon_cancel.style.visibility="visible"
+   	return
+   }
+   if( ls_bonsa_close == 'N' && ls_proj_close == 'Y'){
+   	bt_bon_ok.style.visibility="visible"
+		bt_proj_cancel.style.visibility="visible" 	
+		return
+	}
+	if (ls_bonsa_close == 'N' && ls_proj_close == 'N') {
+		bt_proj_ok.style.visibility="visible" 	
+		gd_1.Editable=-1
+		return
+	}
+   	
+
+}  
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=onFilter(row)>
+      switch (is_filter) {
+              case "tot":
+                         return true
+                         break;
+              case "1p":
+                         if (ds_2.NameValue(row,"evl_class") == '1') return true
+                         else return false;
+                         break;
+              case "2p":
+                         if (ds_2.NameValue(row,"evl_class") == '2') return true
+                         else return false;
+                         break;
+              case "3p":
+                         if (ds_2.NameValue(row,"evl_class") == '3') return true
+                         else return false;
+                         break;
+        }
+</SCRIPT>
+
+
+</HEAD>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+	alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+	alert("Error Code : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_close_check
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_2 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true></OBJECT>
+<OBJECT id=ds_3 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_evl_evldept_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>	
+
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 510px; POSITION: absolute; TOP: 3px; HEIGHT: 30px">
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+				<td width="10%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=2 > 
+					<div align="right">계획년도</div></td>
+				<td width="5%" colspan=1> 
+					<OBJECT id=em_select_yymm 
+					       style="WIDTH: 40px" 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<PARAM NAME="IsComma" VALUE="0">
+							<PARAM NAME="MaxLength" VALUE="8">
+							<PARAM NAME="Format" VALUE="YYYY">
+							<param name=ClipMode       value=false>
+							<PARAM NAME="Numeric" VALUE="0">
+							<PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				</td>
+				<td width="10%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=2 > 
+					<div align="right">평가구분</div></td>
+				<td width="25%" colspan=5> 
+					<input id=bt_4 type="radio" value="1" defaultChecked=true checked=true onclick="rd_tot_proc()">전체   
+					<input id=bt_1 type="radio" value="2"  onclick="rd_1_proc()">상반기    
+					<input id=bt_2 type="radio" value="2"  onclick="rd_2_proc()">하반기  
+					<input id=bt_3 type="radio" value="2"  onclick="rd_3_proc()">준공    
+				</td>
+
+         </tr>                 
+      </table>
+</DIV>
+        
+<DIV id=gd_11_button 
+style="Z-INDEX: 107; LEFT: 600px; WIDTH: 410px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<input id=bt_proj_ok type="button" value="현장마감" 
+        style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=proj_ok()>
+<input id=bt_proj_cancel type="button" value="현장마감취소" 
+        style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=proj_cancel()>
+<input id=bt_bon_ok type="button" value="본사마감" 
+        style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=bon_ok()>
+<input id=bt_bon_cancel type="button" value="본사마감취소" 
+        style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=bon_cancel()>
+        
+</DIV>
+	
+<OBJECT id=gd_2 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 35px; HEIGHT: 115px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='년도' ID=evl_year Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=40 </C>
+	  <C> Name='차수' ID=degree Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=30 </C>
+	  <C> Name='구분' ID=evl_class Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 
+	  		EditStyle=Combo Data='1:상반기,2:하반기,3:준공 '</C>
+	  <C> Name='현장' ID=long_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=230 </C>
+	  <G> Name=' 평가기간'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   
+	  <C> Name='From' ID=evl_f_date  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=80 </C>
+	  <C> Name='To' ID=evl_t_date  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=80 </C></G>
+	  <G> Name=' 현 장'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   
+	  <C> Name='진행업체' ID=cnt_dept Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 </C>
+	  <C> Name='진행율' ID=dept_rt Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+	  <C> Name='마감여부' ID=proj_close  Align=Center  EditStyle=Combo Data='Y:예,N:아니오 ' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=85 </C></G>
+	  <G> Name=' 본 사'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   
+	  <C> Name='진행업체' ID=cnt_bon Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 </C>
+	  <C> Name='진행율' ID=bon_rt Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+	  <C> Name='마감여부' ID=bonsa_close  Align=Center  EditStyle=Combo Data='Y:예,N:아니오 '  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=85 </C></G>
+	  ">
+</OBJECT>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+         style="LEFT: 2px; WIDTH: 50px; POSITION: absolute; TOP: 155px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 5px " SIZE=2  >
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 8px " SIZE=2  >
+</DIV>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+	         style="LEFT: 52px; WIDTH: 190px; POSITION: absolute; TOP: 155px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	         <STRONG><FONT size=2><< 현장 평가 사항 >></FONT></STRONG>
+</DIV>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+	         style="LEFT: 218px; WIDTH: 792px; POSITION: absolute; TOP: 155px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 5px " SIZE=2  >
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 8px " SIZE=2  >
+</DIV>
+<OBJECT id=gd_1 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 175px; HEIGHT: 360px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+   <param name="ViewSummary"    value=1>
+	<PARAM NAME="ColSizing" VALUE="0">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='현장명' ID=long_name Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=430 SumText='현장평균'  </C>
+	  <C> Name='대상건수' ID=tot_cnt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100 
+                                  SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	  <C> Name='평가건수' ID=evl_cnt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100 
+                                  SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	  <C> Name='진행율' ID=evl_rt Edit=None Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100
+                                         SumColor=Black SumBgColor=Pink</C>
+	  <C> Name='평균점수' ID=eva_score Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=110
+                                  SumText={sum(eva_score) / sum(evl_cnt)}          SumColor=Black SumBgColor=Pink</C>
+	  <C> Name='보정점수' ID=ctrl_score   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=125
+                                  SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	  ">
+</OBJECT>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+         style="LEFT: 2px; WIDTH: 50px; POSITION: absolute; TOP: 545px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 5px " SIZE=2  >
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 8px " SIZE=2  >
+</DIV>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+	         style="LEFT: 52px; WIDTH: 190px; POSITION: absolute; TOP: 545px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	         <STRONG><FONT size=2><< 본사 평가 사항 >></FONT></STRONG>
+</DIV>
+<DIV id=tab_page_0 onclick="get_focus(1)"
+	         style="LEFT: 218px; WIDTH: 792px; POSITION: absolute; TOP: 545px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 5px " SIZE=2  >
+	<HR id=Horizontal_1 
+	style="Z-INDEX: 100; LEFT: 1px; POSITION: absolute; TOP: 8px " SIZE=2  >
+</DIV>
+<OBJECT id=gd_21 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 560px; HEIGHT: 40px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_3">
+	<param name="ViewHeader"       value=false>
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+  <param name="RowHeight"          value=30>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <FC> Name='현장명' ID=ll_name  FontStyle=bold  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=430 </C>
+	  <C> Name='대상건수' ID=tot_cnt FontStyle=bold BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100 </C>
+	  <C> Name='평가건수' ID=evl_cnt FontStyle=bold  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100 </C>
+	  <C> Name='진행율' ID=dept_rt   FontStyle=bold Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=100 </C>
+	  <C> Name='평균점수' ID=tot_ave FontStyle=bold  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=110</C>
+	  <C> Name='보정점수' ID=''   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 Width=125 </C>
+	  ">
+</OBJECT>
+</BODY></HTML>

@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_pay_1h.html												-->
+<!-- 2. 유형(시나리오): 출력															-->
+<!-- 3. 기 능 정 의   : 하도급 기성신청서						               -->
+<!-- 4. 변 경 이 력   :  권미생 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_ds_1_addr = 's_prgs_yymm_1q.jsp?arg_dept_code='                        //기성년월 목록 
+var is_ds_2_addr = 's_pay_1q.jsp?arg_dept_code='            			         //기성 
+var is_sbcr_code = ""
+var is_dept_code = ""
+var is_dept_name = ""
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if  (is_dept_code == "") {
+		alert("현장을 선택하십시요(검색을 누르십시요)")
+		return
+	}     
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	if (ds_1.CountRow < 1)       
+		ds_2.ClearData()
+
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	if (ds_1.CountRow < 1) return
+
+	ds_2.DataID = is_ds_2_addr +  is_dept_code + "&arg_yymmdd=" + ds_1.NameValue(ds_1.RowPosition,"yymm") + 
+					  "&arg_seq=" + ds_1.NameValue(ds_1.RowPosition,"seq")
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+	btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/s_web/04r/"        // 보고서 디렉토리
+   ls_yymm  = ds_2.NameValue(ds_2.RowPosition,"yymm") 
+   ls_seq 	= ds_2.NameValue(ds_2.RowPosition,"seq")
+   ls_order_number = ds_2.NameValue(ds_2.RowPosition,"order_number")
+
+	arg_temp = arg_temp + "s_cn_req"    // 보고서명 
+	arg_temp = arg_temp + "&RptParams=" + is_dept_code + 
+					"&RptParams=" + ls_yymm + 
+					"&RptParams=" + ls_seq + 
+					"&RptParams=" + ls_order_number
+
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+
+}
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+  if  (row < 1) return;
+  div_btnquery_onclick()  
+</SCRIPT>
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+
+<Object id=ds_sysdate
+	style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT> </OBJECT>
+<OBJECT id=ds_1
+	style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=ds_2 
+	style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" > 
+	<td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+		<div align="right">현장명</div></td>
+	<td >
+		<INPUT style="FONT-SIZE:12px;" id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+		<input type="button_query" value=" 검색" 
+		style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=dept_code_find()>
+	</tr>                 
+	</table>
+</DIV>      
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2px; WIDTH:115px; POSITION: absolute; TOP: 30px; HEIGHT: 96%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE=" 
+		<C> Name=년월 ID=comp_yymm  MASK='XXXX-XX'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=50 </C> 
+		<C> Name=순번 ID=seq   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=30 </C> 
+   ">
+</OBJECT>
+<OBJECT id=gd_2 
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT:119px; WIDTH:890px; POSITION: absolute; TOP: 30px; HEIGHT: 96%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="Format" VALUE=" 
+	  <C> Name=발주번호 ID=order_number  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C>
+	  <C> Name=계약명 ID=sbc_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=250 </C> 
+	  <C> Name=업체명 ID=sbcr_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+	  <C> Name=차수 ID=prgs_degree  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=50 </C> 
+	  <C> Name='' ID=''  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=270 </C> 
+   ">
+</OBJECT>
+</BODY></HTML>

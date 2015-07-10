@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : a_as_location_input_1h.html										-->
+<!-- 2. 유형(시나리오): 조회 및 입력												-->
+<!-- 3. 기 능 정 의   : 		      					-->
+<!-- 4. 변 경 이 력   : 황보은영 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<title>::분양구분:: 선택하세요.</title>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr 
+var is_tr_1_addr
+var dept
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//---------------------------------------------------------------------------
+function select_sell_code()                      
+//---------------------------------------------------------------------------
+{
+	if ( ds_sell_code.RowPosition < 0 ) return
+	
+	var ls_return = ds_sell_code.NameValue(ds_sell_code.RowPosition, "select_1")
+	
+	window.returnValue = ls_return
+ 	window.close();
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	
+	gs_home = array[0]
+	dept = array[1]
+
+	ll_cnt = f_ds_select_q("ds_sell_code", "SELECT H.SELL_CODE select_1, "+
+	                                            " (SELECT CODE_NAME FROM H_CODE_COMMON WHERE CODE_DIV = '03' AND CODE = H.SELL_CODE) select_2 " +
+	                                            "FROM H_CODE_HOUSE H " +
+	                                            "WHERE H.DEPT_CODE = '" + dept + "'")
+		
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_sell_code event=OnLoadError()>
+  alert("Error Code1 : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+if(row > 0) 
+    select_sell_code()
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_sell_code 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 175px; POSITION: absolute; top:10px;">
+	<input type=button type="button" value="&nbsp;확인" 
+	          style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	            border:1 #A1A9A9 solid; "   
+	            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	           "  onclick="select_sell_code()">
+</DIV>	           
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px; top:35px; WIDTH: 230; HEIGHT:200; Z-INDEX: 102;FONT-SIZE: 12px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="false">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<param name="UsingOneClick" value="1">
+	<param name=LineColor value="#B6B6B6">
+	<PARAM NAME="DataID" VALUE="ds_sell_code">
+	<PARAM NAME="Format" VALUE="
+	<C> Name='분양구분'  id=select_2 width=200 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=4 Align=center</C>
+	">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>	

@@ -1,0 +1,225 @@
+<%@ page import="com.cj.common.*, com.cj.database.*, com.cj.util.*, com.gauce.*, com.gauce.io.*, java.sql.*" errorPage="../common/Error.jsp" contentType="text/html;charset=euc-kr"%>
+<%
+/**************************************************************************/
+/* 1. 프 로 그 램 id : 
+/* 2. 유형(시나리오) : Select Page
+/* 3. 기  능  정  의 : 
+/* 4. 변  경  이  력 : 김흥수 작성(2006-05-15)
+/* 5. 관련  프로그램 : 
+/* 6. 특  기  사  항 : 
+/**************************************************************************/
+ 
+	CITGauceInfo GauceInfo = null;
+	
+	CITData lrReturnData = null;
+	GauceDataSet lrDataset = null;
+
+	String	strSql = "";
+	String	strAct = "";
+	
+	try
+	{
+		GauceInfo = CITCommon.initServerPage(request, response, session);
+		
+		CITData lrArgData = new CITData();
+		
+		strAct = CITCommon.toKOR(request.getParameter("ACT"));
+		
+		if (strAct.equals("MAIN"))
+		{
+			String strWORK_YM_01 = CITCommon.toKOR(request.getParameter("WORK_YM_01"));
+			String strWORK_YM_02 = CITCommon.toKOR(request.getParameter("WORK_YM_02"));
+			String strBASE_AMT = CITCommon.toKOR(request.getParameter("BASE_AMT"));
+			String strDEPT_CODE = CITCommon.toKOR(request.getParameter("DEPT_CODE"));
+			String strWORK_YM_TO = CITCommon.toKOR(request.getParameter("WORK_YM_TO"));
+			String strRECEIVE_TAG = CITCommon.toKOR(request.getParameter("RECEIVE_TAG"));
+			
+			strSql  = " Select \n";
+			strSql += " 	Nvl(a.RECEIVE_TAG,'*') RECEIVE_TAG, \n";
+			strSql += " 	Nvl(Case When a.Grp1 = 1 And a.Grp2 = 0 Then a.RECEIVE_TAG_NAME||' 계' Else a.DEPT_NAME End,'*') DEPT_NAME, \n";
+			strSql += " 	Nvl(Case When a.Grp2 = 1 Then '총   계' Else a.RECEIVE_TAG_NAME End,'*') RECEIVE_TAG_NAME, \n";
+			strSql += " 	Nvl(a.DEPT_CODE,'*') DEPT_CODE, \n";
+			strSql += " 	a.REMAIN_AMT_01_01, \n";
+			strSql += " 	a.REMAIN_AMT_02_01, \n";
+			strSql += " 	a.GAP_AMT_01, \n";
+			strSql += " 	a.REMAIN_AMT_01_02, \n";
+			strSql += " 	a.REMAIN_AMT_02_02, \n";
+			strSql += " 	a.GAP_AMT_02, \n";
+			strSql += " 	a.REMAIN_AMT_01_03, \n";
+			strSql += " 	a.REMAIN_AMT_02_03, \n";
+			strSql += " 	a.GAP_AMT_03, \n";
+			strSql += " 	a.RAT_01, \n";
+			strSql += " 	a.RAT_02 \n";
+			strSql += " From \n";
+			strSql += " 	( \n";
+			strSql += " 		Select \n";
+			strSql += " 			b.RECEIVE_TAG, \n";
+			strSql += " 			b.RECEIVE_TAG_NAME, \n";
+			strSql += " 			b.DEPT_CODE, \n";
+			strSql += " 			b.DEPT_NAME, \n";
+			strSql += " 			Grouping(b.DEPT_CODE) Grp1, \n";
+			strSql += " 			Grouping(b.RECEIVE_TAG) Grp2, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_01_01) REMAIN_AMT_01_01, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_02_01) REMAIN_AMT_02_01, \n";
+			strSql += " 			Sum(a.GAP_AMT_01) GAP_AMT_01, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_01_02) REMAIN_AMT_01_02, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_02_02) REMAIN_AMT_02_02, \n";
+			strSql += " 			Sum(a.GAP_AMT_02) GAP_AMT_02, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_01_03) REMAIN_AMT_01_03, \n";
+			strSql += " 			Sum(a.REMAIN_AMT_02_03) REMAIN_AMT_02_03, \n";
+			strSql += " 			Sum(a.GAP_AMT_03) GAP_AMT_03, \n";
+			strSql += " 			Nvl(Sum(a.GAP_AMT_03),0) - Nvl(Sum(a.GAP_AMT_02),0) RAT_01, \n";
+			strSql += " 			Nvl(Sum(a.GAP_AMT_03),0) - Nvl(Sum(a.GAP_AMT_01),0) RAT_02 \n";
+			strSql += " 		From \n";
+			strSql += " 			( \n";
+			strSql += " 				Select \n";
+			strSql += " 					a.DEPT_CODE, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <  ?  Then a.REMAIN_AMT_01 Else 0 End ) REMAIN_AMT_01_01, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <  ?  Then a.REMAIN_AMT_02 Else 0 End ) REMAIN_AMT_02_01, \n";
+			strSql += " 					Nvl(Sum(Case When a.WORK_YM <  ?  Then a.REMAIN_AMT_01 Else 0 End ),0) -  \n";
+			strSql += " 						Nvl(Sum(Case When a.WORK_YM <  ?  Then a.REMAIN_AMT_02 Else 0 End ),0) GAP_AMT_01, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_01 Else 0 End ) REMAIN_AMT_01_02, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_02 Else 0 End ) REMAIN_AMT_02_02, \n";
+			strSql += " 					Nvl(Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_01 Else 0 End ),0) -  \n";
+			strSql += " 						Nvl(Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_02 Else 0 End ),0) GAP_AMT_02, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_01 Else 0 End ) REMAIN_AMT_01_03, \n";
+			strSql += " 					Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_02 Else 0 End ) REMAIN_AMT_02_03, \n";
+			strSql += " 					Nvl(Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_01 Else 0 End ),0) -  \n";
+			strSql += " 						Nvl(Sum(Case When a.WORK_YM <=  ?  Then a.REMAIN_AMT_02 Else 0 End ),0) GAP_AMT_03 \n";
+			strSql += " 				From \n";
+			strSql += " 					( \n";
+			strSql += " 						Select \n";
+			strSql += " 							a.DEPT_CODE, \n";
+			strSql += " 							To_Char(a.MAKE_DT,'YYYYMM') WORK_YM, \n";
+			strSql += " 							Round((Nvl(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then \n";
+			strSql += " 										a.DB_AMT \n";
+			strSql += " 									Else \n";
+			strSql += " 										Nvl(a.DB_AMT,0) - Nvl(a.CR_AMT,0) \n";
+			strSql += " 								End \n";
+			strSql += " 							),0)) /  ?  ) REMAIN_AMT_01, \n";
+			strSql += " 							Round((Nvl(Sum( \n";
+			strSql += " 								Case a.ACC_CODE \n";
+			strSql += " 									When '111070200' Then \n";
+			strSql += " 										a.DB_AMT \n";
+			strSql += " 									When '210060200' Then \n";
+			strSql += " 										Nvl(a.DB_AMT,0) - Nvl(a.CR_AMT,0) \n";
+			strSql += " 									Else \n";
+			strSql += " 										0 \n";
+			strSql += " 								End \n";
+			strSql += " 							),0)) /  ?  ) REMAIN_AMT_02 \n";
+			strSql += " 						From	t_acc_slip_body1 a \n";
+			strSql += " 						Where	a.KEEP_DT Is Not Null \n";
+			strSql += " 						And		a.TRANSFER_TAG = 'F' \n";
+			strSql += " 						And		a.ACC_CODE In ( \n";
+			strSql += " 							'111070100',		--공사미수금작업진행율 \n";
+			strSql += " 							'111070200',		--공사미수금세금계산 \n";
+			strSql += " 							'111079000',		--공사미수금기타 \n";
+			strSql += " 							'210060100',		--공사선수금 진행율 \n";
+			strSql += " 							'210060200'			--공사선수금 계산서 \n";
+			strSql += " 						) \n";
+			strSql += " 						Group By \n";
+			strSql += " 							a.DEPT_CODE, \n";
+			strSql += " 							To_Char(a.MAKE_DT,'YYYYMM') \n";
+			strSql += " 					) a \n";
+			strSql += " 				Where	a.DEPT_CODE Like  ?  || '%' \n";
+			strSql += " 				And		a.WORK_YM <=  ?  \n";
+			strSql += " 				Group By \n";
+			strSql += " 					a.DEPT_CODE \n";
+			strSql += " 			) a, \n";
+			strSql += " 			V_T_DEPT_CONTRACT_NP b \n";
+			strSql += " 		Where	a.DEPT_CODE (+) = b.DEPT_CODE \n";
+			strSql += " 		And		b.RECEIVE_TAG Like  ?  || '%' \n";
+			strSql += " 		Group By Grouping Sets \n";
+			strSql += " 		( \n";
+			strSql += " 			( \n";
+			strSql += " 				b.RECEIVE_TAG, \n";
+			strSql += " 				b.RECEIVE_TAG_NAME, \n";
+			strSql += " 				b.DEPT_CODE, \n";
+			strSql += " 				b.DEPT_NAME \n";
+			strSql += " 			), \n";
+			strSql += " 			( \n";
+			strSql += " 				b.RECEIVE_TAG, \n";
+			strSql += " 				b.RECEIVE_TAG_NAME \n";
+			strSql += " 			), \n";
+			strSql += " 			() \n";
+			strSql += " 		) \n";
+			strSql += " 	) a \n";
+			strSql += " Order By \n";
+			strSql += " 	a.RECEIVE_TAG, \n";
+			strSql += " 	a.DEPT_CODE \n";
+			strSql += "  ";
+			
+			lrArgData.addColumn("1WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("2WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("3WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("4WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("5WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("6WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("7WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("8WORK_YM_01", CITData.VARCHAR2);
+			lrArgData.addColumn("9WORK_YM_02", CITData.VARCHAR2);
+			lrArgData.addColumn("10WORK_YM_02", CITData.VARCHAR2);
+			lrArgData.addColumn("11WORK_YM_02", CITData.VARCHAR2);
+			lrArgData.addColumn("12WORK_YM_02", CITData.VARCHAR2);
+			lrArgData.addColumn("13BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("14BASE_AMT", CITData.NUMBER);
+			lrArgData.addColumn("15DEPT_CODE", CITData.VARCHAR2);
+			lrArgData.addColumn("16WORK_YM_TO", CITData.VARCHAR2);
+			lrArgData.addColumn("17RECEIVE_TAG", CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("1WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("2WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("3WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("4WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("5WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("6WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("7WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("8WORK_YM_01", strWORK_YM_01);
+			lrArgData.setValue("9WORK_YM_02", strWORK_YM_02);
+			lrArgData.setValue("10WORK_YM_02", strWORK_YM_02);
+			lrArgData.setValue("11WORK_YM_02", strWORK_YM_02);
+			lrArgData.setValue("12WORK_YM_02", strWORK_YM_02);
+			lrArgData.setValue("13BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("14BASE_AMT", strBASE_AMT);
+			lrArgData.setValue("15DEPT_CODE", strDEPT_CODE);
+			lrArgData.setValue("16WORK_YM_TO", strWORK_YM_TO);
+			lrArgData.setValue("17RECEIVE_TAG", strRECEIVE_TAG);
+			try
+			{
+				lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+				
+				
+
+
+				
+				lrDataset = CITCommon.toGauceDataSet(lrReturnData);
+				GauceInfo.response.enableFirstRow(lrDataset);
+				lrDataset.flush();
+			}
+			catch (Exception ex)
+			{
+				if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+				GauceInfo.response.writeException("USER", "900001","MAIN Select 오류-> "+ ex.getMessage());
+			}
+		}
+	}
+	catch (Exception ex)
+	{
+		if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+		GauceInfo.response.writeException("SYS", "100001", "페이지 초기화 오류 -> " + ex.getMessage());
+	}
+	finally
+	{
+		try
+		{
+			CITCommon.finalServerPage(GauceInfo);
+		}
+		catch (Exception ex)
+		{
+			if (GauceInfo == null) GauceInfo = new CITGauceInfo(request, response);
+			GauceInfo.response.writeException("SYS", "100002", "페이지 종료 오류 -> " + ex.getMessage());
+		}
+	}
+%>

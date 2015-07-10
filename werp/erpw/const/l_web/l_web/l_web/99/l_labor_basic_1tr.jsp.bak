@@ -1,0 +1,176 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+ServiceLoader loader = new ServiceLoader(request, response);
+GauceService service = loader.newService();
+GauceContext context = service.getContext();
+Logger logger = context.getLogger();
+GauceDBConnection conn = null;
+conn = service.getDBConnection();
+GauceStatement stmt = null;
+GauceRequest req = service.getGauceRequest();
+GauceResponse res = service.getGauceResponse();
+try {
+     String strUserID = new String(session.getAttribute("userid").toString());
+     conn.setAutoCommit(false);
+     GauceDataSet dSet = req.getGauceDataSet("l_labor_basic_1tr");
+   	int idx_dept_code = dSet.indexOfColumn("dept_code");
+   	int idx_civil_register_number = dSet.indexOfColumn("civil_register_number");
+   	int idx_labor_name = dSet.indexOfColumn("labor_name");
+   	int idx_zip_number = dSet.indexOfColumn("zip_number");
+   	int idx_address = dSet.indexOfColumn("address");
+   	int idx_job_code = dSet.indexOfColumn("job_code");
+   	int idx_civil_number_error_check = dSet.indexOfColumn("civil_number_error_check");
+   	int idx_unitcost = dSet.indexOfColumn("unitcost");
+   	int idx_military = dSet.indexOfColumn("military");
+   	int idx_tel_number = dSet.indexOfColumn("tel_number");
+   	int idx_entrance_date = dSet.indexOfColumn("entrance_date");
+   	int idx_resign_date = dSet.indexOfColumn("resign_date");
+   	int idx_transcript = dSet.indexOfColumn("transcript");
+   	int idx_labor_class = dSet.indexOfColumn("labor_class");
+   	int idx_insurance_get_day = dSet.indexOfColumn("insurance_get_day");
+   	int idx_time_amt = dSet.indexOfColumn("time_amt");
+   	int idx_blacklist = dSet.indexOfColumn("blacklist");
+   	int idx_contract_date = dSet.indexOfColumn("contract_date");
+   	int idx_lastapplydate = dSet.indexOfColumn("lastapplydate");
+   	int idx_cost_tag = dSet.indexOfColumn("cost_tag");
+   	int idx_month_amt = dSet.indexOfColumn("month_amt");
+   	int idx_key_civil_register_number = dSet.indexOfColumn("key_civil_register_number");
+    int  rowCnt = dSet.getDataRowCnt();
+    for(int i=0; i< rowCnt; i++){
+    	GauceDataRow rows = dSet.getDataRow(i);
+	if(rows.getJobType() == GauceDataRow.TB_JOB_INSERT){
+		String sSql = " INSERT INTO L_LABOR_BASIC ( dept_code," + 
+                    "civil_register_number," + 
+                    "labor_name," + 
+                    "zip_number," + 
+                    "address," + 
+                    "job_code," + 
+                    "civil_number_error_check," + 
+                    "unitcost," + 
+                    "military," + 
+                    "tel_number," + 
+                    "entrance_date," + 
+                    "resign_date," + 
+                    "transcript," + 
+                    "labor_class," + 
+                    "insurance_get_day," + 
+                    "time_amt," + 
+                    "blacklist," + 
+                    "contract_date," + 
+                    "lastapplydate," + 
+                    "cost_tag," + 
+                    "month_amt )      ";
+      sSql = sSql + " VALUES ( :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21 ) ";
+      stmt = conn.getGauceStatement(sSql);
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_civil_register_number);
+      stmt.bindColumn(3, idx_labor_name);
+      stmt.bindColumn(4, idx_zip_number);
+      stmt.bindColumn(5, idx_address);
+      stmt.bindColumn(6, idx_job_code);
+      stmt.bindColumn(7, idx_civil_number_error_check);
+      stmt.bindColumn(8, idx_unitcost);
+      stmt.bindColumn(9, idx_military);
+      stmt.bindColumn(10, idx_tel_number);
+      stmt.bindColumn(11, idx_entrance_date);
+      stmt.bindColumn(12, idx_resign_date);
+      stmt.bindColumn(13, idx_transcript);
+      stmt.bindColumn(14, idx_labor_class);
+      stmt.bindColumn(15, idx_insurance_get_day);
+      stmt.bindColumn(16, idx_time_amt);
+      stmt.bindColumn(17, idx_blacklist);
+      stmt.bindColumn(18, idx_contract_date);
+      stmt.bindColumn(19, idx_lastapplydate);
+      stmt.bindColumn(20, idx_cost_tag);
+      stmt.bindColumn(21, idx_month_amt);
+      stmt.executeUpdate();
+      stmt.close();
+ 
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_UPDATE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "update l_labor_basic set " + 
+                            "dept_code=?,  " + 
+                            "civil_register_number=?,  " + 
+                            "labor_name=?,  " + 
+                            "zip_number=?,  " + 
+                            "address=?,  " + 
+                            "job_code=?,  " + 
+                            "civil_number_error_check=?,  " + 
+                            "unitcost=?,  " + 
+                            "military=?,  " + 
+                            "tel_number=?,  " + 
+                            "entrance_date=?,  " + 
+                            "resign_date=?,  " + 
+                            "transcript=?,  " + 
+                            "labor_class=?,  " + 
+                            "insurance_get_day=?,  " + 
+                            "time_amt=?,  " + 
+                            "blacklist=?,  " + 
+                            "contract_date=?,  " + 
+                            "lastapplydate=?,  " + 
+                            "cost_tag=?,  " + 
+                            "month_amt=?  where dept_code=? " +
+                            " and civil_register_number=? ";  
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_civil_register_number);
+      stmt.bindColumn(3, idx_labor_name);
+      stmt.bindColumn(4, idx_zip_number);
+      stmt.bindColumn(5, idx_address);
+      stmt.bindColumn(6, idx_job_code);
+      stmt.bindColumn(7, idx_civil_number_error_check);
+      stmt.bindColumn(8, idx_unitcost);
+      stmt.bindColumn(9, idx_military);
+      stmt.bindColumn(10, idx_tel_number);
+      stmt.bindColumn(11, idx_entrance_date);
+      stmt.bindColumn(12, idx_resign_date);
+      stmt.bindColumn(13, idx_transcript);
+      stmt.bindColumn(14, idx_labor_class);
+      stmt.bindColumn(15, idx_insurance_get_day);
+      stmt.bindColumn(16, idx_time_amt);
+      stmt.bindColumn(17, idx_blacklist);
+      stmt.bindColumn(18, idx_contract_date);
+      stmt.bindColumn(19, idx_lastapplydate);
+      stmt.bindColumn(20, idx_cost_tag);
+      stmt.bindColumn(21, idx_month_amt);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(22, idx_dept_code);
+      stmt.bindColumn(23, idx_key_civil_register_number);
+      stmt.executeUpdate();
+      stmt.close();
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_DELETE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "delete from l_labor_basic where dept_code=? and civil_register_number=?"; 
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(1, idx_dept_code);
+      stmt.bindColumn(2, idx_key_civil_register_number);
+      stmt.executeUpdate();
+      stmt.close();
+    }
+     }
+     dSet.flush();
+     res.commit("성공적으로 마쳤습니다");
+     res.close();
+} catch (Exception e) {
+    res.writeException("Native","9999",e.toString());
+    res.commit();
+    res.close();
+    if (conn != null) {
+       conn.rollback();
+    }
+    if (stmt != null) {
+       stmt.close();
+    }
+} finally {
+    if (conn != null) {
+        try {
+            conn.commit();
+            conn.close();
+        } catch (Exception e) {}
+    }
+    loader.restoreService(service);
+}
+%>

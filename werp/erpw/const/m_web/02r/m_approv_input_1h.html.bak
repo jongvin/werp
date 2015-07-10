@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_approv_input_1h.html								-->
+<!-- 2. 유형(시나리오): 보고서													-->
+<!-- 3. 기 능 정 의   : 품의대비입고현황	                        	-->
+<!-- 4. 변 경 이 력   : 권미생 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+var is_start_date, is_end_date
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   
+   arg_temp ="const_rpt/m_web/02r/"          // 보고서 디렉토리
+   arg_temp = arg_temp + "m_approv_input"    // 보고서명 
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code +
+                         "&RptParams=" + is_start_date +
+                         "&RptParams=" + is_end_date
+   alert(arg_temp)
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+   result = f_dept_code_find(dept_name.value)
+   if (result==false)return
+	
+   is_dept_code = top.frames['security'].gs_dept_code.value
+   is_dept_name = top.frames['security'].gs_dept_name.value
+   dept_name.value = is_dept_name
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+   if (window.event.keyCode == 13) { 
+      dept_code_find();
+   } 
+}
+//-------------------------------------------------------------------------------
+function select_date()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	// start_date : 해당월 1일      end_date : 다음달 1일
+   is_start_date = em_start_date.text + ".01"
+   ll_cnt = f_ds_select_q("ds_date","select to_char(add_months(to_date('" + is_start_date + "'), 1), 'YYYY.MM.DD') select_1 from dual")
+   is_end_date	  = ds_date.NameValue(1,"select_1")
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+      top.frames['main_title'].mouse_over()
+
+	dept_name.value 		= is_dept_name
+	em_start_date.text 	= is_work_date.substr(0,7)
+	select_date()
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_start_date event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_date()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_start_date event=onKillFocus()>
+   if (em_start_date.Modified){ 
+	   select_date()
+	}
+</SCRIPT>        	
+</HEAD>
+<OBJECT id=ds_sysdate style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>
+<Object id=ds_date  style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<DIV id=print_condition style="Z-INDEX: 107; LEFT: 300px; WIDTH: 300px; POSITION: absolute; TOP: 100px; HEIGHT: 100px">
+	<table width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white"> 
+		<td width="30%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+			<div align="right">현장명</div></td>
+		<td>
+		<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" onkeyDown="keyDown()">&nbsp;<input id="button_query" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >&nbsp;
+		</td>
+	</tr>
+	<tr BGCOLOR="white">
+		<td width="30%" BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+		<div align="right">입고년월</div></td>
+		<td>
+		<OBJECT id=em_start_date  align="absmiddle" style=" WIDTH: 80px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		<PARAM NAME="Alignment" VALUE="1">
+		<PARAM NAME="IsComma" VALUE="0">
+		<PARAM NAME="MaxLength" VALUE="6">
+		<PARAM NAME="Format" VALUE="YYYY.MM">
+		<param name=ClipMode  VALUE=false>
+		<PARAM NAME="Numeric" VALUE="0">
+		<PARAM NAME="SelectAll" VALUE="-1">
+		</OBJECT>
+		<input align="absmiddle" id="btn_cal" type="button"  class="img_btnCalendar_S" value="" style="position:relative; left:5px ; FONT-SIZE: 10px" onclick="var result = gn_Cal_Yyyymmdd(); if(!is_null(result)){ em_start_date.text = result.substr(0,6);} ; select_date()" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+		</td>
+	</tr>
+	</table>
+</DIV>
+</BODY></HTML>

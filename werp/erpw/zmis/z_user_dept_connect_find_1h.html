@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_authority_user_find 							-->
+<!-- 2. 유형(시나리오): 성명 찾기 														-->
+<!-- 3. 기 능 정 의   : 										-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<TITLE> 성명  찾기 </TITLE>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'z_user_dept_connect_find_1q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID =  is_ds_1_addr + "?arg_name=" + Textbox_1.value 
+  ds_1.SyncLoad=true
+//  if  (Textbox_1.value == "") {
+//     alert("검색조건을 반드시 입력하십시요")
+//     return
+//  }      
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'empno') + '@' + 
+              ds_1.NameValue(ds_1.RowPosition,'name')
+  window.returnValue = ls_return
+  window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+   alert("최소한 홈 디렉토리는 있어야 합니다")
+ array = result.split("@");
+ gs_home = array[0]                  // 0: 홈 디렉토리 
+ Textbox_1.value = array[1]          // 1: 찾고자하는 값.
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  var ls_sort
+  if (row == 0) {
+  		if (ls_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  ls_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<BR>    
+<LABEL id=Label_1  
+    style="WIDTH: 75px; POSITION: absolute; HEIGHT: 25px">&nbsp;&nbsp;검색조건:
+</LABEL>
+<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()" 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 60px; WIDTH: 80px; POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+
+
+<input type="button" value="조회" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 310px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=btnquery_onclick()>
+<input type="button" value="확인" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 365px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+	
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 410px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+	
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 5px; WIDTH: 480px; POSITION: absolute; TOP: 35px; HEIGHT: 400px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='성명' ID=name EditStyle=Popup suppress=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name='사 번' ID=empno BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center suppress=1 HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name='부서명' ID=long_name EditStyle=Popup BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=400 </C>
+	  <C> Name='사용권한' ID=querytag EditStyle=Combo data='U:쓰기,R:읽기' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	   "> 
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

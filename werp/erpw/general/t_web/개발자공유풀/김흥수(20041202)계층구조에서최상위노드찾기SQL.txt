@@ -1,0 +1,182 @@
+Select
+	a.ACC_CODE,
+	a.ACC_NAME,
+	a.FUND_INPUT_CLS,
+	SubStrb(
+	(	
+		Select
+			Max(sys_connect_by_path(b.ACC_CODE,'/'))
+		From	TIA_ACC_CODE b
+		Start With b.ACC_CODE = a.acc_code
+		Connect By
+			Prior	b.COMPUTER_ACC = b.ACC_CODE
+	),-10,10) TOP_ACC_CODE
+From	TIA_ACC_CODE a
+
+이 SQL은 계층구조상의 어떤 항목과 그 항목의 최상위 항목을 함께 출력한다.
+이 SQL은 sys_connect_by_path 함수의 응용편이다.
+sys_connect_by_path는 connect by 절에 쓰이며 경로 지정자(이경우는 '/')로 구분된 경로를 리턴한다.
+이 경우 sys_connect_by_path 가 리턴하는 형태의 가장 뒷자리의 10자리(계정코드가 10자리이다)가 
+특정 계정의 최상위 계정이 된다.
+
+
+******
+응용편 한가지 더
+어떤 특정 계정의 모든 상위 계정을 함께 표현하려면?
+예를 들오
+
+자산
+*고정자산
+*유동자산
+**당좌자산
+***현금등가물
+***현금
+
+같은 형태일때
+--------------------
+하위계정	상위계정
+--------------------
+현금		당좌자산
+현금		유동자산
+현금		자산
+현금등가물	당좌자산
+현금등가물	유동자산
+현금등가물	자산
+당좌자산	유동자산
+당좌자산	자산
+유동자산	자산
+고정자산	자산
+
+같은 형태의 조회가 필요한 경우 어떻게 할것인가?
+먼저 이런 경우가 필요할까?
+물론 필요하다
+이 형태를 보면 하위계정에 대한 모든 상위계정이 나오므로 이 것을 활용하면 상위 집계 SQL을 단번에 만들 수 있다.
+아래의 SQL은 이것을 구현하는 방법이다.
+
+1. Like를 사용하는 경우
+Select
+	a.ACC_CODE,
+	a.ACC_NAME,
+	a.FUND_INPUT_CLS,
+	b.ACC_CODE P_ACC_CODE,
+	b.ACC_NAME P_ACC_NAME,
+	b.FUND_INPUT_CLS P_FUND_INPUT_CLS
+From
+	(
+		Select
+			a.ACC_CODE,
+			a.ACC_NAME,
+			a.FUND_INPUT_CLS,
+			(	
+				Select
+					Max(sys_connect_by_path(b.ACC_CODE,'/'))
+				From	TIA_ACC_CODE b
+				Start With b.ACC_CODE = a.acc_code
+				Connect By
+					Prior	b.COMPUTER_ACC = b.ACC_CODE
+			) PARENT_ACC_CODE
+		From	TIA_ACC_CODE a
+	) a,
+	tia_acc_code b
+Where	a.PARENT_ACC_CODE Like '%'||b.ACC_CODE||'%'
+And		a.ACC_CODE <> b.ACC_CODE
+
+
+2. InStr 함수 사용
+Select
+	a.ACC_CODE,
+	a.ACC_NAME,
+	a.FUND_INPUT_CLS,
+	b.ACC_CODE P_ACC_CODE,
+	b.ACC_NAME P_ACC_NAME,
+	b.FUND_INPUT_CLS P_FUND_INPUT_CLS
+From
+	(
+		Select
+			a.ACC_CODE,
+			a.ACC_NAME,
+			a.FUND_INPUT_CLS,
+			(	
+				Select
+					Max(sys_connect_by_path(b.ACC_CODE,'/'))
+				From	TIA_ACC_CODE b
+				Start With b.ACC_CODE = a.acc_code
+				Connect By
+					Prior	b.COMPUTER_ACC = b.ACC_CODE
+			) PARENT_ACC_CODE
+		From	TIA_ACC_CODE a
+	) a,
+	tia_acc_code b
+Where	InStr(a.PARENT_ACC_CODE,b.ACC_CODE) > 0
+And		a.ACC_CODE <> b.ACC_CODE
+
+
+*****
+자 한마디 더 1번과 2번 중 어느 것이 더 빠를 까?
+일반적으로 생각하면 함수는 함수 오버헤드가 있다....
+그럼 Like를 쓴 1번이 빠를까?
+음....
+각자 한번 생각해 보시기를.....
+
+*****
+추가적인 한마디
+*****
+위의 방법 이외에 전통적인 방법이 하나 더 있다.
+물론 이 방법은 다른 사람들도 다 사용하는 일반적인 방법이지만 여기에 적어보자
+Select
+	*
+From
+	(
+	Select
+		a.ACC_CODE P_ACC_CODE,
+		a.ACC_NAME P_ACC_NAME,
+		b.ACC_CODE C_ACC_CODE,
+		b.ACC_NAME C_ACC_NAME,
+		rownum
+	From	TIA_ACC_CODE a,
+			TIA_ACC_CODE b
+	Start With
+			a.ACC_CODE = b.ACC_CODE
+	Connect By
+		Prior b.ACC_CODE = b.ACC_CODE
+	And Prior a.COMPUTER_ACC = a.ACC_CODE
+	) x
+Where	x.p_acc_code <> x.c_acc_code
+
+음....
+이 SQL을 이해하겠는가?
+잘 생각해보기를 바란다.
+이 SQL에서 사실상 중요한 포인트는
+	Connect By
+		Prior b.ACC_CODE = b.ACC_CODE
+	And Prior a.COMPUTER_ACC = a.ACC_CODE
+이부분중의
+		Prior b.ACC_CODE = b.ACC_CODE
+이부분이다....
+얼핏생각하면 전혀 필요없는 부분이다.....
+이부분이 where절에 있다면 당연히 필요없는 부분이 된다....
+당연한 말이니까...
+한 행에서 이게 달라질 수는 없으니까....
+그러나 connect by에서는 사실 문제가 된다.
+왜인지는 한번 생각해보시기를
+참고적으로 위의 SQL에 대한 Plan은
+
+SELECT STATEMENT     Cost = 254712:34:16
+  VIEW    1 12:34:16
+    COUNT     12:34:16
+      CONNECT BY WITH FILTERING    12:34:16
+        FILTER     12:34:16
+          COUNT     12:34:16
+            MERGE JOIN CARTESIAN    12:34:16
+              TABLE ACCESS FULL TIA_ACC_CODE  2 12:34:16
+              BUFFER SORT    12:34:16
+                TABLE ACCESS FULL TIA_ACC_CODE  3 12:34:16
+        HASH JOIN     12:34:16
+          CONNECT BY PUMP     12:34:16
+          COUNT     12:34:16
+            MERGE JOIN CARTESIAN    12:34:16
+              TABLE ACCESS FULL TIA_ACC_CODE  2 12:34:16
+              BUFFER SORT    12:34:16
+                TABLE ACCESS FULL TIA_ACC_CODE  3 12:34:16
+
+이렇다

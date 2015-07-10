@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_mbo_present_list_1h.html              -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : MBO 목표수립 제출자 목록                     -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_emp_no = top.frames['security'].empno.value		//1차평가자
+var is_fir
+var is_eval_year		//평가년도
+var is_focus_enter='N'
+var is_ds_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_present_list_1q.jsp?arg_eval_year='         
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	ds_1.DataID = is_ds_1_addr + is_eval_year + "&arg_fir_evaluator=" + is_fir
+   ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_eval_year = em_select_date.text.substr(0,4) + '.01.01'
+   ds_1.ClearData()
+   btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  
+  is_work_date = f_sysdate()
+  em_select_date.text = is_work_date.substr(0,4) 
+  is_eval_year = em_select_date.text + '.01.01'
+  
+  //사용자 권한체크
+  ll_cnt = f_ds_select_q("ds_select","select resident_no     select_1 " +
+  												 "  from p_pers_master " +
+  												 " where emp_no = '" + is_emp_no + "' " +
+  												 "	  and service_div_code = '2' ")
+  
+  if (ll_cnt == 0){
+  		alert('등록되지 않은 직원입니다.')
+  		em_select_date.ReadOnly=true
+  		img_fr.style.visibility = "hidden"
+  		return
+  }
+  
+  is_fir = ds_select.NameValue(1,"select_1")	//피평가자  
+  btnquery_onclick()
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_date event=onKillFocus()>
+	if (is_focus_enter == em_select_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_date event=onKeyDown(kcode,scode)>
+	if (kcode == 13 ){ 
+	   is_focus_enter=em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	if  (ds_1.RowPosition < 1) return
+ 	
+ 	if (ds_1.NameValue(ds_1.RowPosition,"self_present_yn") != 'Y'){
+ 		alert('제출된 자료만 확인하실 수 있습니다.')
+ 		return
+ 	}
+ 	
+	var result;
+	var send_arg;
+	var array = new Array();
+	
+	ls_self_evaluator = ds_1.NameValue(ds_1.RowPosition,"self_evaluator")	//피평가자
+	ls_self_dept_name = ds_1.NameValue(ds_1.RowPosition,"self_dept_name")	//피평가자 부서명
+	ls_self_grade_name = ds_1.NameValue(ds_1.RowPosition,"self_grade_name")	//피평가자 직위명
+	ls_fir_agree_yn = ds_1.NameValue(ds_1.RowPosition,"fir_agree_yn")			//1차평가자 합의여부
+	
+	makeCookie("@p_eval_mbo_setup_agree@", is_eval_year + "@" + ls_self_evaluator + "@" +
+											 ls_self_dept_name + "@" + ls_self_grade_name + "@" + ls_fir_agree_yn + "@" +
+											 'p_eval_mbo_present_list_1h.html' )
+                                  
+	top.frames['main_ct'].location.href(gs_home + "/general/p_web/13/p_eval_mbo_setup_agree_1h.html" +"?"+'r')	
+	
+</script>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_select
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 165px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가년도</div></td>
+          	 <td width="63%" >
+			       <OBJECT id=em_select_date style="WIDTH: 85px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="4">
+						    <PARAM NAME="Format" VALUE="YYYY">
+					       <param name=ClipMode  value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				 	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_date.text = result.substr(0,4);} ; select_yymm()"
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>
+	
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='피평가자'  id=self_evaluator_name width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+     <C> Name='직위'  id=self_grade_name width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+     <G> Name='제출' HeadBgColor=#BBE0F4  HeadColor=BLACK   >		
+	  		<C> Name='구분'  id=self_present_yn width=70 EditStyle=Combo Data='Y:제출,N:미제출' align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+	  		<C> Name='일자'  id=self_present_date width=100 align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+     </G>
+     <G> Name='1차평가자 목표합의' HeadBgColor=#BBE0F4  HeadColor=BLACK   >		
+	  		<C> Name='구분'  id=fir_agree_yn width=70 EditStyle=Combo Data='Y:합의,N:'',R:반송' align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+	  		<C> Name='일자'  id=fir_agree_date width=100 align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand</C>
+     </G>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

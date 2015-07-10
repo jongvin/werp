@@ -1,0 +1,231 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ks_c_5601-1987">
+<title>GAUCE Component Sample</title>
+<script language="javascript">
+var count = 0;
+var alid_sort = "+";
+var tHeader  = "sabun:STRING(6), name:STRING(10), amt1:INT(4), amt2:INT(4)";
+
+	function On_Load()
+	{
+		Grid_Format();
+	}
+
+	function btn_Search()
+	{
+		ds_grid.DataID = "gridTRSelect.jsp?Option=SL&PGM=T";
+		ds_grid.Reset();
+	}
+
+	function btn_Insert()
+	{
+		ds_grid.AddRow();
+		gauce_grid.SetColumn("sabun");
+	}
+	
+	function btn_Delete()
+	{
+		if( confirm("해당 데이터를 삭제하시겠습니까?")  == true )
+		{
+			ds_grid.DeleteMarked();
+			tr_grid.Post();		
+		}
+	}
+
+	function btn_Save()
+	{
+		if( confirm("데이터를 저장하시겠습니까?")  == true )
+		{
+			for(i=1; i<=ds_grid.CountRow; i++){
+				var post_count = 0;
+				if(ds_grid.SysStatus(i) != 0){
+					var key = ds_grid.NameString(i,"sabun");
+					for(j=1; j<=ds_grid.CountRow; j++) {
+							if(key == ds_grid.NameString(j,"sabun")) {
+								post_count = post_count + 1;
+							}
+							if(post_count > 1) {
+								alert(i+"번째 데이터의 사원번호와 동일한 데이터가 존재합니다.\n사원번호는 중복될 수 없습니다.\n다시한번 확인하세요");
+								return false;
+							}
+					}
+				}
+				if(ds_grid.NameString(i,"sabun") == ""){
+					alert(i+"번째 데이터의 사원번호가 누락되었습니다.\n사원번호는 꼭 입력하셔야 합니다.\n다시한번 확인하세요");
+					return false;
+				}
+			}
+			tr_grid.Post();
+		}
+	}
+
+	function btn_Excel()
+	{
+		  gauce_grid.RunExcel('Data Export Sample');
+	}
+	
+	function Grid_Format()
+	{
+		ds_temp.SetDataHeader(tHeader);
+		
+		gauce_grid.MultiRowSelect = "true";
+		gauce_grid.format = ''+
+		'<F> id=sabun, name=사원번호,width=90,align="center",headbgcolor="#2D2478",bgcolor="#D5D5AB",mask="XXXX-XX",headcolor="#FFFFFF",edit="none"</F>'+
+		'<C> id=name, name=사원명,width=110,align="center",headbgcolor="#2D2478",bgcolor="#C0E0FF",headcolor="#FFFFFF", fontstyle="underline",pointer=hand</C>'+
+		'<C> id=amt1, name=금액1,width=110,headbgcolor="#2D2478",bgcolor="#C0E0FF",headcolor="#FFFFFF"</C>'+
+		'<C> id=amt2, name=금액2,width=110,headbgcolor="#2D2478",bgcolor="#C0E0FF",headcolor="#FFFFFF"</C>'+
+		'<C> id=chk, name=체크,width=60,EditStyle=CheckBox,headbgcolor="#2D2478",bgcolor="#DAFCDA",headcolor="#FFFFFF"</C>'+
+		'<C> id=gubun, name=선택,width=80,EditStyle=Combo Data="1:Korea,2:USA",headbgcolor="#2D2478",bgcolor="#FFFFBE",headcolor="#FFFFFF"</C>';
+
+		ds_grid.DataID = "gridTRSelect.jsp?Option=SL&PGM=T";
+		ds_grid.Reset();
+	}
+</script>
+
+<!-- Grid Pop Menu -->
+<script language="javascript"  for=gauce_grid event=OnRButtonDown(Row,Colid,xpos,ypos)>
+	CurRow = Row;
+	gauce_grid.MenuData="Add^1^1^1,Insert^1^2^1,Save^1^3^1,Delete^1^4^1,Copy^1^5^1,Undo^1^6^1,UndoAll^1^7^1";
+	gauce_grid.TrackPopupMenu (xpos, ypos);
+</script>
+
+<script language="javascript"  for=gauce_grid event=OnCommand(code,str)>
+     if(str == "Add"){
+     	ds_grid.AddRow();
+     }else if(str == "Delete"){
+		if( confirm("해당 데이터를 삭제하시겠습니까?")  == true )
+		{
+			ds_grid.DeleteMarked();
+			tr_grid.Post();		
+		}
+     }else if(str == "Insert"){
+		ds_grid.InsertRow(ds_grid.RowPosition);
+	 }else if(str == "Save"){
+		btn_Save();
+	 }else if(str == "Copy"){
+		var Temp_row = 1;
+		for (i=1; i<=ds_grid.CountRow; i++) {
+			if (ds_grid.RowMark(i) == 1) {
+
+				ds_temp.AddRow();
+				
+				ds_temp.NameString(Temp_row,"sabun") = ds_grid.NameString(i,"sabun");
+				ds_temp.NameString(Temp_row,"name") = ds_grid.NameString(i,"name");
+				ds_temp.NameString(Temp_row,"amt1") = ds_grid.NameString(i,"amt1");
+				ds_temp.NameString(Temp_row,"amt2") = ds_grid.NameString(i,"amt2");
+
+				Temp_row = Temp_row + 1;
+			}
+		}
+
+		Temp_row = 1;
+		var after_row = ds_grid.CountRow + 1;
+		var befor_row = 0;
+		for (i=1; i<=ds_temp.CountRow; i++) {
+			ds_grid.AddRow();
+			ds_grid.NameString(ds_grid.CountRow,"sabun") = ds_temp.NameString(i,"sabun");
+			ds_grid.NameString(ds_grid.CountRow,"name") = ds_temp.NameString(i,"name");
+			ds_grid.NameString(ds_grid.CountRow,"amt1") = ds_temp.NameString(i,"amt1");
+			ds_grid.NameString(ds_grid.CountRow,"amt2") = ds_temp.NameString(i,"amt2");
+		}
+		befor_row = ds_grid.CountRow;
+		ds_grid.ClearAllMark();
+		ds_grid.MarkRows(after_row,befor_row);
+		gauce_grid.Focus();
+
+		ds_temp.ClearData();
+	 }else if(str == "Undo"){
+		ds_grid.Undo(ds_grid.RowPosition);
+	 }else if(str == "UndoAll"){
+		ds_grid.UndoAll();
+	 }
+</script>
+
+<!-- Data Sort -->
+<script language=JavaScript for=gauce_grid event=onClick(row,colid)>
+	if (row == 0) {
+		ds_grid.SortExpr = alid_sort + colid;
+		ds_grid.Sort();
+		if(alid_sort == "+") { alid_sort = "-"; }
+		else { alid_sort = "+"; }
+	}
+	if(colid == "chk")
+	{
+		if(ds_grid.NameValue(row, colid) == 'T')
+		{
+			ds_grid.NameValue(row,colid) = 'F';
+		}
+		else
+		{
+			ds_grid.NameValue(row,colid) = 'T';
+		}
+	}
+</script>
+
+<script language=JavaScript for=gauce_grid event=onDblClick(row,colid)>
+	if(colid == "name"){
+		window.open('http://member.shift.co.kr/Online_HTML/reference_maual.html', "",'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no,width=970,height=600');
+	}
+</script>
+
+<script language="javascript"  for=tr_grid event=OnFail()>
+	alert(ErrorMsg);
+</script>
+
+<script language="javascript"  for=ds_grid event=OnRowPosChanged(row)>
+	if(ds_grid.RowStatus(row) == '1'){
+		gauce_grid.ColumnProp('sabun','Edit') = "Any";
+	}else{
+		gauce_grid.ColumnProp('sabun','Edit') = "none";
+	}
+</script>
+
+<!-- Component 선언부 -->
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_grid"></object>
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_temp"></object>
+<object id="tr_grid" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5" > 
+        <param name="ServerIP"  value="">
+	<param name="Action"    value="../../gauce40/grid/gridTR.jsp">
+	<param name="KeyName"   value="Toinb_dataid4">
+	<param name="KeyValue"  value="JSP(I:POST=ds_grid)">
+</object>
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/grid_transaction_bar.gif" border=0>
+<br>
+
+<table cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td width="580" bgcolor="#FFFFFF" align="center" height="50">
+			<p align="right">
+				<img src="../image/icon/search_icon.gif" alt="데이터를 조회합니다." style="cursor:hand;" onClick="btn_Search();">
+				<img src="../image/icon/insert_icon.gif" alt="데이터를 추가합니다." style="cursor:hand;" onClick="btn_Insert();">
+				<img src="../image/icon/del_icon.gif" alt="데이터를 삭제합니다." style="cursor:hand;" onClick="btn_Delete();">
+				<img src="../image/icon/save_icon.gif" alt="데이터를 저장합니다." style="cursor:hand;" onClick="btn_Save();">
+				<img src="../image/icon/excel_icon.gif" alt="엑셀로 데이터를 저장합니다." style="cursor:hand;" onClick="btn_Excel();">
+        </td>
+        <td width="20" bgcolor="#FFFFFF" align="center" height="50">
+            <p>&nbsp;</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td width="600" bgcolor="#99CCFF" align="center" colspan="2">
+			<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" id="gauce_grid" width="600" height="450" style="font-family:굴림; font-size:10pt;">
+				<param name="DataID" value="ds_grid">
+				<param name="LineColor"	value="#ffffff">
+				<param name="HeadLineColor"	value="#ffffff">
+	            <param name="BorderStyle" value="1">
+	            <param name="HeadBorder" value="4">
+	            <param name="ColSizing" value="true">
+	            <param name="Editable" value="true">
+            </object>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

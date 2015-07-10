@@ -1,0 +1,696 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_mbo_setup_1h.html	                  -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : MBO 목표수립				                     -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_insa.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_emp_no = top.frames['security'].empno.value
+var is_self
+var is_focus_enter='N'
+var is_work_date			//작업일
+var is_eval_code = '01'	//평가종류는 MBO
+var is_eval_year			//평가년도
+var is_self_comp			//피평가자 사업체
+var is_self_dept			//피평가자 부서
+var is_self_grade			//피평가자 직위
+var is_self_title			//피평가자 직책
+var is_degree				//피평가자 조직도차수
+var is_ds_list_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_list_1q.jsp?arg_eval_year='         
+var is_tr_list_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_list_1tr.jsp'
+var is_ds_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_detail_1q.jsp?arg_eval_year='         
+var is_tr_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_detail_1tr.jsp'
+var is_ds_seq_addr = gs_home + '/general/p_web/99/p_spec_unq_no_1q.jsp'  
+var is_tr_file_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_list_upload_1tr.jsp'
+var is_home = '/general/p_web/picture/'
+var is_file_save = 'N'	//파일업로드가 정상이면'Y'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_list.DataID = is_ds_list_addr + is_eval_year + "&arg_self_evaluator=" + is_self
+	ds_list.SyncLoad=true
+   ds_list.Reset()
+	
+	ds_list_init_query()
+
+	ds_1.DataID = is_ds_1_addr + is_eval_year + "&arg_self_evaluator=" + is_self
+   ds_1.SyncLoad=true
+	ds_1.Reset()
+}	
+//------------------------------------------------------------------------
+function ds_list_init_query()						// 목록 기본정보 조회
+//------------------------------------------------------------------------
+{	
+
+	if (ds_list.NameValue(1,"self_present_yn") == 'Y'){	//제출이면 수정못함
+		top.frames['main_title'].div_u.style.visibility = "hidden"	
+		top.frames['main_title'].div_r.style.visibility = "visible"	
+		gd_1.Editable = false
+//  		gf_protect_on('div_eval')
+		gf_protect_on('div_service')
+		tx_fir_evaluator_name.disabled = 1
+		tx_sec_evaluator_name.disabled = 1
+		bt_fir_find.disabled = 1
+  		bt_sec_find.disabled = 1
+  		tx_important_service.disabled = 1
+  		tx_detail_service.disabled = 1
+  		bt_present_yn.style.visibility = "hidden"
+  		bt_file_upload.style.visibility = "hidden"
+	}
+	else{
+		top.frames['main_title'].div_u.style.visibility = "visible"	
+		top.frames['main_title'].div_r.style.visibility = "hidden"	
+		gd_1.Editable = true 
+ // 		gf_protect_off('div_eval')
+		gf_protect_off('div_service')
+		tx_fir_evaluator_name.disabled = 0
+		tx_sec_evaluator_name.disabled = 0
+		bt_fir_find.disabled = 0
+  		bt_sec_find.disabled = 0
+  		tx_important_service.disabled = 0
+  		tx_detail_service.disabled = 0
+  		bt_present_yn.style.visibility = "visible"
+  		bt_file_upload.style.visibility = "visible"
+  		
+  		//건수가 없을때 1차평가자의 기본정보가 있으면 셋팅
+  		if (ds_list.CountRow < 1) {
+  			ds_list.AddRow()
+  			//1차평가자, 피평가자 직책, 피평가자 부서, 피평가자 사업체, 피평가자 조직도차수, 현재로우, 그리드화면여부
+			f_evaluator('title_evaluator1', is_self_title, is_self_dept, is_self_comp, is_degree, 1, '2')
+			
+			//2차평가자
+			f_evaluator('title_evaluator2', is_self_title, is_self_dept, is_self_comp, is_degree, 1, '2')
+		}
+	}
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("section_item");
+} 
+//-----------------------------------------------------------------
+function init_move()    // 삽입 추가 공통 로직
+//-----------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"eval_code") = is_eval_code
+	ds_1.NameValue(ds_1.RowPosition,"eval_year") = is_eval_year
+	ds_1.NameValue(ds_1.RowPosition,"self_evaluator") = is_self
+	
+	ds_seq.SyncLoad=true;              // spec_no_seq 구하기
+	ds_seq.reset()
+	ds_1.NameValue(ds_1.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+	
+	ds_1.NameValue(ds_1.RowPosition, "seq") 		  = ds_1.NameMax("seq",0,0) + 1
+	
+	ds_1.NameValue(ds_1.RowPosition, "section_item") = '1'
+	if (ds_1.RowPosition > 1){
+		ls_bef_section_item = ds_1.NameValue(ds_1.RowPosition - 1, "section_item")	//평가구분
+		ds_1.NameValue(ds_1.RowPosition, "section_item") = ls_bef_section_item	
+	}
+	Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	ds_1.AddRow()
+	init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+	  btnadd_onclick()
+	  return
+	}
+	ds_1.InsertRow(ds_1.RowPosition)
+	init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	   for (i=ds_1.CountRow ;i >0 ;i--){
+	      if (ds_1.RowMark(i) == 1)
+	             ds_1.DeleteRow(i)	             
+	  	}   
+	  ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	}
+	else{
+		ds_1.DeleteRow(ds_1.RowPosition)
+	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+
+  if (ds_list.NameValue(1,"fir_evaluator") == ''){
+		alert("1차평가자는 필수 입력사항입니다.")
+		bt_fir_find_pop()
+		return
+  }
+  if (ds_list.NameValue(1,"sec_evaluator") == ''){
+		alert("2차평가자는 필수 입력사항입니다.")
+		bt_sec_find_pop()
+		return
+  }
+   
+  if (ds_list.IsUpdated || ds_1.IsUpdated){
+  		if (confirm("변경되었습니다 저장하시겠습니까?")){
+  			if (ds_list.IsUpdated) {
+	  			ds_list.NameValue(1,"eval_code") 	  = '01'					//평가종류는 MBO
+				ds_list.NameValue(1,"eval_year") 	  = is_eval_year		//평가년도
+				ds_list.NameValue(1,"self_evaluator") = is_self				//피평가자
+				ds_list.NameValue(1,"self_comp_code") = is_self_comp		//피평가자 사업체
+				ds_list.NameValue(1,"self_dept_code") = is_self_dept		//피평가자 부서
+				ds_list.NameValue(1,"self_grade_code")= is_self_grade		//피평가자 직위
+				ds_list.NameValue(1,"self_present_yn")= 'N'					//피평가자 제출여부 Default='N'
+				
+				tr_list.Post()    
+		 	}
+		 	
+			if (ds_1.IsUpdated)
+		   	tr_1.Post()    		   
+		}
+  }
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_eval_year = em_select_date.text.substr(0,4) + '.01.01'
+   ds_1.ClearData()
+   btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function fir_keyDown()                       	  //1차평가자 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_fir_find_pop();
+	} 
+}  
+//------------------------------------------------------------------------
+function sec_keyDown()                       	  //2차평가자 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_sec_find_pop();
+	} 
+}  
+//-------------------------------------------------------------------------------
+function bt_fir_find_pop()                  //1차평가자 찾기
+//--------------------------------------------------------------------------------
+{
+	var result;
+	var send_arg;
+	var array = new Array();
+	send_arg = "" + '@' + tx_fir_evaluator_name.value
+	result = window.showModalDialog(gs_home + "/general/p_web/99/p_emp_no_find_1h.html",send_arg,"dialogWidth:700px;dialogHeight:500px");
+
+	if(result == "") return;
+	array = result.split("@");
+	if (ds_list.CountRow < 1) ds_list.AddRow()	//처음 추가시에는 AddRow 해야함
+	ds_list.NameValue(1,"fir_evaluator") 	= array[10]
+	tx_fir_evaluator_name.value 				= array[1]
+	ds_list.NameValue(1,"fir_dept_code") 	= array[2]
+	ds_list.NameValue(1,"fir_grade_code")	= array[3]	
+	tx_fir_dept_name.value						= array[4]
+	tx_fir_grade_name.value						= array[5]
+	ds_list.NameValue(1,"fir_comp_code")	= array[6]
+	
+	return
+}
+//-------------------------------------------------------------------------------
+function bt_sec_find_pop()                  //2차평가자 찾기
+//--------------------------------------------------------------------------------
+{
+	var result;
+	var send_arg;
+	var array = new Array();
+	send_arg = "" + '@' + tx_sec_evaluator_name.value
+	result = window.showModalDialog(gs_home + "/general/p_web/99/p_emp_no_find_1h.html",send_arg,"dialogWidth:700px;dialogHeight:500px");
+
+	if(result == "") return;
+	array = result.split("@");
+	if (ds_list.CountRow < 1) ds_list.AddRow()	//처음 추가시에는 AddRow 해야함
+	ds_list.NameValue(1,"sec_evaluator") 	= array[10]
+	tx_sec_evaluator_name.value 				= array[1]
+	ds_list.NameValue(1,"sec_dept_code") 	= array[2]
+	ds_list.NameValue(1,"sec_grade_code")	= array[3]	
+	tx_sec_dept_name.value						= array[4]
+	tx_sec_grade_name.value						= array[5]
+	ds_list.NameValue(1,"sec_comp_code")	= array[6]
+}
+//---------------------------------------------------------------------------
+function present_yn()							// 제출
+//---------------------------------------------------------------------------
+{
+	if (ds_list.NameValue(1,"fir_evaluator") == ''){
+		alert("1차평가자는 필수 입력사항입니다.")
+		bt_fir_find_pop()
+		return
+   }
+   
+   if (ds_list.NameValue(1,"sec_evaluator") == ''){
+		alert("2차평가자는 필수 입력사항입니다.")
+		bt_sec_find_pop()
+		return
+   }
+   
+	if (ds_list.IsUpdated || ds_1.IsUpdated){
+		alert("변경된 사항을 먼저 저장하십시오!")
+		return
+	}
+	
+	if (confirm("제출한 이후에는 수정할 수 없게 됩니다.\n제출하시겠습니까?")){
+		if (ds_1.NameSum("specific_gravity",0,0) != 100){
+			alert("비중은 반드시 100%로 맞춰야 합니다.")
+			gd_1.Focus()
+			gd_1.SetColumn("specific_gravity")
+			return
+		}
+		
+		//제출여부를 'Y'로 셋팅
+		arg_cmd = " update p_eval_mbo_setup_list		" + 
+			  		 "    set self_present_yn = 'Y', " +
+			  		 "        self_present_date = '" + is_work_date + "' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_year = '" + is_eval_year + "' " +
+			  		 "    and self_evaluator = '" + is_self + "' " 
+		f_update_sql(arg_cmd)		
+		
+		btnquery_onclick()
+	}
+}
+//---------------------------------------------------------------------------
+function file_upload()							// 파일 올리기	
+//---------------------------------------------------------------------------
+{
+	if (ds_list.NameValue(1,"fir_evaluator") == ''){
+		alert("1차평가자는 필수 입력사항입니다.")
+		bt_fir_find_pop()
+		return
+   }
+   
+   if (ds_list.NameValue(1,"sec_evaluator") == ''){
+		alert("2차평가자는 필수 입력사항입니다.")
+		bt_sec_find_pop()
+		return
+   }
+   
+	if (ds_list.IsUpdated || ds_1.IsUpdated){
+		alert("변경된 사항을 먼저 저장하십시오!")
+		return
+	}
+	
+	if (confirm("파일을 선택하면 1차평가자에게 바로 제출됩니다. 계속하시겠습니까?")){}
+	else{return}
+	
+	if_1.Open();
+  	if (if_1.Value == '') return
+  	
+	ds_list.NameValue(1,"url") = if_1.value
+	ds_list.NameValue(1,"cdir") = if_1.value
+
+	ls_name = ds_list.NameValue(1,"url")
+	ll_pos = ls_name.lastIndexOf(".") 
+	if (ll_pos == 0) {
+	  alert("확장자가 없어서 등록할수 없습니다")
+	  return
+	}
+	if (ll_pos != -1) {
+	  ls_name1 = ls_name.substr(ll_pos, 100)
+	  ds_list.NameValue(1,"name_file") = ls_name1
+	  ds_list.NameValue(1,"url") = is_home +  is_self + ls_name1	 
+	  ll_cnt = f_ds_select_q("ds_date","select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') select_1 from dual")
+     ds_list.NameValue(1,"upload_date") =  ds_date.NameValue(1,'select_1')	  
+	}
+	ds_list.UserStatus(1) = 1
+	tr_file.Post()
+	
+	if (is_file_save == 'Y'){		// 파일업로드가 정상
+		alert('파일이 정상적으로 업로드되었습니다.')
+		
+		//제출여부를 'Y'로 셋팅
+		arg_cmd = " update p_eval_mbo_setup_list		" + 
+			  		 "    set self_present_yn = 'Y', " +
+			  		 "        self_present_date = '" + is_work_date + "' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_year = '" + is_eval_year + "' " +
+			  		 "    and self_evaluator = '" + is_self + "' " 
+		f_update_sql(arg_cmd)		
+		
+		btnquery_onclick()
+	}
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  
+  is_work_date = f_sysdate()
+  em_select_date.text = is_work_date.substr(0,4) 
+  is_eval_year = em_select_date.text + '.01.01'
+  
+  ds_seq.DataID = is_ds_seq_addr
+  tr_list.Action = is_tr_list_addr
+  tr_1.Action = is_tr_1_addr
+  tr_file.Action = is_tr_file_addr
+  
+  //피평가자 기본정보
+  ll_cnt = f_ds_select_q("ds_select","select comp_code     select_1, " +
+  												 "       dept_code     select_2, " +
+  												 "       grade_code    select_3, " +
+  												 "       title_code    select_4, " +
+  												 "       degree		  select_5, " +
+  												 "       resident_no	  select_6 " +
+  												 "  from p_pers_master " +
+  												 " where emp_no = '" + is_emp_no + "' " +
+  												 "	  and service_div_code = '2' ")
+  
+  if (ll_cnt == 0){
+  		alert('등록되지 않은 직원입니다.')
+  		top.frames['main_title'].div_u.style.visibility = "hidden"	
+  		em_select_date.ReadOnly = true
+  		img_fr.style.visibility = "hidden"
+  		bt_present_yn.style.visibility = "hidden"
+  		bt_file_upload.style.visibility = "hidden"
+  		tx_fir_evaluator_name.disabled = 1
+  		tx_sec_evaluator_name.disabled = 1
+  		bt_fir_find.disabled = 1
+  		bt_sec_find.disabled = 1
+  		tx_important_service.disabled = 1
+  		tx_detail_service.disabled = 1
+  		return
+  }
+  
+  is_self_comp = ds_select.NameValue(1,"select_1")		//피평가자 사업체
+  is_self_dept = ds_select.NameValue(1,"select_2") 	//피평가자 부서
+  is_self_grade = ds_select.NameValue(1,"select_3")	//피평가자 직위	
+  is_self_title = ds_select.NameValue(1,"select_4")	//피평가자 직책
+  is_degree = ds_select.NameValue(1,"select_5")	//피평가자 조직도차수
+  is_self = ds_select.NameValue(1,"select_6")	//피평가자 
+  	
+  btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+}
+</script>
+<SCRIPT language=JavaScript for=em_select_date event=onKillFocus()>
+	if (is_focus_enter == em_select_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_date event=onKeyDown(kcode,scode)>
+	if (kcode == 13 ){ 
+	   is_focus_enter=em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>
+
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_list event=OnLoadError()>
+  alert("Error Code : " + ds_list.ErrorCode + "\n" + "Error Message : " + ds_list.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code ds_update: " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_list event=OnFail()>
+  alert("Error Code : " + tr_list.ErrorCode + "\n" + "Error Message : " + tr_list.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_file event=OnFail()>
+  alert("Error Code : " + tr_file.ErrorCode + "\n" + "Error Message : " + tr_file.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_file event=OnSuccess()>
+	is_file_save = 'Y'
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<!-- comm_insa.js 사용하면 ds_select1/ds_select2/ds_select3 선언	-->
+<Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select3
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<!-- ************************************************************	-->
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_seq
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_list 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_date
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_list 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_mbo_setup_list_1tr=ds_list)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_1
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_mbo_setup_detail_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_file
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_mbo_setup_list_upload_1tr=ds_list)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+	
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 145px; POSITION: absolute; TOP: 2px; HEIGHT: 30px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가년도</div></td>
+          	 <td width="63%" >
+			       <OBJECT id=em_select_date style="WIDTH: 70px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="4">
+						    <PARAM NAME="Format" VALUE="YYYY">
+					       <param name=ClipMode  value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				 	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_date.text = result.substr(0,4);} ; select_yymm()"
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>
+<DIV id=div_eval
+         style="Z-INDEX: 111; LEFT: 146px; WIDTH: 723px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      	<tr BGCOLOR="white"> 
+				<td width="8%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+					<div align="right">1차평가자</div></td>
+				<td width="44%" > 				  	
+					<INPUT id=tx_fir_evaluator_name MAXLENGTH=20  size=6  onkeyDown=fir_keyDown() >
+				  	<INPUT id=bt_fir_find  type=button  style="HEIGHT:23px; width:25px" value="..." onclick=bt_fir_find_pop() >
+				  	<INPUT id=tx_fir_grade_name size=5  disabled >
+	     		  	<INPUT id=tx_fir_dept_name  size=18  disabled >
+	     		  	<object id=em_fir_agree_yn style="  POSITION: absolute; TOP: 8px; Color: Red " 
+     		  			classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F height=15 width=30>
+                  <param name=Alignment      value=1>
+                  <param name=Numeric        value=false>
+                  <param name=Border         value=false>
+               </object>
+				</td>
+	     		<td width="8%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+					<div align="right">2차평가자</div></td>
+				<td width="40%" > 				  	
+					<INPUT id=tx_sec_evaluator_name MAXLENGTH=20   size=6  onkeyDown="sec_keyDown()" >
+				  	<INPUT id=bt_sec_find  type=button value="..." onclick=bt_sec_find_pop()  >
+	     		  	<INPUT id=tx_sec_grade_name size=5  disabled >
+	     		  	<INPUT id=tx_sec_dept_name  size=18  disabled >
+	     		</td>
+			</tr>         
+      </table>
+</DIV>
+<OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_list">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=fir_evaluator_name 		Ctrl=tx_fir_evaluator_name  	Param=value 	Enable=enable</C>
+	   <C>Col=fir_grade_name 			Ctrl=tx_fir_grade_name		  	Param=value 	Enable=enable</C>
+	   <C>Col=fir_dept_name 			Ctrl=tx_fir_dept_name		  	Param=value 	Enable=enable</C>
+	   <C>Col=fir_agree_yn	 			Ctrl=em_fir_agree_yn			  	Param=text	 	Enable=enable</C>
+	   <C>Col=sec_evaluator_name 		Ctrl=tx_sec_evaluator_name  	Param=value 	Enable=enable</C>
+	   <C>Col=sec_grade_name 			Ctrl=tx_sec_grade_name		  	Param=value 	Enable=enable</C>
+	   <C>Col=sec_dept_name 			Ctrl=tx_sec_dept_name		  	Param=value 	Enable=enable</C>
+	   "></OBJECT>	
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 874px; WIDTH: 200px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_present_yn type="button" value="&nbsp;제&nbsp;출&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=present_yn()>
+   <input id=bt_file_upload type="button" value="파일전송" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=file_upload()>   
+</div>
+<object id="if_1" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object>
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 33px;
+    HEIGHT: 400px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <param name="ViewSummary"    value=1>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='순번'  id=seq width=40 align=center BgColor='#ffffff'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가구분'  id=section_item  suppress=1  EditStyle=Combo Data='1:기본목표,2:중점추진과제' width=85  BgColor='#ffffff'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='중점추진업무'  id=important_service width=130  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='세부추진업무'  id=detail_service width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <G> Name='성과지표(KPI)' HeadBgColor=#BBE0F4  HeadColor=BLACK   >		
+	     <C> Name='성과지표'  id=result_index width=130  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	     <C> Name='측정기준'  id=measure_base width=130  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     </G>
+     <C> Name='목표치'	id=object_value width=140  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='비중(%)'  id=specific_gravity width=50  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@sum  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='달성시기'  id=attain_time width=55 align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+	
+<DIV id=div_service
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 435px; HEIGHT: 190px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="2"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      	<tr BGCOLOR="white" width="50%" > 
+	      	<td width="30%" height="20%" BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+	           <div align="center">중점추진업무</div></td>
+	         <td width="30%" height="20%" BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+	           <div align="center">세부추진업무</div></td>
+	         <td  height="20%" BGCOLOR="#ffffcc" style="COLOR: BLACK" > 
+	           <div align="center">반송코멘트</div></td>
+	      </tr>
+	      <tr BGCOLOR="white" width="50%" > 
+	         <td BGCOLOR="#FFFFFF" style="COLOR: BLACK" > 
+	           <TEXTAREA id=tx_important_service MAXLENGTH=200 rows=10 cols=40 border="2" ></TEXTAREA></td>
+	         <td BGCOLOR="#FFFFFF" style="COLOR: BLACK" > 
+	           <TEXTAREA id=tx_detail_service MAXLENGTH=200 rows=10 cols=40 border="2" ></TEXTAREA></td>
+	         <td BGCOLOR="#FFFFFF" style="COLOR: BLACK" > 
+	           <TEXTAREA id=tx_fir_ret_comment MAXLENGTH=200 rows=10 cols=53 border="2" disabled ></TEXTAREA></td>
+	      </tr>
+      </table>
+      
+</DIV>
+<OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=important_service 		Ctrl=tx_important_service  	Param=value 	Enable=enable</C>
+	   <C>Col=detail_service	 		Ctrl=tx_detail_service  	Param=value 	Enable=enable</C>
+	   "></OBJECT>	
+<OBJECT id=Bind_2 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_list">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=fir_ret_comment 		Ctrl=tx_fir_ret_comment  	Param=value 	Enable=enable</C>
+	   "></OBJECT>	
+</BODY></HTML>

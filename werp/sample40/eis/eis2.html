@@ -1,0 +1,536 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="JavaScript"><!--
+function namosw_init_marquee(layername1, layername2, dir, scrollamount, scrolldelay, behavior, loop, cliplen, length, height) 
+{
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+
+  var layer1, layer2;
+
+  if (layername1 == '' || layername2 == '')
+    return;
+
+  if (is_ns4) {
+    layer1 = document.layers[layername1];
+    if (!layer1)
+      return;
+    layer2 = document.layers[layername1].document.layers[layername2];
+  } else if (is_ns6) {
+    layer1 = document.getElementById(layername1);
+    layer2 = document.getElementById(layername2);
+  } else {
+    layer1 = document.all(layername1);
+    layer2 = document.all(layername2);
+  }
+
+  if (document.all) {
+    if (dir == 'l' || dir == 'r') {
+      layer1.style.clip = 'rect(auto ' + cliplen + ' auto 0)';
+      layer1.style.pixelWidth = cliplen;
+      if (behavior == 's' || behavior == 'l')
+        layer2.style.pixelLeft = (dir == 'l') ? cliplen : -length;
+      else
+        layer2.style.pixelLeft = (dir == 'l') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    } else if (dir == 't' || dir == 'b') {
+      layer1.style.clip = 'rect(0 auto ' + cliplen + ' auto)';
+      layer1.style.pixelHeight = cliplen;
+      if (behavior == 's' || behavior == 'l')
+        layer2.style.pixelTop = (dir == 't') ? cliplen : -length;
+      else
+        layer2.style.pixelTop = (dir == 't') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    }
+  } else if (is_ns4) {
+    if (dir == 'l' || dir == 'r') {    
+      layer1.clip.width  = cliplen;
+      layer1.clip.height = height;
+      if (behavior == 's' || behavior == 'l')
+        layer2.left = (dir == 'l') ? cliplen : -length;
+      else
+        layer2.left = (dir == 'l') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    } else if (dir == 't' || dir == 'b') {
+      layer1.clip.height = cliplen;
+      if (behavior == 's' || behavior == 'l')
+        layer2.top = (dir == 't') ? cliplen : -length;
+      else
+        layer2.top = (dir == 't') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    }
+  } else if (is_ns6) {
+    if (dir == 'l' || dir == 'r') {    
+      layer1.style.clip = 'rect(auto ' + cliplen + ' auto 0)';
+      if (behavior == 's' || behavior == 'l')
+        layer2.style.left = (dir == 'l') ? cliplen : -length;
+      else
+        layer2.style.left = (dir == 'l') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    } else if (dir == 't' || dir == 'b') {
+      layer1.style.clip = 'rect(0 auto ' + cliplen + ' auto)';
+      if (behavior == 's' || behavior == 'l')
+        layer2.style.top = (dir == 't') ? cliplen : -length;
+      else
+        layer2.style.top = (dir == 't') ? Math.max(0, -length+cliplen) : Math.min(0, -length+cliplen);
+    }
+  }
+
+  layer1.m_layer    = layer2;
+  layer1.m_dir      = dir;
+  layer1.m_amount   = scrollamount;
+  layer1.m_delay    = scrolldelay;
+  layer1.m_behavior = behavior;
+  layer1.m_loop     = loop;
+  layer1.m_cliplen  = cliplen;
+  layer1.m_length   = length;
+
+  if (layer1.m_behavior == 'l') {
+    if (layer1.m_loop == -1)
+      layer1.m_loop = 1;
+  }
+
+  layer1.m_interval = setInterval("namosw_marquee_scroll('" + layername1 + "');", scrolldelay);
+}
+
+function namosw_marquee_scroll(layername) 
+{
+// local functions
+//
+function get_left(l)
+{
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+  if      (is_ns4) return l.left;
+  else if (is_ns6) return parseInt(l.style.left);
+  else             return l.style.pixelLeft;
+}
+
+function set_left(l, value)
+{
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+  if (is_ns4)       l.left = value;
+  else if (is_ns6)  l.style.left = value;
+  else              l.style.pixelLeft = value;
+}
+
+function get_top(l)
+{
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+  if (is_ns4)       return l.top;
+  else if (is_ns6)  return l.style.top;
+  else              return l.style.pixelTop;
+}
+
+function set_top(l, value)
+{
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+  if (is_ns4) 
+    l.top = value;
+  else if (is_ns6)
+    l.style.top = value
+  else
+    l.style.pixelTop = value;
+}
+// ------------------------
+  var is_ns4 = !document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+  var is_ns6 = document.getElementById && (navigator.appName.indexOf('Netscape', 0) != -1);
+
+  var layer, layer2;
+
+  if (is_ns4)      layer = document.layers[layername];
+  else if (is_ns6) layer = document.getElementById(layername);
+  else             layer = document.all[layername];
+
+  layer2 = layer.m_layer;
+
+  if (layer.m_behavior == 's') {			// scroll
+    if (layer.m_dir == 'l') {
+      if (get_left(layer2) >= -layer.m_length) {
+        set_left(layer2, get_left(layer2)-layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_left(layer2, layer.m_cliplen);
+      }
+    } else if (layer.m_dir == 'r') {
+      if (get_left(layer2) < layer.m_cliplen) {
+        set_left(layer2, get_left(layer2) + layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_left(layer2, -layer.m_length);
+      }
+    } else if (layer.m_dir == 't') {
+      if (get_top(layer2) >= -layer.m_length) {
+        set_top(layer2, get_top(layer2) - layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_top(layer2, layer.m_cliplen);
+      }
+    } else if (layer.m_dir == 'b') {
+      if (get_top(layer2) < layer.m_cliplen) {
+        set_top(layer2, get_top(layer2) + layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_top(layer2, -layer.m_length);
+      }
+    }
+    if (layer.m_loop == 0)
+      clearInterval(layer.m_interval);
+  } else if (layer.m_behavior == 'a') {			// alternate
+    if (layer.m_dir == 'l') {
+      if (get_left(layer2) > Math.min(0, -layer.m_length+layer.m_cliplen)) {
+        set_left(layer2, get_left(layer2)-layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        layer.m_dir = 'r';
+      }
+    } else if (layer.m_dir == 'r') {
+      if (get_left(layer2) < Math.max(0, -layer.m_length+layer.m_cliplen)) {
+        set_left(layer2, get_left(layer2)+layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+	layer.m_dir = 'l';
+      }
+    } else if (layer.m_dir == 't') {
+      if (get_top(layer2) > Math.min(0, -layer.m_length+layer.m_cliplen)) {
+        set_top(layer2, get_top(layer2) - layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        layer.m_dir = 'b';
+      }
+    } else if (layer.m_dir == 'b') {
+      if (get_top(layer2) < Math.max(0, -layer.m_length+layer.m_cliplen)) {
+        set_top(layer2, get_top(layer2)+layer.m_amount);
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+	layer.m_dir = 't';
+      }
+    }
+  } else if (layer.m_behavior == 'l') {			// slide
+    if (layer.m_dir == 'l') {
+      if (get_left(layer2) > 0) {
+        set_left(layer2, Math.max(0, get_left(layer2)-layer.m_amount));
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+	set_left(layer2, layer.m_cliplen);
+      }
+    } else if (layer.m_dir == 'r') {
+      if (get_left(layer2)+layer.m_length < layer.m_cliplen) {
+        set_left(layer2, Math.min(get_left(layer2)+layer.m_amount, layer.m_cliplen-layer.m_length));
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_left(layer2, -layer.m_length);
+      }
+    } else if (layer.m_dir == 't') {
+      if (get_top(layer2) > 0) {
+        set_top(layer2, Math.max(0, get_top(layer2) - layer.m_amount));
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_top(layer2, layer.m_cliplen);
+      }
+    } else if (layer.m_dir == 'b') {
+      if (get_top(layer2)+layer.m_length < layer.m_cliplen) {
+        set_top(layer2, Math.min(get_top(layer2)+layer.m_amount, layer.m_cliplen-layer.m_length));
+      } else {
+        if (layer.m_loop > 0) layer.m_loop--;
+        set_top(layer2, -layer.m_length);
+      }
+    }
+    if (layer.m_loop == 0)
+      clearInterval(layer.m_interval);
+  }
+}
+
+// --></script><script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script>
+</head>
+
+<SCRIPT LANGUAGE="JavaScript">
+	function fn_Onload(){
+		fn_MxChartCrate_Bar();
+
+		MxDataSet_Grid1.DataID = "./eis1_generator.jsp?dsn=ds4";
+		MxDataSet_Grid1.Reset();
+
+		fn_MxChartDraw_Bar();
+		fn_Search2("서울");
+	}
+
+	function fn_Search1(){
+		fn_MxChartDraw_Bar();
+	}
+
+	function fn_Search2(flag){
+		if(flag == "서울"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_1";
+		}else if(flag == "경기"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_2";
+		}else if(flag == "충남"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_3";
+		}else if(flag == "강원"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_4";
+		}else if(flag == "호남"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_5";
+		}else if(flag == "경남"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_6";
+		}else if(flag == "제주"){
+			MxDataSet_Grid2.DataID = "./eis1_generator.jsp?dsn=ds4_7";
+		}
+
+		MxDataSet_Grid2.Reset();
+	}
+
+	function fn_Print(){
+		ln_Report_Popup_1("Program4.mrd");		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+	}
+
+	function fn_MxChartCrate_Bar(){
+		MxChart_1.RemoveAllSeries();
+		MxChart_1.Aspect.View3D = false;
+
+		MxChart_1.Panel.Color = MxChart_1.ToOLEColor("#dddddd,#ffffff");
+		MxChart_1.Panel.BorderStyle = 0;
+		MxChart_1.Panel.Gradient.Visible = true;
+		MxChart_1.Panel.Gradient.Direction = 0;
+		MxChart_1.Panel.Gradient.StartColor = MxChart_1.ToOLEColor('#B8B8B8');
+		MxChart_1.Panel.Gradient.EndColor = MxChart_1.ToOLEColor('#E7E7E7');
+		MxChart_1.Zoom.Enable = false;
+
+		MxChart_1.Axis.Left.Labels.Font.Color   = MxChart_1.ToOLEColor("BLUE");
+		MxChart_1.Axis.Bottom.Labels.Font.Color = MxChart_1.ToOLEColor("RED");
+
+		MxChart_1.Legend.LegendStyle = 0;
+		MxChart_1.Legend.TextStyle = 0;
+		MxChart_1.Legend.CheckBoxes = true;
+		MxChart_1.Legend.Symbol.Width = 20;
+		MxChart_1.Legend.Alignment = 3;
+		MxChart_1.Legend.Font.Size = 8.7;
+		MxChart_1.Legend.TopPos = 5;
+		MxChart_1.Legend.VertSpacing = 0;
+		MxChart_1.Legend.ShadowSize = 5;
+		MxChart_1.Legend.ShapeStyle = 1;
+		MxChart_1.Legend.Color = MxChart_1.ToOLEColor("#E0F0FF");
+		MxChart_1.Legend.ShadowColor = MxChart_1.ToOLEColor("#8080C0");
+
+		MxChart_1.Scroll.Enable = false;
+	}
+
+	function fn_MxChartDraw_Bar(){
+		MxChart_1.AddSeries(20);
+		MxChart_1.Series(0).DataID="MxDataSet_Grid1";
+		MxChart_1.Series(0).Title = "proA";
+		MxChart_1.Series(0).RadiusColumn="proA";
+		MxChart_1.Series(0).LabelColumn="구분";
+		MxChart_1.Series(0).color = MxChart_1.ToOLEColor("#FFD040");
+
+		MxChart_1.AddSeries(20);
+		MxChart_1.Series(1).DataID="MxDataSet_Grid1";
+		MxChart_1.Series(1).Title = "proB";
+		MxChart_1.Series(1).RadiusColumn="proB";
+		MxChart_1.Series(1).LabelColumn="구분";
+		MxChart_1.Series(1).color = MxChart_1.ToOLEColor("#80C080");
+
+		MxChart_1.AddSeries(20);
+		MxChart_1.Series(2).DataID="MxDataSet_Grid1";
+		MxChart_1.Series(2).Title = "proC";
+		MxChart_1.Series(2).RadiusColumn="proC";
+		MxChart_1.Series(2).LabelColumn="구분";
+		MxChart_1.Series(2).color = MxChart_1.ToOLEColor("#D0A0D0");
+		MxChart_1.reset();
+	}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript for=MxDataSet_Grid1 event=OnLoadCompleted(rowcnt)>
+	window.status = gs_CallMsg("M003", MxDataSet_Grid1.CountRow);
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<!-- MxDataSet 선언부-->
+<OBJECT ID="MxDataSet_Grid1" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"></OBJECT>
+<OBJECT ID="MxDataSet_Grid2" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"></OBJECT>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_Onload(); namosw_init_marquee('layer1', 'marqueechildlayer0', 'l', 10, 100, 's', -1, 313, 313, 313);na_preload_img(false, '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm4_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>지역별 / 제품별 매출현황</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="395" height="493" valign="top">                                                
+									<table cellpadding="0" cellspacing="0" width="100%">
+										<tr>
+											<td width="385" height="280" valign="top">                                                                                                            <p align="center">
+			<img src="../images/map.gif" width="215" height="273" border="0" ALT="" USEMAP="#ImageMap1"><map name="ImageMap1">
+			<area shape="poly" coords="73, 42, 87, 44, 90, 53, 87, 60, 78, 62, 71, 56, 69, 49" href="#" onClick="fn_Search2('서울');">
+			<area shape="poly" coords="64, 21, 73, 17, 83, 25, 92, 30, 97, 43, 94, 45, 99, 54, 105, 54, 103, 66, 105, 72, 96, 74, 85, 84, 75, 81, 67, 84, 60, 79, 56, 74, 53, 72, 55, 65, 62, 59, 62, 52, 56, 48, 53, 50, 49, 45, 53, 41, 58, 37, 58, 32, 64, 30" href="#" onClick="fn_Search2('경기');">
+			<area shape="poly" coords="78, 17, 90, 18, 107, 17, 119, 15, 128, 11, 130, 6, 137, 11, 137, 18, 164, 53, 164, 60, 175, 69, 171, 76, 162, 78, 155, 78, 142, 82, 130, 75, 121, 69, 119, 75, 114, 73, 108, 75, 105, 75, 107, 56, 103, 51, 99, 51, 97, 46, 97, 35, 92, 29, 87, 24, 78, 22" href="#" onClick="fn_Search2('강원');">
+			<area shape="poly" coords="44, 77, 53, 77, 62, 84, 66, 88, 71, 88, 75, 83, 83, 86, 87, 90, 83, 97, 90, 110, 96, 112, 94, 117, 99, 124, 101, 130, 96, 132, 87, 124, 77, 128, 73, 123, 69, 123, 60, 128, 57, 132, 48, 122, 51, 117, 48, 112, 42, 112, 42, 104, 38, 101, 38, 95, 33, 95, 33, 88" href="#" onClick="fn_Search2('충남');">
+			<area shape="poly" coords="50, 132, 59, 132, 65, 127, 70, 123, 77, 131, 86, 127, 95, 134, 102, 131, 109, 131, 108, 134, 104, 138, 98, 143, 97, 152, 97, 161, 93, 167, 98, 176, 102, 180, 106, 194, 104, 203, 91, 200, 93, 210, 89, 210, 86, 207, 77, 212, 74, 212, 74, 216, 47, 216, 41, 209, 37, 214, 32, 212, 32, 219, 26, 219, 20, 223, 16, 218, 24, 207, 26, 201, 18, 198, 20, 190, 26, 185, 30, 178, 24, 174, 37, 171, 43, 161, 47, 147, 54, 143" href="#" onClick="fn_Search2('호남');">
+			<area shape="poly" coords="107, 139, 122, 141, 122, 150, 137, 151, 152, 151, 159, 150, 161, 160, 167, 162, 148, 171, 141, 175, 131, 179, 137, 188, 145, 184, 150, 182, 147, 189, 143, 195, 129, 193, 126, 188, 118, 188, 115, 191, 115, 197, 106, 191, 106, 180, 100, 173, 95, 166, 98, 159, 96, 150, 98, 144, 104, 139" href="#" onClick="fn_Search2('경남');">
+			<area shape="poly" coords="16, 248, 29, 239, 42, 239, 55, 239, 51, 247, 42, 252, 37, 254, 29, 254, 25, 258, 19, 254" href="#" onClick="fn_Search2('제주');">
+			</map>
+			</p>								</td>
+										</tr>
+										<tr>
+											<td width="385" height="210" valign="bottom">
+												<div id="layer1" style="width:313px; height:15px; position:absolute; left:150px; top:342px; z-index:1;">
+			<div id="marqueechildlayer0" style="position:absolute; left:0; top:0; width:100%; height:100%;" namo_marquee>
+
+													<p>
+			<font size="2">지역별 제품별 상세데이터는 위 지도를 </font><b><font size="2" color="#999999">Click</font></b><font size="2"> 하세요.</font></p>
+
+			</div>
+												</div>
+												<p align="center">
+			&nbsp;</p>
+												<p>
+			<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="380" height="160" id="MxGrid_2" style="font-size:9pt">
+												<param name="DataID" value="MxDataSet_Grid2">
+												<param name="IndWidth"	value="0">
+												<param name="HeadBorder"	value="4">
+												<param name="BorderStyle"	value="1">
+												<param name="LineColor"	value="#FFFFFF">
+												<param name="HeadLineColor"	value="#FFFFFF">
+												<param name="Format" value=" 
+														<F> Name=구분 ID=gubun HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(구분,'총계','#FF9C00','#908F8B')} Color=#FFFFFF Width=92 Align=Center</F> 
+														<C> Name=매출 ID=selling HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75 Align=right</C> 
+														<C> Name=구성비 ID=composeper HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75  Align=right</C> 
+														<C> Name=성장율 ID=growper HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75  Align=right</C> 
+														<C> Name=인당식수 ID=humanper HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=62  Align=right</C> 
+														">
+												</object></p>
+											</td>
+										</tr>
+									</table>
+								</td>
+								<td width="395" height="493" valign="top">
+									<table cellpadding="0" cellspacing="0" width="100%">
+										<tr>
+											<td width="385" height="280">
+												<div CLASS=s1-map-tab>
+													<p align="center">
+			<object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="316" height="280">
+			</object></p>
+			</div>
+											</td>
+										</tr>
+										<tr>
+											<td width="385" height="210" valign="bottom">
+
+												<p align="center">
+												&nbsp;</p>
+												<p>
+			<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="385" height="160" id="MxGrid_1" style="font-size:9pt">
+												<param name="DataID" value="MxDataSet_Grid1">
+												<param name="IndWidth"	value="0">
+												<param name="HeadBorder"	value="4">
+												<param name="BorderStyle"	value="1">
+												<param name="LineColor"	value="#FFFFFF">
+												<param name="HeadLineColor"	value="#FFFFFF">
+												<param name="Format" value=" 
+														<F> Name=구분 ID=gubun HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(구분,'총계','#FF9C00','#908F8B')} Color=#FFFFFF Width=79 Align=Center</F> 
+														<C> Name=매출 ID=selling HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=80 Align=right</C> 
+														<C> Name=구성비 ID=composeper HeadBgColor=#908F8B HeadColor=#FFFFCE BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75  Align=right</C> 
+														<C> Name=성장율 ID=growper HeadBgColor=#908F8B HeadColor=#FFFFCE BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75  Align=right</C> 
+														<C> Name=인당식수 ID=humanper HeadBgColor=#908F8B HeadColor=#FFFFCE BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} Width=75  Align=right</C> 
+													">
+												</object></p>
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table><p>
+			&nbsp;</p>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+					EXTRACT *
+					FROM MxDataSet_Grid1
+					UNION ALL
+					EXTRACT *
+					FROM MxDataSet_Grid2
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

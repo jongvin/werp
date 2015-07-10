@@ -1,0 +1,358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_file_upload_h.html 								-->
+<!-- 2. 유형(시나리오): 															-->
+<!-- 3. 기 능 정 의   : 승진서류 업로드										-->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_emp_no = top.frames['security'].empno.value
+var is_self
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+var is_ds_1_addr = gs_home + '/general/p_web/15/p_eval_file_upload_1q.jsp?arg_eval_code='         
+var is_tr_1_addr = gs_home + '/general/p_web/15/p_eval_file_upload_1tr.jsp'
+
+var is_authority_user_find_addr  = top.frames['security'].gs_home.value + '/comm_search/z_authority_user_find_1h.html'
+var is_ds_seq_addr = gs_home + '/general/p_web/99/p_spec_unq_no_1q.jsp'  
+var is_home = '/general/p_web/picture/'
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + ccom_eval_code.CodeValue + "&arg_eval_degree=" + 
+						ccom_eval_degree.CodeValue + "&arg_self_evaluator=" + is_self
+
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+//	ds_list_init_query()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+//	gd_1.Focus();
+//   gd_1.SetColumn("write_time");
+//	gd_1.SetColumn("sys_id");
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+   var ls_temp
+   ll_cnt = f_ds_select_q("ds_date","select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') select_1 from dual")
+   ds_1.NameValue(ds_1.RowPosition,"write_date") =  ds_date.NameValue(1,'select_1')
+   ds_1.NameValue(ds_1.RowPosition,"file_code") =  '01'
+   
+  	ds_1.NameValue(ds_1.RowPosition,"eval_code") =  ccom_eval_code.codevalue
+   ds_1.NameValue(ds_1.RowPosition,"eval_year") =  ccom_eval_degree.codevalue.substr(0,4) + '.01.01'
+   ds_1.NameValue(ds_1.RowPosition,"eval_degree") =  ccom_eval_degree.codevalue
+   ds_1.NameValue(ds_1.RowPosition,"self_evaluator") =  is_self
+   ds_1.NameValue(ds_1.RowPosition,"self_comp_code") =  is_self_comp
+   ds_1.NameValue(ds_1.RowPosition,"self_dept_code") =  is_self_dept
+   ds_1.NameValue(ds_1.RowPosition,"self_grade_code") =  is_self_grade
+		
+  	
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 ds_1.AddRow()
+	 init_move()
+	 Fn_SetColumn()
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	 ds_1.InsertRow(ds_1.RowPosition)
+	 init_move()
+	Fn_SetColumn()
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1)
+	               ds_1.DeleteRow(i)
+	     }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	} 
+	else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?")) {
+  		  //dup체크
+		  var ll_dup
+		  ll_dup = f_dup_chk("ds_1","file_code")
+		  if (ll_dup > 0) {
+		     alert("파일종류가 중복되었습니다: 수정하십시요 ")
+		     ds_1.RowPosition = ll_dup
+	     	  gd_1.SetColumn("file_code")
+		     return
+		  }
+    		
+		  for (i=1; i <= ds_1.CountRow ; i++) {
+		        ls_name = ds_1.NameValue(i,"url")
+				  ll_pos = ls_name.lastIndexOf(".") 
+              if (ll_pos == 0) {
+			        alert("확장자가 없어서 등록할수 없습니다")
+			        return
+			     }
+			     if (ll_pos != -1) {
+				     ls_name1 = ls_name.substr(ll_pos, 100)
+				     ds_1.NameValue(i,"name_file") = ls_name1
+				     
+				     ls_file_code = ds_1.NameValue(i,"file_code")
+				     ll_file_row  = ds_file.NameValueRow('select_1',ls_file_code)
+				     ls_file_name = ds_file.NameValue(ll_file_row,"select_2")
+				     ds_1.NameValue(i,"file_name") = ls_file_name
+				     
+				     ds_1.NameValue(i,"url") = is_home +  is_self + '_' + ls_file_code + ls_name1
+				     
+              }		     
+		  }
+
+		  tr_1.Post()
+    }
+ } 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+	        }   
+ 
+	   }     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function eval_degree()                      // 평가차수 조회
+//---------------------------------------------------------------------------
+{
+  ll_cnt = f_ds_select_q("ds_degree","select eval_degree   select_1 " +
+  												 "  from p_eval_degree " +
+  												 " where eval_code = '" + ccom_eval_code.CodeValue + "' " +
+  												 " order by eval_degree desc ")
+  ccom_eval_degree.Index = 0
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  	if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+  
+  //평가코드
+  ll_cnt = f_ds_select_q("ds_code","select eval_code   select_1, eval_name select_2 " +
+  												 "  from p_eval_code  where eval_code = '05' " )
+  ccom_eval_degree.Index = 0
+  eval_degree()                      // 평가차수 조회
+  //파일종류
+  ll_cnt = f_ds_select_q("ds_file","select file_code   select_1, file_name select_2 " +
+  												 "  from p_eval_file " )
+  
+  //피평가자 기본정보
+  ll_cnt = f_ds_select_q("ds_select","select comp_code     select_1, " +
+  												 "       dept_code     select_2, " +
+  												 "       grade_code    select_3, " +
+  												 "       title_code    select_4, " +
+  												 "       resident_no   select_5 " +
+  												 "  from p_pers_master " +
+  												 " where emp_no = '" + is_emp_no + "' " +
+  												 "	  and service_div_code = '2' ")
+  
+  if (ll_cnt == 0){
+  		alert('등록되지 않은 직원입니다.')
+  		top.frames['main_title'].div_u.style.visibility = "hidden"	
+  		return
+  }
+  
+  is_self_comp = ds_select.NameValue(1,"select_1")		//피평가자 사업체
+  is_self_dept = ds_select.NameValue(1,"select_2") 	//피평가자 부서
+  is_self_grade = ds_select.NameValue(1,"select_3")	//피평가자 직위	
+  is_self_title = ds_select.NameValue(1,"select_4")	//피평가자 직책
+  is_self = ds_select.NameValue(1,"select_5")	//피평가자
+
+  ds_seq.DataID = is_ds_seq_addr
+  tr_1.Action = is_tr_1_addr
+  
+  btnquery_onclick()
+}
+</SCRIPT>
+<script language=JavaScript for=ccom_eval_code event=onCloseUp()>
+	btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ccom_eval_degree event=onCloseUp()>
+	btnquery_onclick()
+</SCRIPT>
+
+</HEAD>
+<BODY  onload=window_onload() oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	 alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+	if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+	}
+</SCRIPT>
+<SCRIPT language="javascript" for=gd_1 event=OnPopup(row,colid,data)>
+	if (colid == 'url'){
+  		if_1.Open();
+	  	if (if_1.Value == '') return
+	  	
+//		ds_1.NameValue(ds_1.RowPosition,"c_unq_num") = ds_1.NameValue(ds_1.RowPosition,"spec_no_seq") + ""  
+		ds_1.NameValue(ds_1.RowPosition,"url") = if_1.value
+		ds_1.NameValue(ds_1.RowPosition,"cdir") = if_1.value
+	}
+</SCRIPT>
+
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<Object id=ds_code
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_degree
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_file
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>      
+<OBJECT id=ds_date
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_select 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_select1
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_select2
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_file_upload_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>	
+	
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 400px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="15%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가종류</div></td>
+          	 <td width="45%" >
+			       <OBJECT id=ccom_eval_code width=175px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_code">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_2">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+             <td width="15%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가차수</div></td>
+          	 <td width="25%" >
+			       <OBJECT id=ccom_eval_degree width=100px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_degree">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_1">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+         </tr>
+      </table>
+</DIV>
+	
+<object id="if_1" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object>
+
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 1px; WIDTH: 1005px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+      <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Format" VALUE="
+     <C> Name='파일종류'  id=file_code  EditStyle=Lookup Data='ds_file:select_1:select_2' width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='파일'  id=url  EditStyle=Popup width=300  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='Upload Date'  id=write_date align=center width=130 Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+</OBJECT>
+
+</BODY>
+</HTML>

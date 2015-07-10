@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_code_deposit_1h.html											-->
+<!-- 2. 유형(시나리오): window 조회및 입력												-->
+<!-- 3. 기 능 정 의   : 현장별 계좌등록			  	  									-->
+<!-- 4. 변 경 이 력   : 정호준 작성																			-->
+<!-- 5. 관련프로그램  :																									-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_sell_code = top.frames['security'].gs_sell_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_sell_name = top.frames['security'].gs_sell_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var ib_check     = true
+var is_dept_all 
+var is_from_date
+var is_process_tag
+var is_sort =''
+
+var is_ds_1_addr = gs_home + '/const/g_web/04/g_h_income_total_a_1q.jsp?arg_dept_code='
+//-------------------------------------------------------------------------------
+function select_from()                  //시작일 선택 
+//-------------------------------------------------------------------------------
+{
+   is_from_date = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+
+{ ds_1.SubsumExpr ="Total"	
+  select_from(); 
+	if (is_dept_all ){
+	   if (!confirm('전체현장을 선택하셨습니다. 조회시간이 다소 걸릴수있습니다.\n\n계속하시겠습니까?')){
+		   chk_dept_all.checked = false
+			dept_name.disabled =false
+		   sell_name.disabled=false
+		   find_btn.disabled=false
+		   cc_process.enable=false
+		   is_dept_all = false
+		   return;
+		}
+		ds_1.DataID = is_ds_1_addr +''+  '&arg_sell_code='+'' +'&arg_work_date=' + is_from_date +'&arg_process_tag=' + is_process_tag 
+	}
+	else{
+		ds_1.DataID = is_ds_1_addr +is_dept_code+  '&arg_sell_code='+is_sell_code +'&arg_work_date=' + is_from_date +'&arg_process_tag=' + 'ALL'
+		
+	}
+	//alert(ds_1.dataid)
+	ds_1.SyncLoad=false
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("dept_code");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{	  ds_1.NameValue(ds_1.RowPosition,'dept_code') 	  = is_dept_code
+    ds_1.NameValue(ds_1.RowPosition,'long_name') 	  = is_dept_name
+    ds_1.NameValue(ds_1.RowPosition,'sell_code') 	  = is_sell_code 
+	ds_1.NameValue(ds_1.RowPosition,"account_div") = '02'
+	ds_1.NameValue(ds_1.RowPosition,"annul_yn") = 'N'
+	ds_1.NameValue(ds_1.RowPosition,"deposit_tag") = '2'
+	Fn_SetColumn()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 ds_1.AddRow()
+	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	 if (ds_1.CountRow <= 0 ) {
+	 	btnadd_onclick()
+	 	return
+	 }
+	 ds_1.InsertRow(ds_1.RowPosition)
+	 init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1)
+	               ds_1.DeleteRow(i)
+	    }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	   } 
+	  else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+ 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기(분양) 
+//---------------------------------------------------------------------------
+{
+	result = f_hdept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	is_sell_code = top.frames['security'].gs_sell_code.value
+	is_sell_name = top.frames['security'].gs_sell_name.value
+
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+
+
+	btnquery_onclick()
+}  
+//---------------------------------------------------------------------------
+function dept_all()
+//---------------------------------------------------------------------------
+{  if (chk_dept_all.checked == true){ 
+		dept_name.disabled =true
+		sell_name.disabled=true
+		find_btn.disabled=true
+		cc_process.enable=true
+		is_dept_all = true;
+		
+	}
+	else{
+		dept_name.disabled =false
+		sell_name.disabled=false
+		find_btn.disabled=false
+		cc_process.enable=false
+		is_dept_all = false
+		
+	}
+
+	
+
+	btnquery_onclick()
+}  
+
+
+//---------------------------------------------------------------------------
+function dept_code_find_popup()                       //현장 찾기(분양) 
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	var gs_home1 = top.frames['security'].gs_home.value
+	var is_dept_search_addr = gs_home1 + '/general/h_web/00/h_code_house_find_1h.html'
+
+	result = window.showModalDialog(is_dept_search_addr,gs_home1 + "@" + ds_1.Namevalue(ds_1.Rowposition, 'long_name'),"dialogWidth:500px;dialogHeight:500px");
+	ib_check = false
+	if(result == "") {
+		ds_1.Namevalue(ds_1.Rowposition, 'long_name') = is_dept_name
+	   ds_1.Namevalue(ds_1.Rowposition, 'dept_code') = is_dept_code
+	   ib_check = true
+		return
+	}
+	array = result.split("@");
+	
+	ds_1.Namevalue(ds_1.Rowposition, 'dept_code') = array[0]
+	ds_1.Namevalue(ds_1.Rowposition, 'long_name') = array[1]
+	ds_1.Namevalue(ds_1.Rowposition, 'sell_code') = array[2]
+	ds_1.NameValue(ds_1.RowPosition, 'dongho')     = ""
+	ds_1.NameValue(ds_1.RowPosition, 'seq')        = ""
+	is_dept_code = array[0]
+	is_dept_name = array[1]
+	ib_check = true
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{ 
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+
+	is_from_date = is_work_date 
+	em_from_date.text = is_from_date
+
+	cc_process.Index = 1
+	cc_process.enable=false
+
+	dept_all()
+   
+
+}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+
+</HEAD>
+<script language=JavaScript for=cc_process event=onSelChange()>
+	is_process_tag = cc_process.CodeValue;
+</script>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> 
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_sysdate
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> 
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 900px; POSITION: absolute; TOP: 1px; HEIGHT: 25px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+			    <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" size=25 onkeyDown="keyDown()" style=" FONT-SIZE: 12px">
+						<input id=find_btn type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+             <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+                 <div align="right">분양구분</div></td>
+             <td >
+						<INPUT id=sell_name SIZE=15  style=" FONT-SIZE: 12px" READONLY DISABLED></td>
+				<td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+                 <div align="right">전체현장</div></td>
+             <td>
+						<INPUT id=chk_dept_all SIZE=15  type=checkbox  style=" FONT-SIZE: 12px " onclick=dept_all()></td>
+				<td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+                 <div align="right">진행구분</div></td>
+             <td>
+						<comment id="__NSID__"><object id=cc_process classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+							  height=106 width=60 >
+							  <param name=Data    value="ALL^전체,01^진행,02^종료">
+              </object></comment> <script> __ws__(__NSID__);</script></td>
+				 <td WIDTH='70px'   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+                 <div align="right">기준일</div></td>
+				 <td WIDTH='130px'>
+             	  <comment id="__NSID__"><OBJECT id=em_from_date 
+                       style="WIDTH: 100px";
+				           classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                       <param name=Format value="####-##-##"> 
+                       <param name=Alignment      value=1>
+                       <param name=SelectAll       value=true>
+	                    <param name=Numeric        value=false>
+	            </OBJECT></comment> <script> __ws__(__NSID__);</script>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+								if(!is_null(result)){ em_from_date.text = result.substr(0,8);} ; select_from()">
+				</td>
+				<TD>
+				 		<INPUT VALUE='단위:백만원' SIZE=9 CONTENTEDITABLE=FALSE />
+				</TD>
+         </tr>                 
+      </table>
+</DIV> 
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 35px; HEIGHT: 99%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE=false>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="Format" VALUE="
+	  <FC> Name='현장'       ID=long_name  Align=left Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=150  SubBgColor=silver </C>
+	  <FC> Name='분양구분'       ID=code_name  Align=left Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=50  SubBgColor=silver SubSumText={decode(curlevel,1,'소 계','합 계')} sumtext='합계'</C>
+	  <G> name='분양대상'	  HeadBgColor=#BBE0F4  HeadColor=BLACK
+	   <C> Name='세대수'  ID=sale_cnt   Align=center   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 SubBgColor=silver sumtext=@sum</C>
+		<C> Name='면적(평)'  ID=sale_pyong_sum   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 SubBgColor=silver sumtext=@sum</C>
+		<C> Name='분양금액'  ID=agree_sell_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+    </G>
+	 <G> name='분양실적'	  HeadBgColor=#BBE0F4  HeadColor=BLACK
+	   <C> Name='세대수'  ID=cont_cnt   Align=center   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 SubBgColor=silver sumtext=@sum</C>
+		<C> Name='면적(평)'  ID=cont_pyong_sum   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 SubBgColor=silver sumtext=@sum</C>
+		<C> Name='분양금액'  ID=cont_sell_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+    </G>
+	 <G> name='분양중'	  HeadBgColor=#BBE0F4  HeadColor=BLACK
+	   <C> Name='미도래'  ID=midore_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+		<C> Name='기일경과분'  ID=dore_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+    </G>
+	 <C> Name='분양수입금액'  ID=income_r_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+	 <C> Name='연체금액'  ID=income_delay_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+	 <C> Name='할인금액'  ID=income_discount_amt   Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext=@sum</C>
+	 <C> Name='총수입금'  ID=cf_income_all  value={income_r_amt+income_delay_amt-income_discount_amt} Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext={sum(income_r_amt+income_delay_amt-income_discount_amt)}</C>
+	 <C> Name='미수금'  ID=cf_income_due  value={cont_sell_amt-income_r_amt} Align=right   HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 SubBgColor=silver sumtext={sum(cont_sell_amt-income_r_amt)}</C>
+	  
+	  ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+<script language="javascript"  for=ds_1 event=OnLoadStarted()>
+		document.all.LowerFrame.style.visibility="visible";
+		//alert('start')
+	</script>
+	<script language="javascript"  for=ds_1 event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+		//alert('stop')
+	</script>
+   
+	<iframe id="LowerFrame" name="work" style="visibility:hidden; position:absolute; left:350px; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe> 				
+</BODY></HTML>

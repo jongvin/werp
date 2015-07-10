@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_summary_bonsa_1h.html						-->
+<!-- 2. 유형(시나리오): 조회및 입력						-->
+<!-- 3. 기 능 정 의   : 자금청구집계(본사발생원가집계)                      		-->
+<!-- 4. 변 경 이 력   : 정호준 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_yymm
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+	
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2) + ".01"
+  	is_work_date = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)  + "." +  em_select_yymm.text.substr(8,2)
+ 
+}   
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+} 
+//-------------------------------------------------------------------------------
+function comp_cmpt()                  //집계작업
+//--------------------------------------------------------------------------------
+{
+
+	ls_date = em_select_yymm.text
+
+	ls_date = ls_date.substr(0,4) + '.' + ls_date.substr(5,2) + '.01' 
+	if  (confirm("본사발생 원가를 집계하시겠습니까?")) {
+		ds_spcall.DataID = gs_home + '/const/f_web/03/y_f_summary_bonsa_procedure.jsp?arg_dept_code=' + 
+					is_dept_code + '&arg_date=' + ls_date
+
+	   ds_spcall.SyncLoad = true
+	   ds_spcall.reset()
+
+	   alert("작업이 성공적으로 완료되었습니다")	
+
+	}   
+}  
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+}
+
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+ 
+//---------------------------------------------------------------------------
+function window_onunload()                      // window close event
+//---------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   	top.frames['main_title'].mouse_over()
+	dept_name.value = is_dept_name
+	is_yymm = is_work_date.substr(0,7) 
+	em_select_yymm.text = is_work_date
+}
+</SCRIPT>
+</HEAD>
+
+
+
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+
+<BODY style="FONT-SIZE: 12px" onload=window_onload() onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<LABEL id=Label_1  
+    style="WIDTH: 75px; LEFT: 253px;POSITION: absolute; HEIGHT: 25px; TOP:70px">현 장 명:
+</LABEL><INPUT id=dept_name 
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 318px; POSITION: absolute; TOP: 68px"
+    onkeyDown="keyDown()">
+<input type="button" value=" 검 색 "  
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; background-color:#E9F5F5; border:1 #A1A9A9 solid;
+            LEFT: 457px; POSITION: absolute; WIDTH: 55px; TOP: 68px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=dept_code_find()>
+           
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 240px; WIDTH: 300px; POSITION: absolute; TOP: 100px; HEIGHT: 20px">
+	<LABEL id=Label_2  
+	    	style="WIDTH: 75px; LEFT:10px;POSITION: absolute; HEIGHT: 25px; TOP:4px">집계년월:
+	</LABEL>
+	<OBJECT id=em_select_yymm 
+	       style="Z-INDEX: 101; LEFT: 79px; WIDTH: 80px; POSITION: absolute; TOP: 0px; HEIGHT: 20px" 
+	      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		    <PARAM NAME="Alignment" VALUE="1">
+		    <PARAM NAME="IsComma" VALUE="0">
+		    <PARAM NAME="MaxLength" VALUE="6">
+		    <PARAM NAME="Format" VALUE="YYYY-MM">
+	            <param name=ClipMode       value=false>
+		    <PARAM NAME="Numeric" VALUE="0">
+		    <PARAM NAME="SelectAll" VALUE="-1">
+	</OBJECT>
+	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+		if(!is_null(result)){ em_select_yymm.text = result.substr(0,8);} ; select_yymm()" 
+	       style=" LEFT: 160px; WIDTH: 20px; POSITION: absolute; TOP: 0px; HEIGHT:20px">
+</DIV>
+<DIV id=gd_2_button 
+	style="Z-INDEX: 107; LEFT: 457px; WIDTH: 200px; POSITION: absolute; TOP: 100px; HEIGHT: 20px">
+	<input type="button" value=" 집 계 " 
+	        style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 317x;height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=comp_cmpt()>
+</DIV>
+</BODY></HTML>

@@ -1,0 +1,144 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="JavaScript">
+    function btn_org_onclick() {
+    	div_2.style.visibility = "visible";
+    	div_1.style.visibility = "hidden";
+    }
+    
+    function btn_cross_onclick() {
+    	div_1.style.visibility = "visible";
+    	div_2.style.visibility = "hidden";
+    }
+</script>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 컴포넌트의 시작                   -->
+<!-- ======================================================================= -->
+
+<object id=tbds_org classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=DataID		        value="./etc1_select.jsp">
+	<param name="SyncLoad" 		 	value="true">
+</object>
+
+<object id=tbds_crosstab classid=CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB>
+	<param name=DataID		value="tbds_org">
+	<param name=Logical		value="true">
+	<param name=GroupExpr	value="Partno:Partnm,Month,Qty:Amt">
+</object>
+<!-- ======================================================================= -->
+<!--                      program에 사용될 컴포넌트의 끝                     -->
+<!-- ======================================================================= -->
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" >
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0" border=0>
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm6_htm_smartbutton1.gif" ></td>
+								<td width="358" valign="bottom"><font size="2"><b>CrossTab</b></font></td>
+							</tr>
+						</table>
+					</td>
+					<td width="395" height="30">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" valign="top" colspan=2>
+						<table cellpadding="0" cellspacing="0" width="100%" >
+							<tr width="790" height="30" >
+								<td>
+									<input id=btn_org type=button value=Original onclick="btn_org_onclick();">
+									<input id=btn_cross type=button value=CrossTab  onclick="btn_cross_onclick();">
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="30" >
+									<table cellpadding="0" cellspacing="0" width="790" align="center" border="0">
+										<tr>
+											<td>
+												<div id=div_1 style="visibility:hidden; position:absolute;">
+												<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="790" height="400" 
+														style="font-size:9pt" id="tbgd_1">
+														<param name="DataID"   value="tbds_crosstab">
+														<param name="HeadBorder"	value="4">
+														<param name="IndWidth"	value="0">
+														<param name="BorderStyle"	value="1">
+														<param name="LineColor"	value="#FFFFFF">
+														<param name="HeadLineColor"	value="#FFFFFF">
+														<param name="colsizing"	value="true">
+														<param name=sortview       value=right>
+														<param name=viewsummary		value=1>
+														<param name="Format"        	value='
+															<FC>ID=PartNo	name="품번"		width=80 sort=true bgcolor=#FFFFCE	SumBgColor="orange"</FC>
+															<FC>ID=PartNm	name="품명"		width=80 sort=true bgcolor=#FFFFCE	SumBgColor="orange"</FC>
+															<R>
+																<G>name=$xkeyname_$$	NameMask="XXXX년 XX월"
+																	<C>ID=Qty_$$	name="수량"	width=50	Bgcolor=#FADCC8 sort=true value={decode(Qty_$$,0," ",Qty_$$)}	SumBgColor="orange"</C>
+																	<C>ID=Amt_$$	name="단가"	width=70 value={decode(Amt_$$,0," ",Amt_$$)} SumText="월매출액"	SumBgColor="orange"</C>
+																	<C>name="가격"	width=80 value={decode(Qty_$$*Amt_$$,0," ",Qty_$$*Amt_$$)} SumText={sum(Qty_$$*Amt_$$)}	SumBgColor="orange"</C>
+																</G>
+															</R>
+															<G>name="CrossTab(수량)"
+																<C>Id=Cnt	name="Cnt"	width=40	Bgcolor="#E3E3FF"	Value={CrossTabCount()}		Align=Right	SumBgColor="orange"</C>
+																<C>Id=Sum	name="Sum"	width=40	Bgcolor="#E3E3FF"	Value={CrossTabSum(Qty)}	Align=Right	SumBgColor="orange"</C>
+																<C>Id=Min	name="Min"	width=40	Bgcolor="#E3E3FF"	Value={CrossTabMin(Qty)}	Align=Right	SumBgColor="orange"</C>
+																<C>Id=Max	name="Max"	width=40	Bgcolor="#E3E3FF"	Value={CrossTabMax(Qty)}	Align=Right	SumBgColor="orange"</C>
+																<C>Id=Avg	name="Avg"	width=40	Bgcolor="#E3E3FF"	Value={CrossTabAvg(Qty)}	Align=Right	SumBgColor="orange"</C>
+															</G>
+														'>
+												</object></p></div>
+												<div id=div_2 style="visibility:visible; position:absolute; ">
+												<p><p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="400" height="400" 
+														style="font-size:9pt" id="tbgd_2">
+														<param name="DataID"   value="tbds_org">
+														<param name="HeadBorder"	value="4">
+														<param name="IndWidth"	value="0">
+														<param name="BorderStyle"	value="1">
+														<param name="LineColor"	value="#FFFFFF">
+														<param name="HeadLineColor"	value="#FFFFFF">
+														<param name="colsizing"	value="true">
+														<param name=sortview       value=right>
+														<param name="Format"        	value='
+															<FC>ID=PartNo	name="품번"		width=80 sort=true bgcolor=#FFFFCE</FC>
+															<FC>ID=PartNm	name="품명"		width=80 sort=true bgcolor=#FFFFCE</FC>
+															<FC>ID=Month	name="매출월"		width=80 sort=true bgcolor=#FFFFCE, mask="XXXX/XX" align=center</FC>
+															<C>ID=Qty	name="수량"	width=50	Bgcolor=#FADCC8 sort=true value={decode(Qty,0," ",Qty)}</C>
+															<C>ID=Amt	name="단가"	width=70 value={decode(Amt,0," ",Amt)}</C>
+															'>
+												</object></p></p></div>
+												
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

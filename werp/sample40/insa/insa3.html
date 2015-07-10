@@ -1,0 +1,330 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="javascript">
+        
+   // 화면이 Load시 발생함
+   function fn_load(){
+         
+      Search_tr.Post();
+      Master_data.DataID = "./insa3_select2.jsp";
+      Master_data.Reset();
+          
+   }
+   //조회버튼 클릭시 ( 라디오버튼의 조건에 따라 조회한다. )
+   function fn_Add(){
+      if (LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "F" || LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == ""){
+         Master_data.AddRow();
+      }else{
+         alert("소계옵션을 <처음으로> 로 선택후 입력작업을 하실수 있습니다.");
+      }   
+   }
+   //저장버튼 클릭시
+   function fn_Save(){
+		if(Master_data.isUpdated) {
+			if(confirm(gs_CallMsg("M007", ""))) {
+				Master_tr.Post();
+			} else {
+				return;
+			}
+		} else {
+			alert("변경된 사항이 없습니다!");
+			return;
+		}
+   }
+   //취소버튼 클릭시
+   function fn_Cancel(){
+     Master_data.UndoAll();
+   }
+   //삭제버튼 클릭시
+   function fn_Delete(){
+     Master_data.DeleteMarked();
+   }
+   function fn_Excel(){
+      if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "D"){
+         ln_Excel(Master_grid,'부서 담당 년도별 매출정보');
+      }else if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "C"){
+         ln_Excel(Master_grid,'담당 부서 년도별 매출정보');  
+      }else if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "Y"){
+         ln_Excel(Master_grid,'년도 부서 담당별 매출정보');
+      }else{
+         ln_Excel(Master_grid,'매출정보');
+      }
+   }   
+   //출력버튼 클릭시
+   function fn_print(){
+   }
+  
+   
+</script>
+<!------------------------------------------Component Event Start---------------------------------------------->
+<!-- Master_data 조회가 완료시 발생한다.-->
+<script language="javascript"  for=Master_data event=OnLoadCompleted(rowcount)>
+	window.status = gs_CallMsg("M003", Master_data.CountRow);
+   Master_data.Sort(); 
+</script>
+<script language="javascript"  for=Master_data event=OnDataError()>
+  alert(ErrorMsg);
+</script>
+
+<!-- Master_tr 저장 성공시 발생한다.-->
+<script language="javascript"  for=Master_tr event=OnSuccess()>
+	window.status = gs_CallMsg("M005", "");
+   Master_data.Sort();
+</script>
+<!-- Master_tr 저장 실패시 발생한다.-->
+<script language="javascript"  for=Master_tr event=OnFail()>
+	alert("작업이 실패하였습니다!!\r" + ErrorMsg);
+</script>
+
+<script language=JavaScript for=LuxeCombo1 event=onSelChange()>
+   var GridFormat ="";
+   if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "D"){
+       Master_data.subsumexpr = "total,SALESDEPT_CD";  
+       Master_data.sortexpr ="+SALESDEPT_CD+charge_cd+yyyy";
+       Master_grid.Format ="";
+       GridFormat +=  "<F> Name=부서명  ID=salesdept_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=130 Align=Center  BgColor=#E6E6FF  editstyle=Lookup data='SalesDept_data:salesdept_cd:salesdept_nm' subsumtext={decode(curlevel,100,'부서별소계',9999,'총합계')}  suppress=3  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</F>"; 
+       GridFormat +=  "<F> Name=담당자명 ID=charge_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  editstyle=Lookup data='Charge_data:charge_cd:charge_nm'  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=2</F> "; 
+       GridFormat +=  "<F> Name=년도 ID=yyyy HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=1 </F> "; 
+       GridFormat +=  "<C> Name=총매출액 ID=sales_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C> "; 
+       GridFormat +=  "<C> Name=매출건수 ID=sales_cnt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=90 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+       GridFormat +=  "<C> Name=총수익액 ID=profit_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+       GridFormat +=  "<C> Name=총비용액 ID=cost_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}   subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>   "; 
+       Master_grid.Format = GridFormat
+       Master_data.Sort();
+       Master_data.RowPosition = 1;
+   }else if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "C"){
+       Master_data.subsumexpr = "total,CHARGE_CD";
+       Master_data.sortexpr ="+charge_cd+salesdept_cd+yyyy";
+       Master_grid.Format ="";
+       GridFormat +=  "<F> Name=담당자명 ID=charge_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  editstyle=Lookup data='Charge_data:charge_cd:charge_nm' subsumtext={decode(curlevel,100,'담당별소계',9999,'총합계')}  suppress=3  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</F>"; 
+       GridFormat +=  "<F> Name=부서명  ID=salesdept_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=130 Align=Center  BgColor=#E6E6FF  editstyle=Lookup data='SalesDept_data:salesdept_cd:salesdept_nm'  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=2 </F> "; 
+       GridFormat +=  "<F> Name=년도 ID=yyyy HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center  BgColor=#E6E6FF  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=1</F> "; 
+       GridFormat +=  "<C> Name=총매출액 ID=sales_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C> "; 
+       GridFormat +=  "<C> Name=매출건수 ID=sales_cnt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=90 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+       GridFormat +=  "<C> Name=총수익액 ID=profit_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+       GridFormat +=  "<C> Name=총비용액 ID=cost_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>   "; 
+       Master_grid.Format = GridFormat;
+       Master_data.Sort();
+       Master_data.RowPosition = 1;
+       
+   }else if(LuxeCombo1.ValueOfIndex("Code", LuxeCombo1.Index) == "Y"){
+      Master_data.subsumexpr = "total,YYYY"; 
+      Master_data.sortexpr ="+yyyy+salesdept_cd+charge_cd";
+      GridFormat +=  "<F> Name=년도 ID=yyyy HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  subsumtext={decode(curlevel,100,'년도별소계',9999,'총합계')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=3</F>"; 
+      GridFormat +=  "<F> Name=부서명  ID=salesdept_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=130 Align=Center  BgColor=#E6E6FF  editstyle=Lookup data='SalesDept_data:salesdept_cd:salesdept_nm'  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=2 </F> "; 
+      GridFormat +=  "<F> Name=담당자명 ID=charge_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  editstyle=Lookup data='Charge_data:charge_cd:charge_nm' subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} suppress=1 </C> "; 
+      GridFormat +=  "<C> Name=총매출액 ID=sales_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}   subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C> "; 
+      GridFormat +=  "<C> Name=매출건수 ID=sales_cnt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=90 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+      GridFormat +=  "<C> Name=총수익액 ID=profit_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+      GridFormat +=  "<C> Name=총비용액 ID=cost_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}   subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>   "; 
+      Master_grid.Format = GridFormat;
+      Master_data.Sort();
+      Master_data.RowPosition = 1;
+   }else{
+     Master_data.subsumexpr = ""; 
+     Master_data.sortexpr ="+salesdept_cd+charge_cd+yyyy";
+     GridFormat +=  "<F> Name=부서명  ID=salesdept_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=130 Align=Center  BgColor=#E6E6FF  editstyle=Lookup data='SalesDept_data:salesdept_cd:salesdept_nm' subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</F>"; 
+     GridFormat +=  "<F> Name=담당자명 ID=charge_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  editstyle=Lookup data='Charge_data:charge_cd:charge_nm' subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </F>  "; 
+     GridFormat +=  "<F> Name=년도 ID=yyyy HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </F> "; 
+     GridFormat +=  "<C> Name=총매출액 ID=sales_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}   subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C> "; 
+     GridFormat +=  "<C> Name=매출건수 ID=sales_cnt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=90 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+     GridFormat +=  "<C> Name=총수익액 ID=profit_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C>  "; 
+     GridFormat +=  "<C> Name=총비용액 ID=cost_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')}  subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C>   "; 
+     Master_grid.Format = GridFormat;
+     Master_data.Sort();
+     Master_data.RowPosition = 1;
+   
+   }
+
+</script>
+
+
+<script language="javascript"  for=Charge_data event=OnFilter(Row)>
+  
+  if ( Master_data.NameString(Master_data.RowPosition,"salesdept_cd") ==  Charge_data.NameString(Row,"salesdept_cd")){
+     return true;  
+  }else
+  return false;
+  
+</script>
+
+<!-- Master_grid(메인그리드)에서 폐쇄구분(combo Interface)의 combo가 닫힐때 발생한다.-->
+<script language="javascript"  for=Master_grid event=OnCloseUp(Row,Colid)>
+  if ( Colid == "salesdept_cd"){
+     Charge_data.useFilter = true;
+     Charge_data.Filter();
+     Charge_data.useFilter = false;
+  }
+  if ( Colid == "charge_cd"){
+      Stamp = new Date();
+      var year = Stamp.getYear();
+      Master_data.NameString(Row,"yyyy") = year;
+    
+  }
+</script>
+
+<script language="javascript"  for=Master_grid event=OnDropDown(Row,Colid)>
+  if ( Colid == "charge_cd"){
+     Charge_data.useFilter = true;
+     Charge_data.Filter();
+     Charge_data.useFilter = false;
+  }
+</script>
+
+<!------------------------------------------Component Event End---------------------------------------------->
+<!------------------------------------------DataSet Component 선언------------------------------------------->
+<OBJECT ID="SalesDept_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+</OBJECT>
+<OBJECT ID="Charge_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+</OBJECT>
+<OBJECT ID="Master_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+   <param name="sortexpr"    value="+salesdept_cd+charge_cd+yyyy">  
+   <param name="ViewDeletedRow" value=true>   
+</OBJECT>
+<!------------------------------------------Transaction Component 선언---------------------------------------->
+<object id="Master_tr" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5"> 
+        <param name="Action"	value="./insa3_tr.jsp">
+        <param name="KeyName"	value="toinb_dataid4">
+	<param name="KeyValue"	value="JSP(I:MASTER=Master_data)">
+</object>
+
+<object id="Search_tr" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5">
+        <param name="Action"	value="./insa3_select1.jsp">
+        <param name="KeyName"	value="toinb_dataid4">
+		<param name="KeyValue"	value="JSP(O:SALESDEPT=SalesDept_data,O:CHARGE=Charge_data)">
+</object>
+
+<script language="JavaScript">
+<!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script>
+
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_load();na_preload_img(false, '../images/input_bu_color.gif', '../images/del_bu_color.gif', '../images/save_bu_color.gif', '../images/retract_bu_color.gif', '../images/excel_bu_color.gif', '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm13_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>영업관리</b></font></td>
+							</tr>
+						</table>
+			</td>
+				
+					<td width="395" height="30">
+						<p align="right">
+							<a href="#" OnMouseOut="na_restore_img_src('image1', 'document')" OnMouseOver="na_change_img_src('image1', 'document', '../images/input_bu_color.gif', true)"><img src="../images/input_bu.gif" width="61" height="20" border="0" name="image1" onclick="fn_Add()"></a><a href="#" OnMouseOut="na_restore_img_src('image2', 'document')" OnMouseOver="na_change_img_src('image2', 'document', '../images/del_bu_color.gif', true)"><img src="../images/del_bu.gif" width="61" height="20" border="0" name="image2" onclick="fn_Delete()"></a><a href="#" OnMouseOut="na_restore_img_src('image3', 'document')" OnMouseOver="na_change_img_src('image3', 'document', '../images/save_bu_color.gif', true)"><img src="../images/save_bu.gif" width="61" height="20" border="0" name="image3" onclick="fn_Save()"></a><a href="#" OnMouseOut="na_restore_img_src('image4', 'document')" OnMouseOver="na_change_img_src('image4', 'document', '../images/retract_bu_color.gif', true)"><img src="../images/retract_bu.gif" width="61" height="20" border="0" name="image4" onclick="fn_Cancel()"></a><a href="#" OnMouseOut="na_restore_img_src('image5', 'document')" OnMouseOver="na_change_img_src('image5', 'document', '../images/excel_bu_color.gif', true)"><img src="../images/excel_bu.gif" width="61" height="20" border="0" name="image5" onclick="fn_Excel()"></a><a href="#" OnMouseOut="na_restore_img_src('image6', 'document')" OnMouseOver="na_change_img_src('image6', 'document', '../images/print_bu_color.gif', true);"></a></p>
+				</td>
+			<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" valign="top" colspan="2">
+						
+						
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="35" colspan="2">
+											
+									<table cellpadding="0" cellspacing="0" width="774" border=0>
+										<tr>
+											<td width="10%">
+													<font size="2">&nbsp;&nbsp;<b>소계옵션:</b></font>								
+											</td>
+											<td width="90%" align=left>
+											   <object id=LuxeCombo1 classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 height=100 width=120>
+													<param name=CBData		value="F^처음으로^소계계산없이 표현한다,D^부서별소계^부서별로 소계를 계산한다,C^담당자별소계^담당자별로 소계를 계산한다,Y^년도별소계^년도별로 소계를 계산한다">
+													<param name=Index			value="0">
+													<param name=CBDataColumns	value="Code,Name,Desc">
+													<param name=ListExprFormat	value="Code^1^20,Name^1^100,Desc^0^200">
+													<param name=EditExprFormat	value="[%];Name">								
+												</object>
+											</td>
+										</tr>
+									</table>
+								<tr>
+												   
+								  <td width="790" height="450" colspan="2">
+								  <!------------------------ 직무정보 그리드 ----------------------------->
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="Master_grid">
+											 <PARAM NAME="DataID" VALUE="Master_data">
+							 <param name="HeadBorder"	value="4">
+							 <param name="BorderStyle"	value="1">
+							 <param name="LineColor"	value="#FFFFFF">
+							 <param name="HeadLineColor"	value="#FFFFFF">
+							 <param name="colsizing"	value="true">
+							 <PARAM NAME="FixSizing" VALUE="true">
+							 <param name=MultiRowSelect       value=true>
+							 <param name="editable"         value=true>
+							 <PARAM NAME="Format" VALUE=" 
+								 <F> Name=부서명  ID=salesdept_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=130 Align=Center  BgColor=#E6E6FF  editstyle=Lookup data='SalesDept_data:salesdept_cd:salesdept_nm' subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</F> 
+								 <F> Name=담당자명 ID=charge_cd HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF  editstyle=Lookup data='Charge_data:charge_cd:charge_nm' subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </F> 
+								 <F> Name=년도 ID=yyyy HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=100 Align=Center BgColor=#E6E6FF subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </F> 
+								 <C> Name=총매출액 ID=sales_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')} subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}  </C>
+								 <C> Name=매출건수 ID=sales_cnt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=90 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')} subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C> 
+								 <C> Name=총수익액 ID=profit_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')} subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')}</C> 
+								 <C> Name=총비용액 ID=cost_amt HeadBgColor=#599AB8 HeadColor=#FFFFFF  Width=110 Align=right BgColor={decode(currow-(currow/2)*2,0,'#E6E6FF',1,'#F1F1E5')} subbgcolor={decode(curlevel,100,'#A5C9F1',9999,'#396DCD')} </C> 
+								
+							 ">
+									</object>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

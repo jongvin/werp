@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_base_item_1h.html               		-->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : 평가종류별 평가항목등록                      -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/general/p_web/14/p_eval_base_item_1q.jsp?arg_eval_code='         
+var is_tr_1_addr = gs_home + '/general/p_web/14/p_eval_base_item_1tr.jsp'
+var is_ds_seq_addr = gs_home + '/general/p_web/99/p_spec_unq_no_1q.jsp'  
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + ccom_eval_code.CodeValue + 
+						"&arg_eval_degree=" + ccom_eval_degree.CodeValue
+   ds_1.SyncLoad=true
+	ds_1.Reset()	
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"eval_code") = ccom_eval_code.CodeValue
+	ds_1.NameValue(ds_1.RowPosition,"eval_degree") = ccom_eval_degree.CodeValue
+
+	ds_seq.SyncLoad=true;              // spec_no_seq 구하기
+	ds_seq.reset()
+	ds_1.NameValue(ds_1.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+	
+	ds_1.NameValue(ds_1.RowPosition, "seq") 		  = ds_1.NameMax("seq",0,0) + 1
+	
+	ds_1.NameValue(ds_1.RowPosition, "section_item") = '1'
+	ds_1.NameValue(ds_1.RowPosition, "base_code")    = '01'
+	
+	if (ds_1.RowPosition > 1){
+		ls_bef_section_item = ds_1.NameValue(ds_1.RowPosition - 1, "section_item")	//평가구분
+		ds_1.NameValue(ds_1.RowPosition, "section_item") = ls_bef_section_item		
+		
+		ls_bef_base_code = ds_1.NameValue(ds_1.RowPosition - 1, "base_code")	//평가기준
+		ds_1.NameValue(ds_1.RowPosition, "base_code") = ls_bef_base_code
+	}
+	Fn_SetColumn()
+ }   
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("section_item");
+} 
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if (ccom_eval_degree.CodeValue == ''){
+		alert('평가차수가 없으므로 작업하실 수 없습니다.')
+		return
+	}
+	ds_1.AddRow()
+	init_move()	
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (ccom_eval_degree.CodeValue == ''){
+		alert('평가차수가 없으므로 작업하실 수 없습니다.')
+		return
+	}
+	if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+	  btnadd_onclick()
+	  return
+	}  
+	ds_1.InsertRow(ds_1.RowPosition)
+	init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	var ls_spec_no_seq, i
+	for (i=1;i<=ds_1.CountRow;i++) {
+		ls_spec_no_seq = ds_1.NameValue(i,'spec_no_seq')
+		ll_cnt = f_ds_select_q("ds_child","select count(*) select_1 " + //하위테이블(자기평가/부하평가) 존재확인
+												  "    from p_eval_world_detail  " +
+												  "	where eval_code = '" + ccom_eval_code.CodeValue + "' " +
+												  "     and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+												  "	  and spec_no_seq = '" + ls_spec_no_seq + "' ")
+		
+		if (ds_child.NameValue(1,'select_1') > 0 ){
+			alert('평가항목으로 등록되었으므로 삭제하실 수 없습니다.')
+			return
+		}
+		
+		if (ds_1.NameValue(i,"base_code") == '99'){
+			alert('소속조직별 필요한 역량은 삭제하실 수 없습니다.')
+			return
+		}
+	}
+	
+	if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	   for (i=ds_1.CountRow ;i >0 ;i--){
+	      if (ds_1.RowMark(i) == 1)
+	             ds_1.DeleteRow(i)	             
+	  	}   
+	  ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	}
+	else{
+		ds_1.DeleteRow(ds_1.RowPosition)
+	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+	 if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()    
+  }
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//---------------------------------------------------------------------------
+function copy_row()                      // 복사
+//---------------------------------------------------------------------------
+{
+	if (ccom_eval_degree.CodeValue == ''){
+		alert('평가차수가 없으므로 복사할 수 없습니다.')
+		return
+	}
+	
+	var result;
+	var send_arg;
+	var array = new Array();
+	send_arg = ccom_eval_code.CodeValue + "@" + ccom_eval_degree.CodeValue
+	result = window.showModalDialog(gs_home + "/general/p_web/14/p_eval_code_degree_find_1h.html",send_arg,"dialogWidth:350px;dialogHeight:400px");
+	
+	if(result == "") return;
+	array = result.split("@");
+	ls_eval_code = array[0]
+	ls_eval_degree = array[1]
+	
+	gd_1.ReDraw = false
+	
+	ll_cnt = f_ds_select_q("ds_copy","select base_code select_1, seq select_2, " + //평가기준
+											  "        section_item select_3, detail_item select_4 " +
+											  "    from p_eval_base_item a " +
+											  "	where eval_code = '" + ls_eval_code + "' " +
+											  "     and eval_degree = '" + ls_eval_degree + "' " +
+											  "	  and not exists (select * from p_eval_base_item b " +
+											  "							 where a.spec_no_seq = b.spec_no_seq " +
+											  "								and eval_code = '" + ccom_eval_code.CodeValue + "' " +
+											  "    						   and eval_degree = '" + ccom_eval_degree.CodeValue + "' ) " +
+											  "  order by a.seq")		
+	
+	if (ll_cnt < 1) return
+	
+	for (i=1;i<=ds_copy.CountRow;i++) {		
+		ds_1.AddRow()
+		ds_1.NameValue(ds_1.RowPosition,"base_code") = ds_copy.NameValue(i,"select_1")
+		ds_1.NameValue(ds_1.RowPosition,"seq") = ds_copy.NameValue(i,"select_2")
+		ds_1.NameValue(ds_1.RowPosition,"section_item") = ds_copy.NameValue(i,"select_3")
+		ds_1.NameValue(ds_1.RowPosition,"detail_item") = ds_copy.NameValue(i,"select_4")
+		
+		ds_1.NameValue(ds_1.RowPosition,"eval_code") = ccom_eval_code.CodeValue		//PK 셋팅
+		ds_1.NameValue(ds_1.RowPosition,"eval_degree") = ccom_eval_degree.CodeValue
+		ds_seq.SyncLoad=true;              // spec_no_seq 구하기
+		ds_seq.reset()
+		ds_1.NameValue(ds_1.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+	}
+	
+	gd_1.ReDraw = true
+}
+//---------------------------------------------------------------------------
+function eval_degree()                      // 평가차수 조회
+//---------------------------------------------------------------------------
+{
+  ll_cnt = f_ds_select_q("ds_degree","select eval_degree   select_1 " +
+  												 "  from p_eval_degree " +
+  												 " where eval_code = '" + ccom_eval_code.CodeValue + "' " +
+  												 " order by eval_degree desc ")
+  eval_base()		//평가기준 조회												 
+}  
+//---------------------------------------------------------------------------
+function eval_base()                      // 평가기준 조회
+//---------------------------------------------------------------------------
+{
+	ll_cnt = f_ds_select_q("ds_base","select base_code select_1, base_name select_2 " +
+  												 "  from p_eval_base " +
+  												 " where eval_code = '" + ccom_eval_code.CodeValue + "' " +
+  												 "   and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+  												 " order by base_code ")
+  
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  ds_seq.DataID = is_ds_seq_addr
+  tr_1.Action = is_tr_1_addr
+  
+  //평가종류
+  ll_cnt = f_ds_select_q("ds_code","select eval_code select_1, eval_name select_2 " +
+  												 "  from p_eval_code " +
+  												 " where eval_code <> '01' " +
+  												 "   and eval_code <> '05' " +
+  												 " order by eval_code ")
+  ccom_eval_code.Index = 0
+  
+  eval_degree() 	//평가차수 조회
+  ccom_eval_degree.Index = 0
+  
+  btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	        ds_1.RowPosition++
+}
+</script>
+<script language=JavaScript for=ccom_eval_code event=onCloseUp()>
+	eval_degree() 	//평가차수 조회
+	btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ccom_eval_degree event=onCloseUp()>
+	eval_base()		//평가기준 조회
+	btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+	if (ds_1.NameValue(row, "base_code") == '99')
+		gd_1.Editable = false
+	else
+		gd_1.Editable = true
+		
+</script>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_code
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_degree
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_base
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_copy
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_child
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_seq
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_base_item_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 400px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="15%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가종류</div></td>
+          	 <td width="45%" >
+			       <OBJECT id=ccom_eval_code width=175px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_code">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_2">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+             <td width="15%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가차수</div></td>
+          	 <td width="25%" >
+			       <OBJECT id=ccom_eval_degree width=100px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_degree">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_1">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+         </tr>
+      </table>
+</DIV>	
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 700px; WIDTH: 280px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_copy type="button" value="&nbsp;복&nbsp;&nbsp;사&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=copy_row()>
+</DIV>
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='순번'  id=seq width=40  align=center  BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가구분'  id=section_item width=110 suppress=1  EditStyle=Combo Data='1:공통역량(태도),2:공통역량(능력),3:''' BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가기준'  id=base_code width=200 suppress=2  EditStyle=Lookup Data='ds_base:select_1:select_2' BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가항목'  id=detail_item width=600  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

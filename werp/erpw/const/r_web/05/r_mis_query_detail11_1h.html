@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : r_mis_query_detail11_1h.html		 					-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력									-->
+<!-- 3. 기 능 정 의   : 경영현황(수주/영업-경영정보현황(총괄)-인당생산성세부)	-->
+<!-- 4. 변 경 이 력   : 김 동우 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 현장별 인당생산성 </TITLE>
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home 
+var is_yymm,ii_unit=1
+var is_title
+var is_sum_code='01'
+var is_ds_1_addr ='r_mis_query_detail11_1q.jsp?arg_year='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	var ls_sa_amt,ls_tot_plan,ls_colid,ls_colid1,ll_amt,ll_cnt_amt=0,ll_bud_amt=0
+	
+	ds_1.DataID = is_ds_1_addr + is_yymm + '&arg_unit=' + ii_unit + '&arg_sum_code=' + is_sum_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function col_resize(arg_size)                  //컬럼 사이즈 조정
+//--------------------------------------------------------------------------------
+{
+	var i,ls_colid
+	for(i=1;i<=12;i++){
+		if ( i < 10){
+			ls_colid = 'comp_0' + i 
+		}
+		else {
+			ls_colid = 'comp_' + i 
+		}
+		gd_1.ColumnProp(ls_colid,'Width')= arg_size;
+	}
+	gd_1.ColumnProp('comp_tot','Width')= arg_size;
+	gd_1.ColumnProp('ly_tot','Width')= arg_size;
+	gd_1.ColumnProp('tot_tot','Width')= arg_size;
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+	is_yymm = em_select_yymm.text.substr(0,4) 
+	ds_1.ClearData()
+	btnquery_onclick()
+ 
+}   
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+	window.returnValue = "";
+	window.close();
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+   var temp
+   temp = '인당생산성'
+   temp = temp + '(' + is_yymm + ') ' + ccom_class.DataValue + ' ' + ccom_unit.DataValue
+   gd_1.RunExcelSheet(temp)
+   
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+ 
+	is_yymm = result         // 0: 찾고자하는 값.
+
+	em_select_yymm.text = is_yymm
+		
+	ccom_unit.CodeValue = 3
+   ll_cnt = f_select_q("select sum_code select_1 , decode(llevel,1,name,decode(llevel,2,'    ' || name,decode(llevel,3,'        ' || name,'            ' || name))) select_2 from c_spec_class_parent  order by no_seq asc") //승인구분
+	
+}
+</SCRIPT>
+
+</HEAD>
+<script language=JavaScript for=ccom_unit  event=onSelChange()>
+	switch (ccom_unit.CodeValue) {
+		case "1":
+			ii_unit = 1;
+			col_resize('90')
+			break;
+		case "2":
+			ii_unit = 1000;
+			if (gd_1.ColumnProp('comp_01','Width') != 70){
+				col_resize('70')
+			}
+			break;
+		case "3":
+			ii_unit = 1000000;
+			if (gd_1.ColumnProp('comp_01','Width') != 60){
+				col_resize('60')
+			}
+			break;
+		case "4":
+			ii_unit = 100000000;
+			if (gd_1.ColumnProp('comp_01','Width') != 60){
+				col_resize('60')
+			}
+			break;
+        }
+	btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ccom_class  event=onSelChange()>
+	is_sum_code = ccom_class.CodeValue
+	btnquery_onclick()
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+	if ((em_select_yymm.Modified) && kcode == 13 ){ 
+		select_yymm()
+	}
+</SCRIPT>        	
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+	alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=window_onload() oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 13px; WIDTH: 190px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<LABEL id=Label_2  
+	    	style="WIDTH: 75px; LEFT:10px;POSITION: absolute; HEIGHT: 25px; TOP:4px">&nbsp;&nbsp;조회년도:
+	</LABEL>
+	<comment id="__NSID__"><OBJECT id=em_select_yymm 
+	       style="Z-INDEX: 101; LEFT: 80px; WIDTH: 80px; POSITION: absolute; TOP: 0px; HEIGHT: 20px" 
+	      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="1">
+			<PARAM NAME="IsComma" VALUE="0">
+			<PARAM NAME="MaxLength" VALUE="8">
+			<PARAM NAME="Format" VALUE="YYYY">
+			<param name=ClipMode       value=false>
+			<PARAM NAME="Numeric" VALUE="0">
+			<PARAM NAME="SelectAll" VALUE="-1">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+		if(!is_null(result)){ em_select_yymm.text = result.substr(0,10);} ; select_yymm()" 
+	       style=" LEFT: 160px; WIDTH: 20px; POSITION: absolute; TOP: 0px; HEIGHT:20px">
+
+</DIV>
+<DIV id=div_class
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 200px; WIDTH: 300px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" >
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+                         <td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                              <div align="right">집계분류</div></td>
+                        <td width="70%"> 
+					              <comment id="__NSID__"><OBJECT id=ccom_class width=240px 
+					                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					       	        <PARAM NAME="ComboDataID" VALUE="ds_select">
+						              <PARAM NAME="CodeCColumn" VALUE="select_1">
+						              <PARAM NAME="DataCColumn" VALUE="select_2">
+						              <PARAM NAME="Enable" VALUE="-1"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+        </tr>
+      </table>
+</div>        
+
+<DIV id=div_unit
+      style="Z-INDEX: 105; LEFT: 525px; WIDTH: 138px; POSITION: absolute; TOP: 4px; HEIGHT: 16px">
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+                         <td width="40%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                              <div align="right">단위</div></td>
+                        <td width="60%"> 
+					              <comment id="__NSID__"><OBJECT id=ccom_unit width=80px 
+					                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					       	        <param name=Data     value="1^원,2^천원,3^백만원,4^억원">
+					       	     </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+        </tr>
+      </table>
+</div>        
+<input type="button" value="엑셀내리기" 
+          style="Z_INDEX: 108; LEFT: 840px; top:5px;POSITION: absolute;  WIDTH:100px; color:#2E4A4A; font-size:13px; CURSOR: hand;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=excel_down()>
+           
+<input type="button" value="닫기" 
+          style="Z_INDEX: 108; LEFT: 950px; top:5px;POSITION: absolute;  WIDTH:40px; color:#2E4A4A; font-size:13px; CURSOR: hand;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=close_rtn()>
+	
+<comment id="__NSID__"><OBJECT id=gd_1 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 4px; WIDTH: 1010px; POSITION: absolute; TOP: 30px; HEIGHT: 630px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <param name="RowHeight"  value=30>
+   <PARAM  NAME="ViewSummary"    value=0>
+   <PARAM NAME="BorderStyle"  VALUE=4>
+ 	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <FC> Name='현장코드' ID=dept_code  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 </C>
+	  <FC> Name='현장명' ID=long_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=150 </C>
+	  <FC> Name='전년누계' ID=ly_tot Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 
+	  		SumText=@avg</C>
+	  <FC> Name='당년누계' ID=comp_tot Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 
+	  		SumText=@avg</C>
+	  <FC> Name='합계' ID=tot_tot Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 
+	  		SumText=@avg</C>
+	  <C> Name='1월'   ID=comp_01  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='2월'   ID=comp_02  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='3월'   ID=comp_03  Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 
+	  		SumText=@avg</C>
+	  <C> Name='4월'   ID=comp_04  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='5월'   ID=comp_05  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='6월'   ID=comp_06  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='7월'   ID=comp_07  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='8월'   ID=comp_08  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='9월'   ID=comp_09  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='10월'  ID=comp_10  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='11월'  ID=comp_11  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60
+	  		SumText=@avg</C>
+	  <C> Name='12월'  ID=comp_12  Align=Right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 
+	  		SumText=@avg</C>
+	  ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>

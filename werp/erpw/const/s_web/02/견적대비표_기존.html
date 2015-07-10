@@ -1,0 +1,112 @@
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+	var ls_chk,ls_chk_dt,ls_curr_dt
+	if ( ds_1.NameValue(ds_1.RowPosition,"open_yn") != 'Y' ) {
+		alert("알림! 견적개봉전 까지는 견적내역에 들어가실 수 없습니다...")
+		return
+	}
+
+   print_condition_query()
+   rt_1.Preview()
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+ dr_1.DataID = '../02r/s_estimate_compare_rpt_1q.jsp?arg_dept_code=' + is_dept_code + 
+                "&arg_order_number=" + ds_1.NameValue(ds_1.RowPosition,"order_number")
+ dr_1.SyncLoad=true
+ dr_1.Reset()
+ ll_cnt = f_select3_q(" select '                                                  ' select_1, " +
+ 							 "        '	  																 ' select_2 from dual")      
+ ds_select3.NameValue(1,"select_1") = '현장명: ' + dept_name.value 
+ ds_select3.NameValue(1,"select_2") = '공종명: ' + ds_1.NameValue(ds_1.RowPosition,"profession_wbs_name")
+               
+}
+
+//상단 object
+<object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value="dr_1">
+      <param name=GroupExpr    value="name:seq:ssize:unit:exe_qty:exe_price:exe_amt:ctrl_qty:sysdate,sbcr_name,ctrl_price:ctrl_amt"></object>
+
+// 하단 object
+<OBJECT id=rt_1 classid=CLSID:37D13B2F-E5EB-11D2-973D-00104B15E56F>
+    <PARAM name="MasterDataID"      VALUE="ds_select3">
+    <PARAM name="DetailDataID"      VALUE="rds_1">
+    <PARAM name="PaperSize"         VALUE="A4">
+    <PARAM name="LandScape"         VALUE="true">
+    <PARAM name="Format"            VALUE="
+<B>id=Header ,left=0,top=0 ,right=2869 ,bottom=256 ,face='Arial' ,size=10 ,penwidth=1
+	<T>id='예산/견적 대비표' ,left=963 ,top=28 ,right=1694 ,bottom=125 ,face='굴림체' ,size=18 ,bold=true ,underline=true ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<C>id='select_1', left=6, top=166, right=822, bottom=209, align='left', face='굴림체', size=9, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='select_2', left=6, top=212, right=822, bottom=256, align='left', face='굴림체', size=9, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+</B>
+<B>id=DHeader ,left=0,top=0 ,right=2869 ,bottom=119 ,face='Arial' ,size=10 ,penwidth=1
+	<O> left=1531 ,right=1984
+		<L> left=1988 ,top=3 ,right=1394 ,bottom=3 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+		<C>id='xkeyname_$$', left=1572, top=9, right=1938, bottom=53, face='굴림체', size=8, bold=true, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+		<L> left=1981 ,top=56 ,right=1528 ,bottom=56 </L>
+		<T>id='금  액' ,left=1750 ,top=62 ,right=1975 ,bottom=106 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+		<T>id='단 가' ,left=1541 ,top=62 ,right=1731 ,bottom=106 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+		<L> left=1741 ,top=56 ,right=1741 ,bottom=112 </L>
+	</O>
+	<L> left=3 ,top=3 ,right=1400 ,bottom=3 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<T>id='실시안' ,left=1009 ,top=9 ,right=1347 ,bottom=53 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<L> left=1391 ,top=56 ,right=953 ,bottom=56 </L>
+	<T>id='단 가' ,left=963 ,top=62 ,right=1153 ,bottom=106 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='금  액' ,left=1163 ,top=62 ,right=1388 ,bottom=106 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='명       칭' ,left=13 ,top=37 ,right=453 ,bottom=81 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='규    격' ,left=463 ,top=37 ,right=697 ,bottom=81 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='수량' ,left=828 ,top=37 ,right=953 ,bottom=81 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='단위' ,left=706 ,top=37 ,right=819 ,bottom=81 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='수량' ,left=1400 ,top=53 ,right=1525 ,bottom=97 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='견적' ,left=1400 ,top=12 ,right=1525 ,bottom=56 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<L> left=1331 ,top=116 ,right=1988 ,bottom=116 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1156 ,top=56 ,right=1156 ,bottom=112 </L>
+	<L> left=6 ,top=116 ,right=1403 ,bottom=116 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1391 ,top=3 ,right=1391 ,bottom=116 </L>
+	<L> left=3 ,top=3 ,right=3 ,bottom=116 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1988 ,top=3 ,right=1988 ,bottom=116 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=456 ,top=3 ,right=456 ,bottom=116 </L>
+	<L> left=700 ,top=3 ,right=700 ,bottom=116 </L>
+	<L> left=822 ,top=6 ,right=822 ,bottom=119 </L>
+	<L> left=956 ,top=0 ,right=956 ,bottom=112 </L>
+	<L> left=1528 ,top=3 ,right=1528 ,bottom=116 </L>
+</B>
+<B>id=default ,left=0,top=0 ,right=2869 ,bottom=47 ,face='Arial' ,size=10 ,penwidth=1
+	<O> left=1531 ,right=1984
+		<C>id='ctrl_amt_$$', left=1750, top=3, right=1975, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+		<C>id='ctrl_price_$$', left=1541, top=3, right=1734, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+		<L> left=1984 ,top=44 ,right=1391 ,bottom=44 </L>
+		<L> left=1741 ,top=0 ,right=1741 ,bottom=47 </L>
+	</O>
+	<C>id='name', left=16, top=3, right=456, bottom=41, align='left', supplevel=1, face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='ssize', left=466, top=3, right=700, bottom=41, align='left', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='unit', left=706, top=3, right=819, bottom=41, align='left', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='exe_qty', left=828, top=3, right=953, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='exe_price', left=963, top=3, right=1153, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='exe_amt', left=1163, top=3, right=1388, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<C>id='ctrl_qty', left=1397, top=3, right=1522, bottom=41, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+	<L> left=3 ,top=44 ,right=1397 ,bottom=44 </L>
+	<L> left=1391 ,top=0 ,right=1391 ,bottom=47 </L>
+	<L> left=1156 ,top=0 ,right=1156 ,bottom=47 </L>
+	<L> left=956 ,top=0 ,right=956 ,bottom=47 </L>
+	<L> left=822 ,top=0 ,right=822 ,bottom=47 </L>
+	<L> left=700 ,top=0 ,right=700 ,bottom=47 </L>
+	<L> left=456 ,top=0 ,right=456 ,bottom=47 </L>
+	<L> left=3 ,top=0 ,right=3 ,bottom=47 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1528 ,top=0 ,right=1528 ,bottom=47 </L>
+	<L> left=1988 ,top=0 ,right=1988 ,bottom=47 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+</B>
+<B>id=Footer ,left=0 ,top=1922 ,right=2869 ,bottom=2000 ,face='굴림체' ,size=10 ,penwidth=1
+	<T>id='작성일자 : ' ,left=3 ,top=9 ,right=216 ,bottom=78 ,align='left' ,face='굴림체' ,size=9 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='-#p/#T-' ,left=2569 ,top=9 ,right=2853 ,bottom=78 ,face='굴림체' ,size=9 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='사업체: 월드건설(주)' ,left=1609 ,top=9 ,right=2553 ,bottom=78 ,face='굴림체' ,size=9 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<T>id='프로그램 : s_estimate_list_selyn_1h.html' ,left=525 ,top=9 ,right=1588 ,bottom=78 ,face='굴림체' ,size=9 ,bold=false ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=#FFFFFF</T>
+	<C>id='sysdate', left=216, top=9, right=425, bottom=78, align='left', face='굴림체', size=9, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=#FFFFFF</C>
+</B>
+
+             ">  

@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : bs_sbc_status_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력												-->
+<!-- 3. 기 능 정 의   : 전자계약현황조회(b2b)                      	-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_yymm      = top.frames['security'].gs_sysdate.value
+var is_work_date ,is_dept_code
+var il_screen = 1
+var is_filter,is_html_addr
+var is_inv_id,is_contract_no
+var is_home ,is_return,is_sbcr_code
+
+var is_ds_1_addr = 's_account_status_1q.jsp?arg_inv='                     
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	ds_1.DataID = is_ds_1_addr + parseInt(is_inv_id,10)
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+}
+
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+//	tab_page_1.Focus();
+//	tab_page_1.SetColumn("tx_esttitle");
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) {
+		if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+		{  //저장 routine
+		}   
+	
+	}     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+	
+	// top.frames['main_ct'].window.close()     
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+}
+//----------------------------------------------------------------
+function bt_order_list()
+//----------------------------------------------------------------
+{
+  top.frames['main_ct'].location.href(is_return +"?")
+  
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	top.frames['main_title'].title_name.value = " " + "계약서 조회"             
+
+ // -------------------------업체별견적으로  들어갔다가 다시 돌아왔을경우 해당 견적번호로 가기위해서 다음로직수행
+   var result="";
+	var array = new Array();
+	result = readCookie("@s_account_status@")
+	if (result != "err"){
+		array = result.split("@");
+      
+  		gs_home        = array[0]  //estimateyymm 
+  		is_inv_id      = array[1]
+  		is_contract_no = array[2]
+  		is_return      = array[3]
+  		is_dept_code   = array[4]
+
+		//is_home = 'http://erpapp.worldro.net:8080/eproq/wisenet/contract/s_web/' + is_dept_code + '-' + is_contract_no + '/prgs/';
+		is_home = 'http://rpt.worldro.net:8100/s_web/' + is_dept_code + '-' + is_contract_no + '/prgs/';
+		is_html_addr = is_home + "s_account_dem_" + is_inv_id + ".pdf"
+
+		if_1.src = is_html_addr
+		form01.document.all.if_1.src = is_html_addr
+		
+	}			
+   is_work_date = f_sysdate()
+   btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+
+</HEAD>
+     	
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=tab_page_12 onclick="get_focus(1)"
+         style="LEFT: 2px; WIDTH: 908px; POSITION: absolute; TOP: 20px; HEIGHT: 430px; BACKGROUND-COLOR: #FFFFFF">
+<FORM name="form01" method="post" action = "" >
+<OBJECT ID=PKI CLASSID=CLSID:5157ABA6-E138-404B-BFA9-FC42244EFB93 width=0 height=0 codebase="../../../install/evali/EVCSP.cab#version=3,0,0,3"></OBJECT>
+<OBJECT ID=Cipher CLASSID=CLSID:BD64BD76-594A-47A6-A0EE-5CD6DF66BC8B width=0 height=0></OBJECT>
+<OBJECT ID=Hash CLASSID=CLSID:FB53F020-D036-493A-9190-6222178121D5 width=0 height=0 ></OBJECT>
+
+<TABLE ALIGN="center" >
+ <TR>
+   <TD>
+     <IFRAME id="if_1"  WIDTH="950px" HEIGHT="530px" FRAMEBORDER="yes" SCROLLING="auto" 
+	               MARGINWIDTH="10" MARGINHEIGHT="10" NAME="view" HSPACE="10" VSPACE="10"> 
+     </IFRAME>
+	</TD>
+ </TR>
+</TABLE>
+</div>
+<comment id="__NSID__"><object id="if_2" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object></comment> <script> __ws__(__NSID__);</script>
+
+
+<input type="button11" value="  닫기" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 800px; POSITION: absolute; WIDTH: 50px; TOP: 7px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_order_list()>
+           
+<DIV id=tab_page_0 onclick="get_focus(1)"
+	         style="LEFT: 12px; WIDTH: 200px; POSITION: absolute; TOP: 580px; HEIGHT: 15px; BACKGROUND-COLOR: #FFFFFF">
+	         <STRONG><FONT size=2><< 계산서정보 >></FONT></STRONG>
+</DIV>
+
+<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 7px; WIDTH:980px; POSITION: absolute; TOP: 600px; HEIGHT: 50px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE=" 
+	  <C> Name='진행상태' ID=proc_gb Align=Center EditStyle=Combo Data='1:진행,2:제출'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#E7E8D8  HeadColor=BLACK BgColor=#F2F2F2 Width=50 </C>
+	  <C> Name='업체명' ID=sbcr_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#E7E8D8  HeadColor=BLACK BgColor=#F2F2F2 Width=200 </C>
+	  <C> Name='발행일자' ID=pub_date Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#E7E8D8  HeadColor=BLACK BgColor=#F2F2F2 Width=90 </C>
+	  <C> Name='제출일자' ID=snd_date Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#E7E8D8  HeadColor=BLACK BgColor=#F2F2F2 Width=90 </C>
+	  <C> Name='서명값'   ID=sign  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#E7E8D8  HeadColor=BLACK BgColor=#F2F2F2 Width=509 </C>
+      ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</FORM>
+
+</DIV>
+</BODY></HTML>

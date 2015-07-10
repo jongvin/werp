@@ -1,0 +1,484 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : main_menu.html								-->
+<!-- 2. 유형(시나리오): 트리구조의 메뉴 												-->
+<!-- 3. 기 능 정 의   : 조회     	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+ var ll_row
+ var il_row
+ var ls_sw="yes"       // yes는 csv 파일 조회   onloaderror 에서 'no' 셋팅후 database 에서 메뉴 조회.
+ var gs_home = ""
+ var gs_empno = ""
+ var gs_user_id = ""
+ var is_selchanged = 'yes'
+ var is_ds_1_addr = ""
+ var is_ds_2_addr = ""
+ var is_ds_3_addr = ""
+ var is_ds_4_addr = ""
+ var is_ds_5_addr = ""
+ var is_initial_load = 'y'
+ </script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">             
+//----------------------------------------------------------------------------
+function main_create()
+//----------------------------------------------------------------------------
+{
+  tr_menu.focus()
+  
+  if (ds_2.CountRow > 0) {
+	  ds_menu.DataID="../menu/menu_setup.csv"
+     ds_menu.SyncLoad = true;
+     ds_menu.reset()
+
+     ds_menu.DataID="../menu/group_" + ds_2.NameValue(1,"group_key") + ".csv"
+     ds_menu.SyncLoad = true;
+     ds_menu.append()
+  }
+  if  (ds_2.CountRow > 1){                      // 그룹이 여러개 일경우      
+     for (i=2 ;i<= ds_2.CountRow; i++){
+         ds_menu.DataID="../menu/group_" + ds_2.NameValue(i,"group_key") + ".csv"
+         ds_menu.SyncLoad = true;
+         ds_menu.append()
+     }
+  } 
+
+  var i
+  if  (ds_3.CountRow > 0){
+     for (i=1;i<=ds_3.CountRow;i++) {
+      ds_menu.DataID = "../menu/user_key_" + ds_3.NameValue(i,"user_key") + ".csv" 
+      ds_menu.SyncLoad = true;
+      ds_menu.append()
+     } 
+  } 
+  
+  tr_menu.DataID='ds_menu'
+  tr_menu.Reset()
+  
+// tr_menu_focus()
+}
+//----------------------------------------------------------------------------
+function tr_menu_focus()
+//----------------------------------------------------------------------------
+{
+  is_initial_load = 'y'
+  tr_menu.focus()
+  ds_menu.RowPosition = 2
+  tr_menu.Index=1
+  //tr_menu.style.width='254px'
+  is_initial_load = 'n'
+
+
+}
+//----------------------------------------------------------------------------
+function main_create_no_csv()
+//----------------------------------------------------------------------------
+{
+	ls_sw = 'no'
+// 김동우 추가 시작  
+//	if (ds_2.CountRow != 0) {
+//		ds_menu.DataID=is_ds_5_addr + gs_user_id
+//		ds_menu.reset()
+//	   //트리뷰 아이콘이미지 로드
+//		gauce_ImgDataSet.DataID = "setBlobService.jsp";
+//	   gauce_ImgDataSet.reset();
+//	}
+//	else {
+//		null
+//		//ds_menu.DataID="../menu/menu_setup.csv"
+//		//ds_menu.SyncLoad = true;
+//		//ds_menu.reset()
+//	}
+// 김동우 추가 끝 CJ 개발용 (동일유저의 중복된 메뉴를 하나로 보이게 처리)  
+  if (ds_2.CountRow != 0) {
+		ds_menu.DataID=is_ds_1_addr + ds_2.NameValue(1,"group_key")
+	  ds_menu.reset()
+	  if  (ds_2.CountRow > 1){                      // 그룹이 여러개 일경우      
+	     for (i=2 ;i<= ds_2.CountRow; i++){
+				ds_menu.DataID=is_ds_1_addr + ds_2.NameValue(i,"group_key")
+            ds_menu.append()    
+        }
+     }
+	   //트리뷰 아이콘이미지 로드
+		gauce_ImgDataSet.DataID = "setBlobService.jsp";
+      gauce_ImgDataSet.reset();
+		//alert(gauce_ImgDataSet.DataID)
+  }
+  else {
+     null
+     //ds_menu.DataID="../menu/menu_setup.csv"
+     //ds_menu.SyncLoad = true;
+     //ds_menu.reset()
+  }
+  ds_3.DataID = is_ds_3_addr + gs_user_id   // 개인별 empno의 user_seq_key값 구하기
+  ds_3.SyncLoad = true;
+  ds_3.reset()
+  var i
+  if  (ds_3.CountRow > 0){
+		
+     for (i=1;i<=ds_3.CountRow;i++) {
+	   ds_menu.DataID = "../menu/user_key_" + ds_3.NameValue(i,"user_key") + ".csv" 
+      ds_menu.SyncLoad = true;
+      ds_menu.append()
+     } 
+  }    
+  //tr_menu.DataID='ds_menu'
+  //tr_menu.Reset()
+  //tr_menu_focus()
+
+}
+
+//----------------------------------------------------------------------------
+function btnquery_onclick()
+//----------------------------------------------------------------------------
+ {
+   if  ((ds_menu.CountRow == ds_menu.RowPosition) ||
+       (ds_menu.NameValue(ds_menu.RowPosition,"level1") >= ds_menu.NameValue(ds_menu.RowPosition + 1,"level1")))
+       aa = 1 
+   else return    
+ il_row = ds_menu.RowPosition
+ ll_addr =  ds_menu.NameValue(il_row,"pgrm_id")
+ ll_ret = top.frames['main_title'].rfix.checked
+ if (ll_ret != true) {
+    top.frames['main_title'].rd_mnosee_onclick()
+ }   
+ if ( (ds_menu.NameValue(il_row,"level1") == 1) && (ds_menu.NameValue(il_row,"title_name") == "이전")) {
+     history.back() 
+     return
+ }     
+ if ( (ds_menu.NameValue(il_row,"level1") == 1) && (ds_menu.NameValue(il_row,"title_name") == "이후")) {
+     history.forward() 
+     return
+ }     
+ if (ll_addr == " ") {
+      return
+ }
+ ll_security = ds_menu.NameValue(il_row,"rw_tag")
+ ll_security = ll_security.toLowerCase()
+ if ( ll_addr != ""){
+      top.frames['main_title'].title_name.value = " " + ds_menu.NameValue(il_row,"title_name") + ""
+//      top.frames['main_title'].title_name.src = "../image/title/일자별출역일보1.GIF"
+         if  (ll_security == "r")
+           {
+             top.frames['main_title'].div_r.style.visibility="visible"
+             top.frames['main_title'].div_u.style.visibility="hidden"
+             top.frames['main_title'].div_p.style.visibility="hidden"
+             top.frames['main_title'].div_s.style.visibility="hidden"
+           }  
+          else if (ll_security == "u")
+            {          
+               top.frames['main_title'].div_u.style.visibility="visible"             
+               top.frames['main_title'].div_r.style.visibility="hidden"             
+               top.frames['main_title'].div_p.style.visibility="hidden"
+               top.frames['main_title'].div_s.style.visibility="hidden"
+            }
+          else if (ll_security == "p")
+            {          
+               top.frames['main_title'].div_u.style.visibility="hidden"             
+               top.frames['main_title'].div_r.style.visibility="hidden"             
+               top.frames['main_title'].div_p.style.visibility="visible"
+               top.frames['main_title'].div_s.style.visibility="hidden"
+          }
+          else if (ll_security == "s")
+            {          
+               top.frames['main_title'].div_u.style.visibility="hidden"             
+               top.frames['main_title'].div_r.style.visibility="hidden"             
+               top.frames['main_title'].div_p.style.visibility="hidden"
+               top.frames['main_title'].div_s.style.visibility="visible"
+            }
+          else 
+           {          
+             top.frames['main_title'].div_r.style.visibility="hidden"             
+             top.frames['main_title'].div_u.style.visibility="hidden"             
+             top.frames['main_title'].div_p.style.visibility="hidden"
+             top.frames['main_title'].div_s.style.visibility="hidden"
+            }
+      top.frames['main_ct'].location.href(gs_home + ll_addr+"?"+ll_security)
+      top.frames['main_title'].mouse_over()
+ }
+}
+//---------------------------------------------------------------------------
+function setup_login()
+//---------------------------------------------------------------------------
+{
+      
+      var ls_sysdate_yymmss,ls_sysdate
+      ls_sysdate_yymmss = ds_password.NameValue(1,"sys_date")
+      makeCookie("@sysdate@",ls_sysdate_yymmss)       
+//공지 사항 초기 보여주기 
+//      top.frames['main_title'].rd_mnosee_onclick()
+      top.frames['security'].location.href('security_initial.html')
+		
+      //top.frames['main_ct'].location.href(gs_home + '/zmis/z_authority_notice_1h.html'+"?"+'r')
+}
+//---------------------------------------------------------------------------
+function window_onload()
+//---------------------------------------------------------------------------
+{
+	 gs_home = readCookie("@gs_home@")
+	 gs_empno = readCookie("@empno@")
+	 gs_user_id = readCookie("@user_id@")
+    ls_password = readCookie("@password@")
+    ls_session_id = readCookie("@JFLAG@")
+
+    is_ds_password_addr = 'm_authority_user_chk_q.jsp?arg_user_id=' 
+	 ds_password.DataID = is_ds_password_addr + gs_user_id + '&arg_password=' + ls_password
+
+	 ds_password.SyncLoad = true
+	 ds_password.reset()
+    if (ds_password.CountRow == 0) {
+
+	     alert("사용권한이 없습니다 \n(권한에 관한 문의는 ERP추진팀 또는 전산팀으로 해주시기 바랍니다.")
+	     self.close()
+        return
+    }
+
+    
+	 is_selchanged = 'yes'
+	
+
+
+	 is_ds_1_addr = gs_home + '/login/m_main_menu_tree_q.jsp?arg_group_key='        //그룹 가져오기 트리  
+	 is_ds_2_addr = gs_home + '/zmis/z_user_group_connect_userid_q.jsp?arg_user_id='         //유저가 가지고있는 그룹들 
+	 is_ds_3_addr = gs_home + '/login/m_user_find_userid_q.jsp?arg_user_id='    //개인별 추가 등록 
+	 is_ds_4_addr = gs_home + '/login/m_user_menu_tree_q.jsp?arg_user_key='    //개인별 추가등록된 프로그램가져오기
+	 is_ds_5_addr = gs_home + '/login/m_main_menu_cj_tree_q.jsp?arg_user_id='        //그룹 가져오기 트리  
+
+	ds_2.DataID = is_ds_2_addr + gs_user_id 
+	ds_2.SyncLoad = true
+	ds_2.reset()
+
+	ds_3.DataID = is_ds_3_addr + gs_user_id   // 개인별 empno의 user_seq_key값 구하기
+	ds_3.SyncLoad = true;
+	ds_3.reset()
+
+ 
+//  tr_menu.Index=2
+
+  //main_create()
+  main_create_no_csv()
+  
+//   tr_menu.Focus()
+//   ds_menu.RowPositon = 0
+   setup_login()
+	
+	
+	
+	
+      
+}
+//----------------------------------------------------------------
+function focus_rtn()
+//----------------------------------------------------------------
+{
+  tr_menu.Focus()
+}
+//----------------------------------------------------------------
+
+//----------------------------------------------------------------
+function window_onunload()
+//----------------------------------------------------------------
+{
+		aa= top.frames['security'].gs_dept_code.value
+		ab = top.frames['security'].gs_comp_code.value
+		ac = top.frames['security'].gs_comp_name.value
+		ad = top.frames['security'].gs_dept_name.value
+		ae = top.frames['security'].gs_dept_proj_tag.value
+		af = top.frames['security'].gs_use_tag.value
+		ag = top.frames['security'].gs_sell_code.value
+		ah = top.frames['security'].gs_sell_name.value
+		
+      makeCookie("@g_code_dept@",aa+'@'+ab+'@'+ac+'@'+ad+'@'+ae+'@'+af+'@'+ag+'@'+ah)
+
+
+      ds_login_status.DataID = 'm_login_status_1q.jsp?arg_seq_key=' + top.frames['security'].gs_seq_key.value
+      ds_login_status.SyncLoad=true
+      ds_login_status.reset() 
+
+ //     ll_cnt = f_select_q("select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss')  select_1  from dual")    // system datetime가져오기 
+      ds_login_status.NameValue(ds_login_status.RowPosition,"end_time") = ds_login_status.NameValue(ds_login_status.RowPosition,"system_date")
+
+
+      ds_login_status.NameValue(ds_login_status.RowPosition,"remarks") = 'login and logout'
+
+      if (ds_login_status.IsUpdated) {
+	      tr_1.Action = gs_home + '/login/m_login_status_1tr.jsp'
+	      tr_1.Post()                         // worldro 
+      }
+
+		var ls_tmp = readCookie("@cjworldemail@")
+
+		if (ls_tmp  != 'err' && ls_tmp  != null && ls_tmp .length != 0 && ls_tmp  != 'undefined' && ls_tmp  != '' ) {
+			//alert(ls_tmp)
+			makeCookie("@cjworldemail@", '')
+			//window.open("http://cj.cj.net"); 
+		}
+		
+		
+
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+<script language=JavaScript for=tr_menu event=OnClick()>
+//btnquery_onclick()
+</SCRIPT>   
+<script language=JavaScript for=tr_menu event=OnSelChanged()>
+if (is_initial_load == 'y') {   //제일처음 화면뜰때는 이이벤트를 타지 않는다.
+   is_initial_load = 'n'
+   return
+}
+btnquery_onclick()
+</SCRIPT>   
+<script language=JavaScript for=tr_menu event=OnDblClick()>
+btnquery_onclick()
+</script>
+
+<SCRIPT language=JavaScript for=ds_menu event=OnLoadError()>
+  if (ls_sw == 'yes') 
+     main_create_no_csv()
+  else
+    if (ds_menu.ErrorCode != 0)
+     alert("Error Code(ds_menu) : " + ds_menu.ErrorCode + "\n" + "Error Message : " + ds_menu.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_ip event=OnLoadError()>
+  alert("Error Code(ds_ip) : " + ds_ip.ErrorCode + "\n" + "Error Message : " + ds_ip.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_login_status event=OnLoadError()>
+  alert("Error Code(ds_login_status) : " + ds_login_status.ErrorCode + "\n" + "Error Message : " + ds_login_status.ErrorMsg + "\n");
+</SCRIPT>
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gauce_ImgDataSet event=OnLoadError()>
+    alert(this.ErrorMsg);
+</script>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_menu 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	 <param name=SyncLoad	value="true">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_ip 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_login_status 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_password 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_select1 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_select2 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_login_status_1tr=ds_login_status)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<!-- 이미지 데이타셋 -->
+<comment id="__NSID__"><object id=gauce_ImgDataSet classid=CLSID:BCB3A52D-F8E7-11D3-973E-0060979E2A03>
+   <param name=SyncLoad	value="true">
+</object></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin:0 " onload=setTimeout('window_onload()',1)  oncontextmenu="return false" onunload=window_onunload()>
+<comment id="__NSID__"><OBJECT id=tr_menu 
+    style="WIDTH: 100%; HEIGHT: 100%; "  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_menu">
+	<PARAM NAME="TextColumn" VALUE="title_name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="level1">
+	<PARAM NAME="BorderStyle" VALUE="0">
+	<param name="SingleExpand" value="-1"> 
+	<param name= ItemBackColor   value="BackColor">
+	<param name=ImgDataID		value="gauce_ImgDataSet">   <!-- 트리뷰에서 가져올 이미지 데이타 셋 -->
+				<param name=ImgDColumn		value="ImgD">
+				<param name=ImgOColumn		value="ImgO">
+				<param name=ImgCColumn		value="ImgC">
+				<param name=UseImage		value="true">
+	
+   </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+   
+</BODY></HTML>

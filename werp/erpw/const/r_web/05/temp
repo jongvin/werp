@@ -1,0 +1,39 @@
+      select 18 id,  
+       		'¹Ì¼ö±Ý' name,  
+       		AVG(nvl(d.amt,0))   ly_tot, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '01'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '01'),1,0,nvl(c.supply_amt,0)),0)) comp_01, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '02'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '02'),1,0,nvl(c.supply_amt,0)),0)) comp_02, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '03'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '03'),1,0,nvl(c.supply_amt,0)),0)) comp_03, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '04'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '04'),1,0,nvl(c.supply_amt,0)),0)) comp_04, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '05'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '05'),1,0,nvl(c.supply_amt,0)),0)) comp_05, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '06'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '06'),1,0,nvl(c.supply_amt,0)),0)) comp_06, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '07'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '07'),1,0,nvl(c.supply_amt,0)),0)) comp_07, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '08'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '08'),1,0,nvl(c.supply_amt,0)),0)) comp_08, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '09'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '09'),1,0,nvl(c.supply_amt,0)),0)) comp_09, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '10'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '10'),1,0,nvl(c.supply_amt,0)),0)) comp_10, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '11'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '11'),1,0,nvl(c.supply_amt,0)),0)) comp_11, 
+       		sum(nvl(decode(sign(to_char(a.issue_date,'MM') - '12'),1,0,nvl(a.supply_amt,0)),0)) - sum(nvl(decode(sign(to_char(c.received_date,'MM') - '12'),1,0,nvl(c.supply_amt,0)),0)) comp_12, 
+       		sum(nvl(a.supply_amt,0)) - sum(nvl(c.supply_amt,0))  comp_tot, 
+       		sum(nvl(a.supply_amt,0)) - sum(nvl(c.supply_amt,0)) + AVG(nvl(d.amt,0)) tot_tot 
+       from r_contract_time_extablished a, 
+       	   z_code_dept b,
+				r_contract_time_collection c,
+       	  ( select sum(nvl(a.supply_amt,0)) - sum(nvl(b.supply_amt,0)) amt
+       			  from r_contract_time_extablished a, 
+							 r_contract_time_collection b,
+       					 z_code_dept c 
+       			 where c.dept_code = b.dept_code (+)
+                and to_char(b.received_date,'YYYY') < '2003'
+                and to_char(a.issue_date,'YYYY') <  '2003'
+       			 and c.dept_code = a.dept_code (+) 
+       			 and c.chg_const_start_date is not null 
+       			 and to_char(c.chg_const_start_date,'YYYY') <=  '2003'
+       			 and to_char(c.chg_const_end_date,'YYYY') >=  '2003'  ) d 
+       where  b.dept_code = c.dept_code (+)
+			 and to_char(c.received_date,'YYYY') = '2003'
+          and to_char(a.issue_date,'YYYY') =  '2003'
+       	 and b.dept_code = a.dept_code (+) 
+       	 and b.chg_const_start_date is not null 
+       	 and to_char(b.chg_const_start_date,'YYYY') <= '2003'
+       	 and to_char(b.chg_const_end_date,'YYYY') >=  '2003' 
+;

@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : r_mis_query_detail03_1h.html		 					-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력									-->
+<!-- 3. 기 능 정 의   : 경영현황(수주/영업-경영정보현황(총괄)-현장별수금실적세부)	-->
+<!-- 4. 변 경 이 력   : 김 동우 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 현장별 수금세부실적 </TITLE>
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home 
+var is_yymm,ii_unit=1
+var is_title
+var is_dept_code
+var is_ds_1_addr ='r_mis_query_detail04_1q.jsp?arg_dept_code='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+	window.returnValue = "";
+	window.close();
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+ 
+	array = result.split("@");	
+	is_dept_code = array[0]
+	dept_name.value = array[1]
+
+	btnquery_onclick()
+	
+}
+</SCRIPT>
+
+</HEAD>
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+	var ls_tag
+   if ((eventid == "ucolor")) {
+   	ls_tag = ds_1.NameValue(row,'order_tag')
+   	if (ls_tag == '1')
+         return "ffffff"
+   	else
+         return "ffffff"
+   }
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=window_onload() oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <Param Name="SubsumExpr" VALUE="100:extablish_time">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<LABEL id=Label_1  
+    	style="WIDTH: 75px; LEFT: 13px;POSITION: absolute; HEIGHT: 25px; TOP:9px">&nbsp;&nbsp;현 장 명:
+</LABEL>
+<INPUT id=dept_name readonly
+    	style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 81px;WIDTH:200px; POSITION: absolute; TOP: 5px"
+    	onkeyDown="keyDown()">
+
+<input type="button" value="닫기" 
+          style="Z_INDEX: 108; LEFT: 770px; top:5px;POSITION: absolute;  WIDTH:40px; color:#2E4A4A; font-size:13px; CURSOR: hand;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=close_rtn()>
+	
+<comment id="__NSID__"><OBJECT id=gd_1 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 4px; WIDTH: 1010px; POSITION: absolute; TOP: 30px; HEIGHT: 630px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <param name="RowHeight"  value=30>
+   <PARAM  NAME="ViewSummary"    value=1>
+   <PARAM NAME="BorderStyle"  VALUE=4>
+ 	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='기성차수' ID='{decode(curlevel,100,\'소   계\',extablish_time)}' Align=Center BgColor='ffffff' HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=55 suppress=1 </C>
+	  <C> Name='구분' ID=tag1   Align=Center  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=60 </C>
+	  <C> Name='기성구분' ID=child_name  Align=Center   BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=65 </C>
+	  <C> Name='발생일' ID=work_date  Align=Center   BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=75 </C>
+	  <G> Name='청    구' HeadBgColor=#BBE0F4 HeadColor=BLACK
+	  <C> Name='공급가' ID=supply_amt Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C>
+	  <C> Name='부가세' ID=vat_amt Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C>
+	  <C> Name='합계'   ID=sum_amt Cursor=hand Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90
+	  		SumText=@sum</C>
+	  <C> Name='선수금정산액' ID=prepay_amt Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C></G>
+	  <G> Name='수    금' HeadBgColor=#BBE0F4 HeadColor=BLACK
+	  <C> Name='공급가' ID=rcv_amt Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C>
+	  <C> Name='부가세' ID=rcv_vat Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C>
+	  <C> Name='합계'   ID=rcv_sum Cursor=hand Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90
+	  		SumText=@sum</C>
+	  <C> Name='선수금정산액' ID=rcb_pre Align=Right  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=90 
+	  		SumText=@sum</C></G>
+	  ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>
+</BODY></HTML>

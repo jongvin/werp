@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_sale_income_dept_rpt_1h.html						-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 현장별분양총괄현황                				 	-->
+<!-- 4. 변 경 이 력   : 정호준 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home  = top.frames['security'].gs_home.value
+var is_empno = top.frames['security'].empno.value
+
+var is_from_date    = ""
+var is_to_date      = ""
+var is_process      = ""
+var is_spec_unq_num = ""
+var is_rpt_select   = ""
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+	print_condition_query()
+   var arg_temp
+   if ( f_check_date(em_from_date.text) == false ) {
+  		alert("기간을 정확히 입력해 주십시오.")
+  		return
+   }
+   if ( f_check_date(em_to_date.text) == false ) {
+  		alert("기간을 정확히 입력해 주십시오.")
+  		return
+   }
+   
+   is_process  = ds_select1.NameValue(ds_select1.RowPosition, "select_1")
+   
+   arg_temp ="general_rpt/h_web/04r/"        // 보고서 디렉토리
+   arg_temp = arg_temp + "h_sale_income_dept"  + "&RptParams=" + is_from_date  + "&RptParams=" + is_to_date  + 
+   															 "&RptParams=" + is_process + "&RptParams=" + is_rpt_select
+   
+   f_crystal_report(arg_temp)   //보고서 호출
+	
+}
+//---------------------------------------------------------------------------
+function rpt_select(value)                      // window open event
+//---------------------------------------------------------------------------
+{
+	is_rpt_select = value
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//-------------------------------------------------------------------------------
+function select_from()                  //시작일 선택 
+//-------------------------------------------------------------------------------
+{
+   is_from_date = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+}
+//-------------------------------------------------------------------------------
+function select_to()                  //종료일 선택 
+//--------------------------------------------------------------------------------
+{
+   is_to_date = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+}
+//------------------------------------------------------------------------
+function window_onunload() // 종료할 때 TEMP 테이블을 삭제한다.
+//------------------------------------------------------------------------
+{
+	
+} 
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+   ll_cnt1 = f_select1_q("select 'ALL' select_1, '전체' select_2, '00' select_3 from dual union all " +
+                         "select '01' select_1, '진행' select_2, '01' select_3 from dual union all " +
+                         "select '02' select_1, '종료' select_2, '02' select_3 from dual order by 3")
+   
+	ll_cnt1 = f_select2_q("select to_char(add_months(last_day(sysdate) ! 1, -1), 'yyyy.mm.dd') select_1, to_char(sysdate, 'yyyy.mm.dd') select_2 from dual")
+   em_from_date.text = ds_select2.NameValue(1, 'select_1')
+   em_to_date.text = ds_select2.NameValue(1, 'select_2')
+   is_from_date = ds_select2.NameValue(1, 'select_1')
+   is_to_date   = ds_select2.NameValue(1, 'select_2')
+   is_rpt_select = '0'
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=em_from_date event=onKillFocus()>
+        if (em_from_date.Modified) { 
+			   select_from()
+		  }
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_to_date event=onKillFocus()>
+        if (em_to_date.Modified) { 
+	     	select_to()
+	     }
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_select1
+		  style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"
+		  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select2
+		  style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px"
+		  classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false">
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLPADDING="0" CELLSPACING="0">
+	<TR HEIGHT="50%">
+		<TD>
+      <table width="330px"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+         	<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+         		<div align="right">기간</div>
+         	</td>
+         	<td width="80%" align="left" style="FONT-SIZE=12px" colspan=3>
+					<table border="0" height="100%" cellpadding="0" cellspacing="0" style="font: 12px">
+         			<tr>
+         				<td>
+								<comment id="__NSID__"><OBJECT id=em_from_date
+			                       style="WIDTH: 100px";
+							           classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			                       <param name=Format value="####-##-##"> 
+			                       <param name=Alignment      value=1>
+			                       <param name=SelectAll       value=true>
+				                    <param name=Numeric        value=false>
+				            </OBJECT></comment> <script> __ws__(__NSID__);</script>
+				         </td>
+				         <td>
+				            <input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yyyymmdd(); 
+											if(!is_null(result)){ em_from_date.text = result.substr(0,8);} ; select_from()">
+							</td>
+				         <td>
+				            <comment id="__NSID__"><object id=em_middle classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+				                    width=7px>
+										  <param name=Text    value="~">
+										  <param name=Numeric value=false>
+										  <param name=Border  value=false>
+										  <param name=Enable                    value=false>
+			                       <param name=DisabledBackColor         value="white">
+			               </object></comment> <script> __ws__(__NSID__);</script>
+			            </td>
+				         <td>
+								<comment id="__NSID__"><OBJECT id=em_to_date
+			                       style="WIDTH: 100px"
+							           classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			                       <param name=Format value="####-##-##"> 
+			                       <param name=Alignment      value=1>
+			                       <param name=SelectAll       value=true>
+				                    <param name=Numeric        value=false>
+				            </OBJECT></comment> <script> __ws__(__NSID__);</script>
+				         </td>
+				         <td>
+				            <input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yyyymmdd(); 
+											if(!is_null(result)){ em_to_date.text = result.substr(0,8);} ; select_to()">
+							</td>
+				       </tr>
+				    </table>
+				</td>
+			</tr>
+			<tr BGCOLOR="white" >
+				<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+         		<div align="right">진행구분</div>
+         	</td>
+         	<td width="80%" align="left">
+         		<comment id="__NSID__"><OBJECT id=ccom_process width=100px style="FONT-SIZE: 13px"
+					        classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       	        <PARAM NAME="ComboDataID" VALUE="ds_select1">
+			              <PARAM NAME="CodeCColumn" VALUE="select_1">
+			              <PARAM NAME="DataCColumn" VALUE="select_2">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+         	</td>
+			</tr>
+			<tr BGCOLOR="white" >
+         <td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+          		<div align="right">출력구분</div>
+          	 </td>
+             <td width="80%" align="left"> 
+					<select name="rpt_select"  onchange=rpt_select(value)>
+							  <option value = "0" >전체</option>
+							  <option value = "1">분양현장</option>
+							  <option value = "2">임대현장</option>
+					</select>
+				</td> 
+			</tr>     
+    </table>
+    </TD>
+  </TR>
+  <TR HEIGHT="50%">
+  	 <TD></TD>
+  </TR>
+</TABLE>
+</BODY></HTML>

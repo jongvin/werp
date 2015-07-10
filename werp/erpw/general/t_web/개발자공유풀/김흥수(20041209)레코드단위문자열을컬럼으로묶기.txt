@@ -1,0 +1,145 @@
+오라클에는 sys_connect_by_path 라는 함수가 있는데
+이 함수는 connect by 절에서 전체 계층구조의 path를 출력하는데 사용한다
+그런데 이 함수의 특징상 문자열이 레코드로 나열되는 것을 하나의 컬럼으로
+만드는 부수적인 효과를 갖는다.
+이러한 특성을 잘 이용하면 아래와 같은 결과를 다음과 같이 바꾸는 게 가능하다.
+
+select
+	username
+From	all_users
+Where	RowNum < 5
+
+USERNAME
+--------
+SYS
+SYSTEM
+OUTLN
+DBSNMP
+
+이러한 것을
+
+SYS,SYSTEM,OUTLN,DBSNMP
+
+이렇게 바꿀 수 있다.
+
+하나하나 차근차근해보자
+
+1. sys_connect_by_path를 활용하기 위해 계층구조 형태로 만든다.
+
+select
+	username,
+	rownum rn,
+	rownum - 1 p_rn
+From	all_users
+Where	RowNum < 5
+
+==>결과
+
+USERNAME	RN	P_RN
+----------------------
+SYS			1	0
+SYSTEM		2	1
+OUTLN		3	2
+DBSNMP		4	3
+
+2. 이 데이타를 이용하여 connect by 절을 구성한다.
+
+Select
+	username,
+	level
+From
+	(
+		select
+			username,
+			rownum rn,
+			rownum - 1 p_rn
+		From	all_users
+		Where	RowNum < 5
+	)
+Start With	p_rn = 0
+Connect By
+	Prior	rn = p_rn
+
+
+==>결과
+
+3. 이 것에 sys_connect_by_path 적용
+Select
+	sys_connect_by_path(username,',') con_path
+From
+	(
+		select
+			username,
+			rownum rn,
+			rownum - 1 p_rn
+		From	all_users
+		Where	RowNum < 5
+	)
+Start With	p_rn = 0
+Connect By
+	Prior	rn = p_rn
+
+==>결과
+CON_PATH
+------------------------
+,SYS
+,SYS,SYSTEM
+,SYS,SYSTEM,OUTLN
+,SYS,SYSTEM,OUTLN,DBSNMP
+
+4. 여기에 max를 덧씌우면
+
+Select
+	Max(sys_connect_by_path(username,',')) con_path
+From
+	(
+		select
+			username,
+			rownum rn,
+			rownum - 1 p_rn
+		From	all_users
+		Where	RowNum < 5
+	)
+Start With	p_rn = 0
+Connect By
+	Prior	rn = p_rn
+
+
+==>결과
+
+CON_PATH
+------------------------
+,SYS,SYSTEM,OUTLN,DBSNMP
+
+5. 마지막으로 첫 ',' 를 없애면
+
+Select
+	SubStrb(con_path,2,Lengthb(con_path) - 1)
+From(
+		Select
+			Max(sys_connect_by_path(username,',')) con_path
+		From
+			(
+				select
+					username,
+					rownum rn,
+					rownum - 1 p_rn
+				From	all_users
+				Where	RowNum < 5
+			)
+		Start With	p_rn = 0
+		Connect By
+			Prior	rn = p_rn
+)
+
+==>결과
+
+SUBSTRB(CON_PATH,2,LENGTHB(CON_PATH)-1)
+--------------------------------------
+SYS,SYSTEM,OUTLN,DBSNMP
+
+
+결과 완성
+
+이 SQL은 많은데 응용이 가능하다
+부서별 상위 점수자 3명만 출력한다던가 등등의 SQL에 ......

@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : s_bid_cont_1h.html						      	-->
+<!-- 2. 유형(시나리오): 조회 			      									-->
+<!-- 3. 기 능 정 의   : 입찰 및 계약현황 조회  	  	      				-->
+<!-- 4. 변 경 이 력   : 권미생 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date 
+var is_from_date,is_to_date
+var is_ds_1_addr = gs_home + '/const/s_web/01/s_bid_cont_1q.jsp?arg_wbs_code='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if ((is_from_date != '' && f_check_date(is_from_date) == false) || (is_to_date != '' && f_check_date(is_to_date) == false)){
+   	alert('기간이 날짜 형식에 맞지 않습니다')
+   	return
+  	}
+   if (profession_wbs_name.value <= " ") {
+   	is_profession_wbs = "@"                 // 전체출력 하기 위해서
+   }
+
+	ds_1.DataID = is_ds_1_addr + is_profession_wbs + '&arg_from_dt=' + is_from_date + '&arg_to_dt=' + is_to_date
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//---------------------------------------------------------------------
+function wbs_search()                     //전문 공종 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/const/s_web/00/s_profession_wbs_search_1h.html", profession_wbs_name.value,"dialogWidth:600px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	is_profession_wbs         = array[0]
+	profession_wbs_name.value = array[1]
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		wbs_search();
+	} 
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_to_date   = em_select_to.text.substr(0,4) + "." + em_select_to.text.substr(5,2)  + "." +  em_select_to.text.substr(8,2)
+   is_from_date = em_select_from.text.substr(0,4) + "." + em_select_from.text.substr(5,2)  + "." +  em_select_from.text.substr(8,2)
+   ds_1.ClearData()
+}   
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기
+//----------------------------------------------------------------
+{
+	var temp_1
+	temp_1 = '입찰 및 계약현황 [' + em_select_from.text + '~' + em_select_to.text + ']'
+
+   if  (! confirm("작업이 끝날때까지 기다려주세요")) return
+   else
+		gd_1.GridToExcel(temp_1,'c:\aa.xls',0) 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	is_to_date = f_sysdate()
+	is_from_date = is_to_date.substr(0,7) + ".01"
+	em_select_to.text = is_to_date
+	em_select_from.text = is_from_date
+	
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_from event=onKillFocus()>
+	if (em_select_from.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_from event=onKeyDown(kcode,scode)>
+	if ((em_select_from.Modified) && kcode == 13 ){ 
+		select_yymm()
+	}
+</SCRIPT>   
+<SCRIPT language=JavaScript for=em_select_to event=onKillFocus()>
+	if (em_select_to.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_to event=onKeyDown(kcode,scode)>
+alert(kcode)
+	if ((em_select_to.Modified) && kcode == 13 ){ 
+		select_yymm()
+	}
+</SCRIPT>   
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 670px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+				<td width="14%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+					<div align="right">발주공종명</div></td>
+				<td width="34%"> 
+					<INPUT style="FONT-SIZE:12px;" id=profession_wbs_name  onkeyDown="keyDown()">
+					<INPUT  type=button  class="img_btnFind"  value=검색 onclick=wbs_search() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+             <td width="10%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">조회기간</div></td>
+          	 <td width="18%" >
+			       <OBJECT id=em_select_from style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="8">
+						    <PARAM NAME="Format" VALUE="YYYY.MM.DD">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+					<img class="img_btnCalendar_S"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_from.text = result.substr(0,8);} ; select_yymm()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+             <td width="6%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">&nbsp;to&nbsp;</div></td>
+          	 <td width="18%" >
+			       <OBJECT id=em_select_to style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="8">
+						    <PARAM NAME="Format" VALUE="YYYY.MM.DD">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+					<img class="img_btnCalendar_S"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_to.text = result.substr(0,8);} ; select_yymm()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT: 900px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<input id=bt_excel_query type="button" value="엑셀내리기" 
+	style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+	   border:1 #A1A9A9 solid"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=excel_down()>
+</DIV>      
+
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 32px; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <param name="ViewSummary"    value=1>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='업체명' 			ID=sbcr_name suppress=4 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=200
+              SumText='합 계'  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='현설요청건수' 	ID=request_cnt suppress=2 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='견적참여건수' 	ID=est_cnt suppress=1 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='계약건수' 		ID=sel_cnt HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='계약/견적(%)'     ID=rate Value={(sel_cnt/est_cnt)*100} dec=2 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100
+	  			SumText={(SUM(sel_cnt)/SUM(est_cnt))*100}  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='      '   ID=text HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=350
+	  			SumText=''  SumColor=Black SumBgColor=Pink  </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</DIV>
+</BODY></HTML>

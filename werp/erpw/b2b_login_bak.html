@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : login.html (그리드가 하나일경우)								-->
+<!-- 2. 유형(시나리오): user id check														-->
+<!-- 3. 기 능 정 의   : login check      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<TITLE> 협력업체 </TITLE>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<META content="Pragma" CONTENT="No-Cache">
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="/werp/erpw/comm_function/comm_function.js"></SCRIPT> 
+
+<STYLE>
+	#logpic {position:absolute;left:200;top:100;width:596;height:281}
+</STYLE>
+
+<SCRIPT language=JavaScript> 
+var gs_home = '/werp/erpw' 
+var is_user_id
+var is_ds_1_addr = 'm_business_user_login_1q.jsp?arg_user_id='
+var is_open_type = "1"
+//----------------------------------------------------------------
+function bt_confirm_onclick()
+//----------------------------------------------------------------
+{
+   clearCookie()
+
+  is_user_id = tb_user_id.value
+  
+  ds_1.DataID=is_ds_1_addr + is_user_id  + '&arg_password=' + tb_password.value
+  ds_1.SyncLoad = true;
+  ds_1.reset()
+  if  (ds_1.CountRow != 1){
+     alert("유저-ID 혹은 패스워드가   틀렸습니다")
+     return
+  } 
+   makeCookie("@password@",tb_password.value)  
+	makeCookie("@sbcr_code@",ds_1.NameValue(1,"sbcr_code"))
+	makeCookie("@vender_code@",ds_1.NameValue(1,"vender_code"))
+	makeCookie("@businessman_number@",ds_1.NameValue(1,"businessman_number"))
+	makeCookie("@gubun@",ds_1.NameValue(1,"gubun"))
+	makeCookie("@sbcr_name@",ds_1.NameValue(1,"sbcr_name"))
+	makeCookie("@gs_home@",gs_home)
+   makeCookie("@user_code@",tb_user_id.value)  
+	ls_bb = readCookie("JSESSIONID")
+	makeCookie("@JFLAG@",ls_bb)
+	alert(readCookie('@gs_home@'))
+	//            location.href("main.html")
+	ll_height = screen.availHeight // - 90
+	if (is_open_type == "1")
+	window.open("http://192.168.1.9:7778/werp/erpw/const/b2b_web/00/main.html","","height="+ll_height+",width="+screen.availWidth+",left=0,top=0,scrollbars=1, resizable=1, status=1"); 
+	else		
+	window.open("http://192.168.1.9:7778/werp/erpw/const/b2b_web/00/main.html")
+	//        self.opener=self;
+	//		 self.close();
+	is_open_type = 1      
+}
+//----------------------------------------------------------------
+function click_event(e)
+//----------------------------------------------------------------
+{
+ if (e.keyCode == 113) {
+    is_open_type = 2
+    bt_confirm_onclick()
+     
+ }   
+}
+//----------------------------------------------------------------
+function window_onload()
+//----------------------------------------------------------------
+{
+// ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='01'") //home address
+
+// if (ll_cnt == 0) 
+//    alert("SYSTEM 정보가 설치 되어있지 않습니다")
+   
+// gs_home = ds_select.NameValue(1,"select_2")
+ document.links[0].href=gs_home + "/install/ADE_setup.exe"    //초기 셋업 주소 
+ document.images[0].src=gs_home + "/image/login.bmp"          //login bmp
+
+}
+//----------------------------------------------------------
+function inkeyDown()  
+//----------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_confirm_onclick()
+	} 
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" onkeydown="click_event(event)">
+<DIV ID="logpic">
+	<IMG SRC="/werp/erpw/image/login.bmp"  BORDER=0 ALIGN="left">
+</DIV> 
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<A  HREF='/werp/erpw/install/ADE_setup.exe'>초기 셋업</A><BR>  
+ <Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+  
+<LABEL id=Label_1 
+    style="LEFT: 296px; POSITION: absolute; TOP: 491px; HEIGHT: 22px">사&nbsp;&nbsp;번:&nbsp;</LABEL>
+<LABEL id=Label_1 
+    style="LEFT: 465px; POSITION: absolute; TOP: 493px; HEIGHT: 22px">PASSWORD:&nbsp;</LABEL>
+<INPUT id=tb_user_id  onkeyDown="inkeyDown()"
+    style="Z-INDEX: 101; LEFT: 341px; WIDTH: 80px; POSITION: absolute; TOP: 488px; HEIGHT: 22px" 
+    tabIndex=1 maxLength=6 size=10 border=1>
+<INPUT id=tb_password  onkeyDown="inkeyDown()"
+    style="Z-INDEX: 102; LEFT: 546px; WIDTH: 80px; POSITION: absolute; TOP: 488px; HEIGHT: 22px" 
+    tabIndex=2 type=password maxLength=8 size=10 border=1>
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+	<PARAM NAME="CacheLoad" VALUE="0"></OBJECT>
+<INPUT id=bt_confirm 
+    style="Z-INDEX: 104; LEFT: 653px; POSITION: absolute; TOP: 488px" onclick=bt_confirm_onclick()
+    tabIndex=3 type=button value=확인> 
+</BODY></HTML>

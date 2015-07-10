@@ -1,0 +1,537 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************** -->
+<!-- 1. 프로그램 id   : s_evl_totevl_1h.html	      		        -->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					     -->
+<!-- 3. 기 능 정 의   : 총괄평가(외주관리)      	  				     -->
+<!-- 4. 변 경 이 력   : 김 동우 작성						              -->
+<!-- 5. 관련프로그램  :					          			              -->
+<!-- 6. 특 기 사 항   :					          			              -->
+<!-- *************************************************************  -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_emp_no    = top.frames['security'].empno.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_work_date,is_year,is_wbs='',is_sbcr_name=''
+var is_ds_1_addr = gs_home + '/const/s_web/06/s_evl_totevl_1q.jsp?arg_year='
+var is_tr_1_addr = gs_home + '/const/s_web/06/s_evl_totevl_1tr.jsp'
+var is_filter = "tot",is_chk
+var is_year
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (is_year == '    ') {
+		alert("평가년도를 입력하십시오...")
+		return
+	}
+	
+	ds_1.DataID = is_ds_1_addr + is_year + "&arg_wbs=" + is_wbs + "&arg_sbcr_name=" + is_sbcr_name
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("seq");
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_chk=0,ls_spec_chk=0
+	
+	if (ds_1.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			tr_1.Post()
+    	}
+	}
+	return
+}
+//----------------------------------------------------------------------------
+function guarantee_rtn()                     //  이행보증계산--정규업체중 상위50%인 업체는 이행보증을 면제해준다
+//---------------------------------------------------------------------------- 
+{
+	var ll_cnt,ll_count,ls_chk
+	
+	if (ds_1.CountRow < 1 ) return
+	
+	ls_chk = ds_1.NameValue(ds_1.RowPosition,"tot_close")
+	if (ls_chk == 'Y') {
+		alert("마감된 자료는 처리할 수 없습니다...")
+		return
+	}
+	// 재작업하기위해 "N" 을 세팅한다.
+	arg_cmd = "UPDATE S_EVL_TOTEVL a " +
+		       "   SET GUARANTEE_YN = 'N' " +  
+		       " WHERE a.evl_year = '" + is_year + "'"
+	f_update_sql(arg_cmd)
+	
+	// 정규업체중에서 상위 50%인 업체의 수를 구한다.
+	//평균점수를 구한다
+	ll_cnt = f_select_q("SELECT nvl(count(*),0) select_1,sum(nvl(a.TOT_SCORE,0)) select_2 " +
+							  " from s_evl_totevl a,s_wbs_request b " +
+							  " where a.sbcr_code = b.sbcr_code  " +
+							  " and a.profession_wbs_code = b.profession_wbs_code " +
+							  " and a.evl_year = '" + is_year + "'" )
+	if (ll_cnt > 0) {
+		ll_count = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1"),10);
+		ll_cnt = parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_2"));
+		if (ll_count == 0) {
+			ll_count = 0;btnquery_onclick();return;
+		} else {
+			ll_count = ll_cnt / ll_count;
+		}
+	}
+	//평균점수이상 업체중 정규,[자재정규] 업체 보증여부 변경
+	arg_cmd = " " +
+		"UPDATE (select a.* from S_EVL_TOTEVL a,s_wbs_request b where a.SBCR_CODE = b.SBCR_CODE " +
+		        "AND a.PROFESSION_WBS_CODE = b.PROFESSION_WBS_CODE AND b.register_chk IN ('1','6') " +
+		        "AND a.EVL_YEAR = '" + is_year + "' AND a.TOT_SCORE >= " + ll_count + ") a " +
+        "SET A.GUARANTEE_YN = 'Y' "
+	f_update_sql(arg_cmd)
+	btnquery_onclick()
+
+	//ll_cnt = f_select_q(" select nvl(count(*),0) select_1 " +
+	//						  " from s_evl_totevl a,s_wbs_request b " +
+	//						  " where a.sbcr_code = b.sbcr_code  " +
+	//						  "   and a.profession_wbs_code = b.profession_wbs_code " +
+	//						  "   and b.register_chk = '1' " +
+	//						  "   and a.evl_year = '" + is_year + "'" )
+	//if (ll_cnt > 0) {
+	//	ll_count = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1"),10);
+	//	ll_count = Math.round(ll_count * 0.5) + 1;
+	//}		
+
+	//arg_cmd = "UPDATE S_EVL_TOTEVL a " +
+	//	       "   SET GUARANTEE_YN = 'Y' " +  
+	//	       " WHERE a.evl_year || a.profession_wbs_code || a.sbcr_code in  " +
+	//		    " 							(select a.evl_year || a.profession_wbs_code || a.sbcr_code " +
+	//		    " 								from (  select a.evl_year,a.profession_wbs_code,a.sbcr_code,rownum cnt " +
+	//		    " 											 from s_evl_totevl a,s_wbs_request b " +
+	//		    " 											where a.sbcr_code = b.sbcr_code " + 
+	//		    " 											  and a.profession_wbs_code = b.profession_wbs_code " +
+	//		    " 											  and b.register_chk = '1' " +
+	//		    " 											  and a.evl_year = '" + is_year + "'" +
+	//		    " 											order by tot_score desc ) a " +
+	//		    " 								where a.cnt < " + ll_count + ")"
+
+	//f_update_sql(arg_cmd)
+	
+	//btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function data_summary()                     //  자료집계
+//---------------------------------------------------------------------------- 
+{
+	var arg_cmd,ls_chk
+	
+	ls_chk = ds_1.NameValue(ds_1.RowPosition,"tot_close")
+	if (ls_chk == 'Y') {
+		alert("마감된 자료는 처리할 수 없습니다...")
+		return
+	}
+
+	if (is_year == '    ') {
+		alert("평가년도를 입력하십시오...")
+		return
+	}
+
+	if (ds_1.CountRow > 0) { 
+		if  (confirm("기존자료가 삭제된 후 다시 집계 됩니다. 그래도 계속하시겠습니까?")) 
+		{  
+		 	arg_cmd = " delete from s_evl_totevl  " +
+						 "  WHERE EVL_YEAR =   '" + is_year + "'" 
+			f_update_sql(arg_cmd)
+		}   
+		else {
+			return
+		}
+	}   
+	
+	arg_cmd = "  INSERT INTO S_EVL_TOTEVL  " +
+				 "    SELECT max(a.EVL_YEAR),max(a.PROFESSION_WBS_CODE),max(a.SBCR_CODE),max(a.PROFESSION_WBS_NAME),max(a.SBCR_NAME),   " +
+				 "           0,0,0,0,0,0,0,0,0,0,0,0,'N',0,'N',max(b.register_chk),max(b.recommender_name)  " +
+				 "      FROM S_EVL_BON_EVLSBCR a, s_wbs_request b " +
+			    "     WHERE a.sbcr_code = b.sbcr_code(+)" +
+				 "	      and a.profession_wbs_code = b.profession_wbs_code (+) " +
+				 "       and a.EVL_YEAR = '" + is_year + "'" +
+				 "  GROUP BY a.EVL_YEAR,a.PROFESSION_WBS_CODE,a.SBCR_CODE "
+	
+	f_update_sql(arg_cmd)
+	
+	btnquery_onclick()
+
+	var i,ll_cnt,ls_wbs,ls_sbcr
+	var ld_b_score,ld_a_score,ld_c_score,ld_ava_score,ld_t_score,ld_count
+	
+
+	for (i=1; i <= ds_1.CountRow ; i++) {
+		ls_wbs  = ds_1.NameValue(i,"profession_wbs_code")
+		ls_sbcr = ds_1.NameValue(i,"sbcr_code")
+		ld_b_score = 0;
+		ld_a_score = 0;
+		ld_c_score = 0;
+		ld_ava_score = 0;
+		ld_t_score = 0;
+		ld_count = 0;
+		
+		//상반기 점수 구하기
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.eva_score),0) ! nvl(avg(a.add_score),0) ! nvl(avg(b.ctrl_score),0) select_1 " +
+	                       "   from s_evl_proj_evlsbcr a, s_evl_evldept b " +
+	                       "  where a.evl_year  = b.evl_year " +
+	                       "    and a.degree    = b.degree   " +
+	                       "    and a.evl_class = b.evl_class " +
+	                       "    and a.dept_code = b.dept_code " +
+	                       "    and a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '1'" +
+	                       "    and a.eva_score <> 0" +
+	                       "    and a.evl_yn = 'Y'")
+		if (ll_cnt > 0){
+			ld_b_score = parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.tot_score),0) select_1 " +
+	                       "   from s_evl_bon_evlsbcr a " +
+	                       "  where a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '1'" )
+		if (ll_cnt > 0){
+			ld_b_score = ld_b_score + parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		//하반기 점수 구하기
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.eva_score),0) ! nvl(avg(a.add_score),0) ! nvl(avg(b.ctrl_score),0) select_1 " +
+	                       "   from s_evl_proj_evlsbcr a, s_evl_evldept b " +
+	                       "  where a.evl_year  = b.evl_year " +
+	                       "    and a.degree    = b.degree   " +
+	                       "    and a.evl_class = b.evl_class " +
+	                       "    and a.dept_code = b.dept_code " +
+	                       "    and a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '2'" +
+	                       "    and a.eva_score <> 0" +
+	                       "    and a.evl_yn = 'Y'")
+		if (ll_cnt > 0){
+			ld_a_score = parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.tot_score),0) select_1 " +
+	                       "   from s_evl_bon_evlsbcr a " +
+	                       "  where a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '2'" )
+		if (ll_cnt > 0){
+			ld_a_score = ld_a_score + parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		//준공평가 점수 구하기
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.eva_score),0) ! nvl(avg(a.add_score),0) ! nvl(avg(b.ctrl_score),0) select_1 " +
+	                       "   from s_evl_proj_evlsbcr a, s_evl_evldept b " +
+	                       "  where a.evl_year  = b.evl_year " +
+	                       "    and a.degree    = b.degree   " +
+	                       "    and a.evl_class = b.evl_class " +
+	                       "    and a.dept_code = b.dept_code " +
+	                       "    and a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '3'" + 
+	                       "    and a.eva_score <> 0" +
+	                       "    and a.evl_yn = 'Y'")
+		if (ll_cnt > 0){
+			ld_c_score = parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		ll_cnt = f_select_q(" SELECT nvl(avg(a.tot_score),0) select_1 " +
+	                       "   from s_evl_bon_evlsbcr a " +
+	                       "  where a.evl_year = '" + is_year + "'" +
+	                       "    and a.profession_wbs_code = '" + ls_wbs + "'" +
+	                       "    and a.sbcr_code = '" + ls_sbcr + "'" +
+	                       "    and a.evl_class = '3'" )
+		if (ll_cnt > 0){
+			ld_c_score = ld_c_score + parseFloat(ds_select.NameValue(ds_select.RowPosition,"select_1"));
+		}
+		
+		ld_t_score = ld_b_score + ld_a_score + (ld_c_score * 2);
+		if (ld_b_score != 0) {
+			ld_count = ld_count + 1;
+		}
+		if (ld_a_score != 0) {
+			ld_count = ld_count + 1;
+		}
+		if (ld_c_score != 0) {
+			ld_count = ld_count + 2;
+		}
+		if( ld_count > 0 ) {
+			ld_ava_score = ld_t_score / ld_count ;
+		}
+		ds_1.NameValue(i,"b_score") = ld_b_score;
+		ds_1.NameValue(i,"a_score") = ld_a_score;
+		ds_1.NameValue(i,"c_score") = ld_c_score;
+		ds_1.NameValue(i,"eva_score") = ld_ava_score;
+		ds_1.NameValue(i,'tot_score') = ld_ava_score;
+	}
+	tr_1.Post()
+	alert('정상 처리되었습니다...')
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	        {  //저장 routine
+	        }   
+ 
+	   }     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+
+	// top.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년도 선택 
+//--------------------------------------------------------------------------------
+{
+   is_year = em_select_yymm.text
+   ds_1.ClearData()
+   btnquery_onclick()
+ 
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+}
+
+//--------------------------------------------------------------------------
+function   sbcr1_search()
+//----------------------------------------------------------------
+{
+	if (tx_sbcr_name.value == '') {
+		is_sbcr_name = ''
+	}
+	else {
+		is_sbcr_name = tx_sbcr_name.value
+	}
+	btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/s_web/99r/s_tot_evl"        // 보고서 디렉토리
+
+   arg_temp = arg_temp + "&RptParams=" + is_year
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+      gd_1.GridToExcel('총괄평가','c:\aa.xls',1)  
+ 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	is_work_date = f_sysdate()
+	tr_1.Action = is_tr_1_addr 
+
+	em_select_yymm.text = is_work_date.substr(0,4)
+	is_year = is_work_date.substr(0,4)
+
+	btnquery_onclick()
+	top.frames['main_title'].title_name.value =  " 총괄평가 "         
+
+}
+</SCRIPT>
+<script language=JavaScript for=ccom_wbs_class event=onSelChange()>
+
+	is_wbs = ccom_wbs_class.CodeValue;
+	btnquery_onclick()
+
+</script>
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	if (colid.substr(0,4) == 'add_') {
+		ds_1.NameValue(row,'add_score_tot') = ds_1.NameValue(row,'add_score1') + ds_1.NameValue(row,'add_score2') + ds_1.NameValue(row,'add_score3') + ds_1.NameValue(row,'add_score4') + ds_1.NameValue(row,'add_score5') + ds_1.NameValue(row,'add_score6');
+		ds_1.NameValue(row,'tot_score') = ds_1.NameValue(row,'eva_score') + ds_1.NameValue(row,'add_score1') + ds_1.NameValue(row,'add_score2') + ds_1.NameValue(row,'add_score3') + ds_1.NameValue(row,'add_score4') + ds_1.NameValue(row,'add_score5') + ds_1.NameValue(row,'add_score6');
+	}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+{
+	var ls_chk
+	ls_chk = ds_1.NameValue(ds_1.RowPosition, 'tot_close')
+	if (ls_chk == 'Y') {
+		gd_2.Editable=0
+	}
+	else {
+		gd_2.Editable=-1
+	}
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT> </OBJECT>
+<OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_evl_totevl_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>	
+
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 2px; WIDTH: 600px; POSITION: absolute; TOP: 3px; HEIGHT: 30px">
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+				<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+					<div align="right">평가년도</div></td>
+				<td width="5%" colspan=1> 
+					<OBJECT id=em_select_yymm 
+					       style="WIDTH: 40px" 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<PARAM NAME="MaxLength" VALUE="4">
+							<PARAM NAME="Format" VALUE="YYYY">
+							<PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				</td>
+				<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+					<div align="right">업체명</div></td>
+				<td width="20%" colspan=4> 
+			  	<INPUT style="FONT-SIZE:12px;" id=tx_sbcr_name  tabIndex=1 size=22 onchange="sbcr1_search()"  >
+				<INPUT  id=bt_sbcr_name1 type=button  class="img_btnFind"  value=검색 onclick=sbcr1_search() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+				</td>
+				<td width="5%"   BGCOLOR="#53A9FF" style="COLOR: WHITE " colspan=1 > 
+					<div align="right">공종</div></td>
+				<td width="5%" colspan=1> 
+					<OBJECT id=ccom_wbs_class WIDTH=60px  
+								classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+								<param name=Data     value=" ^전체,A^건축,C^토목,E^전기,J^자재,L^조경,M^설비,T^공통">
+								<param name=Auto       value=false>
+								<param name=Enable     value=true>
+					</OBJECT></TD>
+				<td width="5%" colspan=1> 
+					<OBJECT id=ccom_close_class
+						classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+	                                        height=106 width=60px; VIEWASTEXT>
+						<PARAM NAME="Alignment" VALUE="1">
+						<PARAM NAME=Data VALUE="Y^마감,N^미마감">
+						<PARAM NAME="ReadOnly" VALUE="-1">
+						<param name=DataID           value=ds_1>
+						<param name=CodeColumn      value=tot_close>
+					</OBJECT>
+				</td>
+         </tr>                 
+      </table>
+</DIV>
+<DIV id=gd_11_button 
+style="Z-INDEX: 107; LEFT: 620px; WIDTH: 395px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<INPUT id=bt_data_summary   type=button  class="img_btn4_1"  value=자료집계 onclick=data_summary() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+<INPUT id=excel_prt   type=button  class="img_btn5_1"  value=엑셀내리기 onclick=excel_down() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+<INPUT id=btnquery_prt type=button  class="img_btnRpt10_1"  value="공사수행평가표(총괄)" onclick=btnquery_prt_onclick() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+<!--<input id=bt_data_summary type="button" value="이행보증처리" 
+        style="color:#2E4A4A; font-size:13px; FONT-WEIGHT: 200; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=guarantee_rtn()> -->
+</DIV>
+
+<OBJECT id=gd_1 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 35px; HEIGHT: 500px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='공종명' ID=profession_wbs_name  suppress=1   HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=200 </C>
+	  <C> Name='업체명' ID=sbcr_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=240 </C>
+	  <C> Name='등록구분' ID=register_chk EditStyle=Combo Align=Center Data='1:정규등록,2:임시등록,3:가등록,4:[자재]정규,5:[자재]임시,6:[자재]가,7:탈락' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+	  <G> Name=' 평가점수'  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   
+	  <C> Name='상반기' ID=b_score Cursor=Hand Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+	  <C> Name='하반기' ID=a_score Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+	  <C> Name='준공' ID=c_score Cursor=Hand Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+	  <C> Name='평균' ID=eva_score Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>
+	  <C> Name='가감점' ID=add_score_tot Align=Center Color='red' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 </C>
+	  <C> Name='총점' ID=tot_score Align=Center Color='blue' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 </C></G>
+	  ">
+</OBJECT>
+<OBJECT id=gd_2 
+    	style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 540px; HEIGHT: 70px" 
+    	classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='공사지원팀' ID=add_score1   Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=240 </C>
+	  <C> Name='공사관리팀' ID=add_score2 Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=240 </C>
+	  <C> Name='구매팀' ID=add_score3 Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=240 </C>
+	  <C> Name='가감점' ID=add_score_tot Edit=None Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=240 </C>
+	  ">
+</OBJECT>
+</BODY></HTML>

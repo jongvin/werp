@@ -1,0 +1,178 @@
+<%@ page session="true" import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%><%@
+ include file ="../../../comm_function/conn_tr_pool.jsp"%><%
+     GauceDataSet dSet = req.getGauceDataSet("v_pcm_plan_main_1tr");
+     gpstatement.gp_dataset = dSet;
+   	int idx_dept_code = dSet.indexOfColumn("dept_code");
+   	int idx_order_number = dSet.indexOfColumn("order_number");
+   	int idx_key_order_number = dSet.indexOfColumn("key_order_number");
+   	int idx_seq = dSet.indexOfColumn("seq");
+   	int idx_sbcr_code = dSet.indexOfColumn("sbcr_code");
+   	int idx_order_name = dSet.indexOfColumn("order_name");
+   	int idx_schedule_dt = dSet.indexOfColumn("schedule_dt");
+   	int idx_exe_dt = dSet.indexOfColumn("exe_dt");
+   	int idx_supervisor = dSet.indexOfColumn("supervisor");
+   	int idx_remark = dSet.indexOfColumn("remark");
+   	int idx_sbcr_name = dSet.indexOfColumn("sbcr_name");
+   	int idx_meeting_name = dSet.indexOfColumn("meeting_name");
+   	int idx_meeting_dt = dSet.indexOfColumn("meeting_dt");
+   	int idx_meeting_time = dSet.indexOfColumn("meeting_time");
+   	int idx_append_owner = dSet.indexOfColumn("append_owner");
+   	int idx_append_sbcr = dSet.indexOfColumn("append_sbcr");
+   	int idx_wbs_description = dSet.indexOfColumn("wbs_description");
+   	int idx_work_plan = dSet.indexOfColumn("work_plan");
+   	int idx_quality_notice = dSet.indexOfColumn("quality_notice");
+   	int idx_safety_notice = dSet.indexOfColumn("safety_notice");
+   	int idx_relation_wbc_comm = dSet.indexOfColumn("relation_wbc_comm");
+   	int idx_forecast_defect = dSet.indexOfColumn("forecast_defect");
+   	int idx_etc = dSet.indexOfColumn("etc");
+   	int idx_append_doc = dSet.indexOfColumn("append_doc");
+   	int idx_make_dt = dSet.indexOfColumn("make_dt");
+   	int idx_make_user_no = dSet.indexOfColumn("make_user_no");
+   	int idx_section = dSet.indexOfColumn("section");
+     	int idx_code = dSet.indexOfColumn("code"); 	   	
+   	
+    int  rowCnt = dSet.getDataRowCnt();
+    for(int i=0; i< rowCnt; i++){
+    	GauceDataRow rows = dSet.getDataRow(i);
+    	gpstatement.gp_row = i;
+	if(rows.getJobType() == GauceDataRow.TB_JOB_INSERT){
+		String sSql = " INSERT INTO v_pcm_plan ( dept_code," + 
+                    "order_number," + 
+                    "seq," + 
+                    "sbcr_code," + 
+                    "order_name," + 
+                    "schedule_dt," + 
+                    "exe_dt," + 
+                    "supervisor," + 
+                    "remark," + 
+                    "sbcr_name," + 
+                    "meeting_name," + 
+                    "meeting_dt," + 
+                    "meeting_time," + 
+                    "append_owner," + 
+                    "append_sbcr," + 
+                    "wbs_description," + 
+                    "work_plan," + 
+                    "quality_notice," + 
+                    "safety_notice," + 
+                    "relation_wbc_comm," + 
+                    "forecast_defect," + 
+                    "etc," + 
+                    "append_doc," + 
+                    "make_dt," + 
+                    "make_user_no, " + 
+                    "section, " +
+                    "code )      ";
+      sSql = sSql + " VALUES ( :1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24, :25 ,:26, :27 ) ";
+      stmt = conn.prepareStatement(sSql);
+      gpstatement.gp_stmt = stmt;
+      gpstatement.bindColumn(1, idx_dept_code);
+      gpstatement.bindColumn(2, idx_order_number);
+      gpstatement.bindColumn(3, idx_seq);
+      gpstatement.bindColumn(4, idx_sbcr_code);
+      gpstatement.bindColumn(5, idx_order_name);
+      gpstatement.bindColumn(6, idx_schedule_dt);
+      gpstatement.bindColumn(7, idx_exe_dt);
+      gpstatement.bindColumn(8, idx_supervisor);
+      gpstatement.bindColumn(9, idx_remark);
+      gpstatement.bindColumn(10, idx_sbcr_name);
+      gpstatement.bindColumn(11, idx_meeting_name);
+      gpstatement.bindColumn(12, idx_meeting_dt);
+      gpstatement.bindColumn(13, idx_meeting_time);
+      gpstatement.bindColumn(14, idx_append_owner);
+      gpstatement.bindColumn(15, idx_append_sbcr);
+      gpstatement.bindColumn(16, idx_wbs_description);
+      gpstatement.bindColumn(17, idx_work_plan);
+      gpstatement.bindColumn(18, idx_quality_notice);
+      gpstatement.bindColumn(19, idx_safety_notice);
+      gpstatement.bindColumn(20, idx_relation_wbc_comm);
+      gpstatement.bindColumn(21, idx_forecast_defect);
+      gpstatement.bindColumn(22, idx_etc);
+      gpstatement.bindColumn(23, idx_append_doc);
+      gpstatement.bindColumn(24, idx_make_dt);
+      gpstatement.bindColumn(25, idx_make_user_no);
+      gpstatement.bindColumn(26, idx_section);
+      gpstatement.bindColumn(27, idx_code);      
+      stmt.executeUpdate();
+      stmt.close();
+ 
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_UPDATE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "update v_pcm_plan set " + 
+                            "dept_code=?,  " + 
+                            "order_number=?,  " + 
+                            "seq=?,  " + 
+                            "sbcr_code=?,  " + 
+                            "order_name=?,  " + 
+                            "schedule_dt=?,  " + 
+                            "exe_dt=?,  " + 
+                            "supervisor=?,  " + 
+                            "remark=?,  " + 
+                            "sbcr_name=?,  " + 
+                            "meeting_name=?,  " + 
+                            "meeting_dt=?,  " + 
+                            "meeting_time=?,  " + 
+                            "append_owner=?,  " + 
+                            "append_sbcr=?,  " + 
+                            "wbs_description=?,  " + 
+                            "work_plan=?,  " + 
+                            "quality_notice=?,  " + 
+                            "safety_notice=?,  " + 
+                            "relation_wbc_comm=?,  " + 
+                            "forecast_defect=?,  " + 
+                            "etc=?,  " + 
+                            "append_doc=?,  " + 
+                            "make_dt=?,  " + 
+                            "make_user_no=? ," +
+                            "section=? ," +
+                            "code=? " +
+                            "where dept_code=? and order_number=? and seq=? ";  
+      stmt = conn.prepareStatement(sSql); 
+      gpstatement.gp_stmt = stmt;
+      gpstatement.bindColumn(1, idx_dept_code);
+      gpstatement.bindColumn(2, idx_order_number);
+      gpstatement.bindColumn(3, idx_seq);
+      gpstatement.bindColumn(4, idx_sbcr_code);
+      gpstatement.bindColumn(5, idx_order_name);
+      gpstatement.bindColumn(6, idx_schedule_dt);
+      gpstatement.bindColumn(7, idx_exe_dt);
+      gpstatement.bindColumn(8, idx_supervisor);
+      gpstatement.bindColumn(9, idx_remark);
+      gpstatement.bindColumn(10, idx_sbcr_name);
+      gpstatement.bindColumn(11, idx_meeting_name);
+      gpstatement.bindColumn(12, idx_meeting_dt);
+      gpstatement.bindColumn(13, idx_meeting_time);
+      gpstatement.bindColumn(14, idx_append_owner);
+      gpstatement.bindColumn(15, idx_append_sbcr);
+      gpstatement.bindColumn(16, idx_wbs_description);
+      gpstatement.bindColumn(17, idx_work_plan);
+      gpstatement.bindColumn(18, idx_quality_notice);
+      gpstatement.bindColumn(19, idx_safety_notice);
+      gpstatement.bindColumn(20, idx_relation_wbc_comm);
+      gpstatement.bindColumn(21, idx_forecast_defect);
+      gpstatement.bindColumn(22, idx_etc);
+      gpstatement.bindColumn(23, idx_append_doc);
+      gpstatement.bindColumn(24, idx_make_dt);
+      gpstatement.bindColumn(25, idx_make_user_no);
+      gpstatement.bindColumn(26, idx_section);
+      gpstatement.bindColumn(27, idx_code);         
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      gpstatement.bindColumn(28, idx_dept_code);
+      gpstatement.bindColumn(29, idx_key_order_number);
+      gpstatement.bindColumn(30, idx_seq);
+      stmt.executeUpdate();
+      stmt.close();
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_DELETE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "delete from v_pcm_plan where dept_code=? and order_number=? and seq=? ";
+      stmt = conn.prepareStatement(sSql); 
+      gpstatement.gp_stmt = stmt;
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      gpstatement.bindColumn(1, idx_dept_code);      
+      gpstatement.bindColumn(2, idx_key_order_number);
+      gpstatement.bindColumn(3, idx_seq);
+      stmt.executeUpdate();
+      stmt.close();
+    }
+     }
+ %><%@ include file="../../../comm_function/conn_tr_end.jsp"%>

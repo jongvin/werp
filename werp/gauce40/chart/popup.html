@@ -1,0 +1,72 @@
+<HTML>
+<HEAD>
+<TITLE> 점유비 조회 </TITLE>
+<script language='javascript'>
+     var ArgArr = new Array();
+	 var Args = window.dialogArguments;
+	 ArgArr = Args.split(";");
+
+	 function onload(){
+	 	ToinbWData2.Filter();
+	 }
+</script>
+<SCRIPT LANGUAGE=javascript FOR=XChart2 EVENT=OnCreate>
+
+		//**********[XChart WallBgcolor  정보입력]**********//
+		XChart2.Panel.Color = XChart2.ToOLEColor("white");
+		XChart2.Panel.BevelInner = 0;
+		XChart2.Panel.BevelOuter = 0;
+		XChart2.Panel.BorderStyle = 1;
+
+		//**********[XChart2 Title  정보입력]**********//
+		XChart2.Header.Text.Clear();
+		XChart2.Header.Text.Add(ArgArr[1]+"VOC별 점유비");
+		XChart2.Header.Font.Size = 18;
+		//XChart2.Axis.Left.AutomaticMaximum = false;
+		//XChart2.Axis.Left.Maximum = 9.0;
+
+		//**********[XChart2 Legend  정보입력]**********//
+		XChart2.Legend.Visible = 0;
+		XChart2.Legend.Symbol.Width = 100;
+		XChart2.Legend.Alignment = 2;
+		XChart2.Legend.Font.Size = 18;
+		XChart2.Legend.ShadowSize = 0;
+	    XChart2.Legend.Frame.Visible = false;
+
+		var SeriesIdx = XChart2.AddSeries(1);
+		XChart2.Series(SeriesIdx).DataID = "ToinbWData2";
+		//XChart2.Series(SeriesIdx).Title = "gubun";
+		XChart2.Series(SeriesIdx).YValueColumn = "jumyouilbi";
+		//XChart2.Series(SeriesIdx).XValueColumn = "gubun";
+		XChart2.Series(SeriesIdx).LabelColumn = "gubun";
+
+		//XChart2.General.Animated.steps = 8;
+
+		XChart2.Zoom.Animated = true;
+		XChart2.Zoom.AnimatedSteps = 8;
+
+	XChart2.Reset();
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=ToinbWData2 EVENT=OnFilter(row)>
+	if(ArgArr[0] == ToinbWData2.NameValue(row, 'Code'))	return true;
+	else return false;
+</SCRIPT>
+
+
+<OBJECT id=ToinbWData2 classid=clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB>
+		<PARAM NAME="DataID" VALUE="data02.csv">
+		<PARAM NAME="UseFilter" VALUE="true">
+		<PARAM NAME="SyncLoad" VALUE="true">
+</OBJECT>
+</HEAD>
+<BODY onload="onload()">
+<P><div align='center'>
+<OBJECT id=XChart2 style="WIDTH: 450px; HEIGHT: 300px"
+classid=clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2>
+<PARAM NAME="Base64" VALUE="">
+</OBJECT></div>
+</P>
+<div align='center'><input type="button" value="CLOSE" onclick="window.close()"></div>
+</BODY>
+</HTML>

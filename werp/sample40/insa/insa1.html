@@ -1,0 +1,837 @@
+<html>
+<head>
+<title>한국투자신탁증권재직상태</title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+var sel_cho;
+	
+	function fn_Onload(){
+		MxGrid_2.style.visibility = "hidden";
+		sel_cho = '1';
+		search_name.focus();
+		
+		im_url.src="./img/noimage.gif";
+	}
+
+	function fn_Tab(svg){
+		if(svg == '1'){
+			sel_cho = '1';
+			layer1.style.visibility = "visible";
+			MxGrid_2.style.visibility = "hidden";		
+		}else if(svg == '2'){
+			if(tb_DataSet01.CountRow == 0){
+				alert("사원을 먼저 조회해 주세요!");
+				search_name.focus();
+				return false;
+			}
+			sel_cho = '2';
+			layer1.style.visibility = "hidden";
+
+			MxGrid_2.style.visibility = "visible";
+			MxGrid_2.DataID="tb_DataSet02";
+			MxGrid_2.Editable="true";
+			MxGrid_2.UsingOneClick="1";
+			MxGrid_2.IndWidth="0";
+			MxGrid_2.HeadBorder="4";
+			MxGrid_2.BorderStyle="1";
+			MxGrid_2.LineColor="#FFFFFF";
+			MxGrid_2.HeadLineColor="#FFFFFF";
+			MxGrid_2.UsingOneClick="1 ";
+			MxGrid_2.HiddenHScroll="false";
+			MxGrid_2.TitleHeight="20";
+			MxGrid_2.SortView="Left";
+			MxGrid_2.format=''+
+					' <C>Value={CurRow} 	name="No"	width=40  align="center" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true</C> 			'+
+					' <C>ID=RELATION		name="관계"	width=40  align="center" editstyle=Combo data="1:부,2:모,3:형,4:제,5:자,6:매,7:처,8:자녀" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>		    '+
+					' <C>ID=NAME		name="성명"	width=60 HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true</C>            '+
+					' <C>ID=JUMIN_NO		name="주민등록번호"	width=100 align="center" mask="XXXXXX-XXXXXXX" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true</C>	'+	
+					' <C>ID=JOB		name="직업"	width=60 align="center" editstyle=Combo data="1:회사원,2:공무원,3:의사,4:변호사,5:자영업,6:학생,7:주부,8:기타" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>            '+
+					' <C>ID=ADDRESS		name="소재지(시/도)"	width=250 HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>	'+		
+					' <G>name="해당여부"        '+
+					' <C>ID=PARTNER_YN		name="배우자"	width=50 EditStyle=Check HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>        '+
+					' <C>ID=BUYANG_YN		name="부양"	width=50 EditStyle=Check HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>		    '+
+					' <C>ID=OLDMAN_YN		name="경로"	width=50 EditStyle=Check HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>            '+
+					' <C>ID=JANGAE_YN		name="장애"	width=50 EditStyle=Check HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>		    '+
+					' <C>ID=CHILD6_YN		name="6세이하"	width=50 EditStyle=Check HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE </C>		'+
+					' </G>';			
+		}else{
+			if(tb_DataSet01.CountRow == 0){
+				alert("사원을 먼저 조회해 주세요!");
+				search_name.focus();
+				return false;
+			}		
+			sel_cho = '3';
+			layer1.style.visibility = "hidden";
+			MxGrid_2.style.visibility = "visible";
+			MxGrid_2.DataID="tb_DataSet03";
+			MxGrid_2.Editable="true";
+			MxGrid_2.UsingOneClick="1";
+			MxGrid_2.IndWidth="0";
+			MxGrid_2.HeadBorder="4";
+			MxGrid_2.BorderStyle="1";
+			MxGrid_2.LineColor="#FFFFFF";
+			MxGrid_2.HeadLineColor="#FFFFFF";
+			MxGrid_2.UsingOneClick="1 ";
+			MxGrid_2.HiddenHScroll="false";
+			MxGrid_2.TitleHeight="20";
+			MxGrid_2.SortView="Left";
+			MxGrid_2.format=
+				    ' <C>Value={CurRow}		name="No"	width=30 HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE</C>			'+
+					' <C>ID=IN_DT			name="입사년월"	width=80 align="center" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true  Mask="XX/XX/XX" </C>		    '+
+					' <C>ID=OUT_DT			name="퇴사년일"	width=80 align="center" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true  Mask="XX/XX/XX" </C>		    '+
+					' <C>ID=COMPANY_NM		name="회사명"	width=135 HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE</C>            '+
+					' <C>ID=JIKCHK_NM		name="직위"	width=50 align="center" editstyle=Combo data="1:사원,2:대리,3:과장,4:차장,5:부장,6:이사,7:상무,8:사장" HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor=#FFFFCE sort=true</C>		    '+
+					' <C>ID=JOB				name="담당업무"	width=90 align="center" editstyle=Combo data="1:회사원,2:공무원,3:의사,4:변호사,5:자영업,6:학생,7:기타" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE</C>	'+	
+					' <C>ID=CAREER_YEAR		name="경력기간"	width=60 align="center" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE</C>	' +	
+					' <C>ID=OUT_CAUSE		name="퇴직사유"	width=70 HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE</C> ';
+		}
+
+	}
+	
+	function fn_Search(){
+		tb_DataSet01.DataID = './insa1_select1.jsp?SEARCH_NM='+search_name.value;
+		tb_DataSet01.Reset();
+		search_name.focus();
+		return;
+	}
+	
+	function fn_Insert(){
+		if(tb_DataSet01.text == ""){
+			alert(gs_CallMsg("M009", ""));
+			search_name.focus();
+			return;
+		}
+		
+		if(sel_cho == '1'){
+			tb_DataSet01.AddRow();
+			
+			tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"PHOTO_URL") = "http://localhost:8080/sample40/insa/img/noimage.gif";
+			
+			EMP_NO.focus();
+			
+		}else if(sel_cho == '2'){
+			tb_DataSet02.AddRow();
+			tb_DataSet02.Columnvalue(tb_DataSet02.Rowposition,1)=eval(tb_DataSet02.Columnvalue(parseFloat(tb_DataSet02.CountRow)-1,1)+1);
+			tb_DataSet02.Namevalue(tb_DataSet02.Rowposition,"EMP_NO")=tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+		}else{
+			tb_DataSet03.AddRow();
+			tb_DataSet03.Columnvalue(tb_DataSet03.Rowposition,1)=eval(tb_DataSet03.Columnvalue(parseFloat(tb_DataSet03.CountRow)-1,1)+1);
+			tb_DataSet03.Namevalue(tb_DataSet03.Rowposition,"EMP_NO")=tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+		}
+	}
+	
+	function fn_Delete(){
+		if(sel_cho == '1'){
+			tb_DataSet01.DeleteRow(tb_DataSet01.Rowposition);
+		}else if(sel_cho == '2'){
+			tb_DataSet02.DeleteRow(tb_DataSet02.Rowposition);
+		}else{
+			tb_DataSet03.DeleteRow(tb_DataSet03.Rowposition);
+		}	
+	}
+	
+	function fn_Save(){
+		if(tb_DataSet01.text == null || tb_DataSet01.text == "") {
+			alert(gs_CallMsg("M062", ""));
+			return;
+		} else {
+			if(tb_DataSet01.isUpdated || tb_DataSet02.isUpdated || tb_DataSet03.isUpdated ){
+				ADE_TR_1.KeyValue="JSP(I:STAND=tb_DataSet01,I:FAMILY=tb_DataSet02,I:CAREER=tb_DataSet03)";
+				if(confirm(gs_CallMsg("M007", ""))) {
+					ADE_TR_1.Post();
+				} else {
+					return;
+				}
+				
+			}else{
+				alert("변경된 사항이 없습니다!");
+				return;
+			}
+		}
+	}
+	
+	function fn_Print(){
+		if(tb_DataSet01.CountRow==0){
+			alert(gs_CallMsg('M064',''));
+			return;
+		}
+		{
+		tb_DataSet02.DataID = './insa1_select2.jsp??EMP_NO=';
+		tb_DataSet03.DataID = './insa1_select3.jsp??EMP_NO=';
+
+		ln_Report_Popup_2("Program1.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+		}
+	}
+	
+	function fn_Zipcode(objName,objName01){
+		var obj = document.all[objName];
+		var obj01 = document.all[objName01];
+
+		var url = "zipPopUp.html";
+		var param = "dialogLeft:310; dialogTop:110; status:no; help:no; dialogWidth:525px; dialogHeight:420px;";
+		var dt = showModalDialog(url, window, param);
+		if(dt != null && dt != '') {
+			nArray = dt.split(";");
+			obj.text = nArray[0];
+			obj01.value = nArray[1];
+			obj01.focus();
+		}  	
+	}
+
+	function fn_Calendar(objName) {
+		var obj = document.all[objName];
+	    var ls_Date = new Array();
+	    var ls_CurVal = obj.text;
+	    
+	    ls_Date = window.showModalDialog("Calendar.html", ls_CurVal, "dialogTop:"+event.screenY+"; dialogLeft:"+eval(event.screenX-185)+"; dialogWidth:220px; dialogHeight:242px; Raised; resizable: no; status: no");
+
+	    if (ls_Date != null){
+	        obj.text = ls_Date;
+	    }
+	}
+
+	function fn_image(){
+		if(tb_DataSet01.text == null || tb_DataSet01.text == "") {
+			alert(gs_CallMsg("M009", ""));
+			return;
+		}
+		
+		if(EMP_NO.value == "" && EMP_NO.value.length < 7) {
+			alert("사원번호 7자리를 먼저 입력하십시오.");
+			EMP_NO.focus();
+			return;
+		}
+		
+		var url = "imgPopUp.html";
+		var arg = tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO")+";"+tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"PHOTO_URL");
+		var param = "dialogLeft:310; dialogTop:110; status:no; help:no; dialogWidth:380px; dialogHeight:205px;";
+		
+		var dt = showModalDialog(url,arg, param);
+		
+		if(dt != null && dt != '' || typeof(dt) != 'undefined')
+		{
+			nArray = dt.split(";:;");
+			tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"PHOTO_URL") = nArray[0];
+			im_url.src = nArray[0];
+			return;
+		}  	else {
+			return;
+		}
+	
+	}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.0
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && document.getElementById) x=document.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+//-->
+</SCRIPT>
+
+<body  onload="fn_Onload(); MM_preloadImages('../images/direct_bu_color.gif','../images/input_bu.gif','../images/del_bu_color.gif','../images/save_bu_color.gif','../images/print_bu_color.gif','../images/search_bu_color.gif','../images/popup_20_20_over.gif','../images/tab1_color.gif','../images/tab2_color.gif','../images/tab3_color.gif');" topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="image/down_bg.gif">
+<table width="917" height="480" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+          <td height="100%" bgcolor="#FFFFFF"  valign="top">
+				<object classid=CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB id=tb_DataSet01>
+				  <param name=SyncLoad        value=true>
+				  <param name=SortExpr    	  value="+EMP_NO">
+				  <param name=Sort	    	  value="true">
+				  <param name=ViewDeletedRow    	value=true>
+				</object>
+			  
+			  <object classid=CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB id=tb_DataSet02>
+				  <param name=SyncLoad        value=true>
+			  </object>
+			  
+			  <object classid=CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB id=tb_DataSet03>
+				  <param name=SyncLoad        value=true>
+			  </object>    
+
+				<object id="ADE_TR_1" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5"> 
+				  <param name="ServerIP"  value="">
+				  <PARAM NAME="Action" 		VALUE="/sample40/insa/insa1_tr.jsp">
+				  <param name="KeyName"   	value="Toinb_dataid4">
+				</object>  
+
+			<!-- ======================================================================= -->
+			<!--                      component 기본사용 이벤트                         -->
+			<!-- ======================================================================= -->
+			<SCRIPT language=JavaScript for=MxGrid_1 event=OnClick()>
+					tb_DataSet02.DataID = './insa1_select2.jsp?EMP_NO='+tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+					tb_DataSet02.Reset();
+					
+					tb_DataSet03.DataID = './insa1_select3.jsp?EMP_NO='+tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+					tb_DataSet03.Reset();
+			</SCRIPT>
+
+			<SCRIPT language=JavaScript for=tb_DataSet01 event=OnLoadCompleted()>
+						tb_DataSet02.DataID = './insa1_select2.jsp?EMP_NO='+tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+						tb_DataSet02.Reset();				
+						tb_DataSet03.DataID = './insa1_select3.jsp?EMP_NO='+tb_DataSet01.Namevalue(tb_DataSet01.Rowposition,"EMP_NO");
+						tb_DataSet03.Reset();	
+						window.status = gs_CallMsg("M003", tb_DataSet01.CountRow);
+			</SCRIPT>
+
+
+			<SCRIPT language=JavaScript event=OnSuccess() for=ADE_TR_1>
+				 window.status = gs_CallMsg("M005", "");
+			//     for(i=0;i<ADE_TR_1.SrvErrCount('UserMsg');i++) {
+			//        alert(ADE_TR_1.SrvErrMsg('UserMsg',i));		 		
+			//      }
+			</SCRIPT>
+
+			<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+				alert("RMapper ErrorMsg  " + ErrorMsg);
+			</SCRIPT>
+			<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+			//	alert("RMapper Completed");
+			//	tb_TextArea.Src = "C:\\sample1.csv";
+			</SCRIPT>
+
+
+			<script language=JavaScript for=ADE_TR_1 event=OnFail()>
+				  alert("Transaction Fail!!!\n" + "ErrorCode : " + ADE_TR_1.ErrorCode + "\n" + "ErrorMsg  : " + ADE_TR_1.ErrorMsg);	
+			</script>
+
+
+
+
+
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img src="../images/title_icon.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>인사마스터</b></font></td>
+							</tr>
+						</table>
+			</td>
+					
+				<td width="395" height="30"> 
+				  <p align="right"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image2','','../images/input_bu_color.gif',1)"><img name="Image2" border="0" src="../images/input_bu.gif" width="61" height="20" onclick="fn_Insert()"></a> 
+					<a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image3','','../images/del_bu_color.gif',1)"><img name="Image3" border="0" src="../images/del_bu.gif" width="61" height="20" onclick="fn_Delete()"></a> 
+					<a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image4','','../images/save_bu_color.gif',1)"><img name="Image4" border="0" src="../images/save_bu.gif" width="61" height="20" onclick="fn_Save()"></a> 
+				  </p>
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="190" height="428" rowspan="2" valign="top">
+									<table cellpadding="0" cellspacing="0" width="95%">
+										<tr>
+											
+										</tr>
+										<tr>
+											<td width="170" height="50">
+												<table cellpadding="0" cellspacing="0" width="100%">
+													<tr>
+														<td width="191" height="25" valign="middle" colspan="2">
+													<p><font size="2"><b>사 원 명</b></font></p>
+												</td>
+											</tr>
+													<tr>
+														
+								  <td width="90" height="29"> 
+									<p>
+									  <INPUT id=search_name size="16" onKeyDown="if(event.keyCode==13) fn_Search(); return" style="ime-mode:active" class="input">
+																										
+								  <td width="90" height="29" valign="bottom"> 
+									<p align="right"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image6','','../images/search_bu_color.gif',1)"><img name="Image6" border="0" src="../images/search_bu.gif" width="61" height="20" onclick="fn_Search()"></a> 
+								  </tr>
+										</table></td>
+										</tr>
+										<tr>
+											<td width="170" height="420"><p>                            
+												<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="180" height="430" id="MxGrid_1">
+													<param name="DataID"	value="tb_DataSet01">
+													<param name="Editable"	value="true">
+													<param name="IndWidth"	    value="0">
+													<param name="HeadBorder"	value="4">
+													<param name="BorderStyle"	value="1">
+													<param name="LineColor"	    value="#FFFFFF">
+													<param name="HeadLineColor"	value="#FFFFFF">
+													<param name="UsingOneClick" value=1> 
+													<param name="HiddenHScroll" value=false>
+													<param name="TitleHeight"   value=20>
+													<param name="SortView"      value="Left">
+													<param name="Format"	value='
+														<C>ID=EMP_NO		name="사원번호"	width=80 align="center" HeadBgColor=#908F8B HeadColor=#FFFFFF  BgColor=#FFFFCE sort=true</C>
+														<C>ID=KOR_NM	name="성명"	width=78 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE sort=true</C>
+														'>
+												</object></p>
+											</td>
+										</tr>
+									</table>
+			</td>
+								<td width="120" height="93">
+
+								<div align="left">
+									<table cellpadding="0" cellspacing="0" width="100">
+										<tr>
+											<td width="100" height="110">
+												<p><input type="image" id=im_url border="0" width="100%" height="100%" onDblClick="fn_image();"></p>
+											</td>
+										</tr>
+									</table>
+									</div>
+
+			</td>
+								<td width="480" height="93">                        <div align="right">
+
+									<table cellpadding="0" cellspacing="0" width="452">
+											<tr>
+												
+							  <td width="146" height="24" colspan="2"><font size="2">사원번호 
+								/ 이전번호</font></td>
+												
+							  <td width="146" height="24"> 
+								<INPUT id=EMP_NO size="16" class="input" maxlength="7">
+							  </td>
+												
+							  <td width="160" height="24"> 
+								<INPUT id=BEF_EMP size="16" class="input">
+							  </td>
+										</tr>
+											<tr>
+												<td width="45" height="29" rowspan="2"><font size="2">성 &nbsp;&nbsp;명</font></td>
+												
+							  <td width="101" height="24"><font size="2">(한글 / 한문)</font></td>
+												
+							  <td width="146" height="24"> 
+								<INPUT id=KOR_NM size="16" class="input">
+							  </td>
+												
+							  <td width="160" height="24"> 
+								<INPUT id=HANJA_NM size="16" class="input">
+							  </td>
+										</tr>
+											<tr>
+												
+							  <td width="101" height="24"><font size="2">(영문)</font></td>
+												
+							  <td width="146" height="24"> 
+								<INPUT id=ENG_NM size="16" class="input">
+							  </td>
+												
+							  <td width="160" height="24">&nbsp;</td>
+										</tr>
+											<tr>
+												<td width="146" height="10" colspan="2"><font size="2">주민번호 / 생년월일</font></td>
+												<td width="146" height="10">
+												<OBJECT id=EM_JUMIN_NO style=" WIDTH: 124px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+													<PARAM NAME="Format" VALUE="000000-0000000">
+													<PARAM NAME="Numeric" VALUE="0">
+												</OBJECT>
+											</td>
+												<td width="160" height="10">
+												<OBJECT id=EM_BIRTH_DT style=" WIDTH: 124px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+													<PARAM NAME="Format" VALUE="YYYY-MM-DD">
+													<PARAM NAME="Numeric" VALUE="0">
+												</OBJECT>
+											</td>
+										</tr>
+											<tr>
+												<td width="146" height="9" colspan="2"><font size="2">직급 / 직책</font></td>
+												<td width="146" height="9">
+													<object id=Lux_JIKGUP_CD classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 125px; HEIGHT: 283px">
+														<PARAM NAME="Index" VALUE="0">
+														<PARAM NAME="CBData" VALUE="^-- 선택 --,1^사원,2^대리,3^과장,4^차장,5^부장,6^이사,7^상무,8^사장,">
+														<param name="CBDataColumns"	 value="Code,Name">
+														<param name="EditExprFormat" value="%;Name">
+														<param name="ListExprFormat" value="Code^1^30,Name^0^60">
+														<param name=BindColumn   value="Code">
+													</object>
+												</td>
+												<td width="160" height="9">
+													<object id=Lux_JIKCHK_CD classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 125px; HEIGHT: 283px">
+														<PARAM NAME="Index" VALUE="0">
+														<PARAM NAME="CBData" VALUE="^-- 선택 --,1^팀원,2^팀장,3^부서장,4^본부장">
+														<param name="CBDataColumns"	value="Code,Name">
+														<param name="EditExprFormat" value="%;Name">
+														<param name="ListExprFormat" value="Code^1^30,Name^0^60">
+														<param name=BindColumn   value="Code">
+													</object>                                    
+											</td>
+										</tr>
+									</table>
+									</div>
+			</td>
+							</tr>
+							<tr>
+								<td width="600" height="300" colspan="2" valign="top">
+									<table cellpadding="0" cellspacing="0" width="100%">
+										<tr>
+											
+							<td width="590" height="25" valign="top"> <a onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image11','','../images/tab1_color.gif',1)" onclick="fn_Tab(1)"><img name="Image11" border="0" src="../images/tab1.gif" width="75" height="23"></a> 
+							  <a onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image12','','../images/tab2_color.gif',1)" onclick="fn_Tab(2)"><img name="Image12" border="0" src="../images/tab2.gif" width="75" height="23"></a> 
+							  <a onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image13','','../images/tab3_color.gif',1)" onclick="fn_Tab(3)"><img name="Image13" border="0" src="../images/tab3.gif" width="75" height="23"></a> 
+							</td>
+										</tr>
+										<tr>
+											<td width="590" height="342" valign="top">
+												<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_2">
+												</object></p>
+			</td>
+										</tr>
+									</table>
+			</td>
+							</tr>
+						</table>
+			</td>
+				</tr>
+			</table>
+			<div id="layer1" style="background-color:white; width:598px; height:342px; position:absolute; left:293px; top:168px; z-index:1; visibility:visible;"> 
+			  <table width="587" cellspacing="1" cellpadding="3" bgcolor="#D4D0C8" border="0">
+				<tr bgcolor="E7E3D9"> 
+				  <td  class="ARbg01" bgcolor="#FFFFFF">
+					<table cellpadding="0" cellspacing="0" align="center" width="587">
+					  <tr> 
+						<td width="399" height="210"> 
+						  <table cellpadding="0" cellspacing="0" width="391">
+							<tr> 
+							  <td width="391" colspan="2" height="20"> 
+								<p><font size="2">■ <b>인적사항</b></font></p>
+							  </td>
+							</tr>
+							<tr> 
+							  <td width="65" height="30"> 
+								<p align="right"><font size="2">우편번호</font></p>
+							  </td>
+							  <td width="326" height="30"><font size="2"> </font><font size="2"></font>&nbsp;<font size="2"> 
+								<object id=EM_CUR_ZIP_NO style=" WIDTH: 55px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+								  <param name="Format" value="000-000">
+								</object> </font> <a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image14','','../images/popup_20_20_over.gif',1)"><img name="Image14" border="0" src="../images/popup_20_20.gif" width="20" height="20" onclick="fn_Zipcode('EM_CUR_ZIP_NO','CUR_ADDRESS');"></a></td>
+							</tr>
+							<tr> 
+							  <td width="65" height="27"> 
+								<p align="right"><font size="2">현거주지</font></p>
+							  </td>
+							  <td width="326" height="27"><font size="2"> </font>&nbsp;<font size="2"> 
+								<input id=CUR_ADDRESS size="43" name="Input" class="input">
+								</font></td>
+							</tr>
+							<tr> 
+							  <td width="65"> 
+								<p align="right"><font size="2">전화번호</font></p>
+							  </td>
+							  <td width="326"><font size="2"> </font>&nbsp;<font size="2"> 
+								<object id=EM_PHONE_NO style=" WIDTH: 120px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+								  <param name="Format" value="000-0000-0000">
+								</object> </font></td>
+							</tr>
+							<tr> 
+							  <td width="65"> 
+								<p align="right"><font size="2">휴대전화</font></p>
+							  </td>
+							  <td width="326"><font size="2"> </font>&nbsp;<font size="2"> 
+								<object id=EM_H_PHONE_NO style=" WIDTH: 120px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+								  <param name="Format" value="0000-0000-0000">
+								</object> </font></td>
+							</tr>
+							<tr> 
+							  <td width="65" height="29"> 
+								<p align="right"><font size="2">전자우편</font></p>
+							  </td>
+							  <td width="326" height="29"><font size="2"> </font>&nbsp;<font size="2"> 
+								<input id=MAIL_ADDRESS size="27" name="Input" class="input">
+								</font></td>
+							</tr>
+							<tr> 
+							  <td width="65" height="28"> 
+								<p align="right"><font size="2">출신지역</font></p>
+							  </td>
+							  <td width="326" height="28"><font size="2"> </font>&nbsp;<font size="2"> 
+								<object id=Lux_AREA_CD classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 160px">
+								  <param name="Index" value="0">
+								  <param name="CBData" value="^-- 선택 --,1^서울,2^인천,3^대전,4^대구,5^광주,6^울산,7^부산,8^강원도,9^경기도,10^충청도,11^경상도,12^전라도,13^제주도">
+								  <param name="CBDataColumns"	value="Code, Name">
+								  <param name="EditExprFormat" value="%;Name">
+								  <param name="ListExprFormat" value="Code^1^20,Name^0^80">
+								  <param name=BindColumn   value="Code">
+								</object> 
+								</font></td>
+							</tr>
+							<tr> 
+							  <td width="65" height="30"> 
+								<p align="right"><font size="2">본적주소</font></p>
+							  </td>
+							  <td width="326" height="30"><font size="2"> </font>&nbsp;<font size="2"> 
+								<input id=BON_ADDRESS size="43" name="Input" class="input">
+								</font></td>
+							</tr>
+						  </table>
+						</td>
+						<td width="186" height="340" rowspan="2" valign="top"> 
+						  <table cellpadding="0" cellspacing="0" width="100%">
+							<tr> 
+							  <td width="196" height="339" valign="top"> 
+								<p><font size="1"><br>
+								  </font> 
+								<table cellpadding="0" cellspacing="0" width="100%">
+								  <tr> 
+									<td width="191" height="20" colspan="2"> 
+									  <p><font size="2">■ </font><b><font size="2">기술분야</font></b></p>
+									</td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">전문분야</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=Lux_PRO_GB classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 283px">
+										<param name="Index" value="0">
+										<param name="CBData" value="^-- 선택 --,1^Sales,2^PreSales,3^Engineer">
+										<param name="CBDataColumns"	value="Code, Name">
+										<param name="EditExprFormat" value="%;Name">
+										<param name="ListExprFormat" value="Code^1^20,Name^0^80">
+										<param name=BindColumn   value="Code">
+									  </object> </td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">등급구분</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=Lux_LEVEL_GB classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 283px">
+										<param name="Index" value="0">
+										<param name="CBData" value="^-- 선택 --,1^특급,2^고급,3^중급,4^초급,">
+										<param name="CBDataColumns"	value="Code, Name">
+										<param name="EditExprFormat" value="%;Name">
+										<param name="ListExprFormat" value="Code^1^20,Name^0^80">
+										<param name=BindColumn   value="Code">
+									  </object> </td>
+								  </tr>
+								</table>
+								<table cellpadding="0" cellspacing="0" width="100%">
+								  <tr> 
+									<td width="191" height="40" colspan="2" valign="bottom"> 
+									  <p><font size="2">■ </font><b><font size="2">입/퇴사일자</font></b></p>
+									</td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">입사일자</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=EM_IN_DT style="WIDTH: 100px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+										<param name="Format" value="YYYY-MM-DD">
+										<param name="Numeric" value="0">
+									  </object><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image7','','../images/popup_20_20_over.gif',1)"><img name="Image7" border="0" src="../images/popup_20_20.gif" width="20" height="20" onclick="fn_Calendar('EM_IN_DT')"></a></td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">퇴직기준</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=EM_OUT_STD_DT style=" WIDTH: 100px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+										<param name="Format" value="YYYY-MM-DD">
+										<param name="Numeric" value="0">
+									  </object><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image8','','../images/popup_20_20_over.gif',1)"><img name="Image8" border="0" src="../images/popup_20_20.gif" width="20" height="20" onclick="fn_Calendar('EM_OUT_STD_DT')"></a></td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">퇴사일자</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=EM_OUT_DT style=" WIDTH: 100px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+										<param name="Format" value="YYYY-MM-DD">
+										<param name="Numeric" value="0">
+									  </object><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image9','','../images/popup_20_20_over.gif',1)"><img name="Image9" border="0" src="../images/popup_20_20.gif" width="20" height="20" onclick="fn_Calendar('EM_OUT_DT')"></a></td>
+								  </tr>
+								</table>
+								<table cellpadding="0" cellspacing="0" width="100%">
+								  <tr> 
+									<td width="191" height="60" colspan="2" valign="bottom"> 
+									  <p><font size="2">■ </font><b><font size="2">여권정보</font></b></p>
+									</td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">여권번호</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object  id="EM_PASS_NO" classid="clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F" width="100" height="20">
+									  </object> </td>
+								  </tr>
+								  <tr> 
+									<td width="65" height="18"> 
+									  <p align="right"><font size="2">유효일자</font></p>
+									</td>
+									<td width="126" height="18">&nbsp; <object id=EM_PASS_VALID_DT style=" WIDTH: 100px;" classid=clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F VIEWASTEXT>
+										<param name="Format" value="YYYY-MM-DD">
+										<param name="Numeric" value="0">
+									  </object><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image10','','../images/popup_20_20_over.gif',1)"><img name="Image10" border="0" src="../images/popup_20_20.gif" width="20" height="20" onclick="fn_Calendar('EM_PASS_VALID_DT')"></a></td>
+								  </tr>
+								</table>
+							  </td>
+							</tr>
+						  </table>
+						</td>
+					  </tr>
+					  <tr> 
+						<td width="399" height="130" valign="bottom"> 
+						  <table cellpadding="0" cellspacing="0" width="376">
+							<tr> 
+							  <td width="376" colspan="4" height="20"> 
+								<p><font size="2">■ <b>병무사항</b></font></p>
+							  </td>
+							</tr>
+							<tr> 
+							  <td width="65"> 
+								<p align="right"><font size="2">역종구분</font></p>
+							  </td>
+							  <td width="130">&nbsp; <object id=Lux_ARMY_TYPE classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 200px">
+								  <param name="Index" value="0">
+								  <param name="CBData" value="^-- 선택 --,1^예비역,2^방위,3^공익근무,4^산업체위탁,5^면제">
+								  <param name="CBDataColumns"	value="Code, Name">
+								  <param name="EditExprFormat" value="%;Name">
+								  <param name="ListExprFormat" value="Code^1^20,Name^0^80">
+								  <param name=BindColumn   value="Code">
+								</object> </td>
+								<td width="41"><font size="2">혈액형</font></td>
+							  <td width="140"><font size="2"> </font>&nbsp;<font size="2"> 
+								<object id=Lux_BLOOD_TYPE classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH:100px; HEIGHT:100px">
+								  <param name="Index" value="0">
+								  <param name="CBData" value="^-- 선택 --,1^A형,2^B형,3^O형,4^AB형">
+								  <param name="CBDataColumns"	value="Code, Name">
+								  <param name="EditExprFormat" value="%;Name">
+								  <param name="ListExprFormat" value="Code^1^20,Name^0^80">
+								  <param name=BindColumn   value="Code">
+								</object> </font></td>
+							 
+							</tr>
+							<tr> 
+							  <td width="65"> 
+								<p align="right"><font size="2">군별구분</font></p>
+							  </td>
+							  <td width="130">&nbsp; <object id=Lux_BRANCHE_GB classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 150px">
+								  <param name="Index" value="0">
+								  <param name="CBData" value="^-- 선택 --,1^육군,2^해군,3^공군">
+								  <param name="CBDataColumns"	value="Code, Name">
+								  <param name="EditExprFormat" value="%;Name">
+								  <param name="ListExprFormat" value="Code^1^20,Name^0^80">
+								  <param name=BindColumn   value="Code">
+								</object> </td>
+							  <td width="41"><font size="2">체 &nbsp;&nbsp;중</font></td>
+							  <td width="140"><font size="2"> </font><font size="2"> &nbsp; 
+								<input id=WEIGHT size="7" name="Input" class="input">
+								Kg </font></td>
+							</tr>
+							<tr> 
+							  <td width="65"> 
+								<p align="right"><font size="2">병과구분</font></p>
+							  </td>
+												<td width="130">
+													<p>&nbsp; <object id=Lux_ARMS_GB classid=clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197 style="WIDTH: 100px; HEIGHT: 150px">
+													<param name="Index" value="0">
+													<param name="CBData" value="^-- 선택 --,1^보병,2^통신,3^보급">
+													<param name="CBDataColumns"	value="Code, Name">
+													<param name="EditExprFormat" value="%;Name">
+													<param name="ListExprFormat" value="Code^1^20,Name^0^80">
+													<param name=BindColumn   value="Code">
+								</object> </p>
+			</td>
+							   <td width="41"><font size="2">신 &nbsp;&nbsp;장</font></td>
+							  <td width="140"> <font size="2">&nbsp; 
+								<input id=HEIGHT size="7" name="Input" class="input">
+								Cm</font> </td>
+							</tr>
+						  </table>
+						</td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+			  </table>
+			</div>
+		  </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<OBJECT id=ADE_Bind_2 classid=clsid:4A35BB2C-B831-4199-A486-FEA332D085D9>
+	<PARAM NAME="DataID" VALUE="tb_DataSet01">
+	<PARAM NAME="BindInfo" VALUE="
+		<C>Col=PHOTO_URL 		Ctrl=im_url 			Param=Src</C>
+		<C>Col=EMP_NO 			Ctrl=EMP_NO 			Param=value</C>
+		<C>Col=BEF_EMP 			Ctrl=BEF_EMP 			Param=value</C>
+		<C>Col=KOR_NM 			Ctrl=KOR_NM 			Param=value</C>
+		<C>Col=HANJA_NM 		Ctrl=HANJA_NM 			Param=value</C>
+		<C>Col=ENG_NM 			Ctrl=ENG_NM 			Param=value</C>
+		<C>Col=JUMIN_NO 		Ctrl=EM_JUMIN_NO 		Param=Text</C>
+		<C>Col=BIRTH_DT 		Ctrl=EM_BIRTH_DT 		Param=Text</C>
+		<C>Col=JIKGUP_CD 		Ctrl=Lux_JIKGUP_CD 		Param=BindColVal</C>
+		<C>Col=JIKCHK_CD 		Ctrl=Lux_JIKCHK_CD 		Param=BindColVal</C>
+		<C>Col=CUR_ZIP_NO 		Ctrl=EM_CUR_ZIP_NO 		Param=Text</C>
+		<C>Col=CUR_ADDRESS 		Ctrl=CUR_ADDRESS 		Param=value</C>
+		<C>Col=PHONE_NO 		Ctrl=EM_PHONE_NO 		Param=Text</C>
+		<C>Col=H_PHONE_NO 		Ctrl=EM_H_PHONE_NO 		Param=Text</C>
+		<C>Col=MAIL_ADDRESS 	Ctrl=MAIL_ADDRESS 		Param=value</C>
+		<C>Col=BORN_AREA_GB 	Ctrl=Lux_AREA_CD 		Param=BindColVal</C>
+		<C>Col=BON_ADDRESS 		Ctrl=BON_ADDRESS 		Param=value</C>
+		<C>Col=PRO_GB 			Ctrl=Lux_PRO_GB 		Param=BindColVal</C>
+		<C>Col=LEVEL_GB 		Ctrl=Lux_LEVEL_GB 		Param=BindColVal</C>
+		<C>Col=IN_DT 			Ctrl=EM_IN_DT 			Param=Text</C>
+		<C>Col=OUT_STD_DT 		Ctrl=EM_OUT_STD_DT 		Param=Text</C>
+		<C>Col=OUT_DT 			Ctrl=EM_OUT_DT 			Param=Text</C>
+		<C>Col=PASS_NO 			Ctrl=EM_PASS_NO 		Param=Text</C>
+		<C>Col=PASS_VALID_DT 	Ctrl=EM_PASS_VALID_DT 	Param=Text</C>
+		<C>Col=ARMY_TYPE 		Ctrl=Lux_ARMY_TYPE 		Param=BindColVal</C>
+		<C>Col=HEIGHT 			Ctrl=HEIGHT 			Param=VALUE</C>
+		<C>Col=BRANCHE_GB 		Ctrl=Lux_BRANCHE_GB 	Param=BindColVal</C>
+		<C>Col=WEIGHT 			Ctrl=WEIGHT 			Param=value</C>
+		<C>Col=BLOOD_TYPE 		Ctrl=Lux_BLOOD_TYPE 	Param=BindColVal</C>
+		<C>Col=ARMS_GB 			Ctrl=Lux_ARMS_GB 		Param=BindColVal</C>		
+	">
+	</OBJECT>
+<!-- RMapper component 선언 -->
+<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+	<PARAM NAME="MappingInfo" VALUE="
+
+			EXTRACT *
+			FROM  tb_DataSet01,
+				{
+					SERVICE
+						[[ EXTRACT *
+							  FROM self				 
+						]] AT tb_DataSet02
+						PARAM EMP_NO = tb_DataSet01.EMP_NO 
+				},
+				{
+					SERVICE
+						[[ EXTRACT *
+							  FROM self				 
+						]] AT tb_DataSet03
+						PARAM EMP_NO = tb_DataSet01.EMP_NO 
+				}
+
+
+	">
+</OBJECT>
+</body>
+</html>

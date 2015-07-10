@@ -1,0 +1,415 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="JavaScript">
+<!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script>
+
+</head>
+<SCRIPT LANGUAGE="JavaScript">
+	var TotalFlag = "[+]";
+	var ComputeCount = 1;
+
+	function fn_Onload(){
+		fn_MxChartCrate_Line();
+		fn_Search();
+	}
+	
+	function fn_Change(){
+		MxDataSet_Grid1.DataID = "./analysis2_header.csv";
+		MxDataSet_Grid1.Reset();
+		MxDataSet_Grid2.DataID = "./analysis2_data.csv";
+		MxDataSet_Grid2.Reset();
+
+		fn_GridShow(select_2.value);
+	}
+
+	function fn_Search(){	
+		MxDataSet_Grid1.DataID = "./analysis2_header.csv";
+		MxDataSet_Grid1.Reset();
+		MxDataSet_Grid2.DataID = "./analysis2_data.csv";
+		MxDataSet_Grid2.Reset();
+
+		fn_MxChartDraw_Line();
+		fn_GridShow(select_2.value);
+	}
+
+	function fn_Print(){
+//			ln_Report_MakeData("pgm3_Rpt.csv");				//csv화일로 생성
+		ln_Report_Popup("Program9.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+	}
+
+	function fn_GridFormat(){
+		var RowData	= 1;
+
+		MxGrid_1.Format = '';
+		MxGrid_1.Format += '<F>id=title name='+MxDataSet_Grid1.NameValue(1,'凸title')+' width=120 bgcolor=#908F8B color=#FFFFFF align=center HeadBgColor=#908F8B HeadColor=#FFFFFF </F>';
+
+		for(i=2; MxDataSet_Grid1.CountColumn>=i; i++){
+			if(MxDataSet_Grid1.ColumnID(i).substring(0,1) == "凸"){
+				var HaderTotal = MxDataSet_Grid1.NameValue(1,MxDataSet_Grid1.ColumnID(i));
+				MxGrid_1.Format += '<C>id='+MxDataSet_Grid1.ColumnID(i)+' name='+TotalFlag+'"'+HaderTotal+'" width=70 bgcolor=#F5F0B0 HeadBgColor=#908F8B HeadColor=#FFFFFF </C>';
+			}else{
+				var HeaderTitle = MxDataSet_Grid1.NameValue(1,MxDataSet_Grid1.ColumnID(i));
+				MxGrid_1.Format += '<C>id=yyyymm'+RowData+' name="'+HeaderTitle+'" width=70 show=false HeadBgColor=#ACABA8 HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,"#FFFFCE",1,"#FFFFFF")}</C>';	
+				RowData = RowData+1;
+			}
+		}
+
+		ComputeCount = 1;	
+
+		fn_ComputeTotal();
+	}
+
+	function fn_ComputeTotal(){
+		for(i=1; MxDataSet_Grid1.CountColumn>=i; i++){
+			if(MxDataSet_Grid1.ColumnID(i).substring(0,1) == "凸"){		
+				var SumCount = MxDataSet_Grid1.ColumnIndex(MxDataSet_Grid1.ColumnID(i));
+				var ColumnName = "";
+				
+				for(j=ComputeCount; SumCount>j; j++){
+					ColumnName += "+";
+					ColumnName += MxDataSet_Grid1.ColumnID(j);
+				}
+				MxGrid_1.ColumnProp(MxDataSet_Grid1.ColumnID(i), "Value") = "{"+ColumnName+"}";
+				ComputeCount = SumCount + 1;
+			}
+		}
+	}
+
+	function fn_GridShow(ClickColumn){
+		var ClickColumnNo = ClickColumn.substring(6);
+		var BFClickColumnNo = parseInt(ClickColumnNo) - 1;
+		var BFClickColumnIndex = MxDataSet_Grid1.ColumnIndex(ClickColumn.substring(0,6) + BFClickColumnNo);
+		var ClickColumnIndex = MxDataSet_Grid1.ColumnIndex(ClickColumn);
+
+		for(i=BFClickColumnIndex; ClickColumnIndex>i; i++){
+			if(MxDataSet_Grid1.ColumnID(i).substring(0,1) != "凸"){
+				if(MxGrid_1.ColumnProp(MxDataSet_Grid1.ColumnID(i), "Show") == "TRUE"){
+					MxGrid_1.ColumnProp(MxDataSet_Grid1.ColumnID(i), "Show") = "FALSE";
+					MxGrid_1.ColumnProp(ClickColumn, "Name") = "[+]" + MxDataSet_Grid1.NameValue(1,ClickColumn);
+				}else{
+					MxGrid_1.ColumnProp(MxDataSet_Grid1.ColumnID(i), "Show") = "TRUE";
+					MxGrid_1.ColumnProp(ClickColumn, "Name") = "[-]" + MxDataSet_Grid1.NameValue(1,ClickColumn);
+				}
+			}			
+		}
+	}
+
+	function fn_MxChartCrate_Line(){
+		MxChart_1.Aspect.View3D = true;
+
+		MxChart_1.Panel.Color = MxChart_1.ToOLEColor("#dddddd,#ffffff");
+		MxChart_1.Panel.BorderStyle = 1;
+		MxChart_1.Panel.Gradient.Visible = true;
+		MxChart_1.Panel.Gradient.Direction = 0;
+		MxChart_1.Panel.Gradient.StartColor = MxChart_1.ToOLEColor('#B8B8B8');
+		MxChart_1.Panel.Gradient.EndColor = MxChart_1.ToOLEColor('#E7E7E7');
+		MxChart_1.Zoom.Enable = false;
+
+		MxChart_1.Axis.Left.Labels.Font.Color   = MxChart_1.ToOLEColor("BLUE");
+		MxChart_1.Axis.Bottom.Labels.Font.Color = MxChart_1.ToOLEColor("RED");
+		
+		MxChart_1.Axis.Bottom.Automatic = false;
+		MxChart_1.Axis.Bottom.Maximum = 12;
+		MxChart_1.Axis.Bottom.ExactDateTime = MxChart_1.GetDateTimeStep(5);
+
+		MxChart_1.Legend.Visible = true;
+		MxChart_1.Legend.LegendStyle = 0;
+		MxChart_1.Legend.TextStyle = 0;
+		MxChart_1.Legend.CheckBoxes = true;
+		MxChart_1.Legend.Symbol.Width = 20;
+		MxChart_1.Legend.Alignment = 1;
+		MxChart_1.Legend.Font.Size = 8.7;
+		MxChart_1.Legend.TopPos = 5;
+		MxChart_1.Legend.VertSpacing = 0;
+		MxChart_1.Legend.ShadowSize = 5;
+		MxChart_1.Legend.ShapeStyle = 0;
+		MxChart_1.Legend.Color = MxChart_1.ToOLEColor("#E0F0FF");
+		MxChart_1.Legend.ShadowColor = MxChart_1.ToOLEColor("#8080C0");
+
+		MxChart_1.Header.Alignment = 0; 
+		MxChart_1.Header.top = 20;
+		MxChart_1.Header.left = 22;
+		MxChart_1.Scroll.Enable = false;
+	}
+
+	function fn_MxChartDraw_Line(){
+		MxChart_1.RemoveAllSeries();
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(0).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(0).asArea.MultiArea = 1;
+		MxChart_1.Series(0).Title = "C1" ;
+		MxChart_1.Series(0).XValueColumn = "time";
+		MxChart_1.Series(0).color = MxChart_1.ToOLEColor("#B87070");
+		MxChart_1.Series(0).YValueColumn = "yyyymm1";
+		MxChart_1.Series(0).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(1).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(1).asArea.MultiArea = 1;
+		MxChart_1.Series(1).Title = "C2" ;
+		MxChart_1.Series(1).XValueColumn = "time";
+		MxChart_1.Series(1).color = MxChart_1.ToOLEColor("#FF7070");
+		MxChart_1.Series(1).YValueColumn = "yyyymm2";
+		MxChart_1.Series(1).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(2).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(2).asArea.MultiArea = 1;
+		MxChart_1.Series(2).Title = "C3" ;
+		MxChart_1.Series(2).XValueColumn = "time";
+		MxChart_1.Series(2).color = MxChart_1.ToOLEColor("#FFB870");
+		MxChart_1.Series(2).YValueColumn = "yyyymm3";
+		MxChart_1.Series(2).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(3).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(3).asArea.MultiArea = 1;
+		MxChart_1.Series(3).Title = "C4" ;
+		MxChart_1.Series(3).XValueColumn = "time";
+		MxChart_1.Series(3).color = MxChart_1.ToOLEColor("#FFF770");
+		MxChart_1.Series(3).YValueColumn = "yyyymm4";
+		MxChart_1.Series(3).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(4).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(4).asArea.MultiArea = 1;
+		MxChart_1.Series(4).Title = "C5" ;
+		MxChart_1.Series(4).XValueColumn = "time";
+		MxChart_1.Series(4).color = MxChart_1.ToOLEColor("#70B870");
+		MxChart_1.Series(4).YValueColumn = "yyyymm5";
+		MxChart_1.Series(4).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(5).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(5).asArea.MultiArea = 1;
+		MxChart_1.Series(5).Title = "C6" ;
+		MxChart_1.Series(5).XValueColumn = "time";
+		MxChart_1.Series(5).color = MxChart_1.ToOLEColor("#70B8B8");
+		MxChart_1.Series(5).YValueColumn = "yyyymm6";
+		MxChart_1.Series(5).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(6).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(6).asArea.MultiArea = 1;
+		MxChart_1.Series(6).Title = "C7" ;
+		MxChart_1.Series(6).XValueColumn = "time";
+		MxChart_1.Series(6).color = MxChart_1.ToOLEColor("#7070FF");
+		MxChart_1.Series(6).YValueColumn = "yyyymm7";
+		MxChart_1.Series(6).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(7).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(7).asArea.MultiArea = 1;
+		MxChart_1.Series(7).Title = "C8" ;
+		MxChart_1.Series(7).XValueColumn = "time";
+		MxChart_1.Series(7).color = MxChart_1.ToOLEColor("#7070B8");
+		MxChart_1.Series(7).YValueColumn = "yyyymm8";
+		MxChart_1.Series(7).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(8).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(8).asArea.MultiArea = 1;
+		MxChart_1.Series(8).Title = "C9" ;
+		MxChart_1.Series(8).XValueColumn = "time";
+		MxChart_1.Series(8).color = MxChart_1.ToOLEColor("#B870B8");
+		MxChart_1.Series(8).YValueColumn = "yyyymm9";
+		MxChart_1.Series(8).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(9).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(9).asArea.MultiArea = 1;
+		MxChart_1.Series(9).Title = "C10" ;
+		MxChart_1.Series(9).XValueColumn = "time";
+		MxChart_1.Series(9).color = MxChart_1.ToOLEColor("#A69870");
+		MxChart_1.Series(9).YValueColumn = "yyyymm10";
+		MxChart_1.Series(9).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(10).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(10).asArea.MultiArea = 1;
+		MxChart_1.Series(10).Title = "C11" ;
+		MxChart_1.Series(10).XValueColumn = "time";
+		MxChart_1.Series(10).color = MxChart_1.ToOLEColor("#E8C3EE");
+		MxChart_1.Series(10).YValueColumn = "yyyymm11";
+		MxChart_1.Series(10).asArea.AreaPen.visible = false;
+
+		var idx = MxChart_1.AddSeries(3);
+		MxChart_1.Series(11).DataID = "MxDataSet_Grid2";
+		MxChart_1.Series(11).asArea.MultiArea = 1;
+		MxChart_1.Series(11).Title = "C12" ;
+		MxChart_1.Series(11).XValueColumn = "time";
+		MxChart_1.Series(11).color = MxChart_1.ToOLEColor("#CDC631");
+		MxChart_1.Series(11).YValueColumn = "yyyymm12";
+		MxChart_1.Series(11).asArea.AreaPen.visible = false;
+
+		MxChart_1.reset();
+	}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+//	alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+<script language="javascript"  for=MxGrid_1 event="OnClick(row, colid)">
+	if(row == 0 && colid.substring(0,1) == "凸"){
+		fn_GridShow(colid);
+	}
+</script>
+
+<script language=JavaScript for=MxDataSet_Grid2 event=OnLoadCompleted(rowcnt)>
+	window.status = gs_CallMsg("M003", MxDataSet_Grid2.CountRow);
+	fn_GridFormat();
+</script>
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+
+<!-- MxDataSet 선언부-->
+<OBJECT ID="MxDataSet_Grid1" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=true>
+</OBJECT>
+<OBJECT ID="MxDataSet_Grid2" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=true>
+</OBJECT>
+
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_Onload();na_preload_img(false, '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm9_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>월별 / 분기별 생산현황</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<font size="2">&nbsp;&nbsp;<b>조회기준</b></font>                                
+											</td>
+											<td width="30" height="25">
+												<p>2003</p>
+											</td>
+											<td width="41" height="25">년<td width="7" height="25">
+											<td width="15" height="25"></td>
+											<td width="45" height="25">
+												<p><select name="select_2" size="1" onchange="fn_Change();">
+													<option selected value="凸title1">1/4</option>
+													<option value="凸title2">2/4</option>
+													<option value="凸title3">3/4</option>
+													<option value="凸title4">4/4</option>
+												</select></p>
+											</td>
+											<td width="40" height="25">분기</td>
+													<td width="515" height="25"></td>
+										</tr>
+									</table></td>
+							</tr>
+							<tr>
+								<td width="790" height="262" valign="top">                        
+									<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="790" height="250"></object></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="166">                        
+									<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_1" style="font-size:9pt">
+									<param name="DataID" value="MxDataSet_Grid2">
+									<param name="TitleHeight" value="30">
+									<param name="IndWidth"	value="0">
+									<param name="HeadBorder"	value="4">
+									<param name="BorderStyle"	value="1">
+									<param name="LineColor"	value="#FFFFFF">
+									<param name="HeadLineColor"	value="#FFFFFF">
+									</object></p>
+							</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+
+				EXTRACT * FROM MxDataSet_Grid2
+
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

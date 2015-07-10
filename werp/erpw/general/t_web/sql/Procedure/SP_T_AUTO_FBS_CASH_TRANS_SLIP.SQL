@@ -1,0 +1,481 @@
+CREATE OR REPLACE PROCEDURE SP_T_AUTO_FBS_CASH_TRANS_SLIP
+(
+	AR_SLIP_ID                NUMBER,
+	AR_MAKE_DT                VARCHAR2,
+	AR_SLIP_KIND_TAG          VARCHAR2,
+	AR_MAKE_COMP_CODE         VARCHAR2,
+	AR_MAKE_DEPT_CODE         VARCHAR2,
+	AR_CHARGE_PERS            NUMBER,
+	AR_INOUT_DEPT_CODE        VARCHAR2,
+	AR_MAKE_PERS              NUMBER,
+	AR_MAKE_NAME              VARCHAR2,
+	AR_AUTO_FBS_CASH_TRANS_SEQ  NUMBER,
+	AR_CRTUSERNO              NUMBER
+)
+IS
+lnSLIP_IDSEQ     T_ACC_SLIP_BODY.SLIP_IDSEQ%TYPE;
+lnMAKE_SLIPLINE  T_ACC_SLIP_BODY.MAKE_SLIPLINE%TYPE;
+lnMAKE_SEQ       T_ACC_SLIP_HEAD.MAKE_SEQ%TYPE;
+
+TYPE SLIP_DETAIL_TABLE IS TABLE OF T_FB_CASH_TRANSFER_DATA%ROWTYPE
+	INDEX BY BINARY_INTEGER;
+ltSLIP_BODY SLIP_DETAIL_TABLE;
+lrSLIP_BODY T_FB_CASH_TRANSFER_DATA%ROWTYPE;
+
+lsOUT_BANK_BRANCH_CODE	T_ACCNO_CODE.BANK_CODE%TYPE;
+lsIN_BANK_BRANCH_CODE      T_ACCNO_CODE.BANK_CODE%TYPE;
+
+lsDET_COMP_CODE VARCHAR2(255);
+lsDET_COMP_NAME VARCHAR2(255);
+lsDET_DEPT_CODE VARCHAR2(255);
+lsDET_DEPT_NAME VARCHAR2(255);
+lsDET_CLASS_CODE VARCHAR2(255);
+lsDET_CLASS_NAME VARCHAR2(255);
+lsDET_TAX_COMP_CODE VARCHAR2(255);
+lsDET_TAX_COMP_NAME VARCHAR2(255);
+lsDET_EMPNO VARCHAR2(255);
+
+lnCHK_SLIP NUMBER;
+/**************************************************************************/
+/* 1. 프 로 그 램 id : SP_T_AUTO_FBS_CASH_TRANS_I
+/* 2. 유형(시나리오) : Procedure
+/* 3. 기  능  정  의 : T_AUTO_FBS_CASH_TRANS 테이블 Insert
+/* 4. 변  경  이  력 : 홍길동 작성(2006-01-31)
+/* 5. 관련  프로그램 :
+/* 6. 특  기  사  항 :
+/**************************************************************************/
+BEGIN
+	BEGIN
+		SELECT
+			A.COMP_CODE,
+			B.COMPANY_NAME ,
+			A.DEPT_CODE,
+			A.DEPT_NAME,
+			D.CLASS_CODE,
+			D.CLASS_CODE_NAME,
+			A.TAX_COMP_CODE,
+			C.COMPANY_NAME TAX_COMP_NAME,
+			''||AR_CRTUSERNO EMPNO
+		INTO
+			lsDET_COMP_CODE,
+			lsDET_COMP_NAME,
+			lsDET_DEPT_CODE,
+			lsDET_DEPT_NAME,
+			lsDET_CLASS_CODE,
+			lsDET_CLASS_NAME,
+			lsDET_TAX_COMP_CODE,
+			lsDET_TAX_COMP_NAME,
+			lsDET_EMPNO
+		FROM
+			T_DEPT_CODE A,
+			T_COMPANY B,
+			T_COMPANY C,
+			(
+				SELECT
+					B.DEPT_CODE,
+					A.CLASS_CODE ,
+					A.CLASS_CODE_NAME
+				FROM
+					T_CLASS_CODE A,
+					T_DEPT_CLASS_CODE B
+				WHERE
+					A.CLASS_CODE = B.CLASS_CODE
+					AND	A.USE_CLS = 'T'
+					AND	B.DFLT_TAG = 'T'
+			) D
+		WHERE
+			A.COMP_CODE = B.COMP_CODE
+			AND A.TAX_COMP_CODE = C.COMP_CODE(+)
+			AND A.DEPT_CODE = D.DEPT_CODE(+)
+			AND (A.DEPT_CODE) IN (
+				SELECT
+					DEPT_CODE
+				FROM
+					Z_AUTHORITY_USER
+				WHERE
+					EMPNO=''||AR_CRTUSERNO
+			);
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009, AR_CRTUSERNO||'출금계좌정보가 존재하지 않습니다.');
+	END;
+	
+	BEGIN
+		SELECT					      
+			a.*
+		BULK COLLECT INTO
+			ltSLIP_BODY
+		FROM
+			T_FB_CASH_TRANSFER_DATA a , 
+			T_ACC_SLIP_HEAD         b , 
+			T_ACCNO_CODE             c , 
+			T_ACCNO_CODE            d
+		WHERE
+			a.OUT_ACCOUNT_NO   = c.ACCNO(+) 
+			AND a.IN_ACCOUNT_NO    = d.ACCNO(+) 
+			AND a.SLIP_ID = b.SLIP_ID(+)
+			AND A.TRANSFER_SEQ IN (
+				SELECT TRANSFER_SEQ
+				FROM T_AUTO_FBS_CASH_TRANS
+				WHERE SEQ = AR_AUTO_FBS_CASH_TRANS_SEQ
+			)
+		ORDER BY
+			a.TRANSFER_SEQ;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009, '전표발행대상이 없습니다.');
+	END;
+	
+	IF ltSLIP_BODY.COUNT = 0 THEN
+		RAISE_APPLICATION_ERROR	(-20009, '전표발행대상이 없습니다.');
+	END IF;
+	
+	-- 추가된 코드
+	-- 선언부에 추가 : ln_Ret T_ACC_MAKE_SLIPNO.Make_Seq%TYPE;
+	SELECT
+		F_T_Get_New_Make_Seq(AR_MAKE_COMP_CODE, AR_MAKE_DT)
+	INTO lnMAKE_SEQ
+	FROM
+		DUAL;
+		
+	INSERT INTO T_ACC_SLIP_HEAD
+	(
+		SLIP_ID,
+		CRTUSERNO,
+		CRTDATE,
+		MODUSERNO,
+		MODDATE,
+		MAKE_SLIPCLS,
+		MAKE_SLIPNO,
+		MAKE_COMP_CODE,
+		MAKE_DEPT_CODE,
+		MAKE_DT,
+		MAKE_DT_TRANS,
+		MAKE_SEQ,
+		INOUT_DEPT_CODE,
+		MAKE_PERS,
+		MAKE_NAME,
+		GROUPWARE_SLIPSTATUS,
+		KEEP_SLIPNO,
+		KEEP_DT,
+		KEEP_DT_TRANS,
+		KEEP_SEQ,
+		KEEP_DEPT_CODE,
+		KEEP_KEEPER,
+		WORK_CODE,
+		CHARGE_PERS,
+		SLIP_KIND_TAG,
+		TRANSFER_TAG,
+		IGNORE_SET_RESET_TAG
+	)
+	VALUES
+	(
+		AR_SLIP_ID,--AR_SLIP_ID,
+		AR_CRTUSERNO,
+		SYSDATE,
+		NULL,
+		NULL,
+		'1',--AR_MAKE_SLIPCLS,
+		F_T_Gen_Make_Slip_No( Ar_Make_Comp_Code, AR_MAKE_DT, Ar_Slip_Kind_Tag, lnMAKE_SEQ ),--AR_MAKE_SLIP_NO,
+		AR_MAKE_COMP_CODE,
+		AR_MAKE_DEPT_CODE,
+		F_T_Stringtodate(AR_MAKE_DT),
+		AR_MAKE_DT,--AR_MAKE_DT_TRANS,
+		lnMAKE_SEQ,
+		AR_INOUT_DEPT_CODE,
+		AR_MAKE_PERS,
+		AR_MAKE_NAME,
+		NULL,--AR_GROUPWARE_SLIPSTATUS,
+		NULL,--AR_KEEP_SLIPNO,
+		NULL,--AR_KEEP_DT,
+		NULL,--AR_KEEP_DT_TRANS,
+		NULL,--AR_KEEP_SEQ,
+		NULL,--AR_KEEP_DEPT_CODE,
+		NULL,--AR_KEEP_KEEPER,
+		'FBS_000001',--AR_WORK_CODE,
+		AR_CHARGE_PERS,
+		AR_SLIP_KIND_TAG,
+		'F',--AR_TRANSFER_TAG,
+		'F'--AR_IGNORE_SET_RESET_TAG
+	);
+	
+	lnMAKE_SLIPLINE := 0;
+
+	FOR liI IN 	ltSLIP_BODY.First..ltSLIP_BODY.Last LOOP
+		lrSLIP_BODY := ltSLIP_BODY(liI);
+		
+		SELECT
+			COUNT(*)
+		INTO
+			lnCHK_SLIP
+		FROM T_ACC_SLIP_HEAD
+		WHERE	SLIP_ID = lrSLIP_BODY.SLIP_ID;
+		
+		IF lnCHK_SLIP <> 0 THEN
+			RAISE_APPLICATION_ERROR	(-20009, '전표발행대상 중 이미 발행된 항목이 존재합니다..');
+		END IF;
+	
+		SELECT F_T_Get_Newslip_Idseq()
+		INTO lnSLIP_IDSEQ
+		FROM DUAL;
+		lnMAKE_SLIPLINE := lnMAKE_SLIPLINE + 1;
+		
+		BEGIN
+			SELECT
+				BANK_CODE
+			INTO
+				lsOUT_BANK_BRANCH_CODE
+			FROM T_ACCNO_CODE
+			WHERE	ACCNO = lrSLIP_BODY.OUT_ACCOUNT_NO;
+		EXCEPTION WHEN NO_DATA_FOUND THEN
+			RAISE_APPLICATION_ERROR	(-20009, '출금계좌정보가 존재하지 않습니다.');
+		END;
+		
+		BEGIN
+			SELECT
+				BANK_CODE
+			INTO
+				lsIN_BANK_BRANCH_CODE
+			FROM T_ACCNO_CODE
+			WHERE	ACCNO = lrSLIP_BODY.OUT_ACCOUNT_NO;
+		EXCEPTION WHEN NO_DATA_FOUND THEN
+			RAISE_APPLICATION_ERROR	(-20009, '입금계좌정보가 존재하지 않습니다.');
+		END;
+		
+		--출금전표
+		INSERT INTO T_ACC_SLIP_BODY
+		(
+			SLIP_ID ,
+	      	SLIP_IDSEQ ,
+	      	CRTUSERNO ,
+	      	CRTDATE ,
+	      	MAKE_SLIPLINE ,
+	      	ACC_CODE ,
+	      	DB_AMT ,
+	      	CR_AMT ,
+	      	SUMMARY_CODE ,
+	      	TAX_COMP_CODE ,
+	      	COMP_CODE ,
+	      	DEPT_CODE ,
+	      	CLASS_CODE ,
+	      	VAT_CODE ,
+	      	VAT_DT ,
+	      	SUPAMT ,
+	      	VATAMT ,
+	      	CUST_SEQ ,
+	      	CUST_NAME ,
+	      	BANK_CODE ,
+	      	ACCNO ,
+	      	RESET_SLIP_ID ,
+	      	RESET_SLIP_IDSEQ ,
+	      	SUMMARY1 ,
+	      	SUMMARY2 ,
+	      	CHK_NO ,
+	      	BILL_NO ,
+	      	REC_BILL_NO ,
+	      	CP_NO ,
+	      	SECU_NO ,
+	      	LOAN_NO ,
+	      	LOAN_REFUND_NO ,
+	      	LOAN_REFUND_SEQ ,
+	      	DEPOSIT_ACCNO ,
+	      	PAYMENT_SEQ ,
+	      	PAY_CON_CASH ,
+	      	PAY_CON_BILL ,
+	      	PAY_CON_BILL_DT ,
+	      	PAY_CON_BILL_DAYS,
+	      	EMP_NO ,
+	      	ANTICIPATION_DT ,
+	      	MNG_ITEM_CHAR1 ,
+	      	MNG_ITEM_CHAR2 ,
+	      	MNG_ITEM_CHAR3 ,
+	      	MNG_ITEM_CHAR4 ,
+	      	MNG_ITEM_NUM1 ,
+	      	MNG_ITEM_NUM2 ,
+	      	MNG_ITEM_NUM3 ,
+	      	MNG_ITEM_NUM4 ,
+	      	MNG_ITEM_DT1 ,
+	      	MNG_ITEM_DT2 ,
+	      	MNG_ITEM_DT3 ,
+	      	MNG_ITEM_DT4
+		)
+		VALUES
+		(
+			AR_SLIP_ID ,
+	      	lnSLIP_IDSEQ ,
+	      	AR_CRTUSERNO,
+			SYSDATE,
+	      	lnMAKE_SLIPLINE ,
+	      	'111010300',--lrSLIP_BODY.ACC_CODE ,
+	      	0,--AR_DB_AMT ,
+	      	NVL(lrSLIP_BODY.TRANSFER_AMT,0),--AR_CR_AMT ,
+	      	NULL,--SUMMARY_CODE ,
+	      	lsDET_TAX_COMP_CODE ,
+	      	lsDET_COMP_CODE ,
+	      	lsDET_DEPT_CODE ,
+	      	lsDET_CLASS_CODE ,
+	      	NULL,--AR_VAT_CODE ,
+	      	NULL,--F_T_STRINGTODATE(AR_VAT_DT) ,
+	      	0,--AR_SUPAMT ,
+	      	0,--AR_VATAMT ,
+	      	NULL,--lrSLIP_BODY.CUST_SEQ ,
+	      	NULL,--lrSLIP_BODY.CUST_NAME ,
+	      	lsOUT_BANK_BRANCH_CODE ,
+	      	lrSLIP_BODY.OUT_ACCOUNT_NO ,
+	      	NULL,--lrSLIP_BODY.RESET_SLIP_ID,
+	      	NULL,--lrSLIP_BODY.RESET_SLIP_IDSEQ,
+			'예금이체 자동전표',--AR_SUMMARY1 , 
+	      	NULL,--AR_SUMMARY2 ,
+	      	NULL,--AR_CHK_NO ,
+	      	NULL,--AR_BILL_NO ,
+	      	NULL,--AR_REC_BILL_NO ,
+	      	NULL,--AR_CP_NO ,
+	      	NULL,--AR_SECU_NO ,
+	      	NULL,--AR_LOAN_NO ,
+	      	NULL,--AR_LOAN_REFUND_NO ,
+	      	NULL,--AR_LOAN_REFUND_SEQ ,
+	      	NULL,--lrSLIP_BODY.DEPOSIT_ACCNO ,
+	      	NULL,--lrSLIP_BODY.PAYMENT_SEQ ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_CASH ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL_DT,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL_DAYS,
+	      	lsDET_EMPNO,--lrSLIP_BODY.EMP_NO ,
+	      	NULL,--lrSLIP_BODY.ANTICIPATION_DT ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR3 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR4 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM3 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM4 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT3 ,
+	      	NULL--lrSLIP_BODY.MNG_ITEM_DT4
+		);
+		-- 입금전표
+		SELECT F_T_Get_Newslip_Idseq()
+		INTO lnSLIP_IDSEQ
+		FROM DUAL;
+		lnMAKE_SLIPLINE := lnMAKE_SLIPLINE + 1;
+		INSERT INTO T_ACC_SLIP_BODY
+		(
+			SLIP_ID ,
+	      	SLIP_IDSEQ ,
+	      	CRTUSERNO ,
+	      	CRTDATE ,
+	      	MAKE_SLIPLINE ,
+	      	ACC_CODE ,
+	      	DB_AMT ,
+	      	CR_AMT ,
+	      	SUMMARY_CODE ,
+	      	TAX_COMP_CODE ,
+	      	COMP_CODE ,
+	      	DEPT_CODE ,
+	      	CLASS_CODE ,
+	      	VAT_CODE ,
+	      	VAT_DT ,
+	      	SUPAMT ,
+	      	VATAMT ,
+	      	CUST_SEQ ,
+	      	CUST_NAME ,
+	      	BANK_CODE ,
+	      	ACCNO ,
+	      	RESET_SLIP_ID ,
+	      	RESET_SLIP_IDSEQ ,
+	      	SUMMARY1 ,
+	      	SUMMARY2 ,
+	      	CHK_NO ,
+	      	BILL_NO ,
+	      	REC_BILL_NO ,
+	      	CP_NO ,
+	      	SECU_NO ,
+	      	LOAN_NO ,
+	      	LOAN_REFUND_NO ,
+	      	LOAN_REFUND_SEQ ,
+	      	DEPOSIT_ACCNO ,
+	      	PAYMENT_SEQ ,
+	      	PAY_CON_CASH ,
+	      	PAY_CON_BILL ,
+	      	PAY_CON_BILL_DT ,
+	      	PAY_CON_BILL_DAYS,
+	      	EMP_NO ,
+	      	ANTICIPATION_DT ,
+	      	MNG_ITEM_CHAR1 ,
+	      	MNG_ITEM_CHAR2 ,
+	      	MNG_ITEM_CHAR3 ,
+	      	MNG_ITEM_CHAR4 ,
+	      	MNG_ITEM_NUM1 ,
+	      	MNG_ITEM_NUM2 ,
+	      	MNG_ITEM_NUM3 ,
+	      	MNG_ITEM_NUM4 ,
+	      	MNG_ITEM_DT1 ,
+	      	MNG_ITEM_DT2 ,
+	      	MNG_ITEM_DT3 ,
+	      	MNG_ITEM_DT4
+		)
+		VALUES
+		(
+			AR_SLIP_ID ,
+	      	lnSLIP_IDSEQ ,
+	      	AR_CRTUSERNO,
+			SYSDATE,
+	      	lnMAKE_SLIPLINE ,
+	      	'111010300',--lrSLIP_BODY.ACC_CODE ,
+	      	NVL(lrSLIP_BODY.TRANSFER_AMT,0),--AR_DB_AMT ,
+	      	0,--AR_CR_AMT ,
+	      	NULL,--SUMMARY_CODE ,
+	      	lsDET_TAX_COMP_CODE ,
+	      	lsDET_COMP_CODE ,
+	      	lsDET_DEPT_CODE ,
+	      	lsDET_CLASS_CODE ,
+	      	NULL,--AR_VAT_CODE ,
+	      	NULL,--F_T_STRINGTODATE(AR_VAT_DT) ,
+	      	0,--AR_SUPAMT ,
+	      	0,--AR_VATAMT ,
+	      	NULL,--lrSLIP_BODY.CUST_SEQ ,
+	      	NULL,--lrSLIP_BODY.CUST_NAME ,
+	      	lsOUT_BANK_BRANCH_CODE ,
+	      	lrSLIP_BODY.OUT_ACCOUNT_NO ,
+	      	NULL,--lrSLIP_BODY.RESET_SLIP_ID,
+	      	NULL,--lrSLIP_BODY.RESET_SLIP_IDSEQ,
+			'예금이체 자동전표',--AR_SUMMARY1 , 
+	      	NULL,--AR_SUMMARY2 ,
+	      	NULL,--AR_CHK_NO ,
+	      	NULL,--AR_BILL_NO ,
+	      	NULL,--AR_REC_BILL_NO ,
+	      	NULL,--AR_CP_NO ,
+	      	NULL,--AR_SECU_NO ,
+	      	NULL,--AR_LOAN_NO ,
+	      	NULL,--AR_LOAN_REFUND_NO ,
+	      	NULL,--AR_LOAN_REFUND_SEQ ,
+	      	NULL,--lrSLIP_BODY.DEPOSIT_ACCNO ,
+	      	NULL,--lrSLIP_BODY.PAYMENT_SEQ ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_CASH ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL ,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL_DT,
+	      	NULL,--lrSLIP_BODY.PAY_CON_BILL_DAYS,
+	      	lsDET_EMPNO,--lrSLIP_BODY.EMP_NO ,
+	      	NULL,--lrSLIP_BODY.ANTICIPATION_DT ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR3 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_CHAR4 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM3 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_NUM4 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT1 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT2 ,
+	      	NULL,--lrSLIP_BODY.MNG_ITEM_DT3 ,
+	      	NULL--lrSLIP_BODY.MNG_ITEM_DT4
+		);
+		
+		UPDATE T_FB_CASH_TRANSFER_DATA
+		SET
+			SLIP_ID = AR_SLIP_ID
+		WHERE
+			TRANSFER_SEQ = lrSLIP_BODY.TRANSFER_SEQ;
+	END LOOP;
+END;
+/

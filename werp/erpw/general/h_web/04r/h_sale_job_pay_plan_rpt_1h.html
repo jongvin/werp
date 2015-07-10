@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_sale_job_pay_plan_rpt_1h.html								-->
+<!-- 2. 유형(시나리오): 보고서															-->
+<!-- 3. 기 능 정 의   : 현장별입금예정현황출력                  	-->
+<!-- 4. 변 경 이 력   : 정호준 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+
+var is_process_code = "ALL"
+var is_div          = "ALL"
+var is_to_date      = ""
+var is_rpt_select   = "T"
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   if ( f_check_date(em_to_date.text) == false ) {
+  		alert("기간을 정확히 입력해 주십시오.")
+  		return
+   }
+   
+   arg_temp ="general_rpt/h_web/04r/"        // 보고서 디렉토리
+   arg_temp = arg_temp + "h_sale_job_pay_plan_list02" + "&RptParams="  + em_to_year.text + "&RptParams=" + em_to_date.text 
+
+   
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//-------------------------------------------------------------------------------
+function select_to()                  //종료일 선택 
+//--------------------------------------------------------------------------------
+{
+   is_to_date  = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+}
+//---------------------------------------------------------------------------
+function rpt_select(value)                      // window open event
+//---------------------------------------------------------------------------
+{
+	is_rpt_select = value
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   
+   ll_cnt1 = f_select_q("select to_char(add_months(last_day(sysdate) ! 1, -1), 'yyyy') select_1, to_char(sysdate, 'yyyymmdd') select_2 from dual")
+   em_to_year.text = ds_select.NameValue(1, 'select_1')
+   em_to_date.text = ds_select.NameValue(1, 'select_2')
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=em_to_date event=onKillFocus()>
+  if (em_to_date.Modified) { 
+  	select_to()
+  }
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> 
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLPADDING="0" CELLSPACING="0" style="FONT-SIZE: 12px">
+	<TR HEIGHT="50%">
+		<TD>
+      <table width="300px"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+            <td width="25%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+         		<div align="right">대상년도</div>
+         	</td>
+         	<td style="FONT-SIZE=12px" >
+							<comment id="__NSID__"><OBJECT id=em_to_year
+                       style="WIDTH: 100px"
+				           classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                       <param name=Format value="####"> 
+                       <param name=Alignment      value=1>
+                       <param name=SelectAll       value=true>
+	                    <param name=Numeric        value=false>
+	            </OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+         </tr>
+		 <tr BGCOLOR="white" >
+         	<td width="25%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+         		<div align="right">기준일</div>
+         	</td>
+         	<td style="FONT-SIZE=12px" >
+         		<table border="0" height="100%" cellpadding="0" cellspacing="0" style="font: 12px">
+         			<tr>
+         				<td>
+								<comment id="__NSID__"><OBJECT id=em_to_date
+			                       style="WIDTH: 100px"
+							           classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			                       <param name=Format value="####-##-##"> 
+			                       <param name=Alignment      value=1>
+			                       <param name=SelectAll       value=true>
+				                    <param name=Numeric        value=false>
+				            </OBJECT></comment> <script> __ws__(__NSID__);</script>
+				         </td>
+				         <td>
+				            <input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yyyymmdd(); 
+											if(!is_null(result)){ em_to_date.text = result.substr(0,8);} ; select_to()">
+							</td>
+						</tr>
+					</table>
+				</td>
+         </tr>             
+    </table>
+    </TD>
+  </TR>
+  <TR HEIGHT="50%">
+  	 <TD></TD>
+  </TR>
+</TABLE>
+</BODY></HTML>

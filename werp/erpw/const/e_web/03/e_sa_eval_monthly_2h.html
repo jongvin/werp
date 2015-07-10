@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************* -->
+<!-- 1. 프로그램 id   : e_sa_eval_monthly_1h.html 	               -->
+<!-- 2. 유형(시나리오): 조회및 입력								   -->
+<!-- 3. 기 능 정 의   :      	                                   -->
+<!-- 4. 변 경 이 력   : 황보은영 작성							   -->
+<!-- 5. 관련프로그램  :											   -->
+<!-- 6. 특 기 사 항   :											   -->
+<!-- ************************************************************* -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/e_web/03/e_sa_eval_monthly_1q.jsp?'        
+var is_tr_1_addr = gs_home + '/const/e_web/03/e_sa_eval_monthly_1tr.jsp'
+
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_name = top.frames['security'].gs_name.value
+
+var is_arg_search = ""
+var is_arg_dept = ""
+var is_arg_yymm = ""
+
+var ls_yymm = ""
+var ls_temp = ""
+var ls_yyyy = ""
+var ls_mm = ""
+var is_dept_filter = "2"
+var is_date_filter = "2"
+var check_save = 1
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function init_move()                 
+//------------------------------------------------------------------------
+{
+  check_save = 1
+
+  ds_1.NameValue(ds_1.RowPosition, "yymm") = ls_temp.substr(0,4) + ls_temp.substr(5,2)
+  ds_1.NameValue(ds_1.RowPosition, "dept_code") = is_dept_code
+  ds_1.NameValue(ds_1.RowPosition, "long_name") = is_dept_name
+  em_end_date.text = ls_temp.substr(0,4) + ls_temp.substr(5,2) + ls_temp.substr(8,2)
+  tx_checker_name.value = is_name
+  gd_1.Focus()
+  gd_1.SetColumn('yymm')
+  
+ }
+
+//------------------------------------------------------------------------
+function have_dept_code()                                  // 현장명조회
+//------------------------------------------------------------------------
+{
+	dept_name.disabled = false
+	button_dept.disabled = false
+	is_dept_filter = "2"
+	ds_1.Filter()
+}
+
+//------------------------------------------------------------------------
+function search_yymm()
+//------------------------------------------------------------------------
+{
+	em_ipdate.Enable = true
+	if (em_ipdate.text == "" || em_ipdate.text == "      ") {
+		is_arg_yymm = ""
+		btnquery_onclick()
+		return
+	}
+		
+	is_date_filter = "2"
+	ds_1.Filter()
+}
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회
+//------------------------------------------------------------------------
+{
+	ds_1.SortExpr = "+dept_code"
+   ds_1.Sort();
+   
+   ds_1.DataID = is_ds_1_addr
+   ds_1.SyncLoad=true  //DataSet Loading하는 시점과 관련..
+   ds_1.Reset()
+   
+   div_btnquery_onclick()
+   
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                 // 첨부파일 조회
+//------------------------------------------------------------------------
+{
+   IFrame_upload.btnquery_onclick(f_get_parent_key())
+}
+//------------------------------------------------------------------------
+function f_get_parent_key()                     // IFrame_upload에서 호출하는 함수
+//------------------------------------------------------------------------
+{
+   IFrame_upload.is_job_code = 'E';							//업무 코드
+   IFrame_upload.is_dir_name = '안전관리';		//저장될폴더지정
+   IFrame_upload.is_title = '안전평가';								//화면제목
+
+	var ls_parent_key = ds_1.NameValue(ds_1.RowPosition,"dept_code") + ds_1.NameValue(ds_1.RowPosition, "key_yymm");
+
+	return ls_parent_key;
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{ 
+   gd_1.ColumnProp("yymm","Edit") = ''
+   ds_1.InsertRow(1)
+   init_move()
+}
+
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{   
+      ds_1.InsertRow(ds_1.RowPosition);
+      init_move()
+      return
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	check_save = 2
+	
+	if (confirm("평가된 내용이 함께 삭제됩니다. \n\n삭제하겠습니까?"))
+    	ds_1.DeleteRow(ds_1.RowPosition)
+    else
+    	return
+} 
+
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_dept_filter = ""
+	var ls_date_filter = ""
+	
+	ls_dept_filter = is_dept_filter
+	ls_date_filter = is_date_filter
+
+   ls_yymm_1 =  ds_1.NameValue(ds_1.RowPosition,"yymm")
+	if ( check_save == '1' ) {
+	  ds_1.NameValue(ds_1.RowPosition,"start_date") = ls_yymm_1 + "01"
+		  if (ds_1.IsUpdated)  {
+		  		if (!f_check_date(ls_yymm_1+"01")) {
+		  			alert("날짜가 올바르지 않습니다")
+		  			gd_1.SetColumn("yymm");
+				   return
+				}
+		  		var ll_dup
+		  		gd_1.ReDraw = false
+		  		is_dept_filter = "1"
+		  		is_date_filter = "1"
+		  		ds_1.Filter()
+				ll_dup = f_dup_chk("ds_1","dept_code@yymm")
+				if (ll_dup > 0) {
+				     alert("년월이 중복되었습니다: 년월을 수정하십시요 ")
+				     is_dept_filter = ls_dept_filter
+					  is_date_filter = "1"
+					  ds_1.Filter()
+					  gd_1.ReDraw = true
+					  all_date.checked = true
+				     ds_1.RowPosition = ll_dup
+			     	  gd_1.SetColumn("yymm");
+			     	  gd_1.ColumnProp("yymm","Edit") = ''
+				     return
+				}
+				
+		  		if (ds_1.NameValue(ds_1.RowPosition, "start_date") != "" && em_end_date.text == "") {
+		  			alert("점검일을 입력하십시요")
+		  			em_end_date.focus()
+		  			return
+		  		}
+		  		if (ds_1.NameValue(ds_1.RowPosition, "start_date") > ds_1.NameValue(ds_1.RowPosition, "end_date")) {
+		  			alert("점검일자가 올바르지 않습니다")
+		  			return
+		  		}
+		  }
+
+	}
+	var ym = ds_1.NameValue(ds_1.RowPosition,"key_yymm")
+
+	if ( ym.length == "6" )
+		ym = ym + "01"
+
+	ds_1.NameValue(ds_1.RowPosition,"key_yymm")  = ym
+	
+  if (ds_1.IsUpdated)  {
+      if  (confirm("변경되었습니다 저장하시겠습니까?")) { 
+         tr_1.Post()
+			is_dept_filter = ls_dept_filter
+			is_date_filter = ls_date_filter
+			ds_1.Filter()
+			gd_1.ReDraw = true
+      }
+  }
+  IFrame_upload.btnsave_onclick()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+    ds_1.Undo(ds_1.RowPosition);  //Original Data로 되돌림.
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+  il_screen = 1   //parent를 다시 읽음 
+	have_dept_code()
+}  
+
+//------------------------------------------------------------------------
+function find_dept_all()
+//------------------------------------------------------------------------
+{
+	if (all_dept.checked == true) {
+		dept_name.disabled = true
+		button_dept.disabled = true
+		is_dept_filter = "1"
+		ds_1.Filter()
+	}
+	else
+		have_dept_code()
+}
+
+//------------------------------------------------------------------------
+function find_date_all()
+//------------------------------------------------------------------------
+{
+	if (all_date.checked == true) {
+		em_ipdate.Enable = false
+		is_date_filter = "1"
+		ds_1.Filter()
+	}
+	else
+		search_yymm()
+}
+//------------------------------------------------------------------------
+function pop_opinion_list()
+//------------------------------------------------------------------------
+{
+ if ( ds_1.CountRow < 1 ) return ;
+
+if (ds_1.IsUpdated) {
+	alert("변경된 사항이 있습니다. \n\n저장하여 주시기 바랍니다.")
+	return
+}
+	var dept = ds_1.NameValue(ds_1.RowPosition,"dept_code")
+	var long = ds_1.NameValue(ds_1.RowPosition,"long_name")
+	var ym = ds_1.NameValue(ds_1.RowPosition,"key_yymm")
+	
+	if ( ym.length == "6" )
+		ym = ym + "01"                                                          // dateset()되기 전에는 "01"이 빠져있음.
+	
+	var row_position = ds_1.RowPosition
+	window.showModalDialog("e_sa_eval_monthly_pop_1h.html", gs_home+'@'+dept+'@'+long+'@'+ym,"dialogWidth:925px;dialogHeight:650px;Scrolling:none");
+	gd_1.ReDraw = false	
+	btnquery_onclick()
+	ds_1.RowPosition = row_position
+	gd_1.ReDraw = true
+}
+
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  dept_name.value = is_dept_name
+  ds_1.DataID = is_ds_1_addr
+  ds_1.SyncLoad = true
+  ds_1.Reset()
+  tr_1.Action = is_tr_1_addr
+  
+  ls_temp = top.frames['security'].gs_sysdate.value  // 시스템 년월 선언.
+  ls_yymm = ls_temp.substr(0,4) + ls_temp.substr(5,2)
+  em_ipdate.text = ls_yymm
+  em_ipdate.Enable = true
+  is_dept_filter = "2"
+  is_date_filter = "2"
+  ds_1.Filter()
+  
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+	if (row < 1)  return
+	if ( ds_1.RowStatus(row) == "1")
+		gd_1.ColumnProp("yymm","Edit") = ''
+		
+	else	
+		gd_1.ColumnProp("yymm","Edit") = 'none'
+		
+	div_btnquery_onclick()		
+</script>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnSuccess()>
+ gf_key_copy("ds_1","yymm@key_yymm")
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_ipdate event=onKillFocus()>
+	search_yymm()
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</script>
+<SCRIPT language=JavaScript for=ds_1 event=onFilter(row)>
+	var ls_dept = is_dept_code
+	var ls_ym = em_ipdate.text
+	
+	if (is_dept_filter == 1) {      //현장 전체 선택
+		switch(is_date_filter) {
+			case "1" :
+					return true;
+				break;
+			case "2" :
+				if (ds_1.NameValue(row, "yymm") == ls_ym)
+					return true;
+				else
+					return false;
+				break;
+		}
+	}
+	else {
+		switch(is_date_filter) {
+			case "1" :
+				if (ds_1.NameValue(row, "dept_code") == ls_dept)
+					return true;
+				else
+					return false;
+				break;
+			case "2" :
+				if (ds_1.NameValue(row, "dept_code") == ls_dept && ds_1.NameValue(row, "yymm") == ls_ym)
+					return true;
+				else
+					return false;
+				break;
+		}
+	}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter	value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>   
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:e_sa_eval_monthly_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="font: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0">
+	<tr height="20px">
+		<td class=td_green colspan="2">
+			<table BORDER="0" CELLSPACING="0" cellpadding="0" class=main_table>
+				<tr> 
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>현장명</td>
+					<td width="150px">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=22 onkeyDown="keyDown()">
+					</td>
+					<td width="60px">
+						<input type="button" id=button_dept value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"></td>
+<!--					<td width="70px">
+						<input id=all_dept type="checkbox" onclick="find_dept_all()">전체</td> -->
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="56px" class=font_green_bold>기준년월</td>
+					<td width="76px">
+						<comment id="__NSID__"><OBJECT id=em_ipdate style="WIDTH: 65px; HEIGHT: 20px; FONT-SIZE: 12px; background: white;" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							<param name=Format value="YYYY-MM">
+				         <param name=ReadOnlyBackColor  value=silver>
+				         <param name=Alignment      value=1>
+				         <param name=Numeric value=false>
+							<param name=PromptChar   value="_">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					<td>
+						<input id=all_date type="checkbox" onclick="find_date_all()">전체</td>
+					<td width="*">　</td>
+					<td align="right">
+						&nbsp;&nbsp;</td>
+				</tr>
+			</table>
+		</td>
+	</tr> 
+	<tr>
+		<td width="30%">
+			<comment id="__NSID__"><OBJECT id=gd_1
+			    style="FONT-SIZE: 12px; Z-INDEX: 100; width: 100%; height: 100%;" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AutoInsert"     VALUE="-1">
+			   <PARAM NAME="BorderStyle"    VALUE=1>
+			   <PARAM NAME="SortView"       VALUE="Left">
+				<PARAM NAME="AllShowEdit"    VALUE="-1">
+				<PARAM NAME="Editable"       VALUE="true">
+				<PARAM NAME="UsingOneClick"  VALUE="1">
+				<PARAM NAME="DragDropEnable" VALUE="true">
+				<PARAM NAME="ColSizing"      VALUE="-1">
+				<PARAM NAME="DataID"         VALUE="ds_1">
+				<PARAM NAME="Format"         VALUE="
+			     <C> Name='현장명'    id=long_name sort=true Edit='none' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK width=120 </C>
+			     <C> Name='평가년월'  id=yymm      sort=true Edit='Numeric' Mask='XXXX.XX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center' width=70 </C>
+			     <C> Name='총점'      id=sum_all   sort=true Edit='none' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center' width=50 </C>
+			   ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td width="70%">
+			<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" ALIGN="center" CELLSPACING="0" cellpadding=0 STYLE="font-size: 12px">
+				<TR height="20px" align="right">
+					<TD colspan="4">
+						<table border="0" STYLE="font-size: 12px">
+							<tr>
+							  <td width="15px"><img src="../../../image/bullet3.gif"></td>
+							  <td>점검일</td>
+							  <td><comment id="__NSID__"><OBJECT id=em_end_date   
+					                 style="WIDTH: 78px; HEIGHT: 20px; FONT-SIZE: 12px" 
+										  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+									<param name=Format value="YYYY-MM-dd">
+					            	<param name=ReadOnlyBackColor  value=silver>
+					            	<param name=Numeric value=false>
+									<param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>&nbsp;&nbsp;</td>
+								<td width="15px"><img src="../../../image/bullet3.gif"></td>
+								<td>작성자</td>
+								<td><input type="text" id=tx_checker_name size="10" maxlength="20" style="font-size:12px"></td>
+							</tr>
+						</table>
+					</TD>
+				</TR>
+				<TR valign="bottom" HEIGHT="20">
+					<TD  colspan="4" >
+					<TABLE BORDER="1" WIDTH="100%" HEIGHT="24" cellpadding="0"  cellspacing="0" style="border: 1 solid;" >
+						<TR BGCOLOR="#BBE0F4" STYLE="font-size: 12px">
+						   <TD WIDTH="14%"  >&nbsp;구분 </TD>
+							<TD WIDTH="36%"  >&nbsp;개선요구사항&nbsp; </TD>
+							<TD WIDTH="36%" >&nbsp;개선대책&nbsp; </TD>
+							<TD WIDTH="14%"  >&nbsp;일정&nbsp; </TD>
+						</TR>
+					</TABLE>
+					</TD>
+				</TR>
+				<TR>
+					<TD WIDTH="14%" >
+						<TEXTAREA ID="tx_part" ROWS="18" COLS="11" maxLength="2000" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)" style="font-size:12px; width:100%" disabled=true ></TEXTAREA>
+					</TD>
+					<TD WIDTH="36%">
+						<TEXTAREA ID="tx_order" ROWS="18" COLS="33" maxLength="2000" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)" style="font-size:12px; width:100%" disabled=true></TEXTAREA>
+					</TD>
+					<TD WIDTH="36%">
+						<TEXTAREA ID="tx_measures" ROWS="18" COLS="33" maxLength="2000" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)" style="font-size:12px; width:100%"></TEXTAREA>
+					</TD>
+					<TD  WIDTH="14%">
+						<TEXTAREA ID="tx_check" ROWS="18" COLS="11" maxLength="2000" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)" style="font-size:12px; width:100% " disabled=true></TEXTAREA>
+					</TD>
+				</TR>
+				<TR>
+					<TD colspan="4">
+						<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%">
+							<TR HEIGHT="260">
+								<TD>
+									<IFRAME ID=IFrame_upload FRAMEBORDER=0 SCROLLING=NO 
+										SRC="../../../comm_function/file_upload/file_upload.html" 
+		                        style="WIDTH: 100%;  HEIGHT: 100%"></IFRAME>
+									
+								</TD>
+							</TR>
+						</TABLE>
+					</TD>			
+				</TR>
+			</TABLE>
+		</td>
+	</tr>
+</table>
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+ 	<PARAM NAME="BindInfo" VALUE="
+ 		<C> Col=end_date Ctrl=em_end_date Param=text Enable=enable </C>
+ 		<C> Col=reform_part Ctrl=tx_part Param=value Enable=enable </C>
+ 		<C> Col=reform_order Ctrl=tx_order Param=value Enable=enable </C>
+ 		<C> Col=reform_measures Ctrl=tx_measures Param=value Enable=enable </C>
+ 		<C> Col=reform_measures_check Ctrl=tx_check Param=value Enable=enable </C>
+ 		<C> Col=reform_result Ctrl=tx_result Param=value Enable=enable </C>
+ 		<C> Col=checker_name Ctrl=tx_checker_name Param=value Enable=enable </C>
+ 	">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>     
+</DIV>
+</BODY></HTML>

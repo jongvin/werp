@@ -1,0 +1,67 @@
+<%@ page session="true"  import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%><%@ 
+include file="../../../comm_function/conn_q_pool.jsp"%><%
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+     String arg_dept_code = req.getParameter("arg_dept_code");
+     String arg_order_number = req.getParameter("arg_order_number");
+     String arg_spec_no_seq = req.getParameter("arg_spec_no_seq");
+ //---------------------------------------------------------- 
+     dSet.addDataColumn(new GauceDataColumn("dept_code",GauceDataColumn.TB_STRING,7));
+     dSet.addDataColumn(new GauceDataColumn("order_number",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("spec_no_seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("detail_unq_num",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("res_class",GauceDataColumn.TB_STRING,1));
+     dSet.addDataColumn(new GauceDataColumn("spec_unq_num",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("name",GauceDataColumn.TB_STRING,50));
+     dSet.addDataColumn(new GauceDataColumn("ssize",GauceDataColumn.TB_STRING,40));
+     dSet.addDataColumn(new GauceDataColumn("unit",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("cnt_qty",GauceDataColumn.TB_DECIMAL,18,3));
+     dSet.addDataColumn(new GauceDataColumn("cnt_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("cnt_amt",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("exe_qty",GauceDataColumn.TB_DECIMAL,18,3));
+     dSet.addDataColumn(new GauceDataColumn("exe_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("exe_amt",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("sub_qty",GauceDataColumn.TB_DECIMAL,18,3));
+     dSet.addDataColumn(new GauceDataColumn("sub_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("sub_amt",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("note",GauceDataColumn.TB_STRING,100));
+     dSet.addDataColumn(new GauceDataColumn("lab_class",GauceDataColumn.TB_STRING,1));
+     dSet.addDataColumn(new GauceDataColumn("mat_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("mat_amt",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("lab_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("lab_amt",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("exp_price",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("exp_amt",GauceDataColumn.TB_DECIMAL,18,0));
+    String query = "  SELECT  s_order_detail.dept_code ," + 
+     "          s_order_detail.order_number ," + 
+     "          s_order_detail.spec_no_seq ," + 
+     "          s_order_detail.detail_unq_num ," + 
+     "          s_order_detail.seq ," + 
+     "          s_order_detail.res_class ," + 
+     "          s_order_detail.spec_unq_num ," + 
+     "          s_order_detail.name ," + 
+     "          s_order_detail.ssize ," + 
+     "          s_order_detail.unit ," + 
+     "          s_order_detail.cnt_qty ," + 
+     "          s_order_detail.cnt_price ," + 
+     "          s_order_detail.cnt_amt ," + 
+     "          s_order_detail.exe_qty ," + 
+     "          s_order_detail.exe_price ," + 
+     "          s_order_detail.exe_amt ," + 
+     "          s_order_detail.sub_qty ," + 
+     "          s_order_detail.sub_price ," + 
+     "          s_order_detail.sub_amt ," + 
+     "          s_order_detail.note ," + 
+     "          s_order_detail.lab_class ," + 
+     "          s_order_detail.mat_price ," + 
+     "          s_order_detail.mat_amt ," + 
+     "          s_order_detail.lab_price ," + 
+     "          s_order_detail.lab_amt ," + 
+     "          s_order_detail.exp_price ," + 
+     "          s_order_detail.exp_amt     FROM s_order_detail    " + 
+     "          WHERE ( s_order_detail.dept_code = '" + arg_dept_code + "' ) And   " + 
+     "                ( s_order_detail.order_number = " + arg_order_number + " ) And  " + 
+     "                ( s_order_detail.spec_no_seq = " + arg_spec_no_seq + ")  " + 
+     "          ORDER BY s_order_detail.seq          ASC      ";
+%><%@ 
+include file="../../../comm_function/conn_q_end.jsp"%>

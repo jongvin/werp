@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : r_license_list_popup_1h.html	 						-->
+<!-- 2. 유형(시나리오): 기술자찾기 													-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   : 황보은영 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 기술자 찾기 </TITLE>
+
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr
+var is_confirm_check = 'no'
+var is_empno = ''
+var is_user_id
+</SCRIPT> 
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<script language="javascript" >
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+ 
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{ 
+	if (Textbox_1.value == "") {
+		alert("검색조건을 입력하십시요")
+		return
+	}
+	
+	ds_1.DataID = is_ds_1_addr + "?arg_info=" + Textbox_1.value
+	ds_1.SyncLoad=true
+	ds_1.reset()
+	
+	if (ds_1.CountRow < 1) {
+		alert("검색된 결과 없습니다")
+		return
+	}
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'empno') + '@' + ds_1.NameValue(ds_1.RowPosition,'hname') + '@'
+  ls_return = ls_return + ds_1.NameValue(ds_1.RowPosition,'stsgbn')
+
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+   alert("최소한 홈 디렉토리는 있어야 합니다")
+   
+ array = result.split("@");
+ gs_home = array[0] 
+ is_ds_1_addr = gs_home + '/const/r_web/03/r_license_list_popup_1q.jsp'
+ 
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event               							           -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=ccom_process_code event=onSelChange()>
+  gd_1.ReDraw = false
+  ds_1.Filter()
+  gd_1.ReDraw = true
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	if (row > 0 )
+		Button_confirm_onclick()
+</script>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_select
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;"  onload=setTimeout('window_onload()',1) onunload="window_onunload()" oncontextmenu="return false" scroll="no">
+<div class=main_div >
+<table width="100%"  height="100%"  BORDER="0"  CELLSPACING="0">
+	<tr class=td_green>
+		<td height="24">
+			<table width="100%" BORDER="0"  CELLSPACING="0" cellspacing="0" >
+				<tr>
+               <td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+					<td width="54" class=font_green_bold>검색조건</td>
+					<td width="132">
+					<input id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active" tabindex=1
+				    style="Z-INDEX: 100; FONT-SIZE: 12px; width: 130px;"
+				    onkeyDown="keyDown()">
+					</td>
+					<td width="50">
+						<INPUT type=button  class="img_btnFind"  value=검색 onclick=btnquery_onclick()>
+					</td>
+					<td width="*" align="right">
+						<INPUT type=button  class="img_btn2_1"  value=확인 onclick=Button_confirm_onclick()>
+						<INPUT type=button  class="img_btn2_1"  value=닫기 onclick=Button_close_onclick()> &nbsp;
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>	
+		<td>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+		    style="Z-INDEX: 105; WIDTH: 100% ; HEIGHT: 100% " 
+		    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+			<PARAM NAME="AutoInsert" VALUE="0">
+			<PARAM NAME="AllShowEdit" VALUE="0">
+			<param name="MultiRowSelect"   value="0">
+		   <PARAM NAME="BorderStyle"  VALUE=1>
+			<PARAM NAME="Editable" VALUE="0">
+			<PARAM NAME="ColSizing" VALUE="-1">
+			<PARAM NAME="DataID" VALUE="ds_1">
+			<PARAM NAME="Format" VALUE="
+			   <C> Name='사원번호' ID=empno BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center  Width=80 </C>
+			   <C> Name='성명' ID=hname BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  align=center Width=150 </C>
+			   <C> Name='' ID= BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  align=center Width=117 </C>
+			 ">
+		 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>				
+</div>	
+</BODY></HTML>

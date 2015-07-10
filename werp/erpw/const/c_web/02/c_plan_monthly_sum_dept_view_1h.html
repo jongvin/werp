@@ -1,0 +1,392 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- *************************************************************		-->
+<!-- 1. 프로그램 id   :  c_plan_monthly_sum_1h.html   	                 	-->
+<!-- 2. 유형(시나리오):  조회							          		         -->
+<!-- 3. 기 능 정 의   :  시공계획 조회 	            -->
+<!-- 4. 변 경 이 력   :  임종빈 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home
+var is_dept_code =''
+var is_dept_name=''
+var is_work_date =''
+var is_work_year = ''
+
+var is_r_check = 1
+
+var is_ds_1_addr =  '/const/c_web/02/c_plan_monthly_sum_dept_view_1q.jsp?arg_dept_code=' 
+var is_chg_seq
+
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+	var is_chg_no_seq = 'ALL'
+
+	ds_1.dataid =gs_home + is_ds_1_addr + is_dept_code+ "&arg_year="  +  is_work_year
+	
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	gd_1.redraw=false
+	change_unit() 
+	gd_1.redraw=true
+
+	
+}
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+    ds_1.Undo(ds_1.RowPosition)                                     //해당 row만 취소한다.
+}
+
+//------------------------------------------------------------------------
+ function change_unit()                     
+//---------------------------------------------------------------------------- 
+{
+	gd_1.redraw = false
+
+	ls_won = select_won.value
+	
+	gd_1.ColumnProp('sum_all','Value')		='{decode(line_no , 5, sum_all, 7, sum_all, Floor(sum_all/ ' +ls_won + '))}'
+	gd_1.ColumnProp('pre_sum','Value')	='{decode(line_no , 5, pre_sum, 7, pre_sum, Floor(pre_sum/ ' +ls_won + '))}'
+	gd_1.ColumnProp('this_sum','Value')	='{decode(line_no , 5, this_sum, 7, this_sum, Floor(this_sum/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm01','Value')		='{decode(line_no , 5, mm01, 7, mm01, Floor(mm01/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm02','Value')		='{decode(line_no , 5, mm02, 7, mm02, Floor(mm02/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm03','Value')		='{decode(line_no , 5, mm03, 7, mm03, Floor(mm03/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm04','Value')		='{decode(line_no , 5, mm04, 7, mm04, Floor(mm04/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm05','Value')		='{decode(line_no , 5, mm05, 7, mm05, Floor(mm05/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm06','Value')		='{decode(line_no , 5, mm06, 7, mm06, Floor(mm06/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm07','Value')		='{decode(line_no , 5, mm07, 7, mm07, Floor(mm07/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm08','Value')		='{decode(line_no , 5, mm08, 7, mm08, Floor(mm08/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm09','Value')		='{decode(line_no , 5, mm09, 7, mm09, Floor(mm09/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm10','Value')		='{decode(line_no , 5, mm10, 7, mm10, Floor(mm10/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm11','Value')		='{decode(line_no , 5, mm11, 7, mm11, Floor(mm11/ ' +ls_won + '))}'
+	gd_1.ColumnProp('mm12','Value')		='{decode(line_no , 5, mm12, 7, mm12, Floor(mm12/ ' +ls_won + '))}'
+	gd_1.ColumnProp('next_sum','Value')	='{decode(line_no , 5, next_sum, 7, next_sum, Floor(next_sum/ ' +ls_won + '))}'
+
+	gd_1.ColumnProp('sum_all','decao')		='2';
+	gd_1.ColumnProp('pre_sum','decao')	='2';
+	gd_1.ColumnProp('this_sum','decao')	='2';
+	gd_1.ColumnProp('mm01','decao')		='2';
+	gd_1.ColumnProp('mm02','decao')		='2';
+	gd_1.ColumnProp('mm03','decao')		='2';
+	gd_1.ColumnProp('mm04','decao')		='2';
+	gd_1.ColumnProp('mm05','decao')		='2';
+	gd_1.ColumnProp('mm06','decao')		='2';
+	gd_1.ColumnProp('mm07','decao')		='2';
+	gd_1.ColumnProp('mm08','decao')		='2';
+	gd_1.ColumnProp('mm09','decao')		='2';
+	gd_1.ColumnProp('mm10','decao')		='2';
+	gd_1.ColumnProp('mm11','decao')		='2';
+	gd_1.ColumnProp('mm12','decao')		='2';
+	gd_1.ColumnProp('next_sum','decao')	='2';
+	if (ls_won == 100000000) {
+		gd_1.ColumnProp('sum_all','width')		= '80';
+		gd_1.ColumnProp('pre_sum','width')	='80';
+		gd_1.ColumnProp('this_sum','width')	='80';
+		gd_1.ColumnProp('mm01','width')		='60';
+		gd_1.ColumnProp('mm02','width')		='60';
+		gd_1.ColumnProp('mm03','width')		='60';
+		gd_1.ColumnProp('mm04','width')		='60';
+		gd_1.ColumnProp('mm05','width')		='60';
+		gd_1.ColumnProp('mm06','width')		='60';
+		gd_1.ColumnProp('mm07','width')		='60';
+		gd_1.ColumnProp('mm08','width')		='60';
+		gd_1.ColumnProp('mm09','width')		='60';
+		gd_1.ColumnProp('mm10','width')		='60';
+		gd_1.ColumnProp('mm11','width')		='60';
+		gd_1.ColumnProp('mm12','width')		='60';
+		gd_1.ColumnProp('next_sum','width')	='80';
+
+	}
+	if (ls_won == 1000000 ) {
+		gd_1.ColumnProp('sum_all','width')		= '90';
+		gd_1.ColumnProp('pre_sum','width')	='90';
+		gd_1.ColumnProp('this_sum','width')	='90';
+		gd_1.ColumnProp('mm01','width')		='70';
+		gd_1.ColumnProp('mm02','width')		='70';
+		gd_1.ColumnProp('mm03','width')		='70';
+		gd_1.ColumnProp('mm04','width')		='70';
+		gd_1.ColumnProp('mm05','width')		='70';
+		gd_1.ColumnProp('mm06','width')		='70';
+		gd_1.ColumnProp('mm07','width')		='70';
+		gd_1.ColumnProp('mm08','width')		='70';
+		gd_1.ColumnProp('mm09','width')		='70';
+		gd_1.ColumnProp('mm10','width')		='70';
+		gd_1.ColumnProp('mm11','width')		='70';
+		gd_1.ColumnProp('mm12','width')		='70';
+		gd_1.ColumnProp('next_sum','width')	='90';
+
+	}
+	if (ls_won == 1000) {
+		gd_1.ColumnProp('sum_all','width')		= '100';
+		gd_1.ColumnProp('pre_sum','width')	='100';
+		gd_1.ColumnProp('this_sum','width')	='100';
+		gd_1.ColumnProp('mm01','width')		='80';
+		gd_1.ColumnProp('mm02','width')		='80';
+		gd_1.ColumnProp('mm03','width')		='80';
+		gd_1.ColumnProp('mm04','width')		='80';
+		gd_1.ColumnProp('mm05','width')		='80';
+		gd_1.ColumnProp('mm06','width')		='80';
+		gd_1.ColumnProp('mm07','width')		='80';
+		gd_1.ColumnProp('mm08','width')		='80';
+		gd_1.ColumnProp('mm09','width')		='80';
+		gd_1.ColumnProp('mm10','width')		='80';
+		gd_1.ColumnProp('mm11','width')		='80';
+		gd_1.ColumnProp('mm12','width')		='80';
+		gd_1.ColumnProp('next_sum','width')	='100';
+	}
+	if (ls_won == 1) {
+		gd_1.ColumnProp('sum_all','width')		= '120';
+		gd_1.ColumnProp('pre_sum','width')	='120';
+		gd_1.ColumnProp('this_sum','width')	='120';
+		gd_1.ColumnProp('mm01','width')		='100';
+		gd_1.ColumnProp('mm02','width')		='100';
+		gd_1.ColumnProp('mm03','width')		='100';
+		gd_1.ColumnProp('mm04','width')		='100';
+		gd_1.ColumnProp('mm05','width')		='100';
+		gd_1.ColumnProp('mm06','width')		='100';
+		gd_1.ColumnProp('mm07','width')		='100';
+		gd_1.ColumnProp('mm08','width')		='100';
+		gd_1.ColumnProp('mm09','width')		='100';
+		gd_1.ColumnProp('mm10','width')		='100';
+		gd_1.ColumnProp('mm11','width')		='100';
+		gd_1.ColumnProp('mm12','width')		='100';
+		gd_1.ColumnProp('next_sum','width')	='120';
+	}
+ 	gd_1.redraw = true
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+
+	result = window.dialogArguments;
+	
+	array = result.split("@");
+	
+	gs_home = array[0]                
+	is_dept_code	= array[1]
+	is_work_year    = array[2]
+	
+	em_date.text = is_work_year
+
+	gd_1.focus()
+
+	setTimeout('btnquery_onclick()',1)
+	
+
+}
+//---------------------------------------------------------------------------
+function close_rtn()                      // 닫기 
+//---------------------------------------------------------------------------
+{
+	window.returnValue = ''
+   window.close();
+
+
+}
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+
+//---------------------------------------------------------------------
+function excel_down()
+//---------------------------------------------------------------------
+{	 
+
+   var filename = is_dept_name+'_'+em_date.text+'시공계획';
+	//gd_1.RunExcel(filename)
+	gd_1.GridToExcel(filename, filename, 1)
+
+}
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+	
+	var line_no = ds_1.namevalue(row, 'line_no')
+	var isPercent = false
+	var isPlan = false
+	
+	if (line_no == 5 || line_no == 7 ){
+		isPercent = true;
+	}
+	if (line_no == 2 || line_no == 6|| line_no == 8|| line_no == 10 ){
+		isPlan = true;
+	}
+
+	if (eventid == 'color1'){
+
+		if ( isPercent) {
+			return 'lavenderblush'
+		}
+		if ( isPlan) {
+			//return 'mintcream'
+		}
+	}
+</script>
+
+<script language=JavaScript for=ds_1 event=OnLoadStarted()>
+
+/*
+	for (i=1; i <= 18; i++){
+		gd_1.ColumnProp(ds_show.ColumnID(i), 'Cursor') = 'wait';
+	}
+*/
+</script>
+
+<script language=JavaScript for=ds_1 event=OnLoadCompleted(rowcnt)>
+/*
+	for (i=1; i <= 18; i++){
+		gd_1.ColumnProp(ds_show.ColumnID(i), 'Cursor') = 'arrow';
+*/
+	
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+	<!--  <table class=main_table > -->
+	<table width="100%" height="100%" BORDER="0"  cellpadding="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<TR height="25px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="45px" class=font_green_bold>연도</td>
+							<td width="70px">
+								<comment id="__NSID__"><OBJECT id=em_date 
+											 style="WIDTH: 50px; HEIGHT: 20px; background: white;" 
+											classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+											 <PARAM NAME="Alignment" VALUE="1">
+											 <PARAM NAME="IsComma" VALUE="0">
+											 <PARAM NAME="MaxLength" VALUE="4">
+											 <PARAM NAME="Format" VALUE="YYYY">
+											 <PARAM NAME="Numeric" VALUE="0">
+											 <PARAM NAME="SelectAll" VALUE="-1">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+							</td>
+							
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="30px" class=font_green_bold>단위</td>
+							<td width="80px">
+									<select id=select_won onChange=change_unit()>
+										<option value=1> 원
+										<option value=1000 selected> 천원
+										<option value=1000000 > 백만원
+										<option value=100000000> 억원
+									</select>
+							</td>
+							<td width="*">&nbsp;</td>
+							
+							<td width="260px">
+									
+									<input id=bt_excel type="button" value="엑셀" class="img_btn2_1" onclick=excel_down()
+										 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+									<input type="button" value="닫기" 
+													 class="img_btnClose"
+													onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick="close_rtn()">
+									
+							</td>
+						</tr>
+					</table>
+
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+					<comment id="__NSID__"><OBJECT id=gd_1 
+							style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%;  HEIGHT: 100%;" 
+							classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+						<PARAM NAME="MultiRowSelect" VALUE="-1">
+						<PARAM NAME="AutoInsert" VALUE="-1">
+						<PARAM NAME="AllShowEdit" VALUE="-1">
+						<PARAM NAME="BorderStyle"  VALUE=1>
+						<PARAM NAME="Editable" VALUE=false>
+						<PARAM NAME="ColSizing" VALUE="-1">
+						<param name=LineColor value="Silver">
+						<param name=AutoResizing value=true> 
+						<param name=DragDropEnable  value="true">
+						<PARAM NAME="DataID" VALUE="ds_1">
+						<PARAM NAME="Format" VALUE="
+							<C> Name='현장명'   ID=dept_name Align=left  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=140   suppress=1 </C>
+							<C> Name='항목1'   ID=line_desc Align=left  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60   suppress=2 </C>
+						  <C> Name='항목2'   ID=line_desc2 Align=left  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90  Bgcolor=@color1  </C>
+						  <C> Name='총계'   ID=sum_all Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90  Bgcolor=@color1 gte_columntype='number:0:true' </C>
+						  <C> Name='전년실적'   ID=pre_sum Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90  Bgcolor=@color1</C>
+						  <C> Name='당년계획'   ID=this_sum Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90  Bgcolor=@color1</C>
+						  <C> Name='1월'   ID=mm01 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='2월'   ID=mm02 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='3월'   ID=mm03 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='4월'   ID=mm04 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='5월'   ID=mm05 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='6월'   ID=mm06 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='7월'   ID=mm07 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='8월'   ID=mm08 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='9월'   ID=mm09 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='10월'   ID=mm10 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='11월'   ID=mm11 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='12월'   ID=mm12 Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70  Bgcolor=@color1</C>
+						  <C> Name='익년이월'   ID=next_sum Align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90  Bgcolor=@color1</C>
+						  ">
+
+						<PARAM NAME="DataID" VALUE="ds_1">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+	</table>
+</div>
+</BODY></HTML>
+
+
+

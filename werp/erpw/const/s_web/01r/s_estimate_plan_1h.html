@@ -1,0 +1,379 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_estimate_plan_1h.html									-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 현장설명 실시계획서                        		-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_password = top.frames['security'].gs_password.value
+
+var is_ds_1_addr = 's_order_list_rpt_1q.jsp?arg_dept_code='                        //발주 목록 
+var is_dept_code = ""
+var is_dept_name = ""
+var il_order_number = 0
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/s_web/01r/s_estimate_plan"        // 보고서 디렉토리
+   
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code + "&RptParams=" + il_order_number 
+   
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   il_screen = 1
+	btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function guljae_rtn()                      // 전자결재
+//---------------------------------------------------------------------------
+{
+ tr_estimate_plan_01.Action = gs_home + '/const/s_web/01r/s_estimate_plan_01_1tr.jsp'
+ ds_estimate_plan_01.DataID = 's_estimate_plan_01_1q.jsp?arg_dept_code=' + is_dept_code + 
+                                                       '&arg_order_number=' +  il_order_number
+
+ tr_estimate_plan_02.Action = gs_home + '/const/s_web/01r/s_estimate_plan_02_1tr.jsp'
+ ds_estimate_plan_02.DataID = 's_estimate_plan_02_1q.jsp?arg_dept_code=' + is_dept_code + 
+                                                       '&arg_order_number=' +  il_order_number
+
+ tr_estimate_plan_03.Action = gs_home + '/const/s_web/01r/s_estimate_plan_03_1tr.jsp'
+ ds_estimate_plan_03.DataID = 's_estimate_plan_03_1q.jsp'
+
+ ds_estimate_plan_01.SyncLoad=true
+ ds_estimate_plan_01.Reset()
+ if (ds_estimate_plan_01.CountRow < 1) {
+   alert('결재할 건이 없습니다')
+   return
+ }
+ ll_cnt = f_ds_select_q('ds_seq','select s_confirm_unq_seq.nextval select_1 from dual')
+ ll_temp = ds_seq.NameValue(1,'select_1')
+ ll_temp = parseInt(ll_temp,10)
+ ds_estimate_plan_01.NameValue(1,'unq_num') = ll_temp
+ var ls_title		
+ ls_title = '(' + ds_1.NameValue(ds_1.RowPosition,"profession_wbs_name") + ')'		// 공종명
+ ds_estimate_plan_01.NameValue(1,'title') = ls_title 
+
+ ds_estimate_plan_01.UserStatus(1) = 1  // 강제로 삽입모드로 바꿈.   
+ tr_estimate_plan_01_success = 'N'   // 성공적이 아니다 (저장하였을경우 정상이면 'Y')
+ tr_estimate_plan_01.Post()
+ if (tr_estimate_plan_01_success == 'N') {
+   alert('전자결재가(PLAN_01) 잘못되었습니다(전산실)')
+   return
+ }  
+
+ ds_estimate_plan_02.SyncLoad=true
+ ds_estimate_plan_02.Reset()
+ 
+ var i
+ for (i=1;i<=ds_estimate_plan_02.CountRow;i++) {
+    ds_estimate_plan_02.UserStatus(i) = 1  // 강제로 삽입모드로 바꿈.   
+    ds_estimate_plan_02.NameValue(i,'unq_num') = ll_temp
+    ds_estimate_plan_02.NameValue(i,'no_seq') = i
+    ls_chk=''
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '1')  ls_chk = '정규'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '2')  ls_chk = '예비'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '3')  ls_chk = '미등록'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '4')  ls_chk = '등록취소'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '5')  ls_chk = '기타'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '6')  ls_chk = '[자재]정규'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '7')  ls_chk = '[자재]미등록'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '8')  ls_chk = '지역'
+    if (ds_estimate_plan_02.NameValue(i,'register_chk') == '9')  ls_chk = '임시'
+    ds_estimate_plan_02.NameValue(i,'register_chk') = ls_chk
+
+ }     
+ tr_estimate_plan_02_success = 'N'   // 성공적이 아니다 (저장하였을경우 정상이면 'Y')
+ if (ds_estimate_plan_02.IsUpdated) {
+    tr_estimate_plan_02.Post()
+    if (tr_estimate_plan_02_success == 'N') {
+       alert('전자결재가(PLAN_02) 잘못되었습니다(전산실)')
+       return
+    }
+ }     
+ 
+ ds_estimate_plan_03.SyncLoad=true
+ ds_estimate_plan_03.Reset()
+ ds_estimate_plan_03.ClearData()
+ 
+ var crystal_rpt
+ var arg_temp
+ var w, h
+
+ crystal_rpt = top.frames['security'].gs_crystal_addr.value 
+//                 "db_user=" + top.frames['security'].gs_crystal_user.value + 
+//                 "&db_password=" +  top.frames['security'].gs_crystal_password.value 
+                
+
+                 
+ for (i=1;i<=4;i++) {
+   ds_estimate_plan_03.AddRow()
+   ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'unq_num') = ll_temp
+   ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'no_seq') = i
+   if (i == 1) {
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'name') = '1.현장설명서'
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'url') = crystal_rpt + 
+                                 "Rptname=" + "const_rpt/s_web/01r/s_field_report" + 
+                                 "&RptParams=" + is_dept_code + "&RptParams=" + il_order_number
+   }                               
+   if (i == 2) {
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'name') = '2.예산대비표'
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'url') = crystal_rpt + 
+                                 "Rptname=" + "const_rpt/s_web/01r/s_order_content_detail"  + 
+                                 "&RptParams=" + is_dept_code + "&RptParams=" + il_order_number
+   }                               
+   if (i == 3) {
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'name') = '3.내역서'
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'url') = crystal_rpt + 
+                                 "Rptname=" + "const_rpt/s_web/01r/s_order_content"   + 
+                                 "&RptParams=" + is_dept_code + "&RptParams=" + il_order_number 
+   }    
+   if (i == 4) {
+      ds_estimate_plan_03.NameValue(ds_estimate_plan_03.RowPosition,'name') = '4.계약특기사항'
+   }    
+ }                             
+ tr_estimate_plan_03.Post()
+ if (tr_estimate_plan_03_success == 'N') {
+    alert('전자결재가(PLAN_03) 잘못되었습니다(전산실)')
+    return
+ }
+
+//alert(ll_temp)
+//alert('성공')
+ var ls_addr
+ ls_addr = 'https://www.worldro.net/loginsso.aspx?ui='
+ ls_addr = ls_addr + gs_user_id + ':' + gs_password + '&unq=' + ll_temp + '&type=Y01'
+          
+ ll_height = screen.availHeight  -  40
+ ll_width  = screen.availWidth 
+ window.showModalDialog(ls_addr,"","status:no;dialogWidth:777px;dialogHeight:737px;edge sunken;scroll:no"); 
+
+}  
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1');
+	var xArr   = new Array(true);
+	var yArr   = new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	 ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '020' order by etc_code") //승인구분
+
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   btnquery_onclick()
+
+
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+{
+  il_order_number = ds_1.NameValue(row,"order_number")
+}  
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_estimate_plan_01  event=OnLoadError()>
+  alert("Error Code(ds_estimate_plan_01) : " + ds_estimate_plan_01.ErrorCode + "\n" + "Error Message : " + ds_estimate_plan_01.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_01 event=OnFail()>
+  alert("Error Code(tr_estimate_plan_01) : " + tr_estimate_plan_01.ErrorCode + "\n" + "Error Message : " + tr_estimate_plan_01.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_01 event=OnSuccess()>
+ tr_estimate_plan_01_success = 'Y' 
+ </SCRIPT>
+<SCRIPT language=JavaScript for=ds_estimate_plan_02  event=OnLoadError()>
+  alert("Error Code(ds_estimate_plan_02) : " + ds_estimate_plan_02.ErrorCode + "\n" + "Error Message : " + ds_estimate_plan_02.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_02 event=OnFail()>
+  alert("Error Code(tr_estimate_plan_02) : " + tr_estimate_plan_02.ErrorCode + "\n" + "Error Message : " + tr_estimate_plan_02.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_02 event=OnSuccess()>
+ tr_estimate_plan_02_success = 'Y' 
+ </SCRIPT>
+<SCRIPT language=JavaScript for=ds_estimate_plan_03  event=OnLoadError()>
+  alert("Error Code(ds_estimate_plan_03) : " + ds_estimate_plan_03.ErrorCode + "\n" + "Error Message : " + ds_estimate_plan_03.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_03 event=OnFail()>
+  alert("Error Code(tr_estimate_plan_03) : " + tr_estimate_plan_03.ErrorCode + "\n" + "Error Message : " + tr_estimate_plan_03.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_estimate_plan_03 event=OnSuccess()>
+ tr_estimate_plan_03_success = 'Y' 
+ </SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><Object id=ds_seq
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+ <comment id="__NSID__"><Object id=ds_estimate_plan_01
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_estimate_plan_01 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_estimate_plan_01_1tr=ds_estimate_plan_01)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_estimate_plan_02
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_estimate_plan_02 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_estimate_plan_02_1tr=ds_estimate_plan_02)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_estimate_plan_03
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_estimate_plan_03 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_estimate_plan_03_1tr=ds_estimate_plan_03)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+	<tr height="20px">
+		<td class=td_green>
+			<table BORDER="0" CELLSPACING="0" cellpadding="0" class=main_table>
+				<tr> 
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="43px" class=font_green_bold>현장명</td>
+					<td width="150px">
+						<INPUT style="FONT-SIZE:12px;" id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=22 onkeyDown="keyDown()">
+					</td>
+					<td>
+						<INPUT id=dept_name_button  type=button  class="img_btnFind"  value=검색 onclick=dept_code_find() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"></td>
+				</tr>              
+      	</table>
+      </td>
+  </tr>
+<!--input type="button_query0" value=" 결재" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 800px; POSITION: absolute; WIDTH: 40px; TOP: 7px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=guljae_rtn()-->
+
+	<tr height="*">
+		<td>	
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 105; WIDTH:100%; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name=발주번호 ID=order_number Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C>
+				  <C> Name=승인구분 ID=approve_class Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center EditStyle=Lookup Data='ds_select:select_1:select_2' HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=60 </C> 
+				  <C> Name=발주명 ID=order_name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=350 </C> 
+				  <C> Name=발주공종명 ID=profession_wbs_name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+			      ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>
+</div>
+</BODY></HTML>

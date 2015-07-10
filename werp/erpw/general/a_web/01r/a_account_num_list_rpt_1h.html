@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : a_account_num_sum_rpt_1h.html						-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 계좌별 보조원장                  				-->
+<!-- 4. 변 경 이 력   : 김수현 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_from_comp = ""
+var is_to_comp = ""
+var is_from_acct = ""
+var is_to_acct = ""
+var is_from_date = ""
+var is_to_date   = ""
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+//   if ( f_check_date(em_from_date.text) == false ) {
+//  		alert("기간을 정확히 입력해 주십시오.")
+//  		return
+//   }
+//   if ( f_check_date(em_to_date.text) == false ) {
+//  		alert("기간을 정확히 입력해 주십시오.")
+//  		return
+//   }
+
+//   is_contract = ds_select1.NameValue(ds_select1.RowPosition, "select_2")
+//   is_pyong    = ds_select.NameValue(ds_select.RowPosition, "select_2")
+
+//	is_from_dongho = em_from_dongho.text
+//	is_to_dongho   = em_to_dongho.text
+	   
+//   if (is_from_dongho == "" ) is_from_dongho = "00000000"
+//   if (is_to_dongho == "" ) is_to_dongho     = "99999999"
+
+   arg_temp ="general_rpt/a_web/01r/"        // 보고서 디렉토리
+   is_from_comp = ds_select.NameValue(ds_select.RowPosition, "select_1")
+   is_to_comp   = ds_select1.NameValue(ds_select1.RowPosition, "select_1")
+   is_from_date = em_from_date.text
+   is_to_date   = em_to_date.text
+   is_from_acct = tx_from_acntcode.value
+   is_to_acct   = tx_to_acntcode.value
+
+   arg_temp = arg_temp + "a_account_num_list" + "&RptParams=" + is_from_comp + "&RptParams=" + is_to_comp +
+                                        "&RptParams=" + is_from_date + "&RptParams=" + is_to_date + 
+								 	    "&RptParams=" + is_from_acct + "&RptParams=" + is_to_acct +
+								 	    "&RptParams=" + "0000000" + "&RptParams=" + "ZZZZZZZ"
+
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+
+//---------------------------------------------------------------------------
+function bt_acnt_onclick(data)                     //계정코드 찾기
+//---------------------------------------------------------------------------
+{
+	var result;
+	var send_arg;
+	var array = new Array();
+	send_arg = ""
+	result = window.showModalDialog(gs_home + "/general/a_web/01/a_request_1h_acnt_find_1h.html", send_arg,"dialogWidth:380px;dialogHeight:500px");
+
+	if(result == "") return;
+
+	array = result.split("@");
+
+    if (data == 1) {
+       tx_from_acntcode.value = array[0]
+       tx_from_account_name.value = array[1]
+	} else {
+       tx_to_acntcode.value = array[0]
+       tx_to_account_name.value = array[1]
+	}
+//	ds_1.NameValue(ds_1.RowPosition,"acntcode") = array[0]
+//	ds_1.NameValue(ds_1.RowPosition,"account_name") = array[1]
+
+//	if (array[0] >= '742611' && array[0] <= '742615') {
+//		alert("해당계정과목은 수주공사 M/H에서만 사용할수있는 계정과목입니다.")
+//	}
+//	if (array[0] >= '115511' && array[0] <= '115515') {
+//		alert("해당계정과목은 자체공사 M/H에서만 사용할수있는 계정과목입니다.")
+//	}
+
+}
+
+//-------------------------------------------------------------------------------
+function select_from()                  //시작일 선택 
+//-------------------------------------------------------------------------------
+{
+   is_from_date = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+}
+//-------------------------------------------------------------------------------
+function select_to()                  //종료일 선택 
+//--------------------------------------------------------------------------------
+{
+   is_to_date = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+   /*
+	var result="";
+	var array = new Array();
+   result = ""
+   result = readCookie("@h_sale_income_dongho@")
+   if (result == "err") {
+   }   
+	else {   
+	   array = result.split("@");
+      is_dept_code = array[0]
+      is_dept_name = array[1]
+      is_sell_code = array[2]
+      is_sell_name = array[3]
+      dept_name.value = is_dept_name
+      sell_name.value = is_sell_name
+    }
+   if (is_dept_code == top.frames['security'].gs_dept_code.value) {
+   }   
+   else {   
+		is_dept_code = top.frames['security'].gs_dept_code.value
+		is_dept_name = top.frames['security'].gs_dept_name.value
+		is_sell_code = top.frames['security'].gs_sell_code.value
+		is_sell_name = top.frames['security'].gs_sell_name.value
+		dept_name.value = is_dept_name
+		sell_name.value = is_sell_name
+   }
+   */
+
+//사업체
+ll_cnt  = f_select_q( "select comp_code select_1, comp_name select_2 from z_code_comp where comp_name <> '전체' order by comp_code")		
+ll_cnt1 = f_select1_q("select comp_code select_1, comp_name select_2 from z_code_comp where comp_name <> '전체' order by comp_code")		
+
+//년월
+ll_cnt2 = f_select2_q("select to_char(add_months(last_day(sysdate) ! 1, -1), 'yyyy.mm.dd') select_1, to_char(sysdate, 'yyyy.mm.dd') select_2 from dual")
+
+em_from_date.text = ds_select2.NameValue(1, 'select_1')
+em_to_date.text   = ds_select2.NameValue(1, 'select_2')
+}
+</SCRIPT>
+
+</HEAD>
+<BODY STYLE="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT ID=ds_select STYLE="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" CLASSID=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT ID=ds_select1 STYLE="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" CLASSID=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT ID=ds_select2 STYLE="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" CLASSID=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<SCRIPT language=JavaScript for=em_from_date event=onKillFocus()>
+        if (em_from_date.Modified) { 
+			   select_from()
+		  }
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_to_date event=onKillFocus()>
+        if (em_to_date.Modified) { 
+	     	select_to()
+	     }
+</SCRIPT>
+
+<DIV ID=print_condition 
+      STYLE="Z-INDEX: 107; LEFT: 230px; WIDTH: 500px; POSITION: absolute; TOP: 100px; HEIGHT: 50px">
+      <TABLE WIDTH="100%" HEIGHT="100%"  BORDER="5"  ALIGN="center"   CELLSPACING="0" STYLE="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <TD WIDTH="10%"   BGCOLOR="#BBE0F4" STYLE="COLOR: BLACK"  > 
+             	<DIV ALIGN="right">사업체</div>
+             </TD>
+          	 <TD >
+	       <comment id="__NSID__"><OBJECT ID=ccom_comp_code style="WIDTH: 170px; color=#CC3333; font-face:굴림체;font-size:9pt;height:220pt"
+	               CLASSID=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       <PARAM NAME="ComboDataID" VALUE="ds_select">
+	          <PARAM NAME="CodeCColumn" VALUE="select_1">
+	          <PARAM NAME="DataCColumn" VALUE="select_2">
+	          <param name=Auto       value=true>
+	          <param name=CodeColumn value=comp_code>
+	          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></comment> <script> __ws__(__NSID__);</script> ∼
+	       <comment id="__NSID__"><OBJECT id=ccom_comp_code2 style="WIDTH: 170px; color=#CC3333; font-face:굴림체;font-size:9pt;height:220pt"
+	               classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       <PARAM NAME="ComboDataID" VALUE="ds_select1">
+	          <PARAM NAME="CodeCColumn" VALUE="select_1">
+	          <PARAM NAME="DataCColumn" VALUE="select_2">
+	          <param name=Auto       value=true>
+	          <param name=CodeColumn value=comp_code>
+	          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+
+         </TR>
+         <TR BGCOLOR="white" >
+         	<TD WIDTH="10%"   BGCOLOR="#BBE0F4" STYLE="COLOR: BLACK">
+         		<DIV ALIGN="right">기간</DIV>
+         	</TD>
+         	<TD WIDTH="55%" STYLE="FONT-SIZE=12px">
+	<comment id="__NSID__"><OBJECT ID=em_from_date STYLE="WIDTH: 100px" CLASSID=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		    <PARAM NAME="Alignment" VALUE="1">
+		    <PARAM NAME="IsComma" VALUE="0">
+		    <PARAM NAME="MaxLength" VALUE="6">
+		    <PARAM NAME="Format" VALUE="YYYY-MM">
+            <param NAME="ClipMode" VALUE=false>
+		    <PARAM NAME="Numeric" VALUE="0">
+		    <PARAM NAME="SelectAll" VALUE="-1">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+	            <IMG SRC="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+								if(!is_null(result)){ em_from_date.text = result.substr(0,8);} ; select_from()">
+	            <comment id="__NSID__"><OBJECT ID=em_middle classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+	                    WIDTH=7px>
+							  <PARAM NAME=Text    VALUE="~">
+							  <PARAM NAME=Numeric VALUE=false>
+							  <PARAM NAME=Border  VALUE=false>
+							  <paRam NAME=Enable                    VALUE=false>
+                       <param name=DisabledBackColor         VALUE="white">
+               </object></comment> <script> __ws__(__NSID__);</script>
+	<comment id="__NSID__"><OBJECT ID=em_to_date STYLE="WIDTH: 100px" CLASSID=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		    <PARAM NAME="Alignment" VALUE="1">
+		    <PARAM NAME="IsComma" VALUE="0">
+		    <PARAM NAME="MaxLength" VALUE="6">
+		    <PARAM NAME="Format" VALUE="YYYY-MM">
+            <param NAME="ClipMode" VALUE=false>
+		    <PARAM NAME="Numeric" VALUE="0">
+		    <PARAM NAME="SelectAll" VALUE="-1">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+	            <IMG SRC="../../../image/icon/calender_on.gif"  ID=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+								if(!is_null(result)){ em_to_date.text = result.substr(0,8);} ; select_to()">
+				</TD>
+     </TR>             
+	 <TR>
+ 	 <TD WIDTH="10%" BGCOLOR="#BBE0F4" STYLE="COLOR: BLACK" ROWSPAN="2"><DIV ALIGN="right">계정과목</DIV></TD>
+ 	 <TD WIDTH="">
+	   <INPUT ID=tx_from_acntcode MAXLENGTH=8  SIZE=8 readOnly >
+	   <INPUT ID=bt_from_acnt_code TYPE=button VALUE=... onclick=bt_acnt_onclick(1)>
+	   <INPUT ID=tx_from_account_name  MAXLENGTH=30  SIZE=33 readOnly >
+	 </TD>
+	 </TR>
+	 <TR>
+ 	 <TD WIDTH="">
+	   <INPUT ID=tx_to_acntcode MAXLENGTH=8  SIZE=8 readOnly >
+	   <INPUT ID=bt_to_acnt_code TYPE=button VALUE=... onclick=bt_acnt_onclick(2)>
+	   <INPUT ID=tx_to_account_name  MAXLENGTH=30  SIZE=33 readOnly >
+	 </TD>
+	 </TR>
+    </TABLE>
+</DIV>
+</BODY></HTML>

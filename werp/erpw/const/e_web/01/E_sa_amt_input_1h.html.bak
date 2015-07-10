@@ -1,0 +1,476 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : E_sa_amt_input_1h.html							-->
+<!-- 2. 유형(시나리오) : 조회및 입력										-->
+<!-- 3. 기 능 정 의   : 환경관리비 실행예산 입력및 조회		               	-->
+<!-- 4. 변 경 이 력   : 이준구 작성										-->
+<!-- 5. 관련프로그램   :													-->
+<!-- 6. 특 기 사 항   :													-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+var is_ds_1_addr = gs_home + '/const/e_web/01/E_sa_amt_input_1q.jsp?arg_process_code='                     //현장 목록 
+var is_ds_2_addr = gs_home + '/const/e_web/01/E_sa_amt_input_2q.jsp?arg_dept_code='                        //기성내역 차수 
+var is_tr_1_addr = gs_home + '/const/e_web/01/E_sa_amt_input_1tr.jsp'
+var is_dept_code = ""
+var is_dept_name = ""
+var il_screen = 1
+var is_close_check
+var is_returnvalue=""
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript>
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	var pCode
+	if ( ccom_process_code.CodeValue  == '99' )
+	{
+		pCode  =  ''
+	}	
+	else
+	{
+		pCode  = ccom_process_code.CodeValue 	
+	}
+
+	ds_1.DataID = is_ds_1_addr + pCode + "&arg_long_name=" + dept_name.value
+//	alert(ds_1.dataid);
+ 	ds_1.SyncLoad=true
+ 	ds_1.Reset()
+
+	div_btnquery_onclick() 	
+}
+
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+ 	
+ 	ds_2.AddRow()   
+	
+	div_init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (ds_2.CountRow == 0)				 // 한건도 없을경우는  0 
+	{                                       
+		btnadd_onclick()   
+		return
+	}  
+	ds_2.InsertRow(ds_2.RowPosition)   
+
+
+	div_init_move() 
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+
+  if  (gd_2.MultiRowSelect)
+  {                                   // multi row select 일 경우
+     for (i=ds_2.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+     {
+        if (ds_2.RowMark(i) == 1)                              // 선택되어 있으며는 
+               ds_2.DeleteRow(i)
+    }   
+    ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+  }
+  else
+ 	ds_2.DeleteRow(ds_2.RowPosition)  
+
+ }
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+    ds_2.Undo(ds_2.RowPosition)                                     //해당 row만 취소한다.
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+    
+  if (ds_2.IsUpdated)											 //변경된것이 있으며는 
+	
+  {                                          
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+    {
+
+        tr_1.Post()                                           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+    }    
+ } 
+
+}
+
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	if ( parseInt(ds_1.CountRow) > 0 ) 
+	{ 
+	ds_2.DataID = is_ds_2_addr + ds_1.NameValue(ds_1.RowPosition,"dept_code") 
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+	}
+	else
+	{	
+	ds_2.ClearData();
+	}
+	
+
+ 
+}
+
+
+
+//----------------------------------------------------------------------
+function div_init_move()                         // initial move
+//----------------------------------------------------------------------
+{
+   ds_2.NameValue(ds_2.RowPosition,"dept_code") = ds_1.NameValue(ds_1.RowPosition,"dept_code")
+}
+
+
+
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+	if (is_sec == 'r') return   // 조회권한일경우 
+	
+	switch ( il_screen )
+	{
+	case 1:
+		top.frames['main_title'].div_r.style.visibility="hidden"
+		top.frames['main_title'].div_u.style.visibility="hidden"     
+	    break;
+	case 2:
+	 	top.frames['main_title'].div_r.style.visibility="visible"
+		top.frames['main_title'].div_u.style.visibility="hidden"  
+	    break;
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   top.frames['main_title'].title_name.value = " " + "실행예산/안전관리비 항목별 입력"  
+    
+   f_set_resize() 
+
+	is_sec = gf_initial_security()	
+	
+	is_temp = is_sec
+   if (is_sec != 'r') {
+     is_temp = 'u'
+   }	
+	if (is_sec == 'r') {
+		top.frames['main_title'].div_r.style.visibility="visible"
+		top.frames['main_title'].div_u.style.visibility="hidden"   
+	}
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+
+	ll_cnt = f_select1_q("select safety_code select_1, child_name select_2  from e_safety_code_child where class_tag = '033' order by safety_code") //공사구분
+
+	
+	tr_1.Action = is_tr_1_addr
+	
+   ccom_process_code.Index = 0;
+	
+	gd_2.ColumnProp('amt', 'EditLimit') = 13
+}
+
+
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------
+function tab_changed()
+//---------------------------------------------------------------------
+{
+
+}
+//---------------------------------------------------------------------
+function Get()
+//---------------------------------------------------------------------
+{
+
+	var Value = gd2.NameSum(amt.value, 1, ds_2.CountRow);
+	alert(Value);
+	
+	var Value1 = tb_Grid.VirtualString(1, amt);
+	alert( Value1);
+
+}
+
+//---------------------------------------------------------------------
+function input_list()
+//---------------------------------------------------------------------
+{
+	{
+	ds_2.reset()
+	var i = 0
+	ds_2.AddRow();
+	ds_2.NameValue(ds_2.RowPosition,"item_code") = ds_2.ColumnString(0,i)
+	ds_2.NameValue(ds_2.RowPosition,"amt") = ds_2.ColumnString(1,i)
+	ds_2.NameValue(ds_2.RowPosition,"remark") = ds_2.ColumnString(2,i)	
+    ds_2.NameValue(ds_2.RowPosition,"dept_code") = ds_1.NameValue(ds_1.RowPosition,"dept_code")
+	}
+
+	alert( ds_2.ColumnString(0,i));   
+
+}
+//---------------------------------------------------------------------
+function move_search()
+//---------------------------------------------------------------------
+{
+  btnsave_onclick() 
+  div_btnquery_onclick() 
+}
+
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	btnquery_onclick()
+	div_btnquery_onclick() 	
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick()
+		div_btnquery_onclick() 	
+	} 
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1','gd_2');
+	var xArr =new Array(false, true);
+	var yArr =new Array(true,true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=ccom_process_code event=onSelChange()>
+  btnsave_onclick() 
+  btnquery_onclick() 
+
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=onFilter(row)>
+      switch (ccom_process_code.CodeValue) {
+              case "01":
+                         if (ds_1.NameValue(row,"process_code") == '01' ) return true
+                         else return false;
+                         break;
+              case "02":
+                         if (ds_1.NameValue(row,"process_code") == '02') return true
+                         else return false;
+                         break;
+              case "03":
+                         if (ds_1.NameValue(row,"process_code") == '03') return true
+                         else return false;
+                         break;
+              case "99":
+                         return true
+                         break;
+
+}
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=onclick() for=gd_1>
+	move_search()
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=onKeyPress() for=gd_1>
+	move_search()
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<OBJECT id=ds_2 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+</OBJECT>
+    
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:E_sa_amt_input_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<Object id=ds_select1
+     style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+     classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+
+
+<OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+    	<C>Col=exe_amt1 Ctrl=em_exe_amt1 Param=text Enable=enable</C>">
+</OBJECT> 
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() onresize='f_set_resize()' oncontextmenu="return false" >
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 330px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" > 
+	<td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+		<div align="right">현장명</div></td>
+	<td >
+		<INPUT id=dept_name style="ime-mode:active"  align="absmiddle" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">&nbsp;
+		<input type="button_query" value=" 검색" align="absmiddle"
+		style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40;
+		background-color:#E9F5F5; border:1 solid #A1A9A9; height:19"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=dept_code_find()>&nbsp;&nbsp;
+		<input type="button_query" value=" 전체"  align="absmiddle"
+		style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40;
+		background-color:#E9F5F5; border:1 solid #A1A9A9; height:19"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick="dept_name.value = '' ; dept_code_find(); " name="T1" size="20"></tr>                 
+	</table>
+</DIV>     
+<DIV id=div_process0
+      style="Z-INDEX: 105; LEFT: 362px; WIDTH: 138px; POSITION: absolute; TOP: 4px; HEIGHT: 16px">
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px" id="table1">
+         <tr BGCOLOR="white" > 
+			<td width="60%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="right">현장진행구분</div></td>
+			<td width="40%"> 
+				<OBJECT id=ccom_process_code width=50px 
+					classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					<param name=Data     value="01^진행,02^준공,03^마감,99^전체">
+				</OBJECT>
+			</td>
+        </tr>
+      </table>
+</div>    
+
+
+<DIV id=binding_safty_bugdet style="Z-INDEX: 105; LEFT: 506px; WIDTH: 500px; POSITION: absolute; TOP: 30px; HEIGHT: 16px">
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px" id="table2">
+         <tr BGCOLOR="white" > 
+			<td width="29%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+				<div align="center">실행 - 안전 관리비 </div></td>
+			<td width="53%"> 
+				<OBJECT id=em_exe_amt1 tabIndex=2
+					style="WIDTH: 216px; height:18px" 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<param name=IsComma			value=true>
+					<param name=MaxLength		value=10>
+					<PARAM NAME="Numeric" VALUE="0">
+				</OBJECT>
+	    	</td>
+        </tr>
+      </table>
+</div>    
+
+
+<OBJECT id=gd_1 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2; WIDTH:500px; POSITION: absolute; TOP: 30; HEIGHT: 600" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<param name=SortView  value="Left">
+	<PARAM NAME="Format" VALUE=" 
+		  <C> Name=현장코드 ID=dept_code sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80 </C> 
+		  <C> Name=현장명 ID=long_name  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=210 </C> 
+		  <C> Name=실행금액 ID=exe_amt1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=160 </C> 
+      ">
+</OBJECT>
+
+<OBJECT id=gd_2 onfocus="get_focus(2)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT:506; WIDTH:500px; POSITION: absolute; TOP: 55; HEIGHT: 574px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_2">
+    <param name="ViewSummary"    value=1>
+	<PARAM NAME="Format" VALUE=" 
+      <C> Name=항목 ID=item_code  Edit=none  EditStyle=Lookup Data='ds_select1:select_1:select_2' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=120 
+      SumText='총 계'  SumColor=Black SumBgColor=Pink </C>  
+	  <C> Name=금액 ID=amt   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=180 
+	   SumText=@sum SumColor=Black SumBgColor=Pink
+	  </C>
+	  <C> Name=비고 ID=remark   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=170 </C> 
+    ">
+</OBJECT>
+
+
+
+</BODY></HTML>

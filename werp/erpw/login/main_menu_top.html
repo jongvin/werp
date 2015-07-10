@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : main_menu.html								-->
+<!-- 2. 유형(시나리오): 트리구조의 메뉴 												-->
+<!-- 3. 기 능 정 의   : 조회     	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="cookie.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+ var gs_home = readCookie("@gs_home@")
+ var gs_empno = readCookie("@empno@")
+ var gs_user_id = readCookie("@user_id@")
+ var is_selchanged = 'yes'
+// if ((readCookie("JFLAG") != readCookie("JSESSIONID")) || (readCookie("JFLAG") == "")){
+//     alert("확인: 막바로 이화면으로는 올수가 없습니다")
+//     self.close()
+// }    
+ gs_empno = 'iit'
+ gs_home = 'erpw'
+// top.frames['security'].empno.value=gs_empno
+// top.frames['security'].user_id.value=readCookie("user_id")
+// top.frames['security'].name.value=readCookie("name")
+// top.frames['security'].dept_code.value=readCookie("dept_code")
+// top.frames['security'].short_name.value=readCookie("short_name")
+// top.frames['security'].gs_home.value=gs_home
+ var is_ds_1_addr = gs_home + '/login/m_main_menu_tree_q.jsp?arg_group_key='         //그룹 가져오기 트리  
+ var is_ds_2_addr = gs_home + '/zmis/z_user_group_connect_q.jsp?arg_user_id='         //유저가 가지고있는 그룹들 
+ var is_ds_3_addr = gs_home + '/login/m_user_find_q.jsp?arg_user_id='    //개인별 추가 등록 
+ var is_ds_4_addr = gs_home + '/login/m_user_menu_tree_q.jsp?arg_user_key='    //개인별 추가등록된 프로그램가져오기
+ var ll_row
+
+//----------------------------------------------------------------------------
+function main_create()
+//----------------------------------------------------------------------------
+{
+//  tr_menu.ClearAll()
+  ds_menu.DataID=is_ds_1_addr + ds_2.NameValue(1,"group_key")
+  ds_menu.SyncLoad = true;
+  ds_menu.reset()
+  alert(ds_menu.CountRow)
+  if  (ds_2.CountRow > 1){                      // 그룹이 여러개 일경우      
+     for (i=2 ;i<= ds_2.CountRow; i++){
+         ds_menu.DataID=is_ds_1_addr + ds_2.NameValue(i,"group_key")
+         ds_menu.append()    
+     }
+  }   
+  
+  ds_3.DataID = is_ds_3_addr + gs_empno   // 개인별 user_id의 user_seq_key값 구하기
+  ds_3.SyncLoad = true;
+  ds_3.reset()
+
+  if  (ds_3.CountRow > 0){
+      ds_menu.DataID = is_ds_4_addr + ds_3.NameValue(1,"user_key")
+      ds_menu.append()
+  }    
+  
+  
+  
+  
+ // tr_menu.focus()
+ // tr_menu.Index=2
+}
+
+//----------------------------------------------------------------------------
+function btnquery_onclick()
+//----------------------------------------------------------------------------
+ {
+   if  ((ds_menu.CountRow == ds_menu.RowPosition) ||
+       (ds_menu.NameValue(ds_menu.RowPosition,"level1") >= ds_menu.NameValue(ds_menu.RowPosition + 1,"level1")))
+       aa = 1 
+   else return    
+
+ ll_addr =  ds_menu.NameValue(ds_menu.RowPosition,"pgrm_id")
+ if (ll_addr == " ") {
+      return
+ }
+ ll_security = ds_menu.NameValue(ds_menu.RowPosition,"rw_tag")
+ ll_security = ll_security.toLowerCase()
+ if ( ll_addr != ""){
+//      top.frames['main_ct'].location.href(gs_home + ll_addr+"?"+ll_security)
+      if  (ll_security == "r")
+        {
+ //         top.frames['main_title'].div_r.style.visibility="visible"
+ //          top.frames['main_title'].div_u.style.visibility="hidden"
+        }  
+     else if (ll_security == "u")
+       {          
+//          top.frames['main_title'].div_u.style.visibility="visible"             
+//          top.frames['main_title'].div_r.style.visibility="hidden"             
+        }
+     else 
+       {          
+//          top.frames['main_title'].div_r.style.visibility="hidden"             
+//          top.frames['main_title'].div_u.style.visibility="hidden"             
+        }
+   } 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()
+//---------------------------------------------------------------------------
+{
+ds_2.DataID = is_ds_2_addr + gs_empno 
+ds_2.SyncLoad = true
+ds_2.reset()
+
+main_create()
+
+}
+
+</SCRIPT> 
+
+//<script language=JavaScript for=tr_menu event=OnSelChanged()>
+// 
+// btnquery_onclick()
+//
+//</SCRIPT>   
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_menu 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; TOP: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; TOP: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; TOP: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=tr_menu 
+    style="FONT-SIZE: 12px; Z-INDEX: 100; LEFT: 7px; WIDTH: 1024px; POSITION: absolute; TOP: 9px; HEIGHT: 20px" 
+    classid=CLSID:7A54CBF0-2CB4-11D4-973E-0060979E2A03>
+	<PARAM NAME="DataID" VALUE="ds_menu">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="TextColumn" VALUE="title_name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="level1">
+	<PARAM NAME="ImgDataID" VALUE="ds_menu">
+	<PARAM NAME="BorderStyle" VALUE="0">
+	<param name="SingleExpand" value="-1"> 
+   </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

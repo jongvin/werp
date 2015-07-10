@@ -1,0 +1,119 @@
+SELECT 
+		 	A.SLIP_ID , 
+		  	B1.SLIP_IDSEQ , 
+		 	A.MAKE_COMP_CODE , 
+		 	A.MAKE_DT , 
+		 	A.MAKE_SEQ , 
+		 	A.SLIP_KIND_TAG , 
+		  	A.MAKE_SLIPNO , 
+		  	B1.MAKE_SLIPLINE , 
+		  	A.MAKE_SLIPNO||'-'||B1.MAKE_SLIPLINE MAKE_SLIPNOLINE, 
+		 	DECODE(A.KEEP_SLIPNO, NULL, NULL, '확정  ') KEEP_CLS, 
+		  	B1.ACC_CODE , 
+		  	C1.ACC_NAME , 
+		  	C1.ACC_REMAIN_POSITION , 
+		  	B1.DB_AMT , 
+		  	TO_CHAR(B1.DB_AMT, 'FM9,999,999,999,999') DB_AMT_D , 
+		  	B1.CR_AMT , 
+		  	TO_CHAR(B1.CR_AMT, 'FM9,999,999,999,999') CR_AMT_D , 
+		  	--적요코드관리 
+		  	C1.SUMMARY_CLS , 
+		  	B1.SUMMARY_CODE , 
+		  	B2.SUMMARY1 , 
+		  	B2.SUMMARY2 , 
+		  	B1.TAX_COMP_CODE , 
+		  	C7.COMPANY_NAME TAX_COMP_NAME, 
+		  	B1.COMP_CODE , 
+		  	--귀속부서 
+		  	B1.DEPT_CODE , 
+		  	C2.DEPT_NAME , 
+		  	--부문코드 
+		  	B1.CLASS_CODE , 
+		  	C3.CLASS_CODE_NAME , 
+		  	--증빙코드 
+		  	B1.VAT_CODE , 
+		  	C4.VAT_NAME , 
+		  	--거래처코드관리 
+		  	C1.CUST_CODE_MNG , 
+		  	C1.CUST_CODE_MNG_TG , 
+		  	TO_CHAR(B1.CUST_SEQ) CUST_SEQ , 
+		  	F_T_Cust_Mask(C6.CUST_CODE) CUST_CODE , 
+		  	--거래처명관리 
+		  	C1.CUST_NAME_MNG , 
+		  	C1.CUST_NAME_MNG_TG , 
+		  	C6.CUST_NAME , 
+		  	--은행관리 
+		  	C1.BANK_MNG , 
+		  	C1.BANK_MNG_TG , 
+		  	B1.BANK_CODE , 
+		  	C5.BANK_NAME , 
+		  	--사원번호 
+		  	C1.EMP_NO_MNG , 
+		  	C1.EMP_NO_MNG_TG , 
+		  	B2.EMP_NO , 
+		  	C8.NAME EMP_NAME , 
+		  	DECODE( B1.RESET_SLIP_ID, NULL, '', 0, '', F_T_Get_Make_Slipno(B1.RESET_SLIP_ID, B1.RESET_SLIP_IDSEQ) ) RESET_SLIPNO 
+ 		FROM 
+ 			T_ACC_SLIP_HEAD A, 
+			T_ACC_SLIP_BODY1 B1, 
+			T_ACC_SLIP_BODY2 B2, 
+		 	T_ACC_CODE C1, 
+		 	T_DEPT_CODE C2, 
+		 	T_CLASS_CODE C3, 
+		 	T_ACC_VAT_CODE C4, 
+		 	T_BANK_CODE C5, 
+		 	T_CUST_CODE C6, 
+		 	T_COMPANY C7, 
+		 	Z_AUTHORITY_USER C8 
+ 		WHERE 
+ 			A.SLIP_ID = B1.SLIP_ID (+) 
+ 			AND B1.SLIP_ID = B2.SLIP_ID 
+ 			AND B1.SLIP_IDSEQ = B2.SLIP_IDSEQ 
+			AND B1.ACC_CODE = C1.ACC_CODE 
+			AND	B1.DEPT_CODE = C2.DEPT_CODE 
+			AND	B1.CLASS_CODE = C3.CLASS_CODE(+) 
+			AND	B1.VAT_CODE = C4.VAT_CODE(+) 
+			AND	B1.BANK_CODE = C5.BANK_CODE(+) 
+			AND	B1.CUST_SEQ = C6.CUST_SEQ(+) 
+			AND	B1.TAX_COMP_CODE = C7.COMP_CODE(+) 
+			AND	B2.EMP_NO = C8.EMPNO(+) 
+ 			-- 헤더조건 추가 
+ 			--발의일자 / 확정일자 
+ 			AND ( 
+ 				( 'M' = :DATE_CLS  AND A.MAKE_DT BETWEEN  F_T_Stringtodate(:DT_F)  AND  F_T_Stringtodate(:DT_T)  ) 
+ 				OR 
+ 				( 'K' = :DATE_CLS  AND A.KEEP_DT BETWEEN   F_T_Stringtodate(:DT_F)  AND  F_T_Stringtodate(:DT_T)  ) 
+ 			) 
+ 			--사업장 
+ 			AND A.MAKE_COMP_CODE =  :COMP_CODE 
+ 			--확정구분 
+ 			AND ( 
+ 				('A'= :KEEP_CLS ) 
+ 				OR 
+ 				( ('M'= :KEEP_CLS ) AND A.KEEP_DT IS NULL ) 
+ 				OR 
+ 				( ('K'= :KEEP_CLS ) AND A.KEEP_DT IS NOT NULL ) 
+ 			) 
+ 			--발의부서 
+ 			--AND A.MAKE_DEPT_CODE =  :MAKE_DEPT_CODE 
+ 			--발의자 
+ 			--AND A.MAKE_PERS =  :MAKE_PERS 
+ 			--관리담당 
+ 			--AND A.CHARGE_PERS =  :CHARGE_PERS 
+			-- 바디조건 추가 
+			--거래처 
+			--AND C6.CUST_CODE = :CUST_CODE 
+			--금액 
+			--계정과목 
+			AND B1.ACC_CODE = :ACC_CODE 
+			--부가세코드 
+			--AND B1.VAT_CODE = :VAT_CODE 
+			--귀속부서 
+			--AND B1.DEPT_CODE = :DEPT_CODE 
+			--적요 
+			--AND B2.SUMMARY1 LIKE :SUMMARY1 ||'%' 
+			--세무사업장 
+			AND B1.TAX_COMP_CODE = :TAX_COMP_CODE 
+ORDER BY 
+	A.SLIP_ID, 
+	b1.MAKE_SLIPLINE

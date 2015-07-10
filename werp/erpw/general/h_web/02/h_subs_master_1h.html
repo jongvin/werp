@@ -1,0 +1,1021 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_subs_master_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력												-->
+<!-- 3. 기 능 정 의   :                      								-->
+<!-- 4. 변 경 이 력   :  박두현 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   : 청약자등록												-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type cont`ent="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home  = top.frames['security'].gs_home.value
+var is_empno = top.frames['security'].empno.value
+
+var is_ds_1_addr = 'h_subs_master_1q.jsp?arg_dept_code='
+var is_tr_1_addr = gs_home + '/general/h_web/02/h_subs_master_1tr.jsp'
+var is_dept_code=""
+var is_sell_code=""
+var is_sell_name=""
+var is_sort = " "
+var is_update_ok
+
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_sell_code=" + is_sell_code
+  ds_1.SyncLoad=true
+  ds_1.reset(); 
+
+}
+//-----------------------------------------------------------------------
+function initial_rtn()                       
+//------------------------------------------------------------------------
+{
+  ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+  ds_1.NameValue(ds_1.RowPosition,"sell_code") = is_sell_code
+  ds_1.NameValue(ds_1.RowPosition,"subs_no")   = 0
+  ds_1.NameValue(ds_1.RowPosition,"subs_date") = em_em_subs_date.text
+  ds_1.NameValue(ds_1.RowPosition,'preparation_order') = 0
+  ds_1.NameValue(ds_1.RowPosition,'pay_tag') = '01'
+  ds_1.NameValue(ds_1.RowPosition,'new_tag') = 'Y'
+  
+  if (ds_1.RowPosition != 1) {
+	  ds_1.NameValue(ds_1.RowPosition,'subs_order') = ds_1.NameValue(ds_1.RowPosition - 1,'subs_order')
+	  ds_1.NameValue(ds_1.RowPosition,'pyong') = ds_1.NameValue(ds_1.RowPosition - 1,'pyong')
+	  ds_1.NameValue(ds_1.RowPosition,'style') = ds_1.NameValue(ds_1.RowPosition - 1,'style')
+	  ds_1.NameValue(ds_1.RowPosition,'classify') = ds_1.NameValue(ds_1.RowPosition - 1,'classify')
+	  ds_1.NameValue(ds_1.RowPosition,'class') = ds_1.NameValue(ds_1.RowPosition - 1,'class')
+	  ds_1.NameValue(ds_1.RowPosition,'class_name') = ds_1.NameValue(ds_1.RowPosition - 1,'class_name')
+	  ds_1.NameValue(ds_1.RowPosition,'subs_amt') = ds_1.NameValue(ds_1.RowPosition - 1,'subs_amt')
+	  ds_1.NameValue(ds_1.RowPosition,'') = ds_1.NameValue(ds_1.RowPosition - 1,'')
+	  ds_1.NameValue(ds_1.RowPosition,'') = ds_1.NameValue(ds_1.RowPosition - 1,'')
+	  ds_1.NameValue(ds_1.RowPosition,'') = ds_1.NameValue(ds_1.RowPosition - 1,'')
+	  ds_1.NameValue(ds_1.RowPosition,'') = ds_1.NameValue(ds_1.RowPosition - 1,'')
+  }
+}
+
+//------------------------------------------------------------------------
+function document_print()                     // 신청서 미리보기
+//------------------------------------------------------------------------
+{
+	btnsave_onclick()
+
+	if (ds_1.NameValue(ds_1.RowPosition,'subs_date') == "") {
+		alert("청약일자가 없는것은 출력할 수 없습니다")
+		return
+	}
+	if (ds_1.NameValue(ds_1.RowPosition,'cust_code') == "") {
+		alert("고객이 없는것은 출력할 수 없습니다")
+		return
+	}
+
+	ll_subs_no = ds_1.NameValue(ds_1.RowPosition,'subs_no')
+	
+   arg_temp ="general_rpt/h_web/02r/"        // 보고서 디렉토리
+
+   arg_temp = arg_temp + "h_subs_document_world&RptParams=" + is_dept_code + 
+                                        "&RptParams=" + is_sell_code + 
+                                        "&RptParams=" + ll_subs_no 
+                                        
+
+   f_crystal_report(arg_temp)   //보고서 호출
+
+}
+
+//------------------------------------------------------------------------
+function receive_print()                     // 입금표 미리보기
+//------------------------------------------------------------------------
+{
+//   print_condition_query()
+   var arg_temp
+
+	btnsave_onclick()
+
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	// is_update_ok, ds_select10,  ds_update10 이 반드시 있어야 출력이 됩니다.
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	
+	if (ds_1.NameValue(ds_1.RowPosition,'subs_date') == "") {
+		alert("청약일자가 없는것은 출력할 수 없습니다")
+		return
+	}
+	if (ds_1.NameValue(ds_1.RowPosition,'cust_code') == "") {
+		alert("고객이 없는것은 출력할 수 없습니다")
+		return
+	}
+
+	ls_cust_code  = ds_1.NameValue(ds_1.RowPosition,'cust_code')
+	ls_cust_name  = ds_1.NameValue(ds_1.RowPosition,'cust_name')
+	ls_date       = ds_1.NameValue(ds_1.RowPosition,'subs_date')
+	ll_pyong      = ds_1.NameValue(ds_1.RowPosition,'pyong')
+	ll_amt        = ds_1.NameValue(ds_1.RowPosition,'subs_amt')
+	ls_remarks = '청약금 입금'
+	ls_dongho     = '00000000'
+
+	ll_receive_no = f_h_receive_print(is_dept_code, is_sell_code, "-", ls_cust_code, 
+                            			  ls_date, ll_amt,  is_empno, ls_remarks)	
+
+   if (ll_receive_no == 0)  {
+		alert("입금표 출력에 문제가 있습니다.\n담당자에게 문의하세요")
+		return
+   }
+
+	ls_remarks = prompt("입금표에 출력할 내용을 입력하세요", ls_remarks)
+
+	if (ls_remarks.length < 1) 
+		ls_remarks = "0"
+		   
+   arg_temp ="general_rpt/h_web/01r/"        // 보고서 디렉토리
+
+   arg_temp = arg_temp + "h_receive_print" + "&RptParams=" + is_dept_code + 
+                                             "&RptParams=" + is_dept_name + 
+                                             "&RptParams=" + ls_cust_code + 
+                                             "&RptParams=" + ls_cust_name + 
+                                             "&RptParams=" + ll_pyong + 
+                                             "&RptParams=" + ls_dongho + 
+                                             "&RptParams=" + ls_date + 
+                                             "&RptParams=" + ll_amt + 
+                                             "&RptParams=" + is_empno + 
+                                             "&RptParams=" + ls_remarks
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	btnsave_onclick()	 // 1건씩 저장 처리 하기 위함.
+	
+	ds_1.AddRow()
+	initial_rtn()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	btnadd_onclick()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_1.CountRow ;i >0 ;i--)
+     {
+        if (ds_1.RowMark(i) == 1)
+               ds_1.DeleteRow(i)
+      }  
+     if  (ds_1.RowPosition != 0)          
+         ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+  }
+  else {
+  		if (ds_1.NameValue(ds_1.RowPosition,'prize_date') != '' ){
+			alert('이미당첨된 사람은 삭제할 수 없습니다...')
+			return
+		}
+     ds_1.DeleteRow(ds_1.RowPosition)  
+  }
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  var row,ls_null,i
+
+ 
+ if (ds_1.IsUpdated){
+		var ll_dup
+
+//		ll_dup = f_dup_chk("ds_1","prize_dongho")
+//		if (ll_dup > 0) {
+//			if (ds_1.NameValue(ll_dup,'prize_dongho') != ''){
+//		      alert("가계약 동호수가 중복되었습니다")
+//				ds_1.RowPosition = ll_dup
+//				return
+//			}
+//		}
+
+	  for (i=1; i<=ds_1.CountRow; i++) {
+	    if ((ds_1.NameValue(i,"subs_order") == '03' || ds_1.NameValue(i,"subs_order") == '99')&& (ds_1.NameValue(i,"deposit_no") == '' || ds_1.NameValue(i,"bank_head_name") == '' ) ) {
+	       alert("3 순위 및 가계약은 은행명, 계좌명을 반드시 입력해야 합니다.")
+	       ds_1.RowPosition = i
+	       return
+	    }
+	    
+	    if ((ds_1.NameValue(i,"subs_order") == '03' || ds_1.NameValue(i,"subs_order") == '99')&& ds_1.NameValue(i,"subs_amt") == 0 ) {
+	       alert("3 순위 및 가계약은 청약금액을 반드시 입력해야 합니다.")
+	       ds_1.RowPosition = i
+	       return
+	    }
+	    
+	    if (ds_1.NameValue(i,"subs_order") == 0 || ds_1.NameValue(i,"subs_order") == '') {
+	       alert("반드시 청약순위를  입력하셔야 합니다")
+	       ds_1.RowPosition = i
+	       return
+	    }
+	    if (ds_1.NameValue(i,"pyong") == 0 || ds_1.NameValue(i,'pyong') == '') {
+		    alert("반드시 평형을 입력하셔야 합니다")
+	       ds_1.RowPosition = i
+	       return
+	    }
+	  }    
+
+		ll_dup = f_dup_chk("ds_1","cust_code")
+		if (ll_dup > 0) {
+			if (ds_1.NameValue(ll_dup,'cust_code') == ''){
+		      alert("반드시 주민번호를  입력하셔야 합니다")
+				ds_1.RowPosition = ll_dup
+				return
+			}
+			else {
+				if (confirm("주민번호가 중복되었습니다.\n등록하시겠습니까? ") == false) {
+					ds_1.RowPosition = ll_dup
+					return
+				}
+			}
+		}
+
+      if  (confirm("변경되었습니다 저장하시겠습니까?")) {
+    	  subs_no_make()
+        tr_1.Post()
+	   }
+   }
+}
+//----------------------------------------------------------------------------
+function subs_no_make()                     // 청약번호 만들기
+//---------------------------------------------------------------------------- 
+{
+   ll_max_no = 1000
+
+   if (ds_1.CountRow < 1)   return
+   if (ds_1.NameValue(ds_1.CountRow,'new_tag') != 'Y')  return
+
+	ll_cnt = f_select2_q("select max(subs_no) select_1  from h_subs_master  where dept_code = '" + is_dept_code + "' and sell_code = '" + is_sell_code + "' ")   
+	if (ll_cnt > 0) {
+		ll_max_no = parseInt(ds_select2.NameValue(1,'select_1'))
+		if (isNaN(ll_max_no)) ll_max_no = 1000
+	}
+	else  {
+		ll_max_no = 1000	
+	}
+
+	ll_max_no++
+	ds_1.NameValue(ds_1.CountRow,'subs_no') = ll_max_no
+	ds_1.NameValue(ds_1.CountRow,'new_tag') == 'U'
+
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+
+
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+
+	result = f_hdept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+   is_sell_code = top.frames['security'].gs_sell_code.value
+   is_sell_name = top.frames['security'].gs_sell_name.value
+	dept_name.value = is_dept_name
+   sell_name.value = is_sell_name
+
+	btnquery_onclick()
+}
+
+//------------------------------------------------------------------------
+function keyDown()                       //뷰서 검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//------------------------------------------------------------------------
+function cust_find()                       //고객 찾기
+//------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	var row,ll_cnt=0,i,ls_chk
+	if(in_cust_name.value.substr(0,1) > 0 && in_cust_name.value.substr(0,1) < 9) {
+		ls_chk = '1'
+	}
+	else {
+		ls_chk = '2'
+	}
+  
+	for (i=1; i<=ds_1.CountRow; i++) {
+		if (ls_chk == '1') {
+			if (ds_1.NameValue(i,'cust_code') == in_cust_name.value) {
+				ll_cnt ++
+				if (ll_cnt == 1){
+					row = i
+				}
+			} 
+		}
+		else {
+			if (ds_1.NameValue(i,'cust_name') == in_cust_name.value) {
+				ll_cnt ++
+				if (ll_cnt == 1){
+					row = i
+				}
+			} 
+		}
+	}
+
+	if (ll_cnt > 1 || ll_cnt == 0) {
+		if (ls_chk == '1') {
+			result = window.showModalDialog(gs_home + "/general/h_web/00//h_code_cust_find_1h.html", "1"+ "@" + in_cust_name.value,"dialogWidth:685px;dialogHeight:700px");
+			if (result == "") {
+			   return;
+		   }
+		}
+		else {
+			result = window.showModalDialog(gs_home + "/general/h_web/00//h_code_cust_find_1h.html", "2"+ "@" + in_cust_name.value,"dialogWidth:685px;dialogHeight:700px");
+			if (result == "") {
+			   return;
+		   }
+		}
+		array = result.split("@");
+		row = ds_1.NameValueRow("cust_code",array[0])
+
+		ll_cnt = f_select2_q("select match_jumin_no select_1, match_name select_2  from h_code_cust  where cust_code = '" + array[0] + "' ")   
+		
+		if (ll_cnt > 0) {
+	      ds_1.NameValue(ds_1.RowPosition,"spouse_rrn")  = ds_select2.NameValue(1,"select_1")
+	      ds_1.NameValue(ds_1.RowPosition,"spouse_name") = ds_select2.NameValue(1,"select_2")
+		}
+	}
+	if (row > 0) ds_1.RowPosition = row
+}
+//------------------------------------------------------------------------
+function cust_keyDown()                       //  입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{  
+	if (window.event.keyCode != 13) return 
+   cust_find()
+}
+//---------------------------------------------------------------------
+function cust_code_find()                     //주민번호 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/general/h_web/00//h_code_cust_find_1h.html", "1"+ "@" + em_cust_code.text,"dialogWidth:685px;dialogHeight:700px");
+	if (result == "") {
+	   em_cust_code.text=""
+	   tx_cust_name.value=""
+	   return;
+   }
+	array = result.split("@");
+	em_cust_code.text = array[0]
+	tx_cust_name.value = array[1]
+	ds_1.NameValue(ds_1.RowPosition,"cust_div") = array[2]
+
+	ll_cnt = f_select2_q("select match_jumin_no select_1, match_name select_2  from h_code_cust  where cust_code = '" + array[0] + "' ")   
+	
+	if (ll_cnt > 0) {
+      ds_1.NameValue(ds_1.RowPosition,"spouse_rrn")  = ds_select2.NameValue(1,"select_1")
+      ds_1.NameValue(ds_1.RowPosition,"spouse_name") = ds_select2.NameValue(1,"select_2")
+	}
+
+}
+
+//---------------------------------------------------------------------
+function pyong_find()                     //평형 찾기 
+//---------------------------------------------------------------------
+{
+	var result,ls_arg;
+	var array = new Array();
+
+	ls_arg = gs_home + '@' + is_dept_code + '@' + is_sell_code + '@'
+	
+	result = window.showModalDialog(gs_home + "/general/h_web/00/h_pyong_find_1h.html", ls_arg,"dialogWidth:440px;dialogHeight:500px");
+	
+	if (result == "") {
+	   return;
+   }
+	array = result.split("@");
+
+	em_pyong.text = array[0]
+	tx_style.value = array[1]
+}
+
+//---------------------------------------------------------------------
+function am_code_bank_head_find()                     //대표은행코드 찾기  
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+
+	result = window.showModalDialog(gs_home + "/general/h_web/00/h_am_code_bank_head_find_1h.html", tx_bank_head_code.value,"dialogWidth:420px;dialogHeight:500px");
+	if (result == "") {
+	   tx_bank_head_code.value=""
+	   tx_bank_head_name.value=""
+	   return;
+   }
+	array = result.split("@");
+	tx_bank_head_code.value = array[0]
+	tx_bank_head_name.value = array[1]
+}
+//---------------------------------------------------------------------
+function cust_per_insert()                     //고객등록
+//---------------------------------------------------------------------
+{
+	var result,arg;
+	var array = new Array();
+
+	arg = gs_home + '@' 
+
+	result = window.showModalDialog(gs_home + "/general/h_web/03/h_code_cust_per_1h.html", arg,"dialogWidth:585px;dialogHeight:700px");
+
+	if (result == '' || result ==null) return
+
+	array = result.split("@");
+	ds_1.NameValue(ds_1.RowPosition,'cust_code') = array[0]
+	ds_1.NameValue(ds_1.RowPosition,'cust_name') = array[1]
+	ds_1.NameValue(ds_1.RowPosition,'cust_div') = array[2]
+
+}
+//---------------------------------------------------------------------
+function iscust(cust_code)                     //고객등록
+//---------------------------------------------------------------------
+{
+	var result =''
+   var arg
+	var array = new Array();
+	
+	arg = gs_home + '@' +em_cust_code.value+'@'
+//	arg = gs_home + '@' +ds_1.NameValue(ds_1.RowPosition,'cust_code')+'@'
+
+	result = window.showModalDialog(gs_home + "/general/h_web/03/h_code_cust_per_1h.html", arg,"dialogWidth:585px;dialogHeight:700px");
+   //alert(result)
+	if (result == '' || result ==null) return
+
+	//alert(result)
+	set_cust_info(result)
+
+}
+//---------------------------------------------------------------------
+function set_cust_info(str)                     
+//---------------------------------------------------------------------
+// str = cust_code@cust_name@cust_div@cust_div2@cont_zip@contaddr1@cont_addr2
+{   
+	array = str.split("@");
+	em_cust_code.value = array[0]
+	//tx_cust_name.value = array[1]
+	ds_1.NameValue(ds_1.RowPosition,"cust_name") = array[1]
+	ds_1.NameValue(ds_1.RowPosition,"cust_div") = array[2]
+	ds_1.NameValue(ds_1.RowPosition,"cust_div2") = array[3]
+	
+	em_cust_code.value = array[0]
+	 tx_cust_name.value = array[1]
+	 ds_1.NameValue(ds_1.RowPosition,"cust_div") = array[2]
+	ds_1.NameValue(ds_1.RowPosition,"spouse_rrn")  = array[12]
+	ds_1.NameValue(ds_1.RowPosition,"spouse_name") = 	array[13]
+}
+//---------------------------------------------------------------------
+function cust_name_find()                     //주민번호 찾기 (고객명으로)
+//---------------------------------------------------------------------
+{	 /*
+	var result,ls_name;
+	var array = new Array();
+	ls_name = tx_cust_name.value
+
+	ll_cnt = f_select5_q("select cust_code select_1, cust_name select_2, cust_div select_3 from h_code_cust  where cust_name = '" + ls_name + "' ")   
+	if (ll_cnt == 1) {
+	    em_cust_code.text = ds_select5.NameValue(1,"select_1")
+	    tx_cust_name.value = ds_select5.NameValue(1,"select_2")
+	    ds_1.NameValue(ds_1.RowPosition,"cust_div") = ds_select5.NameValue(1,"select_3")
+	}    
+	else{
+		result = window.showModalDialog(gs_home + "/general/h_web/00/h_code_cust_find_1h.html", "2"+ "@" + ls_name,"dialogWidth:685px;dialogHeight:700px");
+		if (result == "") {
+			tx_cust_name.value = ''
+		   return;
+	   }
+		array = result.split("@");
+		em_cust_code.value = array[0]
+		tx_cust_name.value = array[1]
+		ds_1.NameValue(ds_1.RowPosition,"cust_div") = array[2]
+
+		ll_cnt = f_select2_q("select match_jumin_no select_1, match_name select_2  from h_code_cust  where cust_code = '" + array[0] + "' ")   
+		
+		if (ll_cnt > 0) {
+		   
+	      ds_1.NameValue(ds_1.RowPosition,"spouse_rrn")  = ds_select2.NameValue(1,"select_1")
+	      ds_1.NameValue(ds_1.RowPosition,"spouse_name") = ds_select2.NameValue(1,"select_2")
+		}
+
+	}	*/
+}
+//---------------------------------------------------------------------
+function prize_dongho_find()                        //가계약 동호 찾기
+//---------------------------------------------------------------------
+{
+	var result,arg,ls_dongho,li_seq,ls_class,ls_option;
+	var array = new Array();
+
+	if (ds_1.NameValue(ds_1.RowPosition,'subs_order') != '99') {
+		alert("청약 순위가 가계약인 경우에만 동호수를 입력할 수 있습니다")
+		return
+	}
+	
+	arg = gs_home + '@' + is_dept_code + '@' + is_sell_code 
+	result = window.showModalDialog(gs_home + "/general/h_web/03/h_nocontract_find_1h.html", arg,"dialogWidth:455px;dialogHeight:500px");
+	
+	if (result == "") {
+		return;
+   }
+	array = result.split("@");
+
+	ds_1.NameValue(ds_1.RowPosition,'prize_dongho') = array[0]
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+   is_sell_code = top.frames['security'].gs_sell_code.value
+   is_sell_name = top.frames['security'].gs_sell_name.value
+   temp_date = top.frames['security'].gs_sysdate.value
+   em_em_subs_date.text = temp_date.substr(0,4) + temp_date.substr(5,2) + temp_date.substr(8,2)
+	dept_name.value = is_dept_name
+   sell_name.value = is_sell_name
+	//청약순위   
+	ll_cnt = f_select_q("select code select_1, code_name select_2  from h_code_common  where code_div = '09' order by code")   
+	tr_1.Action = is_tr_1_addr
+	
+	ll_cnt = f_select3_q("select code select_1, code_name select_2 from h_code_common where code_div = '05' order by code ")   
+
+	//FI 은행코드
+
+	
+  ds_select4.DataID = 'h_subs_fi_bank_1q.jsp'
+  ds_select4.SyncLoad=true
+  ds_select4.reset(); 
+	
+   btnquery_onclick()
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+
+
+<script language=JavaScript for=em_cust_code event=onKeyDown(kcode,scode)>
+if (kcode != 13) return
+
+ll_cnt = f_select1_q("select cust_code select_1, cust_name select_2, cust_div select_3 from h_code_cust  where cust_code = '" + em_cust_code.text + "' ")   
+if (ll_cnt == 1) {
+    em_cust_code.text = ds_select1.NameValue(1,"select_1")
+    tx_cust_name.value = ds_select1.NameValue(1,"select_2")
+    ds_1.NameValue(ds_1.RowPosition,"cust_div") = ds_select1.NameValue(1,"select_3")
+}    
+else
+    cust_code_find()    
+</SCRIPT>
+<script language=JavaScript for=em_cust_code event=onKillFocus()>
+ll_cnt = f_select1_q("select cust_code select_1, cust_name select_2, cust_div select_3 from h_code_cust  where cust_code = '" + em_cust_code.text + "' ")   
+
+if (ll_cnt == 1) {
+    em_cust_code.text = ds_select1.NameValue(1,"select_1")
+    tx_cust_name.value = ds_select1.NameValue(1,"select_2")
+    ds_1.NameValue(ds_1.RowPosition,"cust_div") = ds_select1.NameValue(1,"select_3")
+}    
+else
+    cust_code_find()    
+</SCRIPT>
+
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	if (colid != 'subs_order') return
+
+	ls_subs_no = ds_1.NameValue(ds_1.RowPosition,"subs_no")
+	
+	ll_cnt = f_select2_q("select subs_order select_1, nvl(prize_dongho, '') select_2, nvl(to_char(prize_date, 'yyyy.mm.dd'), '1000.01.01') select_3  from h_subs_master where dept_code = '" + is_dept_code + "' and sell_code = '" + is_sell_code + "' and subs_no = '" + ls_subs_no + "' " )   
+
+	if (ll_cnt < 1) return
+	
+	if (ds_1.NameValue(ds_1.RowPosition,"subs_order") != '99' && ds_select2.NameValue(1,"select_1") != '99')
+		return
+
+	if (ds_1.NameValue(ds_1.RowPosition,"subs_order") == '99' && ds_select2.NameValue(1,"select_3") != '1000.01.01') {
+		alert("청약 당첨자는 가계약 처리를 할 수 없습니다")
+  		alert("청약 순위를 원래 상태로 처리 하겠습니다")
+		ds_1.NameValue(ds_1.RowPosition,"subs_order") = ds_select2.NameValue(1,"select_1") // 원상복구
+  		return
+	}
+
+	if (ds_select2.NameValue(1,"select_1") == '99' & ds_select2.NameValue(1,"select_2") != '') {
+	  	if (confirm("가계약 동호수를 삭제하시겠습니까 ?") == false) {
+	  		alert("청약 순위를 원래 상태로 처리 하겠습니다")
+			ds_1.NameValue(ds_1.RowPosition,"subs_order") = ds_select2.NameValue(1,"select_1") // 원상복구
+	  		return
+	  	}
+	  	else {
+			ds_1.NameValue(ds_1.RowPosition,"prize_dongho") = ''  // 가계약이 아니므로 가계약 동호 취소
+	  	}
+	}
+	
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }
+</script>
+
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select4 event=OnLoadError()>
+  alert("Error Code(ds_select4) : " + ds_select4.ErrorCode + "\n" + "Error Message : " + ds_select4.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+  tr_fail=0
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update10 event=OnLoadError()>
+	is_update_ok = 1
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+ <comment id="__NSID__"><Object id=ds_select classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select1 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select2 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select3 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select4 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select5 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select10 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><OBJECT id=ds_update10 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1  classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:h_subs_master_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+	<!--  <table class=main_table > -->
+	<table width="100%" height="100%" BORDER="0"  cellpadding="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<TR height="20px">
+			<TD class=td_green colspan=2>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="45px" class=font_green_bold>현장명</td>
+							<td width="166">
+								<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()"   >
+							</td>
+							<td width="50">
+								<input id="button_query" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+							</td>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td WIDTH='58px'    class=font_green_bold >분양구분</td>
+							 <td WIDTH='70px'>
+									<INPUT id=sell_name SIZE=15  style=" FONT-SIZE: 12px" READONLY DISABLED></td>
+							
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td WIDTH='29px'    class=font_green_bold >고객</td>
+							<td WIDTH='70px'>
+									<INPUT id=in_cust_name  ; "		 onkeyDown="cust_keyDown()"></td>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td WIDTH='58px'    class=font_green_bold >청약일자</td>
+							<td WIDTH='80px'>
+									<comment id="__NSID__"><OBJECT id=em_em_subs_date  
+										style="WIDTH: 100%;   height:100% ; "
+										classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+									  <param name=Format value="YYYY-MM-DD">
+									  <param name=SelectAll  value=true>
+									  <param name=Numeric value=false>
+									  <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+							</td>
+
+							<td width="*">&nbsp;</td>
+							<td width="230px">
+									<input id="button_query" type="button" value="신청서"  class="img_btnRpt3_1" style="position:relative; left:60px" onclick=document_print() 
+									onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+									<!--<input type="button_query" value="    입금표" 
+										  style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=80px; LEFT: 800px;  POSITION: absolute; top:5px;
+										  background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+										  onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+										  onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+												  "  onclick=receive_print()>
+									-->
+									<input type="button" value="고객등록"  class="img_btn4_1"   style="position:relative; left:60px;"  onclick=cust_per_insert()
+									onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+							</td>
+						</tr>
+					</table>
+
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+					<tr > 
+						<td>
+							<comment id="__NSID__"><OBJECT id=gd_1 
+							style="WIDTH: 100%;  HEIGHT: 100%;" 
+							 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+							<PARAM NAME="MultiRowSelect" VALUE="0">
+							<PARAM NAME="AutoInsert" VALUE="0">
+							<PARAM NAME="AllShowEdit" VALUE="0">
+							<PARAM NAME="BorderStyle"  VALUE=1>
+							<PARAM NAME="Editable" VALUE="0">
+							<PARAM NAME="DataID" VALUE="ds_1">
+							<PARAM NAME="Format" VALUE="
+								  <C> Name='청약번호'  id=subs_no  width=70 align=center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								  <C> Name='주민번호'  id=cust_code  width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								  <C> Name='청약순위'  id=subs_order  EditStyle=Lookup   Data='ds_select:select_1:select_2' width=87  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								  <C> Name='청약자명'  id=cust_name  width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+							  ">
+							</OBJECT></comment> <script> __ws__(__NSID__);</script>
+						</TD>
+						<TD width=700px>
+								 <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2> 
+												  <div align="right">기본사항</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4"   style="COLOR: BLACK" > 
+												  <div align="right">청약 번호(*)</div></td>
+											 
+											 <td > 
+												  <comment id="__NSID__"><OBJECT id=em_subs_no  
+															 style="WIDTH: 70px"
+															 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															 <PARAM NAME="Alignment" 		VALUE="1">
+															 <param name=ReadOnly    		value=true>
+															 <param name=ReadOnlyBackColor  value="#F2F2F2">
+															 <param name=Numeric 			value=false>
+															 <param name=SelectAll       	value=true>
+															 <param name=MaxDecimalPlace  value=0>
+															 </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">청약 순위(*)</div></td>
+											 <td > 
+												  <comment id="__NSID__"><OBJECT id=ccom_subs_order  
+															 style="WIDTH: 70px"
+															 classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="1">
+														<PARAM NAME="ComboDataID" VALUE="ds_select">
+														<PARAM NAME="CodeCColumn" VALUE="select_1">
+														<PARAM NAME="DataCColumn" VALUE="select_2">
+														<param name=DataID     value=ds_1>
+														<param name=CodeColumn value=subs_order></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+										</tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+												  <div align="right">평 형(*)</div></td>
+											 <td> 
+												  <table width="100%" height="100%" BORDER="0"  align="left"   CELLSPACING="0" style="FONT-SIZE: 12px">
+													  <tr>
+														  <td width="40%">
+															  <comment id="__NSID__"><OBJECT id=em_pyong  
+																		 style="WIDTH: 70px; "
+																		 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+																		<PARAM NAME="Alignment" VALUE="1">
+																		 <param name=Numeric value=true>
+																		<param name=ReadOnly    value=true>
+																		<param name=ReadOnlyBackColor  value="#F2F2F2">
+																		 <param name=SelectAll       value=true>
+																		 <param name=MaxDecimalPlace   value=3>
+																		 </OBJECT></comment> <script> __ws__(__NSID__);</script>
+																</td>
+															<td>
+															  <INPUT id=Button_pyong  type=button   onclick=pyong_find() class="img_btnFind_S"
+																	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT";>
+														  </td>
+													  </tr>
+												  </table>
+											</td>
+
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">TYPE</div></td>
+											 <td  > 
+												  <INPUT id=tx_style  MAXLENGTH=2 readonly  style="BACKGROUND-COLOR:F2F2F2; "> </td>
+										</tr>                 
+										<!-- <tr BGCOLOR="white" > 
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">분 류</div></td>
+											 <td  > 
+												  <INPUT id=tx_classify  MAXLENGTH=25  size=25
+														maxLength="2" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)"> </td>
+										</tr> -->                 
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" >
+												  <div align="right">청약자</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">주민번호(*)</div></td>
+											 <td > 
+										  <INPUT id=em_cust_code  size=11 onchange="iscust(em_cust_code.value)"  style="FONT-SIZE: 12px; HEIGHT: 18px;WIDTH: 120px"  >
+												  <INPUT id=Button_cust_code  type=button   onclick=iscust(em_cust_code.value) class="img_btnFind_S"
+														onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT"></td>
+
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">성 명</div></td>
+											 <td  > 
+													<INPUT id=tx_cust_name  size=15 CONTENTEDITABLE=false  onchange="cust_name_find()">
+										</tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" >
+												  <div align="right">배우자</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">주민번호</div></td>
+											 <td >
+												  <INPUT id=em_spouse_rrn  size=20  style="FONT-SIZE: 12px; HEIGHT: 18px;WIDTH: 120px"
+														 maxLength="20" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)">
+												  </td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">성 명</div></td>
+											 <td  > 
+												  <INPUT id=tx_spouse_name  MAXLENGTH=10   
+														maxLength="10" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)"></td> 
+									  </tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2>
+												  <div align="right">청약사항</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">청약일자</div></td>
+											 <td > 
+													<comment id="__NSID__"><OBJECT id=em_subs_date 
+															 style="WIDTH: 80px"
+															 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="1">
+														  <param name=Format value="YYYY-MM-DD">
+														  <param name=SelectAll  value=true>
+														  <param name=Numeric value=false>
+														  <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">청약금액</div></td>
+											 <td > 
+												  <comment id="__NSID__"><OBJECT id=em_subs_amt 
+															 style="WIDTH: 100px"
+															 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															<PARAM NAME="Alignment" VALUE="2">
+															 <param name=Numeric value=true>
+															 <param name=SelectAll       value=true>
+															 <param name=MaxDecimalPlace   value=0>
+															 </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+										</tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" >
+												  <div align="right">입금구분</div></td>
+											 <td > 
+												  <comment id="__NSID__"><OBJECT id=ccom_pay_tag  
+															 style="WIDTH: 70px"
+															 classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="1">
+														<PARAM NAME="ComboDataID" VALUE="ds_select3">
+														<PARAM NAME="CodeCColumn" VALUE="select_1">
+														<PARAM NAME="DataCColumn" VALUE="select_2">
+														<param name=DataID     value=ds_1>
+														<param name=CodeColumn value=pay_tag></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">가계약동호</div></td>
+										<td width="40%"> 
+												  <INPUT id=tx_prize_dongho readonly MAXLENGTH=8  size=8 mask='XXXX-XXXX' style="BACKGROUND-COLOR:F2F2F2; ">  
+												  <INPUT id=Button_dongho  type=button   onclick=prize_dongho_find() class="img_btnFind_S"
+														onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT" ></td>
+										</tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+												  <div align="right">환불사항</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">계좌번호</div></td>
+											 <td  > 
+												  <INPUT id=tx_deposit_no  MAXLENGTH=20  size=25
+													maxLength="20" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)"> </td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+												  <div align="right">은행</div></td>
+											 <td  >
+												  <comment id="__NSID__"><OBJECT id=ccom_bank_code  
+															 style="WIDTH: 150px"
+															 classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+														<PARAM NAME="Alignment" VALUE="1">
+														<PARAM NAME="ComboDataID" VALUE="ds_select4">
+														<PARAM NAME="CodeCColumn" VALUE="bank_code">
+														<PARAM NAME="DataCColumn" VALUE="bank_name">
+														<param name=DataID     value=ds_1>
+														<param name=CodeColumn value=bank_head_code></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+												  <!-- <INPUT id=tx_bank_head_code  MAXLENGTH=2  READONLY size=3 style="BACKGROUND-COLOR:F2F2F2; "> 
+												  <INPUT id=Button_2   type=button   value=... onclick=am_code_bank_head_find()>  
+												  <INPUT id=tx_bank_head_name  MAXLENGTH=30  size=16 CONTENTEDITABLE="false"> </td>-->
+										</tr>                 
+										<tr BGCOLOR="white" > 
+											 <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: #BBE0F4" height='30%'>
+												  <div align="right">1</div></td>
+											 <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" >
+												  <div align="right">비  고</div></td>
+											 <td colspan=4 > 
+												<TEXTAREA id=tx_remark rows=09 tabIndex=7 cols=50
+												maxLength="120" onChange="LimitTextLength(this)" onKeyUp="LimitTextLength(this)"></TEXTAREA></td>
+										</tr>
+										
+									 </table>
+						</TD>
+					</TR>
+				</table>
+			</td>
+		</tr>
+	</TABLE>
+</div>
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=subs_no Ctrl=em_subs_no Param=text Enable=enable</C>
+	   <C>Col=pyong Ctrl=em_pyong Param=text Enable=enable</C>
+	   <C>Col=subs_order Ctrl=subs_order Param=value Enable=enable</C>
+	   <C>Col=style Ctrl=tx_style Param=value Enable=enable</C>
+	   <C>Col=classify Ctrl=tx_classify Param=value Enable=enable</C>
+	   <C>Col=class Ctrl=tx_class Param=value Enable=enable</C> 
+	   <C>Col=class_name Ctrl=tx_class_name Param=value Enable=enable</C>
+	   <C>Col=cust_code Ctrl=em_cust_code Param=value Enable=enable</C>
+	   <C>Col=cust_name Ctrl=tx_cust_name Param=value Enable=enable</C>
+	   <C>Col=spouse_rrn Ctrl=em_spouse_rrn Param=value Enable=enable</C>
+	   <C>Col=spouse_name Ctrl=tx_spouse_name Param=value Enable=enable</C>
+	   <C>Col=subs_date Ctrl=em_subs_date Param=text Enable=enable</C>
+	   <C>Col=subs_amt Ctrl=em_subs_amt Param=text Enable=enable</C>
+	   <C>Col=deposit_no Ctrl=tx_deposit_no Param=value Enable=enable</C>
+	   <C>Col=prize_dongho Ctrl=tx_prize_dongho Param=value Enable=disable</C>
+	   <C>Col=bank_head_code Ctrl=tx_bank_head_code Param=value Enable=enable</C>
+	   <C>Col=bank_head_name Ctrl=tx_bank_head_name Param=value Enable=enable</C>
+	   <C>Col=remark Ctrl=tx_remark Param=value Enable=enable</C>
+          "></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

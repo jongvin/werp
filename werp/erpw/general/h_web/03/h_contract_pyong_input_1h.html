@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_contract_pyong_input_1h.html					-->
+<!-- 2. 유형(시나리오): 계약시 토지비,건축비,부가세입력(분양)			-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   :  김동우 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 분양금액배분</TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_confirm_check = 'no'
+var is_ds_1_addr = 'h_contract_pyong_input_get_rate_1q.jsp?arg_dept_code='                        	 
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+	window.returnValue = "";
+	window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return=""
+
+	ls_return = em_land_amt.text + '@' + em_build_amt.text + '@' + em_vat_amt.text + '@'	 +build_rate.value+ '@'
+	//alert(ls_return)
+	window.returnValue = ls_return
+	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{	 
+   
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+	
+
+	array = result.split("@");
+	gs_home          = array[0]                  // 0: 홈 디렉토리 
+	em_sell_amt.text = array[1]
+	is_dept_code = array[2]
+	is_sell_code = array[3]
+	is_dongho = array[4]
+	is_seq = array[5]
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_sell_code=" + is_sell_code+ "&arg_dongho=" + is_dongho+ "&arg_seq=" + is_seq
+
+	//alert(ds_1.dataid)
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+	if (!(ds_1.countrow> 0)) {
+	   alert('부가율이 없습니다')
+		return
+   }
+
+	 build_rate.value = ds_1.namevalue(ds_1.rowposition, 'build_rate')
+	 ll_build_rate = ds_1.namevalue(ds_1.rowposition, 'build_rate')
+	 land_rate.value = ds_1.namevalue(ds_1.rowposition, 'land_rate')
+	 ll_land_rate = ds_1.namevalue(ds_1.rowposition, 'land_rate')
+	 vat_rate.value = ds_1.namevalue(ds_1.rowposition, 'vat_rate')
+	 ll_vat_rate = ds_1.namevalue(ds_1.rowposition, 'vat_rate')
+	
+	 ll_sell_amt = array[1];
+
+	 ll_build_amt =   ll_sell_amt  * ll_build_rate /100  
+	 ll_build_amt  =   parseInt( ll_build_amt /100) *100
+
+	 ll_vat_amt = 0
+	 if (ll_vat_rate > 0 ) {
+		 ll_vat_amt = ll_build_amt *10 / 100
+		 ll_vat_amt =  parseInt(ll_vat_amt 	 /10) *10
+	 }
+
+	 ll_land_amt = ll_sell_amt - ll_build_amt - ll_vat_amt
+
+	 em_land_amt.text = ll_land_amt;
+	 em_build_amt.text = ll_build_amt;
+	 em_vat_amt.text = ll_vat_amt;
+	
+	/*C_BUILD_AMT := TRUNC(C_SELL_AMT * (C_BULD_RATE/100), -2);
+  IF C_TAXX_RATE > 0 THEN
+     C_VAT_AMT := TRUNC(C_BUILD_AMT * 10/100, -1);
+  END IF;
+  
+  C_LAND_AMT := C_SELL_AMT - C_BUILD_AMT - C_VAT_AMT;
+	  */
+
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select5
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_select6
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1
+		style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+		classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<BR>    
+
+<input type="button" value="적용" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 240px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand; LEFT: 280px; POSITION: absolute; TOP: 8px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+
+<DIV id=tab_page_input 
+         style="LEFT: 10px; WIDTH: 320px; POSITION: absolute; TOP: 35px; HEIGHT: 200px; BACKGROUND-COLOR: #FFFFFF">
+	<table width="100%"  height="100%" BORDER="4"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+				<div align="right">총분양금액</div></td>
+			<td width="20%" align="center" >부가율</td>
+			<td width="50%" > 
+        		<comment id="__NSID__"><OBJECT id=em_sell_amt tabIndex=0 
+					style="WIDTH: 183px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="2">
+					<PARAM NAME="MaxLength" VALUE="13">
+					<PARAM NAME="ReadOnly" VALUE="-1">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+ 				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+     	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+				<div align="right">토지가</div></td>
+			<td width="20%" ><input id = "land_rate" size=5 contentEditable ="false" border=0></td>
+			<td width="50%" > 
+        		<comment id="__NSID__"><OBJECT id=em_land_amt tabIndex=1 
+					style="WIDTH: 183px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="2">
+					<PARAM NAME="MaxLength" VALUE="13">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+ 				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+     	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+				<div align="right">건물가</div></td>
+			<td width="20%" ><input id = "build_rate" size=5 contentEditable ="false"></td>
+			<td width="50%" > 
+        		<comment id="__NSID__"><OBJECT id=em_build_amt tabIndex=2
+					style="WIDTH: 183px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="2">
+					<PARAM NAME="MaxLength" VALUE="13">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+ 				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+     	</tr>                 
+		<tr BGCOLOR="white"> 
+			<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+				<div align="right">부가세</div></td>
+			<td width="20%" ><input id = "vat_rate" size=5 contentEditable ="false"></td>
+			<td width="50%" > 
+        		<comment id="__NSID__"><OBJECT id=em_vat_amt tabIndex=3 
+					style="WIDTH: 183px; " 
+					classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					<PARAM NAME="Alignment" VALUE="2">
+					<PARAM NAME="MaxLength" VALUE="13">
+					<PARAM NAME="SelectAll" VALUE="-1">
+					<PARAM NAME="PromptChar" VALUE="">
+ 				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+     	</tr>                 
+	</table>    
+
+</DIV>
+       
+</BODY></HTML>

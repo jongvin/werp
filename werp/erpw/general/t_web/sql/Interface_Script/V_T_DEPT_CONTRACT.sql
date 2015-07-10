@@ -1,0 +1,38 @@
+Create Or Replace View V_T_DEPT_CONTRACT
+As
+Select
+	a.DEPT_CODE,
+	a.DEPT_NAME,
+	a.F_CONS_AMT,
+	a.CONS_AMT,
+	Nvl(b.CONSTKIND_TAG,'XXXXXXXXXXXX') CONSTKIND_TAG,
+	Nvl(b.RECEIVE_TAG,'XXXXXXXXXXXX') RECEIVE_TAG,
+	Nvl(b.PQ_TAG,'XXXXXXXXXXXX') PQ_TAG,
+	Nvl(b.CONSTKIND_TAG_NAME,'') CONSTKIND_TAG_NAME,
+	Nvl(b.RECEIVE_TAG_NAME,'') RECEIVE_TAG_NAME,
+	Nvl(b.PQ_TAG_NAME,'') PQ_TAG_NAME
+From
+	T_DEPT_CODE_ORG a,
+	(
+		Select
+			a.DEPT_CODE,
+			a.CONSTKIND_TAG,
+			a.RECEIVE_TAG,
+			a.PQ_TAG,
+			(Select x1.CHILD_NAME From Z_CODE_ETC_CHILD x1 Where x1.CLASS_TAG = '007' And x1.ETC_CODE = a.CONSTKIND_TAG ) CONSTKIND_TAG_NAME,
+			(Select x1.CHILD_NAME From Z_CODE_ETC_CHILD x1 Where x1.CLASS_TAG = '011' And x1.ETC_CODE = a.RECEIVE_TAG ) RECEIVE_TAG_NAME,
+			(Select x1.CHILD_NAME From Z_CODE_ETC_CHILD x1 Where x1.CLASS_TAG = '010' And x1.ETC_CODE = a.PQ_TAG ) PQ_TAG_NAME
+		From	R_CONTRACT_REGISTER a
+		Where	(a.CONT_NO ,
+		     	a.CHG_DEGREE) In
+		     	(
+		     		Select	/*+INDEX_DESC(b PK_R_CONTRACT_REGISTER)*/
+		     			b.CONT_NO ,
+		     			b.CHG_DEGREE
+		     		From	R_CONTRACT_REGISTER b
+		     		Where	a.DEPT_CODE = b.DEPT_CODE
+		     		And		RowNum < 2
+		     	)
+	) b
+Where	a.DEPT_CODE = b.DEPT_CODE (+)
+/

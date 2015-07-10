@@ -1,0 +1,98 @@
+Sum은 합계이다
+그러면
+곱셈은?
+Create Or Replace Type Number_Mul As Object
+(
+	Mul_Value		Number,
+	static	function	ODCIAggregateInitialize
+	(
+		sctx		in out		Number_Mul
+	)
+	return Number,
+	member	function	ODCIAggregateIterate
+	(
+		self		in out		Number_Mul,
+		value		in			Number
+	)
+	return Number,
+	member	function	ODCIAggregateTerminate
+	(
+		self		in out		Number_Mul,
+		returnValue	out			Number,
+		flags		in			Number
+	)
+	return Number,
+	member	function	ODCIAggregateMerge
+	(
+		self		in out		Number_Mul,
+		sctx2		in 			Number_Mul
+	)
+	return Number
+);
+/
+Create Or Replace Type Body Number_Mul
+As
+	static	function	ODCIAggregateInitialize
+	(
+		sctx		in out		Number_Mul
+	)
+	return Number
+	Is
+	Begin
+		sctx := Number_Mul(Null);
+		return ODCIConst.Success;
+	End;
+	member	function	ODCIAggregateIterate
+	(
+		self		in out		Number_Mul,
+		value		in			Number
+	)
+	return Number
+	Is
+	Begin
+		If value Is Not Null Then
+			If self.Mul_Value Is Null Then
+				self.Mul_Value := value;
+			Else
+				self.Mul_Value := self.Mul_Value * value;
+			End If;
+		End If;
+		return ODCIConst.Success;
+	End;
+	member	function	ODCIAggregateTerminate
+	(
+		self		in out		Number_Mul,
+		returnValue	out			Number,
+		flags		in			Number
+	)
+	return Number
+	Is
+	Begin
+		returnValue := self.Mul_Value;
+		return ODCIConst.Success;
+	End;
+	member	function	ODCIAggregateMerge
+	(
+		self		in out		Number_Mul,
+		sctx2		in 			Number_Mul
+	)
+	return Number
+	Is
+	Begin
+		If self.Mul_Value Is Null Then
+			self.Mul_Value := sctx2.Mul_Value;
+		ElsIf sctx2.Mul_Value Is Not Null Then
+			self.Mul_Value := sctx2.Mul_Value * self.Mul_Value;
+		End If;
+		return ODCIConst.Success;
+	End;
+End;
+/
+Create Or Replace function U_Mul
+(
+	input	Number
+)
+Return Number
+parallel_enable aggregate
+using Number_Mul;
+/

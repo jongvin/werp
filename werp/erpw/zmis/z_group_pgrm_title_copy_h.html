@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_tree_h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 메뉴 목록 등록											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+//gs_home +
+var is_ds_1_addr = 'z_group_pgrm_title_q.jsp?arg_group_key='
+var is_ds_2_addr =  'z_group_pgrm_title_q.jsp?arg_group_key='
+var is_confirm_check = 'no'    //복사할것인지 check no는 복사를 안하겠다.
+var gs_group_key
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_1.SyncLoad=true
+ds_2.SyncLoad=true
+ds_1.reset()
+ds_2.reset()   
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+     for (i=1 ; i <= ds_1.CountRow ;i++){
+        if (ds_1.RowMark(i) == 1)
+//               ls_return = ls_return + ds_1.NameValue(i,'level1') + '@' + ds_1.NameValue(i,'title_name') + '@'
+               ls_return = ls_return + ds_1.ExportData(i,1,true)
+     }          
+  }               
+//  else 
+//  
+//      ls_return = ds_1.NameValue(ds_1.RowPosition,'level1') + '@' + ds_1.NameValue(ds_1.RowPosition,'title_name') + '@'
+    
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+gs_group_key = window.dialogArguments;
+ds_1.DataID = is_ds_1_addr + gs_group_key
+ds_2.DataID = is_ds_2_addr + gs_group_key
+btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript event="OnColumnChanged(row, colid)" for=ds_1>
+ds_2.NameValue(row,colid) = ds_1.NameValue(row,colid)
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnDblClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnClick() for=tree_1>
+ds_1.RowPosition = ds_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+if (row < 1)  return
+ds_2.RowPosition = ds_1.RowPosition
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_cnt_pgrm_content  
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<INPUT id=Button_confrim 
+    style="Z-INDEX: 106; LEFT: 580px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_confirm_onclick() type=button value='복 사'>     
+<INPUT id=Button_close 
+    style="Z-INDEX: 106; LEFT: 640px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_close_onclick() type=button value='닫 기'>    
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 2px; WIDTH: 230px; POSITION: absolute; TOP: 30px; HEIGHT: 506px"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="title_name">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="Level1">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_2">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 234px; WIDTH: 610px; POSITION: absolute; TOP: 30px; HEIGHT: 506px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	 <param name="MultiRowSelect"   value="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name=순번 ID=no_seq BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	   <C> Name=레벨 ID=Level1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>&#13;&#10;&#9; 
+	   <C> Name=프로그램구조 ID=title_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=300 </C>">&#13;&#10;&#9; 
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

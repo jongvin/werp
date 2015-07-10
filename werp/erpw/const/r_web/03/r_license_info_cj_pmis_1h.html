@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : r_license_info_cj_pmis_1h.html 								-->
+<!-- 2. 유형(시나리오): shared window 조회								-->
+<!-- 3. 기 능 정 의   : 기술자보유현황  	  							-->
+<!-- 4. 변 경 이 력   : 임종빈 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/r_web/03/r_license_info_cj_pmis_1q.jsp?arg_check='
+var is_tr_1_addr = gs_home + '/const/r_web/03/r_license_info_cj_detail_1tr.jsp?'
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	var is_check = ""
+	if (check[0].checked == true)
+		is_check = ''
+	if (check[1].checked == true)
+		is_check = 'AAA'
+	if (check[2].checked == true)
+		is_check = 'ADD'
+	
+	ds_license_info.DataID = 'r_licese_info_detail_procedure.jsp?'
+	ds_license_info.SyncLoad = true
+	ds_license_info.reset()
+		
+	//gd_1.redraw = false
+	ds_1.DataID = is_ds_1_addr + is_check
+	ds_1.SyncLoad=false
+	ds_1.Reset()
+	//gd_1.redraw = true
+
+   
+	//div_btnquery_onclick()
+}
+
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("seq");
+}
+
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) {
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+       	tr_1.Post()
+	}
+}  
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+
+	// top.frames['main_ct'].window.close()     
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1' );
+	var xArr =new Array(true);
+	var yArr =new Array(true);
+
+	//f_reSize(objArr, xArr, yArr);
+} 
+//---------------------------------------------------------------------
+function excel_down()
+//---------------------------------------------------------------------
+{
+    var filename = '기술자보유현황';
+	//gd_1.RunExcel(filename)
+	gd_1.GridToExcel(filename, filename, 1) 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	
+	tr_1.Action = is_tr_1_addr 
+	
+	check[1].checked = true
+	btnquery_onclick()
+	
+	ll_cnt = f_ds_select_q("ds_person", "select etc_code select_1, child_name select_2 from z_code_etc_child where class_tag='050'")
+
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+   //alert("그룹인사 DB와 연결 되지않았습니다")
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_license_info event=OnLoadError()>
+	alert("ds_license_info.Error Code : " + ds_license_info.ErrorCode + "\n" + "ds_license_info.Error Message : " + ds_license_info.ErrorMsg + "\n");
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_license_info 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_person 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+   classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:r_license_info_cj_detail_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px;margin:0" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%" BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; " >
+	<tr height="23px">
+		<td class=td_green>
+			<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="36px" class=font_green_bold>구분</td>
+					<td width="200px">
+						<input type="radio" name=check onclick="btnquery_onclick()">전체
+						<input type="radio" name=check onclick="btnquery_onclick()">재직
+						<input type="radio" name=check onclick="btnquery_onclick()">퇴직
+					</td>
+					<td width="*" align="right">
+						<input type="button" value="엑셀내리기" class="img_btn5_1" onclick="excel_down()" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="*">
+		<td>
+				<comment id="__NSID__"><OBJECT id=gd_1 
+					 style=" WIDTH:100%;   HEIGHT: 100%" 
+					 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+					<PARAM NAME="MultiRowSelect" VALUE="-1">
+					<PARAM NAME="AllShowEdit" VALUE="-1">
+					<PARAM NAME="AutoInsert" VALUE="-1">
+					<PARAM NAME="BorderStyle"  VALUE=1>
+					<PARAM NAME="ColSizing" VALUE="-1">
+					<PARAM NAME="DataID" VALUE="ds_1">
+					<PARAM NAME="SortView"  VALUE="Left">
+					<param name=Editable  value="true">
+					<PARAM NAME="Format" VALUE=" 
+					  <C> Name='사번' ID=empno Edit='none' Width=48 align=center sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=3</C> 
+					  <C> Name='성명' ID=hname Edit='none' Width=50 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=3</C> 
+					  <C> Name='부서명' ID=deptnm Edit='none' Width=120 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=2</C> 
+					  <C> Name='입사일' ID=coentdt Edit='none' Width=65 sort=true Mask='XXXX.XX.XX' BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center suppress=1 </C>
+					  <C> Name='퇴사일' ID=retdt Edit='none' Width=65 sort=true Mask='XXXX.XX.XX' BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center suppress=1 </C>
+					  <G>name='자격증 현황' HeadBgColor=#BBE0F4
+						  <C> Name='자격증명' ID=lic_cdnm Edit='none' Width=100 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C> 
+						  <C> Name='등급' ID=lic_grdnm Edit='none' Width=48 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+						  <C> Name='취득일' ID=ymdfr Edit='none' Width=65 align=center sort=true Mask='XXXX.XX.XX'  BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>	
+						  <C> Name='만료일자' ID=ymdto Show=false Edit='none' Width=80 align=center sort=true Mask='XXXX.XX.XX' BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>	
+						  <C> Name='수당지급' ID=pay_yn Show=false Edit='none' Width=80 EditStyle=CheckBox  align=center sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+						  <C> Name='발행처' ID=licorg Edit='none' Width=100 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+						  <C> Name='등록일자' ID=logymd Show=false Edit='none' Width=70 sort=true Mask='XXXX.XX.XX' BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} align=center </C>
+						  <C> Name='등록번호' ID=logno Edit='none' Width=70 sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+						  <C> Name='재직구분' ID=stsgbn Edit='none' Show=false sort=true BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+					  </G>
+					  <C> Name='선임' ID=pre_person Width=80 EditStyle=Lookup Data='ds_person:select_1:select_2' BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+					  <C> Name='비고' ID=remark1 Width=150 BgColor={decode(tag,1,'#F4F2D8',2,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}</C>
+						">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table></div>
+
+</BODY></HTML>

@@ -1,0 +1,468 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="javascript">
+//조회 조건
+var cond_year = 3;
+
+function fn_Onload() {
+    //MxDataSet_ImgDataSet.DataID = "./service/pgm11_tree_s02.jsp";
+    MxDataSet_ImgDataSet.DataID = "./public2_blob.csv";
+
+    MxDataSet_ImgDataSet.reset();
+
+	MxDataSet_tree.DataID = "./public2_tree_s01.jsp";
+	MxDataSet_tree.reset();
+
+	fn_Make_Chart();
+
+	fn_Search(cond_year,'3','3');
+}
+
+function fn_Search(arg1,arg2,arg3) {
+	if(arg3 == '3') {
+		MxDataSet_main.DataID = "./public2_main_s01.jsp?cond_year="+arg1+"&index="+arg2+"&level="+arg3;
+		MxDataSet_main.reset();
+
+		MxDataSet_chart.DataID = "./public2_chart_s01.jsp?cond_year="+arg1+"&index="+arg2+"&level="+arg3;
+		MxDataSet_chart.reset();
+	}
+
+	MxTree_list.Focus();
+	MxTree_list.Index = arg2;
+	MxTree_list.Expand(arg2);
+}
+function fn_Print(){
+	//ln_Report_MakeData("pgm11_Rpt.csv");				//csv화일로 생성
+	ln_Report_Popup("Program11.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+}
+function fn_Make_Chart() {
+	//매출/채권,정리채권비중 추이표============================================
+	MxChart_left.Panel.Gradient.Visible = 1;
+    MxChart_left.Panel.Gradient.Direction = 0;
+    MxChart_left.Panel.Gradient.StartColor = MxChart_left.ToOLEColor("#B8B8B8");
+    MxChart_left.Panel.Gradient.EndColor = MxChart_left.ToOLEColor("#E7E7E7");
+    MxChart_left.Panel.MarginTop = 10;
+
+    //Header의 Text의 위치지정
+	MxChart_left.Header.Alignment = 0;
+	MxChart_left.Header.top = 2;
+	MxChart_left.Header.left = 20;
+
+	//Header관련
+	MxChart_left.Header.Font.Color = MxChart_left.ToOLEColor("blue"); // Header의 Text의 색깔지정
+	MxChart_left.Header.Font.Size = 9;
+	MxChart_left.Header.Text.Clear();
+	MxChart_left.Header.Text.Add( "[ 매출/채권,정리채권비중 추이표 ]" );
+
+	//legend관련
+	MxChart_left.Legend.ShadowSize = 2;
+	MxChart_left.Legend.Frame.Visible = true;
+	MxChart_left.Legend.TopPos = 15;
+	MxChart_left.Legend.Alignment = 3;
+	MxChart_left.Legend.Symbol.WidthUnits = 5;
+	MxChart_left.Legend.Symbol.Width = 8;
+
+	//Grid없앰.
+	MxChart_left.Axis.Bottom.GridPen.visible = false;
+	MxChart_left.Axis.Bottom.Labels.Separation = 1;
+	MxChart_left.Axis.Bottom.Labels.Angle = 90;
+	MxChart_left.Axis.Bottom.Labels.Font.Size = 8;
+
+	//MarkTip 관련 (마우스를 사용하여  값을 확인할 수 있다.)
+	/*
+	Mark = MxChart_left.Tools.Add(8);
+
+	MxChart_left.Tools.Items(Mark).asMarksTip.Series = 0; 		// Uses Seriesindex
+	MxChart_left.Tools.Items(Mark).asMarksTip.style = 0;
+	MxChart_left.Tools.Items(Mark).asMarksTip.MouseAction = 1;  	//0:mouse over, 1:mouse click
+	MxChart_left.Tools.Items(Mark).asMarksTip.Delay = 0;
+	*/
+
+	//여신기일 추이표==========================================================
+	MxChart_right.Panel.Gradient.Visible = 1;
+    MxChart_right.Panel.Gradient.Direction = 0;
+    MxChart_right.Panel.Gradient.StartColor = MxChart_right.ToOLEColor("#B8B8B8");
+    MxChart_right.Panel.Gradient.EndColor = MxChart_right.ToOLEColor("#E7E7E7");
+    MxChart_right.Panel.MarginTop = 10;
+
+    //Header의 Text의 위치지정
+	MxChart_right.Header.Alignment = 0;
+	MxChart_right.Header.top = 2;
+	MxChart_right.Header.left = 20;
+
+	//Header관련
+	MxChart_right.Header.Font.Color = MxChart_right.ToOLEColor("blue"); // Header의 Text의 색깔지정
+	MxChart_right.Header.Font.Size = 9;
+	MxChart_right.Header.Text.Clear();
+	MxChart_right.Header.Text.Add( "[ 여신기일 추이표 ]" );
+
+	//legend관련
+	MxChart_right.Legend.ShadowSize = 2;
+	MxChart_right.Legend.Frame.Visible = true;
+	MxChart_right.Legend.TopPos = 15;
+	MxChart_right.Legend.Alignment = 3;
+	MxChart_right.Legend.Symbol.WidthUnits = 5;
+	MxChart_right.Legend.Symbol.Width = 8;
+
+	//Grid없앰.
+	MxChart_right.Axis.Bottom.GridPen.visible
+	MxChart_right.Axis.Bottom.Labels.Separation = 1;
+	MxChart_right.Axis.Bottom.Labels.Angle = 90;
+	MxChart_right.Axis.Bottom.Labels.Font.Size = 8;
+
+	//MarkTip 관련 (마우스를 사용하여  값을 확인할 수 있다.)
+	/*
+	Mark = MxChart_right.Tools.Add(8);
+
+	MxChart_right.Tools.Items(Mark).asMarksTip.Series = "0"; 		// Uses Seriesindex
+	MxChart_right.Tools.Items(Mark).asMarksTip.style = 0;
+	MxChart_right.Tools.Items(Mark).asMarksTip.MouseAction = 0;  	//0:mouse over, 1:mouse click
+	MxChart_right.Tools.Items(Mark).asMarksTip.Delay = 0;
+	*/
+}
+
+function fn_Chart_Draw() {
+
+    MxChart_left.RemoveAllSeries();
+    MxChart_right.RemoveAllSeries();
+
+	//매출/채권,정리채권비중 추이표============================================
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_left.AddSeries(1);
+	MxChart_left.Series(SeriesIdx).Marks.Visible = "false"; // mark 를 않보이게 한다.
+	MxChart_left.Series(SeriesIdx).DataID = "MxDataSet_chart";   // DataSet을 연결한다.
+	MxChart_left.Series(SeriesIdx).YValueColumn = "A5";      // chart를 그리는 DataSet의 column을 연결한다.(Y축)
+	MxChart_left.Series(SeriesIdx).LabelColumn = "Yyyymm";        // chart를 그리는 DataSet의 column을 연결한다.(X축)
+	MxChart_left.Series(SeriesIdx).Title = "정상채권";            // Legend 에 보이는 정보를 정한다.
+	MxChart_left.Series(SeriesIdx).Color = MxChart_left.ToOLEColor("#1D5B89");         // 그려지는 Series의 색깔을 지정한다.
+	MxChart_left.Series(SeriesIdx).asBar.BarWidth = 8;
+
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_left.AddSeries(31);
+	MxChart_left.Series(SeriesIdx).Marks.Visible = "false";
+	MxChart_left.Series(SeriesIdx).DataID = "MxDataSet_chart";
+	MxChart_left.Series(SeriesIdx).YValueColumn = "a6";
+	MxChart_left.Series(SeriesIdx).LabelColumn = "Yyyymm";
+	MxChart_left.Series(SeriesIdx).Title = "정리채권";
+	MxChart_left.Series(SeriesIdx).Color = MxChart_left.ToOLEColor("#ff9f2f");
+	MxChart_left.Series(SeriesIdx).asBar.BarWidth = 8;
+	MxChart_left.Series(SeriesIdx).asBarJoin.StackGroup = "0";
+	MxChart_left.Series(SeriesIdx).asBarJoin.Multibar = "2";
+
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_left.AddSeries(31);
+	MxChart_left.Series(SeriesIdx).Marks.Visible = "false"; // mark 를 않보이게 한다.
+	MxChart_left.Series(SeriesIdx).DataID = "MxDataSet_chart";   // DataSet을 연결한다.
+	MxChart_left.Series(SeriesIdx).YValueColumn = "a1";      // chart를 그리는 DataSet의 column을 연결한다.(Y축)
+	MxChart_left.Series(SeriesIdx).LabelColumn = "Yyyymm";        // chart를 그리는 DataSet의 column을 연결한다.(X축)
+	MxChart_left.Series(SeriesIdx).Title = "총매출";            // Legend 에 보이는 정보를 정한다.
+	MxChart_left.Series(SeriesIdx).Color = MxChart_left.ToOLEColor("#1DdBd9");         // 그려지는 Series의 색깔을 지정한다.
+	MxChart_left.Series(SeriesIdx).asBar.BarWidth = 8;
+	MxChart_left.Series(SeriesIdx).asBarJoin.StackGroup = "0";
+	MxChart_left.Series(SeriesIdx).asBarJoin.Multibar = "2";
+
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_left.AddSeries(31);
+	MxChart_left.Series(SeriesIdx).Marks.Visible = "false";
+	MxChart_left.Series(SeriesIdx).DataID = "MxDataSet_chart";
+	MxChart_left.Series(SeriesIdx).YValueColumn = "a2";
+	MxChart_left.Series(SeriesIdx).LabelColumn = "Yyyymm";
+	MxChart_left.Series(SeriesIdx).Title = "총채권";
+	MxChart_left.Series(SeriesIdx).Color = MxChart_left.ToOLEColor("#1df81d");
+	MxChart_left.Series(SeriesIdx).asBar.BarWidth = 8;
+	MxChart_left.Series(SeriesIdx).asBarJoin.StackGroup = "0";
+	MxChart_left.Series(SeriesIdx).asBarJoin.Multibar = "2";
+
+	//여신기일 추이표==========================================================
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_right.AddSeries(4);
+	MxChart_right.Series(SeriesIdx).Marks.Visible = "false"; // mark 를 않보이게 한다.
+	MxChart_right.Series(SeriesIdx).DataID = "MxDataSet_chart";   // DataSet을 연결한다.
+	MxChart_right.Series(SeriesIdx).YValueColumn = "A9";      // chart를 그리는 DataSet의 column을 연결한다.(Y축)
+	MxChart_right.Series(SeriesIdx).LabelColumn = "Yyyymm";        // chart를 그리는 DataSet의 column을 연결한다.(X축)
+	MxChart_right.Series(SeriesIdx).Title = "총여신";            // Legend 에 보이는 정보를 정한다.
+	MxChart_right.Series(SeriesIdx).Color = MxChart_right.ToOLEColor("red");         // 그려지는 Series의 색깔을 지정한다.
+
+    // Chart에 Series 추가
+	SeriesIdx = MxChart_right.AddSeries(4);
+	MxChart_right.Series(SeriesIdx).asPoint.Pointer.Style = 3;
+	MxChart_right.Series(SeriesIdx).Marks.Visible = "false";
+	MxChart_right.Series(SeriesIdx).DataID = "MxDataSet_chart";
+	MxChart_right.Series(SeriesIdx).YValueColumn = "a12";
+	MxChart_right.Series(SeriesIdx).LabelColumn = "Yyyymm";
+	MxChart_right.Series(SeriesIdx).Title = "정리제외";
+	MxChart_right.Series(SeriesIdx).Color = MxChart_right.ToOLEColor("blue");
+
+	MxChart_left.Reset();
+	MxChart_right.Reset();
+
+}
+
+/* function fn_Excel() {
+	if(MxDataSet_main.countrow >= 1) {
+		MxGrid_main.GridtoExcel("정리채권_여신추이현황","",0);
+	} else {
+		alert("먼저 조회를 하십시오.");
+		btn_search.focus();
+		return;
+	}
+}
+*/
+
+</script>
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+	//alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+
+<script language=JavaScript for=MxDataSet_main event=OnLoadCompleted(rowcnt)>
+	window.status = gs_CallMsg("M003", MxDataSet_main.CountRow);
+</script>
+
+<script language=JavaScript for=MxDataSet_chart event=OnLoadCompleted(rowcnt)>
+	fn_Chart_Draw();
+</script>
+
+<script language=JavaScript for=MxTree_list event=OnItemClick(index)>
+	var tmp_year = sel_year.value.substring(3);
+
+	if(MxDataSet_tree.nameValue(MxDataSet_tree.rowposition,'v_level') > 0) {
+		fn_Search(tmp_year,index,MxDataSet_tree.nameValue(MxDataSet_tree.rowposition,'v_level'));
+	}
+</script>
+
+<script language=JavaScript for=MxDataSet_ImgDataSet event=OnDataError()>
+	alert("Error Code : " + MxDataSet_ImgDataSet.ErrorCode + "\n" +
+		  "Error Message : " + MxDataSet_ImgDataSet.ErrorMsg + "\n");
+</script>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<!-- MxDataSet 선언부-->
+<object id=MxDataSet_ImgDataSet classid=CLSID:2B0B1D8B-CAAA-4e06-BD9A-A09A916BD67A>
+	<param name=SyncLoad	value="true">
+</object>
+<OBJECT ID="MxDataSet_tree" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=false>
+</OBJECT>
+
+<OBJECT ID="MxDataSet_main" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad     value=false>
+</OBJECT>
+
+<OBJECT ID="MxDataSet_chart" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=UseChangeInfo     value=false>
+	<param name=SyncLoad     value=true>
+</OBJECT>
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// -->
+</script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onLoad="fn_Onload();na_preload_img(false, '../images/direct_bu_color.gif', '../images/excel_bu_color.gif', '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm11_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>지점별 매출 / 채권 현황</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+							<a href="#" OnMouseOut="na_restore_img_src('image2', 'document')" OnMouseOver="na_change_img_src('image2', 'document', '../images/excel_bu_color.gif', true)"><img src="../images/excel_bu.gif" width="61" height="20" border="0" name="image2" onclick="ln_Excel(MxGrid_main,'지점별 매출 채권 현황')"></a></p>
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30" colspan="3">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<font size="2">&nbsp;&nbsp;<b>조회기준</b></font>                                </td>
+											<td width="51" height="25">
+
+												<p><select name="sel_year" size="1" onChange="fn_Search(sel_year.value.substring(3),MxDataSet_tree.rowposition,MxDataSet_tree.nameValue(MxDataSet_tree.rowposition,'v_level'))">
+													<option value="2001">2001</option>
+													<option value="2002">2002</option>
+													<option selected value="2003">2003</option>
+													</select></p>
+											</td>
+											<td width="20" height="25">
+												 년								</td>
+											<td width="15" height="25">
+											</td>
+											<td width="40" height="25">
+
+
+												<p>&nbsp;</p>
+											</td>
+											<td width="21" height="25">
+			&nbsp;								</td>
+											<td width="546" height="25">
+												  &nbsp;								</td>
+										</tr>
+									</table></td>
+							</tr>
+							<tr>
+								<td width="180" height="462" rowspan="2" valign="top">
+									<table cellpadding="0" cellspacing="0" width="100%" height="100%">
+										<!--tr>
+											<td width="170" height="30">
+												<table cellpadding="0" cellspacing="0" align="center" width="143">
+													<tr>
+														<td width="76" height="25">
+															<p>부서활성화</p>
+			</td>
+														<td width="67" height="25">
+														<p><select name="sel_expand" size="1" onChange="fn_TreeviewExpand(sel_expand.value)">
+																<option value="1">본부</option>
+																<option value="2" selected>지사</option>
+														</select></p>
+														</td>
+													</tr>
+												</table>
+			</td>
+										</tr-->
+										<tr>
+											<td width="170" height="403">                                    <p><object classid="clsid:6DD1CE9F-1722-46f0-AF93-B2BC58383CD2" width="100%" height="100%" id="MxTree_list">
+												<!--param name="TypeColumn"    value="v_type"-->
+												<param name="DataID" 		value="MxDataSet_tree">
+												<param name="BorderStyle" 	value="1">
+												<param name="HasButtons" 	value="false">
+												<param name="HasLines" 		value="false">
+												<param name="SingleExpand" 	value="false">
+												<param name="TextColumn" 	value="v_title">
+												<param name="LevelColumn" 	value="v_level">
+												<param name="UseImage" 		value="true">
+												<param name="ImgDataID"		value="MxDataSet_ImgDataSet">
+												<param name="ImgDColumn"		value="ImgD">
+												<param name="ImgOColumn"		value="ImgO">
+												<param name="ImgCColumn"		value="ImgC">
+												<param name="ExpandLevel"		value="1">
+									</object></p>
+			</td>
+										</tr>
+									</table>
+								</td>
+								<td width="610" height="230" colspan="2">
+									<p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_main" style="font-size=9pt">
+											<param name="DataID"	value=MxDataSet_main>
+											<param name="ColSizing" value="true">
+											<param name="HeadBorder"	value="4">
+											<param name="BorderStyle"	value="1">
+											<param name="LineColor"	value="#FFFFFF">
+											<param name="HeadLineColor"	value="#FFFFFF">
+											<param name="RowHeight" value="20">
+											<param name="IndWidth"	value="0">
+											<param name="Format"	value='
+												<c>id=gubn		name=구분	width=70,align=right,HeadBgColor=#908F8B HeadColor=#FFFFFF bgcolor=#908F8B color=#FFFFFF</c>
+												<c>id=py			name=전년말	width=60, value={number(py)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt1    	name=1월	width=60, value={number(amt1)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt2		name=2월	width=60, value={number(amt2)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt3		name=3월	width=60, value={number(amt3)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt4		name=4월	width=60, value={number(amt4)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt5		name=5월	width=60, value={number(amt5)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt6		name=6월	width=60, value={number(amt6)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt7		name=7월	width=60, value={number(amt7)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt8		name=8월	width=60, value={number(amt8)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt9		name=9월	width=60, value={number(amt9)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt10		name=10월	width=60, value={number(amt10)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt11		name=11월	width=60, value={number(amt11)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+												<c>id=amt12		name=12월	width=60, value={number(amt12)},align=right,bgcolor=$color,HeadBgColor=#908F8B HeadColor=#FFFFFF </c>
+											'>
+									</object></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="305" height="231">
+									<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_left" width="100%" height="100%">
+									</object></p>
+								</td>
+								<td width="305" height="231">
+									<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_right" width="100%" height="100%">
+									</object></p>
+								</td>
+							</tr>
+						</table>
+			</td>
+				</tr>
+			</table>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+				EXTRACT * FROM MxDataSet_main
+				UNION ALL
+				EXTRACT * FROM MxDataSet_chart
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

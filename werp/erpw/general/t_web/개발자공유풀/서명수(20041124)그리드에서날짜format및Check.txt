@@ -1,0 +1,56 @@
+<script language="JavaScript" for="gridMAIN" event="OnExit(row, colid, olddata)">
+	var		COL_DATA;
+	var		strBASE_DTF = dsMAIN.NameString(dsMAIN.RowPosition,"BASE_DTF");
+	COL_DATA = dsMAIN.NameString(row,colid);
+	-- 1.단순 날짜 컬럼의 format및 Check --
+	if(colid == "BASE_DTF")
+	{
+		if(C_isNull(COL_DATA))
+		{
+			return ;
+		}
+		else
+		{
+			if(C_isValidDate(COL_DATA))
+			{
+				dsMAIN.NameString(row,colid) = C_toDateFormatString(COL_DATA);
+			}
+			else
+			{
+				dsMAIN.NameString(row,colid) = olddata;
+				alert("날짜값이 잘 못 입력되었습니다.");
+			}
+			return ;
+		}
+	}
+	-- 2.잘못된 시작일 종료일의 Check --
+	else if(colid == "BASE_DTT")
+	{
+		if(C_isNull(COL_DATA))
+		{
+			return ;
+		}
+		else
+		{
+			if(C_isValidDate(COL_DATA))
+			{
+				dsMAIN.NameString(row,colid) = C_toDateFormatString(COL_DATA);
+			}
+			else
+			{
+				dsMAIN.NameString(row,colid) = olddata;
+				alert("날짜값이 잘 못 입력되었습니다.");
+			}
+			if(C_compareDateFT(strBASE_DTF, COL_DATA))
+			{
+				dsMAIN.NameString(row,colid) = C_toDateFormatString(COL_DATA);
+			}
+			else
+			{
+				dsMAIN.NameString(row,colid) = olddata;
+				alert("종료일이 시작일보다 작습니다.");
+			}
+			return ;
+		}
+	}
+</script>

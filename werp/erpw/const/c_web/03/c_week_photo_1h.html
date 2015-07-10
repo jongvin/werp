@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_dept_find_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 부서 찾기	(현장만 나옴) 										-->
+<!-- 3. 기 능 정 의   : 										-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<TITLE> 부서 찾기 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_confirm_check = 'no'
+var is_empno = ''
+var is_week_date 
+var is_url_addr
+var is_photo_addr,is_photo_bef_addr
+var is_dept_code
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//-------------------------------------------------------------------------------
+function function_show()                  //그림을 여러장 보여주기  
+//--------------------------------------------------------------------------------
+{
+   
+//	 if (ls_blank.src) document.images['pic_1_1'].src = ls_blank.src; 
+//	 if (ls_blank.src) document.images['pic_1_2'].src = ls_blank.src; 
+       tx_1_1.value = '                 ' + ccom_week_date.CodeValue
+       tx_1_2.value = '                 ' + is_week_date
+       j_1 = new Image()
+		 j_1.src = is_url_addr + is_photo_bef_addr
+
+       j_2 = new Image()
+		 j_2.src = is_url_addr + is_photo_addr
+       if (j_1.src) document.images.pic_1_1.src = j_1.src
+       if (j_2.src) document.images.pic_1_2.src = j_2.src
+}   
+//----------------------------------------------------------------
+function f_photo_retrieve()                  // 전주 
+//-----------------------------------------------------------------
+{
+	ll_cnt = f_ds_select_q("ds_bef_week","select photo_addr select_1 from c_week_status " + 
+	                         " where dept_code = '" + is_dept_code + "' and week_date = '" + ccom_week_date.CodeValue + "' ")
+	
+	if (ll_cnt == 0)
+		is_photo_bef_addr = '/const/c_web/picture/not_image.bmp'
+	else
+		is_photo_bef_addr = ds_bef_week.NameValue(1,'select_1')
+	function_show()                            
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+   alert("최소한 홈 디렉토리는 있어야 합니다")
+
+ array = result.split("@");
+// gs_home = array[0]                  // 0: 홈 디렉토리 
+
+    is_dept_code = array[0]
+    dept_name.value = array[1]
+    is_week_date = array[2]
+    is_url_addr = array[3]
+    is_photo_addr = array[4]
+    
+ ll_cnt = f_ds_select_q('ds_week'," select to_char(week_date,'yyyy.mm.dd') select_1, to_char(week_date,'yyyy.mm.dd') select_2 from c_week_status " + 
+                                  " where dept_code = '" + is_dept_code + "' and week_date < '" + is_week_date + "'  " + 
+                                  "   and week_date >= add_months(to_date('" + is_week_date + "'),-24)  " + 
+                                  " order by week_date desc ")
+    
+//  ls_blank  = new Image();
+//  ls_blank.src= "../../../image/icon/blank.gif"
+  ccom_week_date.Index=0
+  f_photo_retrieve()
+}
+
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_week event=OnLoadError()>
+  alert("Error Code(ds_week) : " + ds_week.ErrorCode + "\n" + "Error Message : " + ds_week.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_bef_week event=OnLoadError()>
+  alert("Error Code(ds_bef_week) : " + ds_bef_week.ErrorCode + "\n" + "Error Message : " + ds_bef_week.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ccom_week_date event=OnCloseUp()>
+  f_photo_retrieve()
+</script>
+
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_week
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_bef_week
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1)  onunload=window_onunload() scroll="no">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="20px">
+		<TD class=td_green colspan="2">
+			<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>현장명</td>
+             	<td width="166px">
+						<INPUT id=dept_name   style=" FONT-SIZE: 12px;" size=25 disabled ></td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>전주</td>
+					<td width="150px">
+						<comment id="__NSID__"><OBJECT id=ccom_week_date style="width: 100px; background: white;"
+						classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+							<param name=ComboDataID        value=ds_week>
+							<param name=CodeCColumn        value=select_1>
+							<param name=DataCColumn        value=select_2>
+							<param name=Auto       value=false>
+							<param name=Enable     value=true>
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*" align="right">
+						<input type="button" value="닫기" onclick=Button_close_onclick() class=img_btnClose onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					</td>
+	         </tr>
+	      </table>
+	   </td>
+	</tr>
+	<tr height="*">
+		<td>
+	       <table cellspacing="10" width="100%" height="100%"  BORDER="2"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	        <tr height="4%">
+	              <td width="50%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  >
+					     <INPUT id=tx_1_1 size=44 style=" background-color:#BBE0F4" disabled > </td>         
+	              <td width="50%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  >
+					     <INPUT   id=tx_1_2 size=44  style=" background-color:#BBE0F4" disabled ></td>         
+			  </tr>	          
+			  <tr BGCOLOR="white"> 
+	             <td width="50%"> 
+					     <IMG SRC="" NAME="pic_1_1"  style="  WIDTH: 480px; height:100%  " ></td>
+	 
+	             <td width="50%"> 
+					     <IMG SRC="" NAME="pic_1_2"  style="  WIDTH: 480px;  height:100%   "></td>
+	         </tr>                 
+	      </table>
+	   </td>
+	</tr>
+</table>
+</DIV>
+</BODY></HTML>

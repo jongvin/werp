@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : p_appl_no_find_1h.html 				               -->
+<!-- 2. 유형(시나리오): 응시자 찾기(면접관 등록프로그램)		     			-->
+<!-- 3. 기 능 정 의   : 								                        -->
+<!-- 4. 변 경 이 력   : 권미생 작성						                     -->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<TITLE> 응시자 찾기 </TITLE>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'p_appl_no_find_1q.jsp?arg_employ_degree='
+var is_confirm_check = 'no'
+var is_employ_degree
+var is_interview_degree
+var is_pass_tag
+var is_temp
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	if (is_interview_degree == 1){
+			ls_where = ""
+//	     	ls_where = " and not exists ( select c.appl_no " +
+//							 " 						from p_emp_inter_appl c              " +
+//							 "	where c.employ_degree = '" + is_employ_degree   + "'  " +
+//							 " 	and c.interview_degree = '" + is_interview_degree + "' " +
+//							 " 	and a.appl_no   = c.appl_no ) " 
+	}
+   	else{
+			is_temp    = is_interview_degree - 1
+	     	ls_where   = " and b.interview_degree = '" + is_temp + "' " +
+	     	             " and b.pass_tag = 'T' "
+//	     	             " and not exists ( select c.appl_no " +
+//							 " 						from p_emp_inter_appl c              " +
+//							 "	where c.employ_degree = '" + is_employ_degree   + "'  " +
+//							 " 	and c.interview_degree = '" + is_interview_degree + "' " +
+//							 " 	and a.appl_no   = c.appl_no ) " 
+   	}
+
+  ds_1.DataID =  is_ds_1_addr + is_employ_degree + "&arg_appl_no=" + Textbox_1.value 
+  		 + "&arg_where=" + ls_where //+ "&arg_interview_degree=" + is_interview_degree
+  
+  ds_1.SyncLoad=true
+  ds_1.reset()
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  
+  if (ds_1.RowPosition > 0){
+	  ls_return = ds_1.NameValue(ds_1.RowPosition,'appl_no') + '@'  +
+	              ds_1.NameValue(ds_1.RowPosition,'appl_name') + '@'  +
+	              ds_1.NameValue(ds_1.RowPosition,'appl_part') + '@'  
+  }
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ 
+ array = result.split("@");
+ is_employ_degree    = array[0]
+ is_interview_degree = array[1]
+ Textbox_1.value     = array[2]
+ if (result == "") return 
+
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<BR>    
+
+<LABEL id=Label_1  
+    style="WIDTH: 75px; POSITION: absolute; HEIGHT: 25px; TOP:12px">&nbsp;&nbsp;검색조건:
+</LABEL>
+<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 60px; POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+<INPUT id=Button
+    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 210px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=btnquery_onclick() type=button value='조회'>      
+<INPUT id=Button_confrim 
+    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 365px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick() type=button value='확인'>     
+<INPUT id=Button_close 
+    style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 410px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick() type=button value='닫기'>    
+<OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 560px; POSITION: absolute; TOP: 35px; HEIGHT: 380px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<param name="MultiRowSelect"   value="0">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name='주민등록번호' ID=appl_no HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	   <C> Name='성명' ID=appl_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	   <C> Name='응시분야' ID=appl_part HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	   ">
+ 	</OBJECT>
+</BODY></HTML>

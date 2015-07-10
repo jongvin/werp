@@ -1,0 +1,184 @@
+CREATE OR REPLACE PROCEDURE Sp_T_Acc_Tax_Bill_Batch01
+(
+	AR_COMP_CODE                             VARCHAR2,
+	AR_WORK_NO                                 NUMBER,
+	AR_CRTUSERNO                             VARCHAR2
+)
+IS
+/**************************************************************************/
+/* 1. 프 로 그 램 id : SP_T_ACC_TAX_BILL_MEDIA_I
+/* 2. 유형(시나리오) : Procedure
+/* 3. 기  능  정  의 : T_ACC_TAX_BILL_MEDIA 테이블 Insert
+/* 4. 변  경  이  력 : 홍길동 작성(2006-02-16)
+/* 5. 관련  프로그램 :
+/* 6. 특  기  사  항 :
+/**************************************************************************/
+lrT_ACC_SLIP_BILL_HEAD T_ACC_SLIP_BILL_HEAD%ROWTYPE;
+lnSEQ T_ACC_TAX_BILL_MEDIA.SEQ%TYPE;
+BEGIN
+	--RAISE_APPLICATION_ERROR	(-20009,AR_COMP_CODE||'-'||AR_WORK_NO);
+	BEGIN
+		SELECT
+			*
+		INTO
+			lrT_ACC_SLIP_BILL_HEAD
+		FROM	T_ACC_SLIP_BILL_HEAD a
+		WHERE	a.COMP_CODE = AR_COMP_CODE
+		AND a.WORK_NO = AR_WORK_NO;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009, '해당 세무신고기수를 찾을 수 없습니다.');
+	END;
+
+	FOR lrA IN
+	(
+		SELECT
+		  	A.COMP_CODE,
+		  	A.TAX_COMP_CODE,
+		  	--A.TAX_COMP_NAME,
+		  	C.RCPTBILL_CLS,
+			D.CODE_LIST_NAME RCPTBILL_CLS_NAME,
+		  	C.SALEBUY_CLS,
+			E.CODE_LIST_NAME SALEBUY_CLS_NAME,
+		  	F_T_Datetostring(A.VAT_DT) PUBL_DT,
+		  	A.VAT_CODE,
+		  	--A.VAT_NAME,
+		  	0 BOOK_NO,
+		  	0 BOOK_SEQ,
+		  	A.DEPT_CODE,
+		  	--A.DEPT_NAME,
+		  	A.CUST_SEQ,
+		  	--A.CUST_CODE,
+		  	--A.CUST_NAME,
+		  	A.SUPAMT,
+		  	A.VATAMT,
+		  	NULL ANNULMENT_CLS,
+		  	NULL ANNULMENT_DT,
+		  	0 OUT_CNT,
+			CASE
+				WHEN A.MAKE_DT BETWEEN (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_F) AND (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_T) THEN 'F'
+				ELSE 'T'
+			END MISSING_TAG,
+			CASE
+				WHEN A.MAKE_DT BETWEEN (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_F) AND (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_T) THEN ''
+				ELSE '누락  '
+			END MISSING_TAG_NAME,
+		  	'' REMARK,
+		  	'O' UDT_TAG,
+		  	A.SLIP_ID,
+		  	A.SLIP_IDSEQ,
+		  	A0.MAKE_SLIPNO||'-'||A.MAKE_SLIPLINE MAKE_SLIPNOLINE,
+		  	A.ACC_CODE,
+		  	--A.ACC_NAME,
+			C.SUBTR_CLS,
+			C.VATOCCUR_CLS,
+			C.SLIP_DETAIL_LIST,
+			DECODE(F.CASHNO, NULL, G.CARDNO, F.CASHNO) CARD_CASH_NO
+		  FROM
+		  	T_ACC_SLIP_HEAD A0,
+			T_ACC_SLIP_BODY1 A,
+			(
+				SELECT
+					SLIP_ID,
+					SLIP_IDSEQ
+				FROM
+					T_ACC_TAX_BILL_MEDIA
+				WHERE
+					COMP_CODE =   lrT_ACC_SLIP_BILL_HEAD.COMP_CODE
+				  	AND WORK_NO = lrT_ACC_SLIP_BILL_HEAD.WORK_NO
+			) B,
+			T_ACC_CODE_EXT01 C,
+			(
+				SELECT
+					CODE_LIST_ID, CODE_LIST_NAME
+				FROM
+					V_T_CODE_LIST
+				WHERE
+					CODE_GROUP_ID = 'RCPTBILL_CLS'
+			) D,
+			(
+				SELECT
+					CODE_LIST_ID, CODE_LIST_NAME
+				FROM
+					V_T_CODE_LIST
+				WHERE
+					CODE_GROUP_ID = 'SALEBUY_CLS'
+			) E,
+			T_ACC_SLIP_EXPENSE_CASH F,
+			T_ACC_SLIP_EXPENSE_CARDS G
+		  WHERE
+		  	A0.SLIP_ID = A.SLIP_ID
+		  	AND A.SLIP_ID = B.SLIP_ID(+)
+		  	AND A.SLIP_IDSEQ = B.SLIP_IDSEQ(+)
+			AND A.ACC_CODE = C.ACC_CODE(+)
+			AND A.KEEP_DT IS NOT NULL
+			AND A.TRANSFER_TAG = 'F'
+			AND A.SLIP_KIND_TAG <> 'D'
+			AND A.SLIP_KIND_TAG <> 'Z'
+			AND B.SLIP_ID IS NULL
+			--AND C.RCPTBILL_CLS IN ('01','02')
+			AND C.RCPTBILL_CLS IS NOT NULL
+			AND C.RCPTBILL_CLS = D.CODE_LIST_ID(+)
+			AND C.SALEBUY_CLS = E.CODE_LIST_ID(+)
+			AND	A.SLIP_ID = F.SLIP_ID(+)
+			AND	A.SLIP_IDSEQ = F.SLIP_IDSEQ(+)
+			AND	A.SLIP_ID = G.SLIP_ID(+)
+			AND	A.SLIP_IDSEQ = G.SLIP_IDSEQ(+)
+		  	AND A.COMP_CODE = lrT_ACC_SLIP_BILL_HEAD.COMP_CODE
+			--AND A.VAT_DT IS NOT NULL
+			AND
+			(
+				A.MAKE_DT BETWEEN (lrT_ACC_SLIP_BILL_HEAD.MISSING_PROCESS_DT_F) AND (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_F)
+				OR
+				A.MAKE_DT BETWEEN (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_F) AND (lrT_ACC_SLIP_BILL_HEAD.BASE_DT_T)
+			)
+	)
+	LOOP
+		BEGIN
+			IF lrA.TAX_COMP_CODE IS NULL THEN
+			   RAISE_APPLICATION_ERROR	(-20009, '세무사업장 오류입니다.<BR><BR>전표번호 : ' || lrA.MAKE_SLIPNOLINE);
+			   --NULL;
+			ELSIF lrA.PUBL_DT IS NULL THEN
+			   RAISE_APPLICATION_ERROR	(-20009, '계산서발행일 오류입니다.<BR><BR>전표번호 : ' || lrA.MAKE_SLIPNOLINE);
+			   --NULL;
+			ELSIF lrA.CUST_SEQ IS NULL THEN
+			   RAISE_APPLICATION_ERROR	(-20009, '거래처코드 오류입니다.<BR><BR>전표번호 : ' || lrA.MAKE_SLIPNOLINE);
+			   --NULL;
+			ELSE
+				SELECT
+					SQ_T_ACC_TAX_BILL_MEDIA_SEQ.NEXTVAL SEQ
+				INTO lnSEQ
+				FROM DUAL;
+	
+				Sp_T_Acc_Tax_Bill_Media_I
+				(
+					AR_COMP_CODE,
+					AR_WORK_NO,
+					lnSEQ,
+					AR_CRTUSERNO,
+					lrA.TAX_COMP_CODE,
+					'F',-- COMMBUY_CLS,
+					lrA.PUBL_DT,
+					lrA.VAT_CODE,
+					lrA.BOOK_NO,
+					lrA.BOOK_SEQ,
+					lrA.DEPT_CODE,
+					lrA.CUST_SEQ,
+					lrA.SUPAMT,
+					lrA.VATAMT,
+					lrA.ANNULMENT_CLS,
+					lrA.ANNULMENT_DT,
+					lrA.OUT_CNT,
+					lrA.SLIP_ID,
+					lrA.SLIP_IDSEQ,
+					lrA.MISSING_TAG,
+					lrA.REMARK,
+					lrA.UDT_TAG,
+					lrA.CARD_CASH_NO,
+					lrA.ACC_CODE
+				);
+			END IF;
+		END;
+	END LOOP;
+
+END;
+/

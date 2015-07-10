@@ -1,0 +1,41 @@
+-- 1.특정 컬럼에 값에 의해 현재행의 변경여부를 결정 --
+// 예제는 현재행, 'SEQ' 컬럼의 값이 '2'인 경우 수정불가
+function G_OnRowPosChanged(dataset, row)
+{
+	if (dataset == dsLovArgs)
+	{
+		if (dataset.NameString(row, "SEQ") == "2")
+		{
+			for (var i = 1; i <= dsLovArgs.CountColumn; i++)
+			{
+				var lsColName = dsLovArgs.ColumnID(i);
+				gridArgs.ColumnProp(lsColName, "Edit") = "None"; // 수정불가
+			}
+		}
+		else
+		{
+			for (var i = 1; i <= dsLovArgs.CountColumn; i++)
+			{
+				var lsColName = dsLovArgs.ColumnID(i);
+				gridArgs.ColumnProp(lsColName, "Edit") = ""; // 수정가능
+			}
+		}
+	}
+}
+
+-- 2.특정 컬럼에 값에 의해 현재행의 bgColor를 결정 --
+<OBJECT id=gridArgs WIDTH="100%" HEIGHT="100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT codebase="../../../cabfiles/toinbgrid.cab#version=1,1,0,125">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSelect" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE=" 
+		<FC> Name=순번 ID=SEQ Align=Center Width=30 
+		</FC> 
+		<FC> Name=인자명 ID=NAME Width=100 
+		</FC> 
+		<C> Name=타입 ID=TYPE Width=60 EditStyle=Combo Data='S:문자,N:숫자,D:날짜'
+		</C> 
+		<C> Name=기본값 ID=DEFAULT_VALUE Width=70 BgColor={Decode(SEQ,1,'red',3,'blue')} // 'SEQ' 컬럼의 값이 '1'이면 red, '3'이면 blue
+		</C> 
+		">
+</OBJECT>

@@ -1,0 +1,507 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************* -->
+<!-- 1. 프로그램 id   : e_sa_co_eval_code_1h.html 				   -->
+<!-- 2. 유형(시나리오): 조회및 입력									   -->
+<!-- 3. 기 능 정 의   : 부서코드등록     					           -->
+<!-- 4. 변 경 이 력   : 이준구 작성								   -->
+<!-- 5. 관련프로그램   :											   -->
+<!-- 6. 특 기 사 항   :											   -->
+<!-- ************************************************************* -->
+<HTML><HEAD>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/e_web/04/E_sa_co_eval_code_1q.jsp'
+var is_ds_2_addr = gs_home + '/const/e_web/04/E_sa_co_eval_code_detail_1q.jsp' 
+        
+var is_tr_1_addr = gs_home + '/const/e_web/04/E_sa_co_eval_code_1tr.jsp'
+var is_tr_2_addr = gs_home + '/const/e_web/04/E_sa_co_eval_code_detail_1tr.jsp'
+
+var il_focus=1
+var detail_sql = ""
+
+var is_sec
+
+//------------------------------------------------------------------------
+function div_init_move()                 //하위 입력시 초기 셋팅.
+//------------------------------------------------------------------------
+{
+  ds_2.NameValue(ds_2.RowPosition, "opinion_type") = ds_1.NameValue(ds_1.RowPosition,"opinion_type")
+  ds_2.NameValue(ds_2.RowPosition, "part_code") = ds_1.NameValue(ds_1.RowPosition, "part_code")
+  ds_2.NameValue(ds_2.RowPosition, "item_code") = ds_1.NameValue(ds_1.RowPosition, "item_code")
+  ds_2.NameValue(ds_2.RowPosition, "seq") = ds_1.NameValue(ds_1.RowPosition, "seq")
+  ds_2.NameValue(ds_2.RowPosition, "d_seq") = ds_2.NameValue(ds_2.RowPosition - 1, "d_seq") + 1
+  gd_2.Focus()
+  gd_2.SetColumn('d_seq')                               
+}
+//------------------------------------------------------------------------
+function init_move()                 
+//------------------------------------------------------------------------
+{
+  if (ds_1.RowPosition < 1) return
+  
+  ds_1.NameValue(ds_1.RowPosition, "opinion_type") = 1
+  ds_1.NameValue(ds_1.RowPosition, "part_code") = ds_1.NameValue(ds_1.RowPosition - 1, "part_code")
+  ds_1.NameValue(ds_1.RowPosition, "part_name") = ds_1.NameValue(ds_1.RowPosition - 1, "part_name")
+  ds_1.NameValue(ds_1.RowPosition, "item_code") = ds_1.NameValue(ds_1.RowPosition - 1, "item_code")
+  ds_1.NameValue(ds_1.RowPosition, "item_name") = ds_1.NameValue(ds_1.RowPosition - 1, "item_name")
+  gd_1.Focus()
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회
+//------------------------------------------------------------------------
+{
+ if (il_focus == 1) { 
+   ds_1.DataID = is_ds_1_addr
+   ds_1.SyncLoad=true  //DataSet Loading하는 시점과 관련..
+   ds_1.Reset()
+   
+ }   
+ else {
+	div_btnquery_onclick()
+ }
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위조회  
+//------------------------------------------------------------------------
+{
+	if ( ds_1.RowPosition < 1) return
+	
+	ds_2.DataID=is_ds_2_addr + "?arg_item=" + ds_1.NameValue(ds_1.RowPosition,"item_code") + "&arg_seq=" + ds_1.NameValue(ds_1.RowPosition, "seq") ; 
+ 	ds_2.SyncLoad=true 
+    ds_2.Reset()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+if (il_focus == 1) {
+    if (ds_2.IsUpdated) {
+       il_focus=2
+       alert("항목별 평점을 먼저 저장하십시요")
+       return
+    }   
+   ds_1.AddRow()
+   init_move()
+}   
+else
+   div_btnadd_onclick()  
+}
+//------------------------------------------------------------------------
+function div_btnadd_onclick()                  // 하위 추가
+//------------------------------------------------------------------------
+{
+    if (ds_1.IsUpdated) {
+       il_focus=1
+       alert("상위화면을 먼저 저장하십시요")
+       return
+    }   
+    if (ds_1.NameValue(ds_1.RowPosition,'opinion_type') != ""){
+       ds_2.AddRow()
+       div_init_move()
+    }
+ }
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+  if  (il_focus == 1) { 
+    if (ds_2.IsUpdated) { //변경여부 조회
+       il_focus=2
+       alert("항목별 평점을 먼저 저장하십시요")
+       return
+    }   
+      ds_1.InsertRow(ds_1.RowPosition);
+      init_move()
+      return
+  }      
+//  하위 로직만 수행 
+  if (ds_1.IsUpdated) {
+     il_focus=1
+     alert("상위화면을 먼저 저장하십시요")
+     return
+  }   
+
+
+ if (ds_1.NameValue(ds_1.RowPosition,'opinion_type') != "")  {
+      ds_2.InsertRow(ds_2.RowPosition);
+      div_init_move()    
+  }    
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  if  (il_focus == 1) {
+    if (ds_2.IsUpdated) {
+       il_focus=2
+       alert("항목별 평점을 먼저 저장하십시요")
+       return
+    }   
+  	  if (ds_2.CountRow > 0 ){
+  	  		alert('항목별 평점의 자료부터 삭제하십시요')   //ds_2의 범위는 arg_empno 변수값에 걸러진 내용까지 해당.
+  	  		return
+  	  	}
+    ds_1.DeleteRow(ds_1.RowPosition)
+  }     
+  else
+      div_btndelete_onclick()        
+} 
+//------------------------------------------------------------------------     
+function div_btndelete_onclick()           //하위 삭제
+//------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+     il_focus=1
+     alert("상위화면을 먼저 저장하십시요")
+     return
+  }   
+
+  if  (gd_2.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_2.CountRow ;i >0 ;i--){
+        if (ds_2.RowMark(i) == 1)
+               ds_2.DeleteRow(i)
+      }  
+     if  (ds_2.RowPosition != 0)          
+          ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)  //삭제작업완료후 MARK
+  }
+  else
+     ds_2.DeleteRow(ds_2.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	
+   if (il_focus == 1) {   	
+    ds_1.SortExpr = "+item_code"
+    ds_1.Sort();
+    
+     if(ds_1.NameValue(ds_1.RowPosition,"part_code") == "") {
+     		alert("항목코드를 선택하십시요")
+     		return
+     }
+     if(ds_1.NameValue(ds_1.RowPosition,"seq") == 0 || ds_1.NameValue(ds_1.RowPosition,"seq") == "") {
+     		alert("순번을 입력하십시요")
+     		gd_1.SetColumn("seq")
+     		return
+     }
+     
+     if (ds_1.IsUpdated) {
+     	 var ll_dup
+    	 ds_1.NameValue(ds_1.RowPosition,"check_seq") = ds_1.NameValue(ds_1.RowPosition,"item_code")+ds_1.NameValue(ds_1.RowPosition,"seq")
+   	 ll_dup = f_dup_chk("ds_1","check_seq")
+   	 if (ll_dup > 0) {
+   	     alert("순번이 중복되었습니다: 순번을 수정하십시요")
+   	     ds_1.RowPosition = ll_dup
+        	  gd_1.SetColumn("seq")
+   	     return
+   	 }
+     }
+     if (ds_1.IsUpdated)  {
+         if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+             tr_1.Post()
+      } 
+   }   
+   if (il_focus == 2) {
+     if (ds_2.IsUpdated) {
+     	 var ll_dup
+   	 ll_dup = f_dup_chk("ds_2","d_seq")
+   	 if (ll_dup > 0) {
+   	     alert("순번이 중복되었습니다: 순번을 수정하십시요")
+   	     ds_2.RowPosition = ll_dup
+        	  gd_2.SetColumn("d_seq")
+   	     return
+   	 }
+     }
+     if (ds_2.IsUpdated)  {
+         if  (confirm("변경되었습니다 저장하시겠습니까?"))
+             tr_2.Post()
+    
+      } 
+   }   
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+ if (il_focus == 1) 
+    ds_1.Undo(ds_1.RowPosition);  //Original Data로 되돌림.
+ else
+    ds_2.Undo(ds_2.RowPosition);    
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+       }     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function bt_part_code_find()                    
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog("E_co_part_code_find.html", '',"dialogWidth:340px;dialogHeight:370px");
+	
+	if(result == "") return;
+
+	array = result.split("@");
+	ds_1.NameValue(ds_1.RowPosition, "part_code") = array[0]
+	ds_1.NameValue(ds_1.RowPosition, "part_name") = array[1]
+	ds_1.NameValue(ds_1.RowPosition, "item_code") = array[2]
+	ds_1.NameValue(ds_1.RowPosition, "item_name") = array[3]
+	
+	gd_1.Focus()
+ 
+}
+
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_focus = focus
+}
+
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  
+  f_set_resize()
+
+  top.frames['main_title'].mouse_over()
+  
+  ds_1.DataID = is_ds_1_addr
+  ds_1.SyncLoad = true
+  tr_1.Action = is_tr_1_addr
+  tr_2.Action = is_tr_2_addr
+
+  	is_sec = gf_initial_security()
+	is_temp = is_sec
+   if (is_sec != 'r') {
+     is_temp = 'u'
+   }	
+	if (is_sec == 'r') {
+	   button_1.style.visibility='hidden'
+	   button_3.style.visibility='hidden'
+	   button_4.style.visibility='hidden'
+	   button_5.style.visibility='hidden'
+	   button_6.style.visibility='hidden'
+	   button_7.style.visibility='hidden'
+	}
+  
+  		top.frames['main_title'].div_u.style.visibility="visible"
+  		top.frames['main_title'].div_r.style.visibility="hidden"
+  
+  btnquery_onclick()
+  div_btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1','gd_2');
+	var xArr =new Array(false,false);
+	var yArr =new Array(true,true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+</SCRIPT>
+
+<script language="javascript"  for=gd_1 event=OnCloseUp(row,colid)>
+
+	if(colid == "part_code" && row == ds_1.RowPosition) {
+		ds_1.NameValue(ds_1.RowPosition,"item_code") = ""
+   	ll_cnt = f_ds_select_q("ds_item_code","select safety_code select_1, child_name select_2 from e_safety_code_parent a, e_safety_code_child b where a.class_tag = b.class_tag and a.class_tag = 78 and substr(safety_code,1,2) = '" + ds_1.NameValue(ds_1.RowPosition,"part_code") + "' order by safety_code")
+   }
+
+</script>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</script>
+<script language=JavaScript for=gd_2 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_2.RowPosition == ds_2.CountRow)  
+        div_btnadd_onclick()
+    else     
+        ds_2.RowPosition++
+}
+</script>
+<SCRIPT language=JavaScript for=ds_1 event=OnRowPosChanged(row) > //row의 위치변경시 발생
+	if (row < 1)  return
+	var ll_cnt_1 = f_ds_select_q("ds_register_detail", "select d_seq select_1 from e_opinion_register_detail where opinion_type='2' and item_code = '" + ds_1.NameValue(row, "key_item") + "' and seq = '" + ds_1.NameValue(row, "key_seq") + "'")
+		if ( ll_cnt_1 != 0 ) {
+			gd_1.ColumnProp("item_name","Edit") = 'none'
+			gd_1.ColumnProp("seq","Edit") = 'none'
+		}
+			
+		else {	
+			gd_1.ColumnProp("item_name","Edit") = ''
+			gd_1.ColumnProp("seq","Edit") = ''
+		}
+	div_btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=CanRowPosChange(row)>
+
+	if (ds_2.IsUpdated) {
+	   alert("항목별 평점을 먼저 저장하십시요")
+	   il_focus=2
+	   return false
+	}
+	else 
+		return true 
+	
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnPopup(row,colid,data)>
+	if(colid == 'item_name')
+		bt_part_code_find()
+</SCRIPT>
+</HEAD>
+
+<BODY  onload=setTimeout('window_onload()',1) onresize='f_set_resize()' oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code(tr_2) : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ccom_div event=onCloseUp()>
+ il_focus=1
+ btnquery_onclick()
+</script>
+<script language=JavaScript for=tr_1 event=OnSuccess()>
+ gf_key_copy("ds_1","seq@key_seq")
+ gf_key_copy("ds_1","item_code@key_item")
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=ds_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>     
+
+<OBJECT id=ds_part_code
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_item_code
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_register_detail
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+       
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:e_sa_co_eval_code_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:e_sa_co_eval_code_detail_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<DIV style="FONT-SIZE: 15px; Z-INDEX: 100; LEFT: 2px; WIDTH:600px; POSITION: absolute; TOP: 12px;">
+< 평가항목 등록 >
+</DIV>	
+<OBJECT id=gd_1 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 100; LEFT: 2px; WIDTH:700px; POSITION: absolute; TOP: 30px; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<Param Name="Editable"     value="-1">
+	<param name="UsingOneClick"  value="1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='구분'  id=part_name Edit='none' width=105 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center' Suppress=2 </C>
+     <C> Name='항목'  id=item_name EditStyle=PopupFix width=130 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=1 </C>
+     <C> Name='순번'  id=seq width=65 Align='center' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가항목'  id=or_item  width=298  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='배점'  id=or_point edit='none' width=70 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center'</C>
+     <C> Name='순번체크' id=check_seq width=66 Show=false</C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+
+<DIV style="FONT-SIZE: 15px; Z-INDEX: 100; LEFT:710px; WIDTH: 300px; POSITION: absolute; TOP: 290px; HEIGHT: 200px">
+	< 항목별 평점 >
+</DIV>
+	<OBJECT id=gd_2 onfocus="get_focus(2)"
+    style="FONT-SIZE: 12px; Z-INDEX: 100; LEFT:710px; WIDTH: 300px; POSITION: absolute; TOP: 310px; HEIGHT: 340px"
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+   <PARAM NAME="MultiRowSelect" VALUE="-1">
+   <PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+   <PARAM NAME="Editable" VALUE="-1">
+   <PARAM NAME="ColSizing" VALUE="-1">
+   <PARAM NAME="DataID" VALUE="ds_2">   
+   <PARAM NAME="Format" VALUE=" 
+     <C> Name='순번'  id=d_seq  width=50  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='내용'  id=contents width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='배점'  id=or_point  width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='left'</C>
+     ">
+   </OBJECT>
+
+<DIV style="FONT-SIZE: 15px; Z-INDEX: 102; LEFT:710px; WIDTH: 300px; POSITION: absolute; TOP: 35px; HEIGHT: 95px">
+	< 평가항목 세부 입력 >
+</DIV>  	
+<DIV id=page_1
+     style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT:710px; WIDTH: 300px; POSITION: absolute; TOP: 50px; HEIGHT: 95px">   
+	<table width="100%" height="100%" border="0" align="center" cellspacing="1" style="font-size: 12px">
+		<tr height="100%">
+			<td>
+				<textarea id=tx_or_item cols="39" rows="14"></textarea>
+			</td>
+		</tr>
+	</table>	
+</DIV> 
+<OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+ 	<PARAM NAME="BindInfo" VALUE="
+ 		<C> Col=or_item Ctrl=tx_or_item Param=value Enable=enable </C> 		
+ 	">
+</OBJECT>      
+</BODY></HTML>

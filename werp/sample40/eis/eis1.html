@@ -1,0 +1,377 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="JavaScript">
+<!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script>
+
+</head>
+<SCRIPT LANGUAGE="JavaScript">
+	function fn_Onload(){
+		MxDataSet_Grid.DataID = "./eis1_generator.jsp?dsn=ds3";
+		MxDataSet_Grid.Reset();
+
+		fn_MxChartCrate_Bar();
+		fn_MxChartCrate_Area();
+
+		fn_MxChartDraw_Area();
+
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_7";
+		MxDataSet_Chart.Reset();
+
+		fn_MxChartDraw_Bar();
+
+	}
+
+	function fn_Search(){
+		fn_MxChartDraw_Area();
+	}
+
+	function fn_Print(){
+//		ln_Report_MakeData("pgm3_Rpt.csv");				//csv화일로 생성
+		ln_Report_Popup("Program3.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+	}
+
+	function fn_MxChartCrate_Bar(){
+		MxChart_1.Aspect.View3D = true;
+
+		MxChart_1.Panel.Color = MxChart_1.ToOLEColor("#dddddd,#ffffff");
+		MxChart_1.Panel.BorderStyle = 0;
+		MxChart_1.Panel.Gradient.Visible = true;
+		MxChart_1.Panel.Gradient.Direction = 0;
+		MxChart_1.Panel.Gradient.StartColor = MxChart_1.ToOLEColor('#B8B8B8');
+		MxChart_1.Panel.Gradient.EndColor = MxChart_1.ToOLEColor('#E7E7E7');
+		MxChart_1.Zoom.Enable = false;
+
+		MxChart_1.Axis.Left.Labels.Font.Color   = MxChart_1.ToOLEColor("BLUE");
+		MxChart_1.Axis.Bottom.Labels.Font.Color = MxChart_1.ToOLEColor("RED");
+
+		MxChart_1.Legend.LegendStyle = 0;
+		MxChart_1.Legend.TextStyle = 0;
+		MxChart_1.Legend.CheckBoxes = true;
+		MxChart_1.Legend.Symbol.Width = 20;
+		MxChart_1.Legend.Alignment = 3;
+		MxChart_1.Legend.Font.Size = 8.7;
+		MxChart_1.Legend.TopPos = 5;
+		MxChart_1.Legend.VertSpacing = 0;
+		MxChart_1.Legend.ShadowSize = 5;
+		MxChart_1.Legend.ShapeStyle = 1;
+		MxChart_1.Legend.Color = MxChart_1.ToOLEColor("#E0F0FF");
+		MxChart_1.Legend.ShadowColor = MxChart_1.ToOLEColor("#8080C0");
+
+		MxChart_1.Header.Alignment = 2; 
+		MxChart_1.Header.Font.Size = 12;
+		MxChart_1.Header.Font.Color = MxChart_1.ToOLEColor("#000000");
+		MxChart_1.SubHeader.Alignment = 1; 
+
+		MxChart_1.Header.Alignment = 2; 
+		MxChart_1.Header.Font.Size = 9;
+		MxChart_1.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+		MxChart_1.Header.Text.Add ("제품별 비율 현황");
+		MxChart_1.SubHeader.Alignment = 1; 
+		MxChart_1.SubHeader.Text.Add ("단위:만원");
+
+		MxChart_1.Scroll.Enable = false;
+	}
+
+	function fn_MxChartDraw_Bar(){
+		MxChart_1.RemoveAllSeries();
+
+		var idx = MxChart_1.AddSeries(1);
+		MxChart_1.Series(idx).DataID = "MxDataSet_Chart";
+		MxChart_1.Series(idx).LabelColumn = "gubun";
+		MxChart_1.Series(idx).YValueColumn = "stand";
+		MxChart_1.Series(idx).Title = "기준율";
+		MxChart_1.Series(idx).color = MxChart_1.ToOLEColor("#FFD040");
+		MxChart_1.Series(idx).Marks.Style = 0;
+
+		var idx = MxChart_1.AddSeries(1);
+		MxChart_1.Series(idx).DataID = "MxDataSet_Chart";
+		MxChart_1.Series(idx).LabelColumn = "gubun";
+		MxChart_1.Series(idx).YValueColumn = "achieveper";
+		MxChart_1.Series(idx).Title = "성장율";
+		MxChart_1.Series(idx).color = MxChart_1.ToOLEColor("#80C080");
+		MxChart_1.Series(idx).Marks.Style = 0;
+
+		var idx = MxChart_1.AddSeries(1);
+		MxChart_1.Series(idx).DataID = "MxDataSet_Chart";
+		MxChart_1.Series(idx).LabelColumn = "gubun";
+		MxChart_1.Series(idx).YValueColumn = "growper";
+		MxChart_1.Series(idx).Title = "성장율";
+		MxChart_1.Series(idx).color = MxChart_1.ToOLEColor("#D0A0D0");
+		MxChart_1.Series(idx).Marks.Style = 0;
+
+		MxChart_1.Reset();
+	}
+
+	function fn_MxChartCrate_Area(){
+		MxChart_2.Aspect.View3D = true;
+
+		MxChart_2.Panel.Color = MxChart_2.ToOLEColor("#dddddd,#ffffff");
+		MxChart_2.Panel.BorderStyle = 0;
+		MxChart_2.Panel.Gradient.Visible = true;
+		MxChart_2.Panel.Gradient.Direction = 0;
+		MxChart_2.Panel.Gradient.StartColor = MxChart_2.ToOLEColor('#B8B8B8');
+		MxChart_2.Panel.Gradient.EndColor = MxChart_2.ToOLEColor('#E7E7E7');
+		MxChart_2.Zoom.Enable = false;
+
+		MxChart_2.Axis.Left.Labels.Font.Color   = MxChart_2.ToOLEColor("BLUE");
+		MxChart_2.Axis.Bottom.Labels.Font.Color = MxChart_2.ToOLEColor("RED");
+
+		MxChart_2.Legend.Visible = true;
+		MxChart_2.Legend.LegendStyle = 0;
+		MxChart_2.Legend.TextStyle = 0;
+		MxChart_2.Legend.Symbol.Width = 20;
+		MxChart_2.Legend.Alignment = 3;
+		MxChart_2.Legend.Font.Size = 8.7;
+		MxChart_2.Legend.TopPos = 5;
+		MxChart_2.Legend.VertSpacing = 0;
+		MxChart_2.Legend.ShadowSize = 5;
+		MxChart_2.Legend.ShapeStyle = 0;
+		MxChart_2.Legend.Color = MxChart_2.ToOLEColor("#E0F0FF");
+		MxChart_2.Legend.ShadowColor = MxChart_2.ToOLEColor("#8080C0");
+
+		MxChart_2.Header.Alignment = 2; 
+		MxChart_2.Header.Font.Size = 12;
+		MxChart_2.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+		MxChart_2.SubHeader.Alignment = 1; 
+
+		MxChart_2.Header.Alignment = 2; 
+		MxChart_2.Header.Font.Size = 9;
+		MxChart_2.Header.Font.Color = MxChart_2.ToOLEColor("#000000");
+		MxChart_2.Header.Text.Add ("지역별 종합 판매실적");
+		MxChart_2.SubHeader.Alignment = 1; 
+		MxChart_2.SubHeader.Text.Add ("단위:천원");
+
+		MxChart_2.Scroll.Enable = false;
+	}
+
+	function fn_MxChartDraw_Area(){
+		MxChart_2.RemoveAllSeries();
+
+		var idx = MxChart_2.AddSeries(3);
+		MxChart_2.Series(0).DataID = "MxDataSet_Grid";
+		MxChart_2.Series(0).LabelColumn = "gubun";
+		MxChart_2.Series(0).YValueColumn = "purpose";
+		MxChart_2.Series(0).Marks.Style = 0;
+		MxChart_2.Series(0).asArea.Transparency = 30;
+		MxChart_2.Series(0).color = MxChart_1.ToOLEColor("#FF7C54");
+		MxChart_2.Series(0).Title = "목표";
+
+		//MxChart_2.Series(idx).ColorColumn = "Color";
+		//MxChart_2.Series(idx).asPie.Shadow.Color = MxChart_2.ToOLEColor("#C0C0C0");
+		//MxChart_2.Series(idx).asPie.Shadow.HorizSize = 15
+		//MxChart_2.Series(idx).asPie.Shadow.VertSize = 15
+
+		var idx = MxChart_2.AddSeries(3);
+		MxChart_2.Series(1).DataID = "MxDataSet_Grid";
+		MxChart_2.Series(1).LabelColumn = "gubun";
+		MxChart_2.Series(1).YValueColumn = "siljuksum";
+		MxChart_2.Series(1).Marks.Style = 0;
+		MxChart_2.Series(1).asArea.Transparency = 30;
+		MxChart_2.Series(1).color = MxChart_1.ToOLEColor("#60A060");
+		MxChart_2.Series(1).Title = "누계";
+
+		var idx = MxChart_2.AddSeries(3);
+		MxChart_2.Series(2).DataID = "MxDataSet_Grid";
+		MxChart_2.Series(2).LabelColumn = "gubun";
+		MxChart_2.Series(2).YValueColumn = "siljuktoday";
+		MxChart_2.Series(2).Marks.Style = 0;
+		MxChart_2.Series(2).asArea.Transparency = 30;
+		MxChart_2.Series(2).color = MxChart_1.ToOLEColor("#FFD31C");
+		MxChart_2.Series(2).Title = "당일";
+
+		MxChart_2.Reset();
+	}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+//	alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=MxDataSet_Grid EVENT=OnLoadCompleted()>
+	window.status = gs_CallMsg("M003", MxDataSet_Grid.CountRow);
+</SCRIPT>
+
+<SCRIPT LANGUAGE=javascript FOR=MxDataSet_Chart EVENT=OnLoadCompleted()>
+	//alert(MxDataSet_Chart.CountRow);
+</SCRIPT>
+
+<script language=JavaScript for=MxDataSet_Grid event=OnLoadError()>
+  for(i=0;i<MxDataSet_Grid.SrvErrCount('Native');i++) {
+    alert("MxDataSet_Grid : LoadError!!" + "\n" + "ErrorCode : " + MxDataSet_Grid.SrvErrCode('Native',i) + "\n" + "ErrorMsg  : " + MxDataSet_Grid.SrvErrMsg('Native',i));
+    alert("Error Code : " + MxDataSet_Grid.ErrorCode + "\n" + "Error Message : " + MxDataSet_Grid.ErrorMsg );
+  }
+</script>
+
+<script language=JavaScript for=MxDataSet_Grid event=OnError()>
+  for(i=0;i<MxDataSet_Grid.SrvErrCount('UserMsg');i++) {
+    alert(MxDataSet_Grid.SrvErrMsg('UserMsg',i));
+  }
+</script>
+
+<SCRIPT language="javascript"  for=MxGrid_1 event=onclick()>
+	var Gubun = MxDataSet_Grid.NameString(MxDataSet_Grid.RowPosition, "gubun");
+	if(Gubun == "서울지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_1";
+	}else if(Gubun == "부산지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_2";
+	}else if(Gubun == "대전지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_3";
+	}else if(Gubun == "광주지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_4";
+	}else if(Gubun == "인천지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_5";
+	}else if(Gubun == "대구지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_6";
+	}else if(Gubun == "강릉지사"){
+		MxDataSet_Chart.DataID = "./eis1_generator.jsp?dsn=ds3_7";
+	}
+	MxDataSet_Chart.Reset();
+
+	fn_MxChartDraw_Bar();
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<!-- MxDataSet 선언부-->
+<OBJECT ID="MxDataSet_Grid" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"></OBJECT>
+<OBJECT ID="MxDataSet_Chart" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name=SyncLoad	value="true">
+</OBJECT>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_Onload(); na_preload_img(false, '../images/direct_bu_color.gif', '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm3_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>지역별 판매 실적</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="240" colspan="2"><p>
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_1" style="font-size:9pt">
+										<param name="DataID" value="MxDataSet_Grid">
+										<param name="IndWidth"	value="0">
+										<param name="HeadBorder"	value="4">
+										<param name="BorderStyle"	value="1">
+										<param name="LineColor"	value="#FFFFFF">
+										<param name="HeadLineColor"	value="#FFFFFF">
+										<param name="ViewSummary"	value="2">
+										<param name="SortView" value="true,right,#F4D0FF">
+										<param name="Format" value=" 
+											<C> Name=구분 ID=gubun HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor=#908F8B Color=#FFFFFF Width=125 Align=Center SumBgColor=#E7C700 SumColor=#FFFFFF SumText='총계' sort=true</C> 
+											<C> Name=목표 ID=purpose HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=100 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C> 
+											<G> Name=실적 HeadBgColor=#908F8B HeadColor=#FFFFFF
+											<C> Name=당일 ID=siljuktoday HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C> 
+											<C> Name=누계 ID=siljuksum HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C> 
+											</G>
+											<G> Name=목표달성도 HeadBgColor=#908F8B HeadColor=#FFFFFF
+											<C> Name=접근율(%) ID=approach HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90  SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C> 
+											<C> Name=달성율(%) ID=achieve HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C>
+											</G>
+											<G> Name=성장율 HeadBgColor=#908F8B HeadColor=#FFFFFF
+											<C> Name=전년대비(%) ID=beyearcont HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C> 
+											<C> Name=전월대비(%) ID=bemonthcont HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFFF',1,'#FFFFCE')} Width=90 SumBgColor=#FFFFA8 SumColor=#800000 SumText=@Sum sort=true</C>
+											</G>
+										">
+									</object>
+								</p></td>
+							</tr>
+							<tr>
+								<td width="450" height="252">
+									<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_2" width="100%" height="100%"></object>
+									</p>
+								</td>
+								<td width="340" height="252">
+									<p><object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="100%" height="100%"></object></p>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+					EXTRACT *
+					FROM MxDataSet_Grid	  
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

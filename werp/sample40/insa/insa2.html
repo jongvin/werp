@@ -1,0 +1,474 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+
+<script language="javascript">
+   color = "#B1DD8C"        // 그리드 선택시 사용Color
+   var check_ok = "true";   // 부서의 Multi 선택 방지
+   today = "";              // 오늘 일자
+   var Load_Flag = "";
+     
+   // 화면이 Load시 발생함
+   function fn_load(){
+      
+      // 오늘 일자 가지고 오기  
+      Stamp = new Date();
+      var year = Stamp.getYear();
+      var month = (Stamp.getMonth() + 1);
+      var date = Stamp.getDate();
+
+	  if(String(month).length < 2) {
+           month = "0"+ "" + month;
+      }
+      
+      if(String(date).length < 2) {
+           date = "0"+ "" + date;
+      }
+      today = year + "" +  month + "" +  date;
+      deploydt_dt.Text = today;
+      
+      // 화면이 Load 되면서 DataSet Data를 조회한다.
+      Dept_data.DataID   = "./insa2_select1.jsp";  // 부서
+      Duty_data.DataID   = "./insa2_select2.jsp";  // 직무
+
+	  Load_Flag = "open";
+	  Master_data.DataID = "./insa2_select3.jsp?" + "&search_fl=";
+      Dept_data.Reset();
+      Duty_data.Reset();
+	  Master_data.Reset();
+   }
+   //조회버튼 클릭시 ( 라디오버튼의 조건에 따라 조회한다. )
+   function fn_search(){
+      var search_fl = "";
+      if( rdo_current.checked == true){
+         search_fl = rdo_current.value;
+      }else if(rdo_close.checked == true){
+         search_fl = rdo_close.value;
+      }else{
+         search_fl = rdo_all.value;
+      }
+      Master_data.DataID = "./insa2_select3.jsp?" + "&search_fl=" + search_fl;
+      Master_data.Reset();
+   }
+   //출력버튼 클릭시
+   function fn_print(){
+		//ln_Report_MakeData("pgm2_Rpt.csv");				//csv화일로 생성
+		ln_Report_Popup("Program2.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+   }
+   //부서별 직무 입력시 중복값을 Check 한다.
+   function dupl_check(dept_cd,duty_cd){
+     for(k=1;k<=Master_data.CountRow;k++){
+        if( ( (dept_cd == Master_data.NameString(k,"dept_cd")) && (duty_cd == Master_data.NameString(k,"duty_cd")) ) ){
+           return false;
+        }
+     }
+     return true;
+   }
+   // 배치버튼 클릭시
+   function fn_deploy(){
+      if( gfn_trim(deploydt_dt.Text).length != 8){
+         alert("배치일자 입력을 확인하세요!");
+         return;
+      }
+      if(Dept_data.isupdated != true){
+         alert("부서를 선택하십시오!(Only Single)");
+         return;
+      }
+      if(Duty_data.isupdated != true){
+         alert("직무를 선택하십시오!(Muti가능)");
+         return;
+      }
+      if( Dept_data.isupdated == true && Duty_data.isupdated == true ){
+          for(i=1;i<=Dept_data.CountRow;i++){
+             if( Dept_data.NameString(i,"check_fl") == "T"){
+                for(j=1;j<=Duty_data.CountRow;j++){
+                   if(Duty_data.NameString(j,"check_fl") == "T"){
+                     if ( dupl_check(Dept_data.NameString(i,"dept_cd"),Duty_data.NameString(j,"duty_cd")) == false){
+                        Duty_data.NameString(j,"check_fl") = "F";
+						alert("입력자료가 중복되었습니다.\r" + Dept_data.NameString(i,"dept_nm") + "\r" + Duty_data.NameString(j,"duty_cd"));
+                        return;
+                     }
+                      Master_data.AddRow();
+                      Master_data.NameString(Master_data.RowPosition,"dept_cd") =   Dept_data.NameString(i,"dept_cd");
+                      Master_data.NameString(Master_data.RowPosition,"dept_nm") =   Dept_data.NameString(i,"dept_nm");
+                      Master_data.NameString(Master_data.RowPosition,"duty_cd") =   Duty_data.NameString(j,"duty_cd");
+                      Master_data.NameString(Master_data.RowPosition,"duty_nm") =   Duty_data.NameString(j,"duty_nm");
+                      Master_data.NameString(Master_data.RowPosition,"deploy_dt") = deploydt_dt.Text
+                      Master_data.NameString(Master_data.RowPosition,"close_dt") =  "";
+                      Master_data.NameString(Master_data.RowPosition,"close_op") =  "F";
+                      Master_data.NameString(Master_data.RowPosition,"job_desc") =  Duty_data.NameString(j,"duty_desc");
+                   }   
+                }
+             }
+         }
+      } 
+      Dept_data.UndoAll();
+      Duty_data.UndoAll();
+      Dept_data.RowPosition = 1;
+      Duty_data.RowPosition = 1;
+      Master_data.Sort(); 
+   }
+   //취소버튼 클릭시
+   function fn_cancel(){
+      Master_data.DeleteMarked();  
+   }
+   //확정버튼 클릭시
+   function fn_save(){
+		if(confirm(gs_CallMsg("M007", ""))) {
+         	Master_tr.Post();
+		} else {
+			return;
+		};
+   }
+   //폐쇄버튼 클릭시
+   function fn_undo(){
+      Master_data.Undo(Master_data.RowPosition);            
+   }
+  
+   // STING을 TRIM 한다.
+   function gfn_trim(ls_str) {
+	var search = 0;
+	while (ls_str.charAt(search) == " ") {
+		search = search + 1;
+	}
+	ls_str = ls_str.substring(search, (ls_str.length));
+	search = ls_str.length - 1;
+	while (ls_str.charAt(search) ==" ") {
+		search = search - 1;
+	}
+	return ls_str.substring(0, search + 1);
+   }
+   // 달력
+   function fn_Calendar(objName) {
+      var obj = document.all[objName];
+      var ls_Date = new Array();
+      var ls_CurVal = obj.text;
+    
+      ls_Date = window.showModalDialog("Calendar.html", ls_CurVal, "dialogTop:"+event.screenY+"; dialogLeft:"+eval(event.screenX-185)+"; dialogWidth:220px; dialogHeight:242px; Raised; resizable: no; status: no");
+	    if (ls_Date != null){
+	        obj.text = ls_Date;
+	    }
+   }
+   
+</script>
+
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<!-- RMapper Event 선언 -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("RMapper ErrorMsg  " + ErrorMsg);
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+//	alert("RMapper Completed");
+//	tb_TextArea.Src = "C:\\sample1.csv";
+</SCRIPT>
+
+
+<!-- Master_data 조회가 완료시 발생한다.-->
+<script language="javascript"  for=Master_data event=OnLoadCompleted(rowcount)>
+	if(Load_Flag == ""){
+		Master_data.Sort(); 
+	}
+	Load_Flag = "";
+	
+	window.status = gs_CallMsg("M003", Master_data.CountRow);
+</script>
+
+<!-- Master_tr 저장 성공시 발생한다.-->
+<script language="javascript"  for=Master_tr event=OnSuccess()>
+	window.status = gs_CallMsg("M005", "");
+</script>
+<!-- Master_tr 저장 실패시 발생한다.-->
+<script language="javascript"  for=Master_tr event=OnFail()>
+	alert("작업이 실패하였습니다!!\r" + ErrorMsg);
+</script>
+<!-- Dept_grid(부서그리드) click시 발생한다.-->
+<script language="javascript"  for=Dept_grid event=OnClick(Row,Colid)>
+    var j=0;
+    for(i=1;i<=Dept_data.CountRow;i++){
+        if ( Dept_data.NameString(i,"check_fl") == "T" ){
+           j++;
+        }
+    }
+    if(j>1){
+        Dept_data.NameString(Row,"check_fl") = "F";
+		alert("부서는 하나씩만 선택하세요.");
+        return;
+    }
+    
+    if ( Row > 0 && Colid =="check_fl"){
+       if ( Dept_data.NameString(Row,"check_fl") == "T" ){
+            Dept_data.NameString(Row,"color") = color;
+            check_ok = "false";
+       }else{
+          Dept_data.NameString(Row,"color") = "#E6E6FF";
+          for(i=1;i<=Duty_data.CountRow;i++){
+             Duty_data.NameString(i,"check_fl") = "F";
+             Duty_data.NameString(i,"color") = "#E6E6FF";
+          }
+          check_ok = "true";
+       } 
+    }
+</script>
+<!-- Duty_grid(직무그리드) click시 발생한다.-->
+<script language="javascript"  for=Duty_grid event=OnClick(Row,Colid)>
+   if ( Row > 0 && Colid =="check_fl"){
+    
+       if ( Duty_data.NameString(Row,"check_fl") == "T")
+       {
+          Duty_data.NameString(Row,"color") = color;
+        }else{
+          Duty_data.NameString(Row,"color") = "#E6E6FF";
+       }    
+    
+   }
+</script>
+<!-- Master_grid(메인그리드)에서 폐쇄구분(combo Interface)의 combo가 닫힐때 발생한다.-->
+<script language="javascript"  for=Master_grid event=OnCloseUp(Row,Colid)>
+   if ( Master_data.NameString(Master_data.RowPosition,Colid) != Master_data.OrgNameString(Master_data.RowPosition,Colid) ){
+      if( Master_data.NameString(Master_data.RowPosition,Colid) == "T"){
+         Master_data.NameString(Master_data.RowPosition,"close_dt") = today;
+      }
+   }else if ( Master_data.NameString(Master_data.RowPosition,"close_dt") != Master_data.OrgNameString(Master_data.RowPosition,"close_dt") ) {
+         Master_data.NameString(Master_data.RowPosition,"close_dt") = today;
+   }
+      
+   if ( Master_data.NameString(Master_data.RowPosition,Colid) == "F"){
+         Master_data.NameString(Master_data.RowPosition,"close_dt") = "";
+   }   
+</script>
+<!------------------------------------------Component Event End---------------------------------------------->
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+<!------------------------------------------DataSet Component 선언------------------------------------------->
+<OBJECT ID="Dept_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+</OBJECT>
+<OBJECT ID="Duty_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+</OBJECT>
+<OBJECT ID="Master_data" WIDTH="" HEIGHT="" CLASSID="CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+   <param name="sortexpr"    value="+dept_cd+duty_cd">  
+   <param name="ViewDeletedRow" value=true> 
+</OBJECT>
+<!------------------------------------------Transaction Component 선언---------------------------------------->
+<object id="Master_tr" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5"> 
+	<param name="Action"	value="./insa2_Tr.jsp">
+	<param name="KeyName"	value="toinb_dataid4">
+	<param name="KeyValue"	value="JSP(I:MASTER=Master_data)">
+</object>
+
+
+
+<script language="JavaScript">
+<!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// -->
+</script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_load();na_preload_img(false, '../images/direct_bu_color.gif', '../images/print_bu_color.gif', '../images/popup_20_20_over.gif', '../images/arrang_bu_color.gif', '../images/del_bu_color.gif', '../images/definesave_bu_color.gif', '../images/cancel_bu_color.gif', '../images/excel_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm2_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><b><font size="2">직무배치</font></b></td>
+							</tr>
+						</table>
+			</td>
+				
+					<td width="395" height="30">
+						<p align="right">
+							<a href="#" OnMouseOut="na_restore_img_src('image1', 'document')" OnMouseOver="na_change_img_src('image1', 'document', '../images/direct_bu_color.gif', true)"><img src="../images/direct_bu.gif" width="61" height="20" border="0" name="image1" onclick="fn_search()"></a>				                       </p>
+				</td>
+			<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" valign="top" colspan="2">
+						
+						
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="35" colspan="2">
+											
+									<table cellpadding="0" cellspacing="0" width="774">
+										<tr>
+											<td width="80" height="25">
+													<font size="2">&nbsp;&nbsp;<b>조회옵션</b></font>								
+											</td>
+											<td width="30" height="25">
+												<font size="2">현재</font>								
+											</td>
+											<td width="35" height="25">
+												 <input type="radio" name="rdo_1" id=rdo_current value="F">
+											</td>
+											<td width="30" height="25">                                    
+												 <font size="2">폐쇄</font>
+											</td>
+											<td width="35" height="25">
+												 <input type="radio" name="rdo_1" id=rdo_close value="T">
+											</td>
+											<td width="30" height="25">                                    
+												 <font size="2">전체</font>
+											</td>
+											<td width="519" height="25">
+												  <input type="radio" name="rdo_1" id=rdo_all  value="" checked>
+											</td>
+										</tr>
+									</table>
+								<tr>
+								<td width="250" height="170">
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="Dept_grid">
+																	<PARAM NAME="DataID" VALUE="Dept_data">
+										<param name="IndWidth"	value="0">
+										<param name="HeadBorder"	value="4">
+										<param name="BorderStyle"	value="1">
+										<param name="LineColor"	value="#FFFFFF">
+										<param name="UsingOneClick"  value=1> 
+										<param name="editable"       value=true>
+										<param name="HeadLineColor"	value="#FFFFFF">
+										<param name="colsizing"	value="true">
+										<param name="colselect"	value="true">
+										<PARAM NAME="Format" VALUE=" 
+										<FC> Name='' ID=check_fl HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=20 Align=Center  bgcolor=$color editstyle=check </FC> 
+											<FC> Name=부서코드 ID=dept_cd HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=80 Align=Center  bgcolor=$color edit=none</FC> 
+											<FC> Name=부서명 ID=dept_nm HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=133 Align=Center bgcolor=$color edit=none</FC> 
+												">
+									</object>
+								</td>
+								<td width="530" height="170">
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="Duty_grid">
+											<PARAM NAME="DataID" VALUE="Duty_data">
+							<param name="IndWidth"	value="0">
+							<param name="HeadBorder"	value="4">
+							<param name="BorderStyle"	value="1">
+							<param name="LineColor"	value="#FFFFFF">
+							<param name="HeadLineColor"	value="#FFFFFF">
+							<param name="colsizing"	value="true">
+							<param name="UsingOneClick"  value=1> 
+							<param name="editable"       value=true>
+							<PARAM NAME="FixSizing" VALUE="true">
+							<PARAM NAME="Format" VALUE=" 
+							<f> Name='' ID=check_fl HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=20 Align=Center  bgcolor=$color editstyle=check</f> 
+								<f> Name=직무코드 ID=duty_cd HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=55 Align=Center  bgcolor=$color edit=none </f> 
+								<C> Name=직무명 ID=duty_nm HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=90 Align=Center bgcolor=$color edit=none</C> 
+								<C> Name=창설일 ID=create_dt HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=70 mask=XXXX-XX-XX Align=Center bgcolor=$color edit=none</C> 
+								<C> Name=직무설명 ID=duty_desc HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=275 Align=Left bgcolor=$color edit=none</C> 
+								
+							">
+									</object>
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="30" colspan="2">
+									<table cellpadding="0" cellspacing="0" align="center" width="100%" border=0>
+										<tr>
+											<td width="85">
+											  <p align="center"><font size="2">배치일자</font>
+											<td width="70"><p>
+												<object classid="clsid:4AEAFD66-8D65-41ac-B1D1-57E7FF2A734F" width="70" height="20" id="deploydt_dt">
+													<param name=Text		value="">
+								<param name=Alignment	value=1>
+								<param name=Format		value="YYYY-MM-DD">
+								<param name=PromptChar	value="_">
+												</object>
+																			 <td width="30">
+																					  <p>
+			<a href="#" OnMouseOut="na_restore_img_src('image3', 'document')" OnMouseOver="na_change_img_src('image3', 'document', '../images/popup_20_20_over.gif', true)"><img src="../images/popup_20_20.gif" width="20" height="20" border="0" name="image3" onClick="fn_Calendar('deploydt_dt')"></a>                                                                  <td width="190">                                    
+												<p><font size="2">  ◀반드시입력</font>                                
+											  <td width="415"><p>
+													<a href="#" OnMouseOut="na_restore_img_src('image4', 'document')" OnMouseOver="na_change_img_src('image4', 'document', '../images/arrang_bu_color.gif', true)"><img src="../images/arrang_bu.gif" width="75" height="20" border="0" name="image4" onclick="fn_deploy()"></a><a href="#" OnMouseOut="na_restore_img_src('image5', 'document')" OnMouseOver="na_change_img_src('image5', 'document', '../images/del_bu_color.gif', true)"><img src="../images/del_bu.gif" width="61" height="20" border="0" name="image5" onclick="fn_cancel()"></a><a href="#" OnMouseOut="na_restore_img_src('image6', 'document')" OnMouseOver="na_change_img_src('image6', 'document', '../images/definesave_bu_color.gif', true)"><img src="../images/definesave_bu.gif" width="94" height="20" border="0" name="image6" onclick="fn_save()"></a><a href="#" OnMouseOut="na_restore_img_src('image7', 'document')" OnMouseOver="na_change_img_src('image7', 'document', '../images/cancel_bu_color.gif', true)"><img src="../images/cancel_color.gif" width="75" height="20" border="0" name="image7" onclick="fn_undo()"></a><a href="#" OnMouseOut="na_restore_img_src('image8', 'document')" OnMouseOver="na_change_img_src('image8', 'document', '../images/excel_bu_color.gif', true)"><img src="../images/excel_bu.gif" width="61" height="20" border="0" name="image8" onclick="ln_Excel(Master_grid,'부서별 직무 정의')"></a>                                </tr>
+									</table>
+							</tr>
+							<tr>
+								<td width="790" height="258" colspan="2">
+								  <!------------------------ 직무정보 그리드 ----------------------------->
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="Master_grid">
+											 <PARAM NAME="DataID" VALUE="Master_data">
+							 <param name="HeadBorder"	value="4">
+							 <param name="BorderStyle"	value="1">
+							 <param name="LineColor"	value="#FFFFFF">
+							 <param name="HeadLineColor"	value="#FFFFFF">
+							 <param name="colsizing"	value="true">
+							 <param name=MultiRowSelect       value=true>
+							 <param name=sortview       value=right>
+							 <param name="editable"         value=true>
+							 <PARAM NAME="Format" VALUE=" 
+								 <F> Name=부서명 ID=dept_nm HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=100 Align=Center  BgColor=#F5F0B0 suppress=1 edit=none sort=true</F> 
+								 <F> Name=직무코드 ID=duty_cd HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=80 Align=Center BgColor=#FFFFCE edit=none sort=true</F> 
+								 <C> Name=직무명 ID=duty_nm HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=100 Align=Center BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} edit=none sort=true</C> 
+								 <C> Name=배치일자 ID=deploy_dt HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=90 Align=Center mask=XXXX-XX-XX BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} sort=true edit=none</C> 
+								 <G> Name=폐쇄 HeadBgColor=#908F8B HeadColor=#FFFFFF
+								   <C> Name=일자 ID=close_dt HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=90 Align=Center mask=XXXX-XX-XX BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} sort=true edit=none</C> 
+								   <C> Name=구분 ID=close_op HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=50 Align=Center BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')} editstyle=combo, data='F:현재,T:폐쇄' sort=true</C>
+								 </G> 
+								 <C> Name=직무설명 ID=job_desc HeadBgColor=#908F8B HeadColor=#FFFFFF  Width=350 Align=Left BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C> 
+							 ">
+									</object>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<!-- RMapper component 선언 -->
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+				EXTRACT *
+				FROM Master_data
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

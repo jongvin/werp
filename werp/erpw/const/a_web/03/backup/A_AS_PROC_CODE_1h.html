@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : A_AS_PROC_CODE_1h.html									-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 관리구부별현황												-->
+<!-- 4. 변 경 이 력   : 이준구 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+
+var is_ds_1_addr = gs_home + '/const/a_web/03/A_AS_PROC_CODE_1q.jsp'
+
+var ls_date = ""
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (em_start_date.text == "" || em_end_date.text == "") {
+		alert("접수일 기간을 입력해주세요")
+		em_start_date.focus()
+		return
+	}
+	if (em_start_date.text == "        " || em_end_date.text == "        ") {
+		alert("접수일 기간을 입력해주세요")
+		em_start_date.focus()
+		return
+	}
+	if (em_start_date.text.length != 8 || em_end_date.text.length != 8 ) {
+		alert("접수일이 올바르지 않습니다")
+		return
+	}
+	if (em_start_date.text > em_end_date.text ) {
+		alert("접수일 기간이 올바르지 않습니다")
+		em_end_date.focus()
+		return
+	}
+	
+	ls_date =  "?arg_start_date=" + em_start_date.text + "&arg_end_date=" + em_end_date.text 
+	ds_1.DataID = is_ds_1_addr + ls_date
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+}
+//-----------------------------------------------------------------------
+function excel_down()                      
+//------------------------------------------------------------------------
+{
+	gd_1.GridToExcel('code_wbs','c:\aa.xls',0)
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 	
+	top.frames['main_title'].mouse_over()
+	
+	f_set_resize()
+	
+	ls_temp = top.frames['security'].gs_sysdate.value  // 시스템 년월 선언.
+  	
+	em_start_date.text = ls_temp.substr(0,4) + ls_temp.substr(5,2) + "01"
+	em_end_date.text = ls_temp.substr(0,4) + ls_temp.substr(5,2) + ls_temp.substr(8,2)
+	em_start_date.focus()
+	
+}
+//------------------------------------------------------------------------
+function date_return(value)                     
+//------------------------------------------------------------------------
+{
+	var result = gn_Cal_Yyyymmdd(); 
+	if(!is_null(result))
+	{ 
+		tmp = eval ( value + '.text =  result.substr(0,8) ' );
+	} 
+} 
+
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1');
+	var xArr =new Array(true);
+	var yArr =new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+} 
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onresize='f_set_resize()' oncontextmenu="return false" >
+<DIV id=page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 312px; POSITION: absolute; TOP: 2px; HEIGHT: 10px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="left"   CELLSPACING="0"  cellpadding="0" style="FONT-SIZE: 12px">
+      	<tr>
+      		<td>
+      			<table width="100%" height="100%"  BORDER="0"  CELLSPACING="1" style="FONT-SIZE: 12px" cellpadding="0">
+			         <tr BGCOLOR="white" > 
+			             <td BGCOLOR="#BBE0F4" style="COLOR: BLACK" width="44"> 
+			                 <div align="center">접수일 </div></td>
+			             <td width="121" align="center">
+									<comment id="__NSID__"><OBJECT id=em_start_date align="absmiddle" style="WIDTH: 80px; HEIGHT: 20px; FONT-SIZE: 13px" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+										<param name=Format value="YYYY-MM-DD">
+						            <param name=ReadOnlyBackColor  value=silver>
+						            <param name=Alignment      value=1>
+						            <param name=Numeric value=false>
+										<param name=PromptChar   value="_">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+									<img src="../../../image/icon/calender_on.gif"  align="absmiddle" id=img_fr OnClick="date_return('em_start_date')" width="24" height="20" ></td>
+							<td width="9"> ~ </td>
+							<td width="131" align="center">
+									<comment id="__NSID__"><OBJECT id=em_end_date align="absmiddle" style="WIDTH: 80px; HEIGHT: 20px; FONT-SIZE: 13px" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+										<param name=Format value="YYYY-MM-DD">
+						            <param name=ReadOnlyBackColor  value=silver>
+						            <param name=Alignment      value=1>
+						            <param name=Numeric value=false>
+										<param name=PromptChar   value="_">
+									</OBJECT></comment> <script> __ws__(__NSID__);</script>
+									<img src="../../../image/icon/calender_on.gif"  align="absmiddle" id=img_to OnClick="date_return('em_end_date')" width="24" height="20" >
+							</td>
+			         </tr>          
+			      </table>
+				</td>       
+			</tr>
+      </table>
+</DIV>	
+
+<DIV id=button_1 
+         style="Z-INDEX: 111; LEFT: 838px; WIDTH: 150px; POSITION: absolute; TOP: 5px; HEIGHT: 20px;FONT-SIZE: 12px" >
+ 	<input type="button" value=" 엑셀내리기"  align="absmiddle"
+		    style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=150px; background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+		    onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		    onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'"  
+		    onclick=excel_down()>        
+</DIV>
+         
+<comment id="__NSID__"><OBJECT id=gd_1
+    style="FONT-SIZE: 12px; Z-INDEX: 100; LEFT: 2px; WIDTH:1008px; POSITION: absolute; TOP: 30px; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="false">
+	<PARAM NAME="UsingOneClick"  VALUE="1">
+	<PARAM NAME="DragDropEnable"  VALUE="true">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+     <FC> NAME='현장명' id='dept_name' width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  </C>
+     <G> Name='D-40' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req_d40'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc_d40'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point_d40' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  <G> Name='D-30' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req_d30'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc_d30'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point_d30' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  <G> Name='D-20' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req_d20'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc_d20'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point_d20' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  <G> Name='입주관리' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  <G> Name='사후관리' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req_as'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc_as'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point_as' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  <G> Name='총계' HeadBgColor='#BBE0F4'
+	     <C> NAME='접수' id='req_tot' width=55   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='미처리' id='not_proc_tot'  width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK Align=Right </C>
+	     <C> NAME='완료율%' id='proc_point_tot' width=55 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Right HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	  </G>
+	  ">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY>
+</HTML>	

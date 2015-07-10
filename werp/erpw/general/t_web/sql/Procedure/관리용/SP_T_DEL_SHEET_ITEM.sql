@@ -1,0 +1,20 @@
+Create Or Replace Procedure SP_T_DEL_SHEET_ITEM
+(
+	Ar_SHEET_CODE				Varchar2,
+	Ar_ITEM_CODE				Varchar2
+)
+Is
+Begin
+	Delete	T_SHEET_SUM_BODY
+	Where	SHEET_CODE = Ar_SHEET_CODE
+	And		ITEM_CODE = Ar_ITEM_CODE;
+
+	Delete	T_SHEET_EXPR_BODY
+	Where	SHEET_CODE = Ar_SHEET_CODE
+	And		ITEM_CODE = Ar_ITEM_CODE;
+
+	Delete	T_SHEET_EXPR_HEAD
+	Where	SHEET_CODE = Ar_SHEET_CODE
+	And		ITEM_CODE = Ar_ITEM_CODE;
+End;
+/

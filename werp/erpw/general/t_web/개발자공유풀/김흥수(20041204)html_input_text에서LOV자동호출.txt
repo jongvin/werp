@@ -1,0 +1,131 @@
+/*아래 함수에 대한 사용법*/
+			var			autopopval;
+			var			autopopval2;
+			function Initialize()
+			{
+				G_addDataSet(dsSEARCH, null, null, "", "LOV");
+				
+				//먼저 자동호출을 위한 변수 생성
+				//new C_AutoPopWhenChange(dsSEARCH,"PROJ_FIND_K",txtPROJ_NAME,"autopopval",true);
+				//C_AutoPopWhenChange(데이타셑,LOV명,LOV를 연결할 텍스트 컨트롤,이함수로 생성할 변수명,지울경우 같이 지울 것인지 여부);
+				autopopval = new C_AutoPopWhenChange(dsSEARCH,"PROJ_FIND_K",txtPROJ_NAME,"autopopval",true);
+				
+				//LOV의 인자에 상수를 연결하고 싶다면 SetArgConst를 호출한다
+				//SetArgConst(LOV인자명,상수);
+				autopopval.SetArgConst("COMPANY_CODE","100");
+				//LOV의 인자에 특정 컨트롤을 연결하고 싶다면 SetArgBind 호출한다
+				//SetArgBind(인자명,연결할 컨트롤,해당 컨트롤의 연결 속성);
+				autopopval.SetArgBind("PROJ_NAME",txtPROJ_NAME,"value");
+				//LOV의 결과를 리턴 받을 컨트롤을 설정
+				//SetReturnBind(컬럼명,연결할 컨트롤,해당 컨트롤의 연결 속성);
+				autopopval.SetReturnBind("PROJ_CODE",txtPROJ_CODE,"value");
+				autopopval.SetReturnBind("PROJ_NAME",txtPROJ_NAME,"value");
+
+				autopopval2 = new C_AutoPopWhenChange(dsSEARCH,"PROJ_FIND_K2",txtPROJ_CODE,"autopopval2",true);
+				autopopval2.SetArgConst("COMPANY_CODE","100");
+				autopopval2.SetArgBind("PROJ_CODE",txtPROJ_CODE,"value");
+				autopopval2.SetReturnBind("PROJ_CODE",txtPROJ_CODE,"value");
+				autopopval2.SetReturnBind("PROJ_NAME",txtPROJ_NAME,"value");
+
+			}
+
+
+
+
+
+
+			function	C_AutoPopWhenChange(arDataSet,asLOVName,arTextControl,varName,abIfNullClear)
+			{
+				this.Dataset = arDataSet;
+				this.LOVName = asLOVName;
+				this.VarName = varName;
+				this.TextControl = arTextControl;
+				this.OldValue = arTextControl.value;
+				this.OldOnBlur = arTextControl.onblur;
+				this.OldOnFocus = arTextControl.onfocus;
+				this.NewOnBlur = C_autoPopOnBlur;
+				this.NewOnFocus = C_autoPopOnFocus;
+				arTextControl.attachEvent ("onblur", new Function("C_autoPopOnBlur("+arTextControl.id+"," + varName + ");"));
+				arTextControl.attachEvent ("onfocus", new Function("C_autoPopOnFocus("+arTextControl.id+"," + varName + ");"));
+				this.Args = new C_Dictionary();
+				this.ArgInfo = new C_Dictionary();
+				this.ReturnInfo = new C_Dictionary();
+				this.SetArgBind = C_setArgBind;
+				this.SetReturnBind = C_setReturnBind;
+				this.SetArgConst = C_setArgConst;
+				this.NullClear = abIfNullClear;
+			}
+			function	C_AutoPopArgInfo(arControl,arControlAttribute,asArgName,abConst)
+			{
+				this.RelControl = arControl;
+				this.RelControlAttr = arControlAttribute;
+				this.ArgName = asArgName;
+				this.IsConst = abConst;
+			}
+			function	C_setArgConst(asArgName,asConst)
+			{
+				this.ArgInfo.set(asArgName,new C_AutoPopArgInfo(null,asConst,asArgName,true));
+			}
+			function	C_setArgBind(asArgName,arControl,arControlAttribute)
+			{
+				this.ArgInfo.set(asArgName,new C_AutoPopArgInfo(arControl,arControlAttribute,asArgName,false));
+			}
+			function	C_setReturnBind(asArgName,arControl,arControlAttribute)
+			{
+				this.ReturnInfo.set(asArgName,new C_AutoPopArgInfo(arControl,arControlAttribute,asArgName,false));
+			}
+			function	C_autoPopOnFocus(objtarget,objvar)
+			{
+				objvar.OldValue = objtarget.value;
+			}
+			function	C_autoPopOnBlur(objtarget,objvar)
+			{
+				var			strOldBack = objvar.OldValue;
+				var			arrKeys;
+				var			arrItems;
+				if(objtarget.value == objvar.OldValue)
+				{
+					return;
+				}
+				if(C_isNull(objtarget.value) && objvar.NullClear)
+				{
+					arrKeys = objvar.ReturnInfo.keys();
+					arrItems = objvar.ReturnInfo.items();
+					for (var i = 0; i < arrKeys.length; i++)
+					{
+						var		lrInfo = arrItems[i];
+						lrInfo.RelControl.setAttribute(lrInfo.RelControlAttr,"");
+					}
+					return;
+				}
+				arrKeys = objvar.ArgInfo.keys();
+				arrItems = objvar.ArgInfo.items();
+				objvar.Args.removeAll();
+				for (var i = 0; i < arrKeys.length; i++)
+				{
+					var		lrInfo = arrItems[i];
+					if(lrInfo.IsConst)
+					{
+						objvar.Args.set(lrInfo.ArgName,lrInfo.RelControlAttr);
+					}
+					else
+					{
+						objvar.Args.set(lrInfo.ArgName,lrInfo.RelControl.getAttribute(lrInfo.RelControlAttr));
+					}
+				}
+				var		lrRet = C_AutoLov(objvar.Dataset,objvar.LOVName,objvar.Args);
+				if(lrRet == null)
+				{
+					objtarget.value = strOldBack;
+					objtarget.focus();
+					return;
+				}
+				arrKeys = objvar.ReturnInfo.keys();
+				arrItems = objvar.ReturnInfo.items();
+				for (var i = 0; i < arrKeys.length; i++)
+				{
+					var		lrInfo = arrItems[i];
+					lrInfo.RelControl.setAttribute(lrInfo.RelControlAttr,lrRet.get(lrInfo.ArgName));
+				}
+				
+			}

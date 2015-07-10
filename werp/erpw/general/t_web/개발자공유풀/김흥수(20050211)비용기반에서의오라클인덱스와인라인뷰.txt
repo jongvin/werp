@@ -1,0 +1,372 @@
+재미있는 그러나 알아두면 아주 좋은 오라클 최적화 방식
+1) 다음과 같은 SQL이 있다. 여기서 중요한 것은 G라는 Inline View의 사용이다.
+우리가 일반적으로 Inline-View를 사용할 경우 가능한 Inline-View상태에서 기본적으로 result-set을 줄이는 것이 중요하다는 것을
+알고 있다.
+그래서 inline-view 안에 상수로 조건을 주는 경우가 많다.
+아래의 경우 28행에 "Where	Not Exists"이라고만 되어 있지만 일반적으로 "Where	sa.PROJ_CODE='K04099' And Not Exists"이라고 써서
+result-set을 줄이는 시도를 할 것이다.
+그러나 이 SQL을 실행하고 plan을 본 결과는 이런 일이 필요없음을 말해준다.
+SQL 바로 밑에 있는 실행계획을 보면 31~34 행에 나타나는 SYS_ALIAS_3 이라는 테이블이 Inline-View인데
+이 Inline-View를 조회한 SQL의 실행계획에 "SYS_ALIAS_3"."PROJ_CODE"='K04099' 이라는 조건이 걸려 있는 것을 볼 수 있다.
+이 조건은 테이블 C와 테이블 G가 PROJ_CODE로 조인되는 관계라는 것을 SQL의 45행 (45.	And		c.PROJ_CODE = G.PROJ_CODE (+)) 에서
+알게된 최적화기가 Inline-View를 구성할때 자동으로 SQL을 추가한 부분이다. 또한 Not Exists 부분도 새로 쓰여진 SQL로 되어 있음을 알 수 있다.
+
+1. 	SELECT	
+2. 		C.PROJ_CODE,
+3. 		B.PROJ_NAME,
+4. 		C.ORDER_NO,
+5. 		C.CUST_CODE,
+6. 		C.WBS_CODE,
+7. 		SF_DateToString(C.ORDER_EXPT_DT) ORDER_EXPT_DT,
+8. 		SF_DateToString(C.ORDER_DT) ORDER_DT,
+9. 		SF_DateToString(C.CONST_FDT) CONST_FDT,
+10.		SF_DateToString(C.CONST_TDT) CONST_TDT,
+11.		D.WBS_NAME,
+12.		A.CONST_NAME,
+13.		A.LAND_POSITION,
+14.		G.EXEC_TOT_AMT
+15.	FROM	TAC_PROJ_CODE A,
+16.			TCC_PROJ_CODE B,
+17.			TAC_S_ORDER_LIST C,
+18.			TAC_S_SPC_WBS D,
+19.			(
+20.				Select
+21.					sa.PROJ_CODE,
+22.					sa.ORDER_NO,
+23.					Nvl(Sum(sa.EXEC_MATR_AMT),0) + 
+24.						Nvl(Sum(sa.EXEC_LAB_AMT),0) + 
+25.						Nvl(Sum(sa.EXEC_EXP_AMT),0)  + 
+26.						Nvl(Sum(sa.EXEC_EQUIP_AMT) ,0) EXEC_TOT_AMT
+27.				From	TAC_S_ORDER_LIST_MASTER sa
+28.				Where	Not Exists
+29.				(
+30.					Select
+31.						Null
+32.					From	TAC_S_ORDER_LIST_MASTER sb
+33.					Where	sa.proj_code = sb.proj_code
+34.					And		sa.ORDER_NO = sb.order_no
+35.					And		sa.ITEM_SEQ = sb.UP_LVL
+36.				)
+37.				Group By
+38.					sa.PROJ_CODE,
+39.					sa.ORDER_NO
+40.			) G
+41.	WHERE	A.PROJ_CODE = B.PROJ_CODE
+42.	AND		A.PROJ_CODE = C.PROJ_CODE
+43.	AND		A.PROJ_CODE = 'K04099'
+44.	AND		C.WBS_CODE = D.WBS_CODE
+45.	And		c.PROJ_CODE = G.PROJ_CODE (+)
+46.	And		C.ORDER_NO = G.ORDER_NO (+)
+
+
+ 
+1.   ------------------------------------------------------------------------------------------------
+2.   | Id  | Operation                       |  Name                        | Rows  | Bytes | Cost  |
+3.   ------------------------------------------------------------------------------------------------
+4.   |   0 | SELECT STATEMENT                |                              |     2 |   370 |     9 |
+5.   |   1 |  NESTED LOOPS                   |                              |     2 |   370 |     9 |
+6.   |*  2 |   HASH JOIN OUTER               |                              |     2 |   336 |     7 |
+7.   |   3 |    NESTED LOOPS                 |                              |     2 |   270 |     4 |
+8.   |   4 |     NESTED LOOPS                |                              |     1 |    86 |     2 |
+9.   |   5 |      TABLE ACCESS BY INDEX ROWID| TCC_PROJ_CODE                |     1 |    19 |     1 |
+10.  |*  6 |       INDEX UNIQUE SCAN         | TCC_PROJ_CODE_PK             |   102 |       |       |
+11.  |   7 |      TABLE ACCESS BY INDEX ROWID| TAC_PROJ_CODE                |     1 |    67 |     1 |
+12.  |*  8 |       INDEX UNIQUE SCAN         | SYS_C004816                  |     2 |       |       |
+13.  |   9 |     TABLE ACCESS BY INDEX ROWID | TAC_S_ORDER_LIST             |     1 |    49 |     2 |
+14.  |* 10 |      INDEX RANGE SCAN           | XIF40TAC_S_ORDER_LIST        |     2 |       |       |
+15.  |  11 |    VIEW                         |                              |     1 |    33 |     2 |
+16.  |  12 |     SORT GROUP BY               |                              |     1 |    32 |     2 |
+17.  |  13 |      TABLE ACCESS BY INDEX ROWID| TAC_S_ORDER_LIST_MASTER      |     1 |    32 |     2 |
+18.  |* 14 |       INDEX RANGE SCAN          | SYS_C009013                  |     1 |       |     1 |
+19.  |* 15 |        INDEX RANGE SCAN         | XIE1TAC_S_ORDER_LIST_MASTER  |     2 |    20 |     1 |
+20.  |  16 |   TABLE ACCESS BY INDEX ROWID   | TAC_S_SPC_WBS                |    42 |   714 |     1 |
+21.  |* 17 |    INDEX UNIQUE SCAN            | SYS_C004881                  |     1 |       |       |
+22.  ------------------------------------------------------------------------------------------------
+23.   
+24.  Predicate Information (identified by operation id):
+25.  ---------------------------------------------------
+26.   
+27.     2 - access("C"."ORDER_NO"="G"."ORDER_NO"(+))
+28.     6 - access("B"."PROJ_CODE"='K04099')
+29.     8 - access("A"."PROJ_CODE"='K04099')
+30.    10 - access("C"."PROJ_CODE"='K04099')
+31.    14 - access("SYS_ALIAS_3"."PROJ_CODE"='K04099')
+32.         filter("SYS_ALIAS_3"."PROJ_CODE"='K04099' AND  NOT EXISTS (SELECT /*+ */ 0 FROM "ACMS"
+33.                ."TAC_S_ORDER_LIST_MASTER" "SB" WHERE "SB"."UP_LVL"=:B1 AND "SB"."ORDER_NO"=:B2 
+34.                 AND "SB"."PROJ_CODE"=:B3))
+35.    15 - access("SB"."PROJ_CODE"=:B1 AND "SB"."ORDER_NO"=:B2 AND "SB"."UP_LVL"=:B3)
+36.    17 - access("C"."WBS_CODE"="D"."WBS_CODE")
+37.   
+38.  Note: cpu costing is off
+
+
+만약 위의 동일한 SQL을 규칙우선으로 하면 어떤 결과가 나올까?
+
+ 
+1.   -------------------------------------------------------------------------------------------------
+2.   | Id  | Operation                        |  Name                        | Rows  | Bytes | Cost  |
+3.   -------------------------------------------------------------------------------------------------
+4.   |   0 | SELECT STATEMENT                 |                              |       |       |       |
+5.   |   1 |  MERGE JOIN OUTER                |                              |       |       |       |
+6.   |   2 |   SORT JOIN                      |                              |       |       |       |
+7.   |   3 |    NESTED LOOPS                  |                              |       |       |       |
+8.   |   4 |     NESTED LOOPS                 |                              |       |       |       |
+9.   |   5 |      NESTED LOOPS                |                              |       |       |       |
+10.  |   6 |       TABLE ACCESS BY INDEX ROWID| TAC_PROJ_CODE                |       |       |       |
+11.  |*  7 |        INDEX UNIQUE SCAN         | SYS_C004816                  |       |       |       |
+12.  |   8 |       TABLE ACCESS BY INDEX ROWID| TCC_PROJ_CODE                |       |       |       |
+13.  |*  9 |        INDEX UNIQUE SCAN         | TCC_PROJ_CODE_PK             |       |       |       |
+14.  |  10 |      TABLE ACCESS BY INDEX ROWID | TAC_S_ORDER_LIST             |       |       |       |
+15.  |* 11 |       INDEX RANGE SCAN           | XIF40TAC_S_ORDER_LIST        |       |       |       |
+16.  |  12 |     TABLE ACCESS BY INDEX ROWID  | TAC_S_SPC_WBS                |       |       |       |
+17.  |* 13 |      INDEX UNIQUE SCAN           | SYS_C004881                  |       |       |       |
+18.  |* 14 |   SORT JOIN                      |                              |       |       |       |
+19.  |  15 |    VIEW                          |                              |       |       |       |
+20.  |  16 |     SORT GROUP BY                |                              |       |       |       |
+21.  |* 17 |      FILTER                      |                              |       |       |       |
+22.  |  18 |       TABLE ACCESS FULL          | TAC_S_ORDER_LIST_MASTER      |       |       |       |
+23.  |* 19 |       INDEX RANGE SCAN           | XIE1TAC_S_ORDER_LIST_MASTER  |       |       |       |
+24.  -------------------------------------------------------------------------------------------------
+25.   
+26.  Predicate Information (identified by operation id):
+27.  ---------------------------------------------------
+28.   
+29.     7 - access("A"."PROJ_CODE"='K04099')
+30.     9 - access("A"."PROJ_CODE"="B"."PROJ_CODE")
+31.      11 - access("A"."PROJ_CODE"="C"."PROJ_CODE")
+32.      13 - access("C"."WBS_CODE"="D"."WBS_CODE")
+33.      14 - access("C"."PROJ_CODE"="G"."PROJ_CODE"(+))
+34.           filter("C"."ORDER_NO"="G"."ORDER_NO"(+) AND "C"."PROJ_CODE"="G"."PROJ_CODE"(+))
+35.      17 - filter( NOT EXISTS (SELECT 0 FROM "ACMS"."TAC_S_ORDER_LIST_MASTER" "SB" WHERE "SB"."UP_
+36.                  LVL"=:B1 AND "SB"."ORDER_NO"=:B2 AND "SB"."PROJ_CODE"=:B3))
+37.      19 - access("SB"."PROJ_CODE"=:B1 AND "SB"."ORDER_NO"=:B2 AND "SB"."UP_LVL"=:B3)
+38.     
+39.    Note: rule based optimization
+
+
+위의 실행계획은 규칙우선인 경우인데 22행을 보면 TAC_S_ORDER_LIST_MASTER을 전체 스캔하는 것을 볼 수 있다.
+
+그럼 SQL을 바꿔서
+아래와 같은 SQL(주의깊게 볼 부분은 28행이다(28.				Where	sa.PROJ_CODE = 'K04099'))로
+바꾸어 질의 실행계획을 보면
+
+1. 	SELECT	/*+RULE*/
+2. 		C.PROJ_CODE,
+3. 		B.PROJ_NAME,
+4. 		C.ORDER_NO,
+5. 		C.CUST_CODE,
+6. 		C.WBS_CODE,
+7. 		SF_DateToString(C.ORDER_EXPT_DT) ORDER_EXPT_DT,
+8. 		SF_DateToString(C.ORDER_DT) ORDER_DT,
+9. 		SF_DateToString(C.CONST_FDT) CONST_FDT,
+10.		SF_DateToString(C.CONST_TDT) CONST_TDT,
+11.		D.WBS_NAME,
+12.		A.CONST_NAME,
+13.		A.LAND_POSITION,
+14.		G.EXEC_TOT_AMT
+15.	FROM	TAC_PROJ_CODE A,
+16.			TCC_PROJ_CODE B,
+17.			TAC_S_ORDER_LIST C,
+18.			TAC_S_SPC_WBS D,
+19.			(
+20.				Select
+21.					sa.PROJ_CODE,
+22.					sa.ORDER_NO,
+23.					Nvl(Sum(sa.EXEC_MATR_AMT),0) + 
+24.						Nvl(Sum(sa.EXEC_LAB_AMT),0) + 
+25.						Nvl(Sum(sa.EXEC_EXP_AMT),0)  + 
+26.						Nvl(Sum(sa.EXEC_EQUIP_AMT) ,0) EXEC_TOT_AMT
+27.				From	TAC_S_ORDER_LIST_MASTER sa
+28.				Where	sa.PROJ_CODE = 'K04099'
+29.				And		Not Exists
+30.				(
+31.					Select
+32.						Null
+33.					From	TAC_S_ORDER_LIST_MASTER sb
+34.					Where	sa.proj_code = sb.proj_code
+35.					And		sa.ORDER_NO = sb.order_no
+36.					And		sa.ITEM_SEQ = sb.UP_LVL
+37.				)
+38.				Group By
+39.					sa.PROJ_CODE,
+40.					sa.ORDER_NO
+41.			) G
+42.	WHERE	A.PROJ_CODE = B.PROJ_CODE
+43.	AND		A.PROJ_CODE = C.PROJ_CODE
+44.	AND		A.PROJ_CODE = 'K04099'
+45.	AND		C.WBS_CODE = D.WBS_CODE
+46.	And		c.PROJ_CODE = G.PROJ_CODE (+)
+47.	And		C.ORDER_NO = G.ORDER_NO (+)
+
+
+ 
+1.  -------------------------------------------------------------------------------------------------
+2.  | Id  | Operation                        |  Name                        | Rows  | Bytes | Cost  |
+3.  -------------------------------------------------------------------------------------------------
+4.  |   0 | SELECT STATEMENT                 |                              |       |       |       |
+5.  |   1 |  MERGE JOIN OUTER                |                              |       |       |       |
+6.  |   2 |   SORT JOIN                      |                              |       |       |       |
+7.  |   3 |    NESTED LOOPS                  |                              |       |       |       |
+8.  |   4 |     NESTED LOOPS                 |                              |       |       |       |
+9.  |   5 |      NESTED LOOPS                |                              |       |       |       |
+10. |   6 |       TABLE ACCESS BY INDEX ROWID| TAC_PROJ_CODE                |       |       |       |
+11. |*  7 |        INDEX UNIQUE SCAN         | SYS_C004816                  |       |       |       |
+12. |   8 |       TABLE ACCESS BY INDEX ROWID| TCC_PROJ_CODE                |       |       |       |
+13. |*  9 |        INDEX UNIQUE SCAN         | TCC_PROJ_CODE_PK             |       |       |       |
+14. |  10 |      TABLE ACCESS BY INDEX ROWID | TAC_S_ORDER_LIST             |       |       |       |
+15. |* 11 |       INDEX RANGE SCAN           | XIF40TAC_S_ORDER_LIST        |       |       |       |
+16. |  12 |     TABLE ACCESS BY INDEX ROWID  | TAC_S_SPC_WBS                |       |       |       |
+17. |* 13 |      INDEX UNIQUE SCAN           | SYS_C004881                  |       |       |       |
+18. |* 14 |   SORT JOIN                      |                              |       |       |       |
+19. |  15 |    VIEW                          |                              |       |       |       |
+20. |  16 |     SORT GROUP BY                |                              |       |       |       |
+21. |* 17 |      FILTER                      |                              |       |       |       |
+22. |  18 |       TABLE ACCESS BY INDEX ROWID| TAC_S_ORDER_LIST_MASTER      |       |       |       |
+23. |* 19 |        INDEX RANGE SCAN          | XIE1TAC_S_ORDER_LIST_MASTER  |       |       |       |
+24. |* 20 |       INDEX RANGE SCAN           | XIE1TAC_S_ORDER_LIST_MASTER  |       |       |       |
+25. -------------------------------------------------------------------------------------------------
+26.  
+27. Predicate Information (identified by operation id):
+28. ---------------------------------------------------
+29.  
+30.    7 - access("A"."PROJ_CODE"='K04099')
+31.    9 - access("A"."PROJ_CODE"="B"."PROJ_CODE")
+32.   11 - access("A"."PROJ_CODE"="C"."PROJ_CODE")
+33.   13 - access("C"."WBS_CODE"="D"."WBS_CODE")
+34.   14 - access("C"."PROJ_CODE"="G"."PROJ_CODE"(+))
+35.        filter("C"."ORDER_NO"="G"."ORDER_NO"(+) AND "C"."PROJ_CODE"="G"."PROJ_CODE"(+))
+36.   17 - filter( NOT EXISTS (SELECT 0 FROM "ACMS"."TAC_S_ORDER_LIST_MASTER" "SB" WHERE "SB"."UP_
+37.               LVL"=:B1 AND "SB"."ORDER_NO"=:B2 AND "SB"."PROJ_CODE"=:B3))
+38.   19 - access("SYS_ALIAS_3"."PROJ_CODE"='K04099')
+39.   20 - access("SB"."PROJ_CODE"=:B1 AND "SB"."ORDER_NO"=:B2 AND "SB"."UP_LVL"=:B3)
+40.  
+41. Note: rule based optimization
+
+23행을 주의깊게보면 전체스캔이 인덱스 스캔으로 바뀐걸 알 수 있다.
+
+결론적으로 말해서 
+비용기반 최적화기를 사용하면 Inline-View에서 Inline-View바깥쪽에서 설정된 조건관계를 역으로 추적하여 Inline-View내에도 적용할 수 있다는
+것이다.....
+우리가 일부러 적어주지 않아도 오라클이 똑똑하게 알아서 해준다는....
+음... 이거 상당히 고무적인 것이다.....
+단 문제는 항상 이렇다고 확신할 수 있느냐 인데....
+
+그리고 하나더 추가해서 인덱스에 대해....
+위의 경우를 보면 단지 "Where	sa.PROJ_CODE = 'K04099'" 이러한 조건을 추가했는데 XIE1TAC_S_ORDER_LIST_MASTER라는 index를 사용한 것을
+볼 수 있다.
+왜일까?
+이 테이블(TAC_S_ORDER_LIST_MASTER)에는 PROJ_CODE컬럼을 선두컬럼으로 하는 index가 두개가 더 있다.
+아래의 SQL의 결과가 그 사실을 보여준다.
+
+select index_name from user_ind_columns
+where table_name = 'TAC_S_ORDER_LIST_MASTER'
+and column_name = 'PROJ_CODE'
+and column_position = 1
+/
+INDEX_NAME
+------------------------------
+XIF9TAC_S_ORDER_LIST_MASTER
+SYS_C009013
+XIE1TAC_S_ORDER_LIST_MASTER
+
+
+그럼 아래의 SQL로 이 인덱스들이 어떤 컬럼으로 구성되어 있는지 알아보자
+
+select index_name,column_name
+from user_ind_columns
+where table_name = 'TAC_S_ORDER_LIST_MASTER'
+and index_name in ('XIF9TAC_S_ORDER_LIST_MASTER','SYS_C009013','XIE1TAC_S_ORDER_LIST_MASTER')
+order by index_name, column_position
+/
+
+INDEX_NAME                     COLUMN_NAME
+------------------------------ ---------------------------------------------------------------------
+SYS_C009013                    PROJ_CODE
+SYS_C009013                    ORDER_NO
+SYS_C009013                    ITEM_SEQ
+XIE1TAC_S_ORDER_LIST_MASTER    PROJ_CODE
+XIE1TAC_S_ORDER_LIST_MASTER    ORDER_NO
+XIE1TAC_S_ORDER_LIST_MASTER    UP_LVL
+XIF9TAC_S_ORDER_LIST_MASTER    PROJ_CODE
+XIF9TAC_S_ORDER_LIST_MASTER    ORDER_NO
+
+세 index 모두 proj_code,order_no를 포함하며 SYS_C009013는 기본키 인덱스이며 ITEM_SEQ를 가지고 있고 
+XIE1TAC_S_ORDER_LIST_MASTER 는 유일하지 않으며 UP_LVL을,
+XIF9TAC_S_ORDER_LIST_MASTER 는 단지 두컬럼만 가지고 있다.
+그럼 왜? XIE1TAC_S_ORDER_LIST_MASTER를 썼을까?
+
+문제를 단순화하기 위해서
+SQL을 다음과 같이 바꿔보자
+
+Select
+	sa.PROJ_CODE,
+	sa.ORDER_NO,
+	Nvl(Sum(sa.EXEC_MATR_AMT),0) + 
+		Nvl(Sum(sa.EXEC_LAB_AMT),0) + 
+		Nvl(Sum(sa.EXEC_EXP_AMT),0)  + 
+		Nvl(Sum(sa.EXEC_EQUIP_AMT) ,0) EXEC_TOT_AMT
+From	TAC_S_ORDER_LIST_MASTER sa
+Where	sa.PROJ_CODE = 'K04099'
+Group By sa.PROJ_CODE,
+	sa.ORDER_NO
+
+이 SQL의 비용기반 최적화기의 질의 실행계획은 다음과 같다.
+ 
+-----------------------------------------------------------------------------------------
+| Id  | Operation                    |  Name                    | Rows  | Bytes | Cost  |
+-----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT             |                          |     1 |    29 |     3 |
+|   1 |  SORT GROUP BY NOSORT        |                          |     1 |    29 |     3 |
+|   2 |   TABLE ACCESS BY INDEX ROWID| TAC_S_ORDER_LIST_MASTER  |     3 |    87 |     3 |
+|*  3 |    INDEX RANGE SCAN          | SYS_C009013              |     3 |       |     1 |
+-----------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   3 - access("SA"."PROJ_CODE"='K04099')
+       filter("SA"."PROJ_CODE"='K04099')
+ 
+Note: cpu costing is off
+
+이 계획을 보면 SYS_C009013 라는 기본키를 사용하고 있다.
+
+그러나 규칙기반으로 실행하면
+
+ 
+---------------------------------------------------------------------------------------------
+| Id  | Operation                    |  Name                        | Rows  | Bytes | Cost  |
+---------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT             |                              |       |       |       |
+|   1 |  SORT GROUP BY               |                              |       |       |       |
+|   2 |   TABLE ACCESS BY INDEX ROWID| TAC_S_ORDER_LIST_MASTER      |       |       |       |
+|*  3 |    INDEX RANGE SCAN          | XIE1TAC_S_ORDER_LIST_MASTER  |       |       |       |
+---------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   3 - access("SA"."PROJ_CODE"='K04099')
+ 
+Note: rule based optimization
+
+이런 결과를 얻는다.
+
+왜일까?
+왜 규칙기반에서는 기본키보다 XIE1TAC_S_ORDER_LIST_MASTER가 더 나은 인덱스라고 판단을 할까?
+
+언젠가 읽어본 오라클의 기초문서에서 인덱스가 사용되는(선택되는) 기준이
+1. 단일컬럼 기본키
+2. 단일컬럼 유일키
+3. 복합컬럼의 선두컬럼이 걸린경우 기본키
+.
+.
+.
+.
+등등의 순서로 인덱스가 사용된다로 했는데.....
+그 책이 틀렸나보다.
+음....
+이것과 관련되어 궁금한 점이 생긴다면....
+책을 찾아보고 나에게 말해주길.....
+물론 나는 추정되는 바가 있다.....
+나와 답을 마춰보자

@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ************************************************************** -->
+<!-- 1. 프로그램 id   : e_safety_cost_report_1h.html				-->
+<!-- 2. 유형(시나리오): 보고서										-->
+<!-- 3. 기 능 정 의   :                   	                        -->
+<!-- 4. 변 경 이 력   : 황보은영 작성								-->
+<!-- 5. 관련프로그램  :												-->
+<!-- 6. 특 기 사 항   :												-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var gs_name = top.frames['security'].gs_name.value
+var is_user_dept = readCookie("@short_name@")
+
+var is_accident_date = ""
+var is_yymm = ""
+var is_process_code = "01"
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{ 
+   is_yymm = em_ipdate.text + "01"
+   var arg_temp
+   arg_temp ="const_rpt/e_web/01r/"        // 보고서 디렉토리
+   arg_temp = arg_temp + "e_safety_cost_report"    // 보고서명 
+   
+   arg_temp = arg_temp + "&RptParams=" + is_yymm +         // 날짜 포맷에 맞춰야함. "01"포함 현재는 빠졌음.
+                         "&RptParams=" + is_process_code +
+   							 "&RptParams=" + gs_name +
+   							 "&RptParams=" + is_user_dept
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{  
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+}
+
+//------------------------------------------------------------------------
+function process_code_check(process)                  // process_code
+//------------------------------------------------------------------------ 
+{
+	is_process_code = process
+} 
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	
+	ls_temp = top.frames['security'].gs_sysdate.value  // 시스템 년월 선언.
+    ls_yymm = ls_temp.substr(0,4) + ls_temp.substr(5,2)
+    
+    em_ipdate.text = ls_yymm
+   
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+if(row > 0) 
+    btnquery_prt_onclick()
+
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_accident_date
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+    
+<DIV id=print_condition 
+      style="Z-INDEX: 107; LEFT: 380px; WIDTH: 250px; POSITION: absolute; TOP: 100px; HEIGHT: 100px">
+	<table width="100%" height="100%"  BORDER="3"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white"> 
+            <td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">공사진행</div>
+            </td>
+            <td align="center">
+            	<input type="radio" name="process_code" onclick="process_code_check('01')" checked>진행
+            	<input type="radio" name="process_code" onclick="process_code_check('02')">준공
+            	<input type="radio" name="process_code" onclick="process_code_check('03')">마감
+			</td>
+			         
+		 </tr>
+         <tr BGCOLOR="white"> 
+            <td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+            	<div align="right">정산년월</div>
+			</td>
+			<td align="center">
+				<table border="0" height="100%" cellpadding="0" cellspacing="0" style="font: 12px">
+					<tr>
+						<td>		
+							<comment id="__NSID__"><OBJECT id=em_ipdate style="WIDTH: 65px; HEIGHT: 20px; FONT-SIZE: 13px" size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+								<param name=Format value="YYYY-MM">
+					            <param name=ReadOnlyBackColor  value=silver>
+					            <param name=Alignment          value=1>
+					            <param name=Numeric            value=false>
+								<param name=PromptChar            value="_">
+							</OBJECT></comment> <script> __ws__(__NSID__);</script>
+						</td>
+						<td>
+							<input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yymm(); 
+	                                    if(!is_null(result)){ em_ipdate.text = result.substr(0,6); btnquery_onclick();} ">
+						</td>
+					</tr>
+				</table>
+         </td>
+        </tr>
+    </table>
+</DIV>
+
+</BODY></HTML>

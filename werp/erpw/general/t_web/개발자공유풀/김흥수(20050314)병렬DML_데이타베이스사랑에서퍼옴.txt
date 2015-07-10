@@ -1,0 +1,177 @@
+parallel_max_servers 라는 파라미터가 최대로 뜰 수 있는 parallel slave process 의 수를 결정합니다.
+
+ 
+
+만약 parallel_max_servers 를 14로 해놨는데...
+
+ 
+
+A라는 유저가 parallel slave를 8개를 사용하면 14-8=6개가 남습니다.
+
+ 
+
+이 때 B라는 유저가 동시에 parallel 을 8을 주고 돌리면... 모자라게 되므로... B유저가 parallel 로 실행한 SQL은 병렬로 도는 것이 아니라...
+
+병렬을 주지 않고 그냥 돌린 것과 마찬가지로 serial 하게 돌게 됩니다.
+
+ 
+
+parallel_max_servers 의 수치는 CPU의 파워와 병렬로 돌리는 작업의 성격에 따라서 적절히 주어야 합니다. (과부하가 되지 않을 정도로)
+
+이는 OS의 vmstat 나 top등으로 확인이 가능할겁니다.
+
+어떤 DBA들의 경우 과부하 상황을 우려하여 강제적으로 parallel_max_servers를 아주 낮게 설정하거나 개발자에게 아예 PQ 기능을 사용하지 못하도록 하기도 하는데... 이는 아주 잘못된 정책입니다. DBA는 개발자가 적절히 사용하도록 감독하고 적절히 가이드를 해주어야하는 안내자이지 그들을 시스템의 리소스를 먹는 적으로 간주해서는 안됩니다. 바로 옆에 포크레인을 사용하면 10분으로 끝날일을 삽으로 몇시간씩 노동을 하는게 잘한 일은 아닐겁니다. 포크레인은 놀고 있는데 DBA가 포크레인이 고장날까봐 걱정되서 박물관에 장식품처럼 전시만 해놓는다면 정말 아깝지요?
+
+ 
+
+그리고 병렬 상태를 모니터링하는 방법은 토드의 세션 브라우져에서도 일부 가능은 하지만 기능이 그리 만족스럽지 않습니다.
+
+저의 경우 이를 위해 아래 쿼리를 만들어놨으므로 사용해보시기 바랍니다.
+
+ 
+
+ 
+
+set linesize 160
+set pagesize 100
+set feedback off
+
+column inst_id   format 9
+column "Username"  format a8 
+column "QC SID"   format a3  heading "QC|SID"
+column SID     format 999
+column "QC/Slave"  format a9 
+column "Req DOP"  format 999 heading "Req|DOP"
+column "Act DOP"  format 999 heading "Act|DOP"
+column "Slave Set" format 999  heading "Slave|Set" 
+column "LOGON_TIME" format a8  heading "Logon|Time"
+column "status"   format a8  heading "Status"   trunc
+column "command"  format a10 heading "Command"   trunc
+column SCHEMANAME  format a10 heading "Schemaname" trunc
+column OSUSER    format a6  heading "OSUser"   trunc
+column PROCESS   format a10 heading "Process"
+column MACHINE   format a15 heading "Machine"   trunc
+column TERMINAL   format a10 heading "Terminal"  trunc
+column PROGRAM   format a25 heading "Program"   trunc
+column MODULE    format a25 heading "Module"   trunc
+
+ttitle center "Simple Query to map Query Coordinators to Query slaves" skip 2
+
+select 
+ s.INST_ID,
+ decode(px.qcinst_id,NULL,username,' - '||lower(substr(s.program,length(s.program)-4,4) ) ) "Username", 
+ decode(px.qcinst_id,NULL, 'QC', '(Slave)') "QC/Slave" , 
+ px.server_set "Slave Set", 
+ s.sid "SID", 
+ decode(px.qcinst_id, NULL ,to_char(s.sid) ,px.qcsid) "QC SID", 
+ px.req_degree "Req DOP", 
+ px.degree   "Act DOP",
+ to_char(s.LOGON_TIME,'HH24:MI:SS') "LOGON_TIME",
+ s.status,
+ decode(s.command, 1,'CRE TAB',
+ 2,'INSERT',
+ 3,'SELECT',
+ 4,'CRE CLUSTER',
+ 5,'ALT CLUSTER',
+ 6,'UPDATE',
+ 7,'DELETE',
+ 8,'DRP CLUSTER',
+ 9,'CRE INDEX',
+ 10,'DROP INDEX',
+ 11,'ALT INDEX',
+ 12,'DROP TABLE',
+ 13,'CRE SEQ',
+ 14,'ALT SEQ',
+ 15,'ALT TABLE',
+ 16,'DROP SEQ',
+ 17,'GRANT',
+ 18,'REVOKE',
+ 19,'CRE SYN',
+ 20,'DROP SYN',
+ 21,'CRE VIEW',
+ 22,'DROP VIEW',
+ 23,'VAL INDEX',
+ 24,'CRE PROC',
+ 25,'ALT PROC',
+ 26,'LOCK TABLE',
+ 28,'RENAME',
+ 29,'COMMENT',
+ 30,'AUDIT',
+ 31,'NOAUDIT',
+ 32,'CRE DBLINK',
+ 33,'DROP DBLINK',
+ 34,'CRE DB',
+ 35,'ALTER DB',
+ 36,'CRE RBS',
+ 37,'ALT RBS',
+ 38,'DROP RBS',
+ 39,'CRE TBLSPC',
+ 40,'ALT TBLSPC',
+ 41,'DROP TBLSPC',
+ 42,'ALT SESSION',
+ 43,'ALT USER',
+ 44,'COMMIT',
+ 45,'ROLLBACK',
+ 46,'SAVEPOINT',
+ 47,'PL/SQL EXEC',
+ 48,'SET XACTN',
+ 49,'SWITCH LOG',
+ 50,'EXPLAIN',
+ 51,'CRE USER',
+ 52,'CRE ROLE',
+ 53,'DROP USER',
+ 54,'DROP ROLE',
+ 55,'SET ROLE',
+ 56,'CRE SCHEMA',
+ 57,'CRE CTLFILE',
+ 58,'ALTER TRACING',
+ 59,'CRE TRIGGER',
+ 60,'ALT TRIGGER',
+ 61,'DRP TRIGGER',
+ 62,'ANALYZE TAB',
+ 63,'ANALYZE IX',
+ 64,'ANALYZE CLUS',
+ 65,'CRE PROFILE',
+ 66,'DRP PROFILE',
+ 67,'ALT PROFILE',
+ 68,'DRP PROC',
+ 69,'DRP PROC',
+ 70,'ALT RESOURCE',
+ 71,'CRE SNPLOG',
+ 72,'ALT SNPLOG',
+ 73,'DROP SNPLOG',
+ 74,'CREATE SNAP',
+ 75,'ALT SNAP',
+ 76,'DROP SNAP',
+ 79,'ALTER ROLE',
+ 79,'ALTER ROLE',
+ 85,'TRUNC TAB',
+ 86,'TRUNC CLUST',
+ 88,'ALT VIEW',
+ 91,'CRE FUNC',
+ 92,'ALT FUNC',
+ 93,'DROP FUNC',
+ 94,'CRE PKG',
+ 95,'ALT PKG',
+ 96,'DROP PKG',
+ 97,'CRE PKG BODY',
+ 98,'ALT PKG BODY',
+ 99,'DRP PKG BODY',
+ to_char(s.command)) "Command",
+ s.schemaname,
+ s.OSUSER,
+ s.PROCESS,
+ s.MACHINE,
+ --s.TERMINAL,
+ s.PROGRAM
+ --s.MODULE 
+from 
+ gv$px_session px, 
+ gv$session s 
+where 
+ px.sid=s.sid (+) 
+ and 
+ px.serial#=s.serial# 
+order by 6 , 2 desc;
+
+

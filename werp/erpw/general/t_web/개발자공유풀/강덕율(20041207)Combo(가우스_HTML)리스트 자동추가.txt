@@ -1,0 +1,71 @@
+- 가우스 그리드의 Combo 및 HTML의 SELECT 항목을 자동 생성 -
+
+1. 먼저 프린젠테이션 페이지 상단의 서버 코딩에서 SQL을 실행한다
+<%
+	CITData lrReturnData = null;
+	String strOut = "";
+	String strSql = "";
+	
+	String strBuyTag = "";
+
+	try
+	{
+		CITCommon.initPage(request, response, session);
+		
+		CITData lrArgData = new CITData();
+    	
+		try
+		{
+			strSql  = " Select CODE_LIST_ID as CODE, \n";
+			strSql += "        CODE_LIST_NAME as NAME \n";			
+			strSql += " From   VCC_CODE_LIST \n";
+			strSql += " Where  CODE_GROUP_ID = 'ACM_BUY_TAG' \n";
+			strSql += " And    USE_TAG = 'T' \n";
+			strSql += " Order by SEQ \n";
+			
+			lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+			
+			// 중요한 부분
+			strBuyTag = CITCommon.toGauceComboString(lrReturnData, "CODE", "NAME"); <- 가우스 그리드 Combo인 경우 사용
+			strBuyTag = CITCommon.toHtmlComboString(lrReturnData, "CODE", "NAME"); <- HTML Select인 경우 사용
+			strBuyTag = CITCommon.toScriptComboString(lrReturnData, "cboBuyTag", "CODE", "NAME"); <- HTML Select을 자바스크립트로 설정할 경우 사용
+		}
+		catch (Exception ex)
+		{
+			throw new Exception("USER-900001:공통코드의 구매구분 Select 오류 -> " + ex.getMessage());
+		}
+	}
+	catch (Exception ex)
+	{
+		throw new Exception("SYS-100001:페이지 초기화 오류 -> " + ex.getMessage());
+	}
+%>
+
+2. 가우스의 Combo의 경우(가우스 그리드의 설정부분)
+<OBJECT id="gridMAIN" WIDTH="100%" HEIGHT="100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSelect" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE=" 
+		<C> Name=자재코드 ID=MATR_CODE Width=70 
+		</C> 
+		<C> Name=자재명 ID=MATR_NAME Width=210 
+		</C> 
+		<FC> Name=규격 ID=STD Width=100 
+		</FC> 
+		<C> Name=단위 ID=UNIT EditStyle='Combo' Data='<%=strBuyTag%>' Width=70 <-- 이부분 중요
+		</C>
+		<C> Name=표준단가 ID=STD_COST Width=70 
+		</C> 
+		">
+	<PARAM NAME="DataID" VALUE="dsMAIN">
+</OBJECT>
+
+3. HTML Select인 경우
+<select id="cboBuyTag"  style="WIDTH: 100px" class="input_listbox_default" ><%=strBuyTag%></select>
+
+4. HTML Select을 자바스크립트로 설정할 경우(Initialize 함수에 추가)
+function Initialize()
+{
+	<%=strBuyTag%>
+}

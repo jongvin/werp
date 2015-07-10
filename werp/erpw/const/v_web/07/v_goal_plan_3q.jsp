@@ -1,0 +1,32 @@
+<%@ page session="true" import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%><%@
+ include file="../../../comm_function/conn_q_pool.jsp"%><%
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+ 
+     String arg_year = req.getParameter("arg_year");
+     String arg_quarter_year = req.getParameter("arg_quarter_year");
+ //---------------------------------------------------------- 
+     dSet.addDataColumn(new GauceDataColumn("DEPT_CODE",GauceDataColumn.TB_STRING,7));
+     dSet.addDataColumn(new GauceDataColumn("YEAR",GauceDataColumn.TB_STRING,10));
+	  dSet.addDataColumn(new GauceDataColumn("QUARTER_YEAR",GauceDataColumn.TB_STRING,1));
+     dSet.addDataColumn(new GauceDataColumn("LONG_NAME",GauceDataColumn.TB_STRING,50));
+     dSet.addDataColumn(new GauceDataColumn("FROM_YYMMDD",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("TO_YYMMDD",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("GOAL",GauceDataColumn.TB_STRING,500));
+     dSet.addDataColumn(new GauceDataColumn("ADMIT",GauceDataColumn.TB_STRING,1));
+
+	 String query =" SELECT																				" +
+						"   DEPT_CODE    ,																" +
+						"   (SELECT LONG_NAME FROM Z_CODE_DEPT WHERE DEPT_CODE = V_GOAL_PLAN_MASTER.DEPT_CODE) LONG_NAME , " +
+						"   QUARTER_YEAR	,																" +
+						"   TO_CHAR(YEAR,'YYYY.MM.DD') YEAR,                              " +
+						"   TO_CHAR(FROM_YYMMDD,'YYYY.MM.DD') FROM_YYMMDD ,					" +
+						"   TO_CHAR(TO_YYMMDD,'YYYY.MM.DD') TO_YYMMDD ,							" +
+						"   GOAL         ,																" +
+						"   ADMIT																			" +
+						" FROM																				" +
+						"  V_GOAL_PLAN_MASTER															" +
+						" WHERE TO_CHAR(YEAR,'YYYY.MM.DD') = '"+arg_year+"' AND	         " +
+						"		  quarter_year = '"+arg_quarter_year+"'							" +
+						" ORDER BY LONG_NAME																" ;
+  
+%><%@ include file="../../../comm_function/conn_q_end.jsp"%>

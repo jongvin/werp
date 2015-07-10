@@ -1,0 +1,397 @@
+<!--#include file="test.html" -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : login.html (그리드가 하나일경우)								-->
+<!-- 2. 유형(시나리오): user id check														-->
+<!-- 3. 기 능 정 의   : login check      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->  
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<TITLE>공사관리시스템 </TITLE>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<META content="Pragma" CONTENT="No-Cache">
+<LINK rel="stylesheet" type="text/css" href="erpw.css">
+<SCRIPT SRC="erpw/comm_function/comm_function.js"></SCRIPT> 
+ 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript> 
+
+var gs_home = '/werp/erpw' 
+var is_user_id
+var is_ds_1_addr =  'm_authority_user_login_q.jsp?arg_user_id='
+var is_ds_1_sso_addr =  gs_home + '/zmis/' + 'z_authority_user_input_chk_1q.jsp?arg_user_id='
+var is_ds_sso_addr =  gs_home + '/zmis/' + 'z_sso_userid_1q.jsp?arg_userid='
+var is_ds_emono_addr = gs_home + '/zmis/' + 'z_pers_master_dept_find_1q.jsp?arg_emp_no='
+var is_ds_emono_w_addr = gs_home + '/zmis/' + 'z_pers_master_w_dept_find_1q.jsp?arg_emp_no='
+var is_open_type = "1"
+var is_userid
+var is_cjuserid
+ </script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">             
+//----------------------------------------------------------------
+function bt_confirm_onclick()
+//----------------------------------------------------------------
+{	
+   clearCookie()
+  is_user_id = tb_user_id.value
+  ds_1.DataID= is_ds_1_addr + is_user_id + '&arg_password=' + tb_password.value
+  ds_1.SyncLoad = true;
+  ds_1.reset()
+  //alert(ds_1.namevalue(1,'password'))
+  if  (ds_1.CountRow == 0){
+     //login_status('1')
+     alert("USER-ID 혹은 password가 틀렸습니다 (귀하의 ip address가 기록되었습니다)")
+     return
+  } 
+     is_userid = ds_1.NameValue(1,'user_id')
+     is_usersabun = ds_1.NameValue(1,'empno')
+     is_username = ds_1.NameValue(1,'name')
+     is_userpassword = ds_1.NameValue(1,'password')
+     is_userdeptid = ds_1.NameValue(1,'deptcode')
+     is_short_name = ds_1.NameValue(1,'short_name')
+
+   f_real_ok()
+   
+}
+//----------------------------------------------------------------
+function f_real_ok()
+//----------------------------------------------------------------
+{
+   makeCookie("@user_id@",is_userid) 
+   makeCookie("@password@",is_userpassword)  
+   makeCookie("@empno@",is_usersabun)
+   makeCookie("@name@",is_username)
+   makeCookie("@deptcode@",is_userdeptid)
+   makeCookie("@short_name@",is_short_name)
+   makeCookie("@gs_home@",gs_home)
+   ls_bb = readCookie("JSESSIONID")
+   makeCookie("@JFLAG@",ls_bb)
+   makeCookie("@cjworldemail@", is_cjuserid)
+
+
+
+//old             document.links[0].href='javascript:window.open("http://192.168.1.3erpw/const/c_web/picture/cantavil.wmv")'
+//new             document.links[0].href="http://192.168.1.3erpw/const/c_web/picture/cantavil.wmv"
+//            location.href("main.html")
+   ll_height = screen.availHeight  - 35
+   ll_width  = screen.availWidth  - 12
+//		window.open("main.html","","height="+screen.availHeight+",width="+screen.availWidth+",left=0,top=0,scrollbars=1, resizable=0, status=1"); 
+  if (is_open_type == "1")
+	   window.open("/werp/erpw/login/main.html","","height="+ll_height+",width="+ll_width+",left=0,top=0,scrollbars=1, resizable=1, status=0"); 
+  else 
+   window.open("/werp/erpw/login/main.html","","left=0,top=0,scrollbars=1, resizable=1, status=0")
+ is_open_type = 1  
+	
+/*
+	if (!(is_userid == 'err' || is_userid == null || is_userid.length == 0 || is_userid == 'undefined' )) {
+       self.opener=self;
+       self.close();
+	 }
+*/
+
+  self.opener=self;
+  self.close();
+  
+}
+//----------------------------------------------------------------
+function click_event(e)
+//----------------------------------------------------------------
+{
+ if (e.keyCode == 113) {
+    is_open_type = 2
+    bt_confirm_onclick()
+     
+ }   
+}
+//----------------------------------------------------------
+function inkeyDown()  
+//----------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_confirm_onclick()
+	} 
+}
+//----------------------------------------------------------------
+function login_status(log_status)
+//----------------------------------------------------------------
+{
+//    login status    기록 시작.......................
+      ds_ip.DataID = gs_home+'/login/login_ipaddr_login.jsp'           // ip addr 얻기.
+      ds_ip.SyncLoad = true
+      ds_ip.reset()                              // "ip_addr" 방에 ip주소가 있슴. 
+      ds_select.DataID = gs_home+'/login/z_sysdate_mi_seq_1q.jsp'           // system date
+      ds_select.SyncLoad = true
+      ds_select.reset()                              // 
+      ds_login_status.DataID = gs_home+'/login/m_login_status_1q.jsp?arg_seq_key=0'
+      ds_login_status.SyncLoad=true
+      ds_login_status.reset() 
+      ds_login_status.AddRow()
+      
+      ds_login_status.NameValue(ds_login_status.RowPosition,"ip_address") = ds_ip.NameValue(1,"ip_addr")
+      ds_login_status.NameValue(ds_login_status.RowPosition,"start_time") = ds_select.NameValue(1,"sysdate1")
+      ds_seq.DataID = gs_home + '/login/m_unq_num_1q.jsp'
+      ds_seq.SyncLoad=true;             // seq no 구하기
+      ds_seq.reset()
+      
+      ds_login_status.NameValue(ds_login_status.RowPosition,"seq_key") = ds_seq.NameValue(1,"nextval") 
+      ds_login_status.NameValue(ds_login_status.RowPosition,"log_tag") = '1'
+      ds_login_status.NameValue(ds_login_status.RowPosition,"user_id") = tb_user_id.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"empno") = tb_user_id.value     
+      ds_login_status.NameValue(ds_login_status.RowPosition,"name") = tb_password.value  
+      if  (log_status == '1') 
+          ds_login_status.NameValue(ds_login_status.RowPosition,"remarks") = 'user-id/password 틀림 '
+      else
+          ds_login_status.NameValue(ds_login_status.RowPosition,"remarks") = 'password가 틀림(name에 기록된) '
+          
+      if (ds_login_status.IsUpdated) {
+         tr_1.Action = gs_home + '/login/m_login_status_1tr.jsp'
+         tr_1.Post()
+      }
+}
+//----------------------------------------------------------------
+function f_sso_chk()
+//----------------------------------------------------------------
+{
+      ds_sso.DataID = is_ds_sso_addr + is_cjuserid
+      ds_sso.SyncLoad = true
+      ds_sso.reset()                         
+      if (ds_sso.CountRow == 1) 
+         f_sso_ok()
+      else {
+			div_main.style.visibility='visible'
+			body_main.style.backgroundColor='#000000'
+	     //Label_1.style.visibility='visible'
+	     //Label_2.style.visibility='visible'  
+	     //tb_user_id.style.visibility='visible'
+	     //tb_password.style.visibility='visible'
+	     //bt_confirm.style.visibility='visible'
+      }      
+}
+//----------------------------------------------------------------
+function f_sso_ok()
+//----------------------------------------------------------------
+{	var pass
+     pass = ds_sso.NameValue(1,'password')
+      tb_user_id.value=is_cjuserid
+      tb_password.value=pass
+      bt_confirm_onclick()
+}
+//----------------------------------------------------------------
+function window_onload()
+//----------------------------------------------------------------
+{
+	is_cjuserid = readCookie("cjworldemail")
+
+	cj_userid.value = is_cjuserid;
+
+	//alert(is_userid)
+	
+	if (is_cjuserid == 'err' || is_cjuserid == null || is_cjuserid.length == 0 || is_cjuserid == 'undefined' ) {
+		div_main.style.visibility='visible'
+	    body_main.style.backgroundColor='#000000'
+	    //Label_1.style.visibility='visible'
+	    //Label_2.style.visibility='visible'  
+	    //tb_user_id.style.visibility='visible'
+	    //tb_password.style.visibility='visible'
+	    //bt_confirm.style.visibility='visible'
+//	    tab_page_1.style.visibility='visible'
+	    return
+	}
+	else{
+		body_main.style.visibility='hidden'
+		body_main.style.backgroundColor='#ffffff'
+		f_sso_chk()
+	}
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_login_status event=OnLoadError()>
+  alert("Error Code(ds_login_status) : " + ds_login_status.ErrorCode + "\n" + "Error Message : " + ds_login_status.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_sso event=OnLoadError()>
+  alert("Error Code(ds_sso) : " + ds_sso.ErrorCode + "\n" + "Error Message : " + ds_sso.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1_sso event=OnLoadError()>
+  alert("Error Code(ds_1_sso) : " + ds_1_sso.ErrorCode + "\n" + "Error Message : " + ds_1_sso.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_sso event=OnFail()>
+  alert("Error Code(tr_sso) : " + tr_sso.ErrorCode + "\n" + "Error Message : " + tr_sso.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1_sso event=OnFail()>
+  alert("Error Code(tr_1_sso) : " + tr_1_sso.ErrorCode + "\n" + "Error Message : " + tr_1_sso.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_ip event=OnLoadError()>
+  alert("Error Code(ds_ip) : " + ds_ip.ErrorCode + "\n" + "Error Message : " + ds_ip.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_empno event=OnLoadError()>
+  alert("Error Code(ds_empno) : " + ds_empno.ErrorCode + "\n" + "Error Message : " + ds_empno.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 
+    >
+	<PARAM NAME="DataID" VALUE="">
+	<PARAM NAME="CacheLoad" VALUE="0"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+<comment id="__NSID__"><OBJECT id=ds_empno 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_ip 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_1_sso 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<comment id="__NSID__"><OBJECT id=ds_sso 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_login_status 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+<comment id="__NSID__"><OBJECT id=tr_sso 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:z_sso_session_1tr=ds_sso)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1_sso 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:z_authority_user_input_1tr=ds_1_sso)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_login_status_1tr=ds_login_status)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY id=body_main style="FONT-SIZE: 12px;"    onload=window_onload() oncontextmenu="return false" onkeydown="click_event(event)">
+
+<!-- 
+<input type="text"  
+		style=" background-color:white; width:500px;"  
+		value="로그인시 주소를 http://52.2.202.41:7001/werp 으로 로그인 하시기 바랍니다"> 
+</input>
+ -->
+
+
+<div id = div_main width="100%" height="100%" style=" visibility:hidden">
+	<table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr height=20px>
+		<td>
+			<A HREF="http://at2010.cj.net:7001/werp">최초로그인시 다운로드.</A>
+		</td>
+	</tr>
+	<tr height=20px>
+		<td>
+			<input type="text"  
+					style=" background-color:white; width:500px;"  
+					value="새DB (데이터센터 : 52.2.202.30) 로 접속합니다."> 
+			</input>
+		</td>
+	</tr>
+	<tr height=20px>
+		<td>
+			<LABEL id=Label_1 
+					 style=" font-size:14px;  HEIGHT: 22px;  COLOR: gold ; ">CJ world userid:</LABEL>
+			<input id=cj_userid type="text"  
+					style=" background-color:white; width:100px;"  
+					value=""> 
+			</input>
+		</td>
+	</tr>
+	<TR height="100px">
+		<TD>
+				<DIV id=tab_page_2 >     
+				  
+				<LABEL id=Label_1 
+					 style=" font-size:14px;  HEIGHT: 22px;  COLOR: gold ; ">USER - ID:</LABEL>
+				<INPUT id=tb_user_id onkeyDown="inkeyDown()"
+					 style=" WIDTH: 80px;  HEIGHT: 22px;" 
+					 tabIndex=1 maxLength=20 size=10 border=1>
+				<LABEL id=Label_2 
+					 style=" font-size:14px; HEIGHT: 22px ; COLOR: gold; ">PASSWORD:&nbsp:</LABEL>
+				<INPUT id=tb_password onkeyDown="inkeyDown()"
+					 style="WIDTH: 80px;  HEIGHT: 22px;" 
+					 tabIndex=2 type=password maxLength=20 size=10 border=1>
+				<input id=bt_confirm type="button" value="확인" 
+							 style="color:#2E4A4A; font-size:14px; CURSOR: hand; 
+							  background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:18px; "  tabIndex=3  
+								onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+								onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+							  "  onclick=bt_confirm_onclick()>
+					 
+				</div>  
+		</TD>
+	</TR>
+	<tr>
+		<td height = "*">
+
+		</td>
+	</tr>
+	</TABLE>
+</div>
+
+
+
+<!--  
+<DIV id=tab_page_1 style="Z-INDEX: 10 ; visibility:hidden;">     
+<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+style="Z-INDEX: 11; LEFT: 160px; POSITION: absolute; TOP: 50px; "
+ codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"
+ WIDTH="640" HEIGHT="480" id="login_file" ALIGN="top">
+ <PARAM NAME=movie VALUE="erpw/login/login_file.swf"> 
+ <PARAM NAME=quality VALUE=high> 
+ <PARAM NAME=salign VALUE=LT> 
+ <PARAM NAME=bgcolor VALUE=#000000>
+ <EMBED src="erpw/login/login_file.swf" quality=high salign=LT bgcolor=#000000  WIDTH="640" HEIGHT="480" NAME="login_file" ALIGN="top"
+ TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
+</OBJECT> 
+</div>-->   
+ 
+</BODY></HTML>

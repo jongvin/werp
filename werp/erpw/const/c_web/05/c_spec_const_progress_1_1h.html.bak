@@ -1,0 +1,1413 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_spec_const_progress_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 저장														-->
+<!-- 3. 기 능 정 의   : 도급/실행기성 											-->
+<!-- 4. 변 경 이 력   : 박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_update = ""       //승인이 되었을경우 수정못함. open event에서 셋팅함.
+var is_dept_code=""               //부서 코드 
+var is_dept_name=""               //부서 명 
+var is_html=""                    //되돌아갈 html주소 
+var gs_home = parent.frames['security'].gs_home.value
+var is_yymm = top.frames['security'].gs_sysdate.value
+var is_ds_1_addr = 'c_spec_const_progress_detail_1q.jsp?arg_dept_code='     // 내역 최하위 
+var is_tr_1_addr = gs_home + '/const/c_web/05/c_spec_const_progress_detail_1tr.jsp'
+//------------------------------------------------------------------------------------ 
+var is_ds_parent_query_addr = 'c_spec_const_progress_parent_q_1q.jsp?arg_dept_code='   //트리의 집계를 를 보여주기위한 보조파일
+var is_ds_tree_1_addr = 'c_spec_const_progress_parent_1q.jsp?arg_dept_code='       //트리를 보여주기위한 보조파일
+
+var il_screen_zindex = 1           // tab이 1인이면서 집계구조 1인경우  집계구조 금액만 조회할경우는 1이고
+                                //                 내역을 입력할수 있는경우는   2이다. 
+                                //tree_1_OnSelChanged()            tree_1의 select changed event에서 셋팅함 
+                                
+var is_format_1               //전체 도급및 실행을 보는 보는 그리드
+var is_format_2               // 도급만 보는 그리드
+var is_format_3               //실행만 보는 그리드 
+
+var is_parent_format_1               //전체 도급및 실행을 보는 보는 그리드
+var is_parent_format_2               // 도급만 보는 그리드
+var is_parent_format_3               //실행만 보는 그리드 
+is_format_1_excel =  " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None bgcolor=@ucolor  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink</FC>" +
+	           "<FC> Name='규  격' ID=ssize Edit=None   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF     Width=70 </FC>" +
+	           "<FC> Name='단 위' ID=unit Edit=None  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=40 </FC>" +
+	           "   <FG> Name='  실행내역 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <FC> Name=수량 ID=qty decAO=0  Edit=None   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF   Width=70 </FC>" +
+	           "       <FC> Name=금액 ID=amt Edit=None   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=100 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "   </FG>  " +
+	           "   <G> Name='  준공추정 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량 ID=sup_qty  decAO=0  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=77 </C>" +
+	           "       <C> Name=단가 ID=sup_unit_amt   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=95 </C>" +
+	           "       <C> Name=고정 ID=sup_unit_fix   EditStyle=CheckBox  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=실단 ID=mat_unit_fix   EditStyle=CheckBox  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=금액 ID=pre_result_amt  Edit=None  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=100 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty decAO=0  Edit=None HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=75 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=68 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=100" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  +
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty1 decAO=0  Edit=None  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=75 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=68 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=100" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <C> Name='비  고' ID=remark   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK       Width=150 </C>" +
+	           "   <G> Name='  도급 내역 '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량 ID=cnt_qty decAO=0  Edit=None   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF    Width=70 </C>" +
+	           "       <C> Name=금액 ID=cnt_amt Edit=None   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  도급기성(누계) '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cm_cnt_result_qty decAO=0  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cm_cnt_result_rate  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(cm_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_cnt_result_amt   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " 
+
+is_format_1 =  " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink</FC>" +
+	           "<FC> Name='규  격' ID=ssize Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF     Width=70 </FC>" +
+	           "<FC> Name='단 위' ID=unit Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=40 </FC>" +
+	           "   <FG> Name='  실행내역 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <FC> Name=수량 ID=qty  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF   Width=70 </FC>" +
+	           "       <FC> Name=금액 ID=amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "   </FG>  " +
+	           "   <G> Name='  준공추정 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량 ID=sup_qty    BgColor=@sup_color  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=70 </C>" +
+	           "       <C> Name=단가 ID=sup_unit_amt    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "       <C> Name=고정 ID=sup_unit_fix   EditStyle=CheckBox BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=실단 ID=mat_unit_fix   EditStyle=CheckBox BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=금액 ID=pre_result_amt  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  실행기성(누계) '  Show=false  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cm_result_qty Show=false  Edit=None bgcolor=#EFEFEF HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cm_result_rate Show=false Edit=None  bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=40 " +
+	           "	                                             SumText={sum(cm_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_result_amt Edit=None  bgcolor=#EFEFEF HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  실행기성(당월) '  Show=false  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=result_qty Show=false Edit=None bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=result_rate Show=false Edit=None  bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=result_amt Edit=None  bgcolor=#EFEFEF HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  실행기성(전월누계)  ' Show=false    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=ls_result_qty Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK bgcolor=#EFEFEF    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=ls_result_rate Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(ls_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_result_amt Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +  
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  +
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty1  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow   bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <C> Name='비  고' ID=remark   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK       Width=150 </C>" +
+	           "   <G> Name='  도급 내역 '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량 ID=cnt_qty  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF    Width=70 </C>" +
+	           "       <C> Name=금액 ID=cnt_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  도급기성(누계) '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cm_cnt_result_qty  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cm_cnt_result_rate   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(cm_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_cnt_result_amt   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  도급기성(당월) '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cnt_result_qty  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cnt_result_rate   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cnt_result_amt   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  도급기성(전월누계)  '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=ls_cnt_result_qty Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF   Width=70 </C>" +
+	           "       <C> Name=기성율 ID=ls_cnt_result_rate Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(ls_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_cnt_result_amt Edit=none    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                               SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" + 
+	           "  <C> Name='내부코드' ID=spec_unq_num Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>"
+is_format_2 =  " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink</FC>" +
+	           "<FC> Name='규  격' ID=ssize Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF     Width=70 </FC>" +
+	           "<FC> Name='단 위' ID=unit Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=40 </FC>" +
+	           "   <FG> Name='  도급 내역 '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <FC> Name=수량 ID=cnt_qty  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF    Width=70 </FC>" +
+	           "       <FC> Name=금액 ID=cnt_amt  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    bgcolor=#EFEFEF  Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "   </FG>  " +
+	           "   <FG> Name='  준공추정 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <FC> Name=수량 ID=sup_qty    BgColor=@sup_color  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=70 </FC>" +
+	           "       <FC> Name=단가 ID=sup_unit_amt    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=80 </FC>" +
+	           "       <FC> Name=금액 ID=pre_result_amt    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "   </FG>  " +
+	           "   <G> Name='  도급기성(누계) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cm_cnt_result_qty  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cm_cnt_result_rate   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(cm_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_cnt_result_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow      bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(cost_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow       bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  +
+	           "   <G> Name='  도급기성(당월) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cnt_result_qty  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cnt_result_rate   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cnt_result_amt   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=yellow     " +
+	           "       <C> Name=수량  ID=cost_qty1  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow       bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "   <C> Name='비  고' ID=remark   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK       Width=150 </C>" +
+	           "   <G> Name='  도급기성(전월누계)  '    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=ls_cnt_result_qty Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF   Width=70 </C>" +
+	           "       <C> Name=기성율 ID=ls_cnt_result_rate Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(ls_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_cnt_result_amt Edit=none    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                               SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>"   
+
+                               
+is_format_3 = " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink </FC>" +
+	           "<FC> Name='규  격' ID=ssize Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF     Width=70 </FC>" +
+	           "<FC> Name='단 위' ID=unit Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   bgcolor=#EFEFEF    Width=40 </FC>" +
+	           "   <FG> Name='  실행내역 '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <FC> Name=수량 ID=qty  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK  bgcolor=#EFEFEF   Width=70 </FC>" +
+	           "       <FC> Name=금액 ID=amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "   </FG>  " +
+	           "   <G> Name='  준공추정 '  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량 ID=sup_qty   BgColor=@sup_color HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=단가 ID=sup_unit_amt    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "       <C> Name=고정 ID=sup_unit_fix   EditStyle=CheckBox BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=금액 ID=mat_unit_fix   EditStyle=CheckBox BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=28 </C>" +
+	           "       <C> Name=실단 ID=pre_result_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  실행기성(누계) '   Show=false  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=cm_result_qty Show=false Edit=None bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=cm_result_rate Show=false  Edit=None bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=40 " +
+	           "	                                             SumText={sum(cm_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_result_amt Show=false Edit=None  bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=yellow     " +
+	           "       <C> Name=수량  ID=cost_qty  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow       bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  +
+	           "   <C> Name='비  고' ID=remark   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=150 </C>" +
+	           "   <G> Name='  실행기성(당월) '  Show=false   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=result_qty Show=false  Edit=None bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=result_rate Show=false Edit=None  bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 " +
+	           "	                                             SumText={sum(result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=result_amt Show=false Edit=None  bgcolor=#EFEFEF  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=yellow   " +
+	           "       <C> Name=수량  ID=cost_qty1  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     bgcolor=#EFEFEF Width=70 </C>" +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow    bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow       bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "   <G> Name='  실행기성(전월누계)  ' Show=false    HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "       <C> Name=수량  ID=ls_result_qty Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK bgcolor=#EFEFEF    Width=70 </C>" +
+	           "       <C> Name=기성율 ID=ls_result_rate Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=40 " +
+	           "	                                             SumText={sum(ls_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_result_amt Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     bgcolor=#EFEFEF Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>"   
+
+is_parent_format_1 = " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink </FC>" +
+	           "       <FC> Name=실행금액 ID=amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "       <C> Name=추정금액 ID=pre_result_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   <G> Name='  실행기성(당월) ' Show=false  HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=result_rate Show=false  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E     Width=40 " +
+	           "	                                             SumText={sum(result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=result_amt Show=false Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  실행기성(누계)  '   Show=false  HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cm_result_rate Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=40 " +
+	           "	                                             SumText={sum(cm_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=cm_result_amt Show=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>"  + 
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=yellow    " +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  +
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadBgColor=yellow    " +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow     Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "       <C> Name=도급금액 ID=cnt_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   <G> Name='  도급기성(누계) '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cm_cnt_result_rate  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(cm_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_cnt_result_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  도급기성(당월) '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cnt_result_rate  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E      Width=40 " +
+	           "	                                             SumText={sum(cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cnt_result_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  도급기성(전월누계)  '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=ls_cnt_result_rate Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(ls_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_cnt_result_amt Edit=none    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E    Width=85" + 
+	           "	                                               SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" 
+is_parent_format_2 = " "  + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink </FC>" +
+	           "<C> Name=도급금액 ID=cnt_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=추정금액 ID=pre_result_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   <G> Name='  도급기성(누계) '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cm_cnt_result_rate  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(cm_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_cnt_result_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=#BBE0F4 HeadBgColor=yellow   " +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "   <G> Name='  도급기성(당월) '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cnt_result_rate  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E      Width=40 " +
+	           "	                                             SumText={sum(cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cnt_result_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "  + 
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadBgColor=yellow    " +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow   Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow   Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " +   
+	           "   <G> Name='  도급기성(전월누계)  '    HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=ls_cnt_result_rate Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(ls_cnt_result_amt) * 100 / sum(cnt_amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_cnt_result_amt Edit=none    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E     Width=85" + 
+	           "	                                               SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>"   
+                               
+is_parent_format_3 = " " + 
+	           "<FC> Name='명    칭' ID=name Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=150 " + 
+	           "              SumText='합     계'   SumColor=Black SumBgColor=Pink </FC>" +
+	           "       <FC> Name=실행금액 ID=amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</FC>" +
+	           "       <C> Name=추정금액 ID=pre_result_amt Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   <G> Name='  실행기성(누계) '  Show=false  HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=cm_result_rate Show=false  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E          Width=40 " +
+	           "	                                             SumText={sum(cm_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cm_result_amt Show=false Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E        Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(누계) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadBgColor=yellow  " +
+	           "       <C> Name=원가율 ID=cost_rate   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  실행기성(당월) '  Show=false  HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=result_rate Show=false  Edit=None   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=result_amt Show=false Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  투입원가(당월) '   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadBgColor=yellow    " +
+	           "       <C> Name=원가율 ID=cost_rate1   Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=40 " +
+	           "	                                             SumText={sum(pre_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=금액 ID=cost_amt1 Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=yellow  Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> "   + 
+	           "   <G> Name='  실행기성(전월누계)  '  Show=false   HeadAlign=Center  HeadBgColor=#DEE09E     " +
+	           "       <C> Name=기성율 ID=ls_result_rate Show=false  Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E       Width=40 " +
+	           "	                                             SumText={sum(ls_result_amt) * 100 / sum(amt)}           SumColor=Black SumBgColor=Pink</C>" +
+	           "       <C> Name=기성금액 ID=ls_result_amtShow=false Edit=none  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#DEE09E      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>"   
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+
+ if (il_screen_zindex == 1) 
+     return
+       
+ds_1.DataID = is_ds_1_addr + ds_tree_1.NameValue(ds_tree_1.RowPosition,"dept_code") + 
+              "&arg_yymm="  +  ds_tree_1.NameValue(ds_tree_1.RowPosition,"yymm") + 
+              "&arg_spec_no_seq="  +  ds_tree_1.NameValue(ds_tree_1.RowPosition,"spec_no_seq")  
+        
+ds_1.SyncLoad=true
+ds_1.reset()
+}
+//-----------------------------------------------------------------
+function btnadd_onclick()                 //추가
+//-----------------------------------------------------------------
+{
+  alert("추가 할수 없습니다")
+}
+//--------------------------------------------------------------------
+function btninsert_onclick()             // 삽입
+//--------------------------------------------------------------------
+{
+   alert("삽입 할수 없습니다")
+ 
+}
+//---------------------------------------------------------------------------
+function btndelete_onclick()             //삭제
+//----------------------------------------------------------------------------
+{
+  alert("삭제 할수 없습니다")
+ }
+//-----------------------------------------------------------------
+function btnsave_onclick()               // 저장
+//------------------------------------------------------------------
+{
+
+  if  (il_screen_zindex == 1) {               // 집계구조 금액 조회 화면 
+      return
+  }      
+
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?")){
+        tr_1.Post()
+        sp_call()
+    }    
+  }      
+}
+//-----------------------------------------------------------------
+function sp_call()               //sp call(상위금액 집계) 
+//------------------------------------------------------------------
+{
+ 
+	ds_spcall.DataID = gs_home + '/const/c_web/01/y_c_summary_cmpt_procedure.jsp?arg_dept_code=' + 
+					is_dept_code + '&arg_date=' + is_yymm 
+        ds_spcall.SyncLoad = true
+        ds_spcall.reset()
+}
+//-----------------------------------------------------------------
+function prgs_trans()               //sp call(최종실행을 기성화일로 가져옴) 
+//------------------------------------------------------------------
+{
+	if  (confirm("최종실행을 적용하시겠습니까?")) {
+		ds_spcall.DataID = gs_home + '/const/c_web/05/y_c_prgs_trans_procedure.jsp?arg_dept_code=' + 
+					is_dept_code + '&arg_date=' + is_yymm 
+		ds_spcall.SyncLoad = true
+		ds_spcall.reset()
+		sp_call()
+		alert('정상처리되었습니다')
+		ds_tree_1.ClearData()
+		ds_1.ClearData()
+		ds_parent_query.ClearData()
+		tree_btnquery_onclick()
+      if  (ds_tree_1.CountRow < 1) 
+          return
+      tree_1_OnSelChanged()
+	}
+}
+
+//-----------------------------------------------------------------
+function btncancel_onclick()               //취소 
+//------------------------------------------------------------------
+{
+  if  (il_screen_zindex == 1) {               // 집계구조 금액 조회 화면 
+      alert("공종별 금액 조회화면이므로 취소 할수없습니다")
+      return
+  }      
+
+  ds_1.Undo(ds_1.RowPosition)
+}
+ 
+//--------------------------------------------------------------- 
+function btnexit_onclick(ls_arg)           //종료
+//---------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+parent.frames['main_ct'].location.href(ls_arg)
+parent.frames['main_title'].div_r.style.visibility="hidden"             
+parent.frames['main_title'].div_u.style.visibility="hidden"             
+
+// parent.frames['main_ct'].window.close()     
+}
+//----------------------------------------------------------------
+function tree_btnquery_onclick()
+//----------------------------------------------------------------
+{
+    ds_tree_1.DataID = is_ds_tree_1_addr + is_dept_code + 
+                       "&arg_yymm=" + is_yymm
+    ds_tree_1.SyncLoad = true
+    ds_tree_1.Reset()  
+                 
+}
+//----------------------------------------------------------------
+function gd_1_bt_cnt()                   //화면 보기에서 도급만 보기 
+//----------------------------------------------------------------
+{
+   gd_1.format = is_format_2             //도급만 보기
+   gd_parent_query.format=is_parent_format_2
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function gd_1_bt_sil()                   //화면 보기에서 실행만 보기 
+//----------------------------------------------------------------
+{
+   gd_1.format = is_format_3             //실행만 보기 보기
+   gd_parent_query.format=is_parent_format_3
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function gd_1_bt_tot()                   //화면 보기에서 전체 보기 
+//----------------------------------------------------------------
+{
+   gd_1.format = is_format_1             //전체 보기 
+   gd_parent_query.format=is_parent_format_1
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//-------------------------------------------------------------------------------
+function   tree_1_OnSelChanged()        // tree_1이 select changed event 발생 
+//-------------------------------------------------------------------------------
+{
+
+     if  ((ds_tree_1.CountRow == ds_tree_1.RowPosition) ||
+       (ds_tree_1.NameValue(ds_tree_1.RowPosition ,"llevel") >= ds_tree_1.NameValue(ds_tree_1.RowPosition + 1,"llevel"))){
+         gd_1.style.zIndex=200
+         gd_parent_query.style.zIndex=100                               
+         il_screen_zindex=2                    //내역 입력화면 
+         gd_1_button.style.visibility="visible"
+         btnquery_onclick()
+     }   
+     else {                     //parent 집계 금액 읽어 오기 (레벨별로 읽어옴)
+         ls_parent_sum_code = ds_tree_1.NameValue(ds_tree_1.RowPosition,"sum_code")
+         ds_parent_query.DataID = is_ds_parent_query_addr + is_dept_code + 
+                                   "&arg_yymm=" + is_yymm   +
+                                   "&arg_parent_sum_code=" + ls_parent_sum_code 
+         ds_parent_query.SyncLoad = true
+         ds_parent_query.reset() 
+           gd_1.style.zIndex=100
+           gd_parent_query.style.zIndex=200    
+         gd_1_button.style.visibility="visible"
+           il_screen_zindex=1                //집계구조의 금액 조회화면  
+     }   
+}
+
+//----------------------------------------------------------------
+function rd_screen_onclick()                //화면 축소 및 확대 (tree구조 를 적게 혹은 크게 보여줌)
+//----------------------------------------------------------------
+{
+   if  (tab_page_1.style.left == "222px") {
+       tab_page_1.style.left = "40px"
+
+       tab_page_1.style.width = "972px"
+
+       gd_parent_query.style.width = "972px"
+       gd_1.style.width = "972px"
+   
+       tree_1.style.width= "40px"
+   }
+   else {
+       tab_page_1.style.left = "222px"
+
+       tab_page_1.style.width = "790px"
+
+       gd_parent_query.style.width = "790px"
+       gd_1.style.width = "790px"
+   
+       tree_1.style.width= "220px"
+   }
+
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+   ds_tree_1.ClearData()
+   ds_1.ClearData()
+   ds_parent_query.ClearData()
+	tree_btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+   is_yymm = is_yymm + ".01"
+   ds_tree_1.ClearData()
+   ds_1.ClearData()
+   ds_parent_query.ClearData()
+   tree_btnquery_onclick()
+   if (ds_tree_1.CountRow > 0 ) {
+       tree_1.Focus()
+       tree_1.Index = 1
+       tree_1_OnSelChanged()
+    }       
+
+
+
+}   
+
+//-------------------------------------------------------------------------------
+function cm_cnt_calculate(row)        //도급 기성중 누계 공통 로직(누계 수량/기성율/금액) 100%일경우 
+//--------------------------------------------------------------------------------
+{
+   if (ds_1.NameValue(row,"cm_cnt_result_rate") == 100) {
+      ds_1.NameValue(row,"cm_cnt_result_mat_amt") = ds_1.NameValue(row,"cnt_mat_amt")
+      ds_1.NameValue(row,"cm_cnt_result_lab_amt") = ds_1.NameValue(row,"cnt_lab_amt")
+      ds_1.NameValue(row,"cm_cnt_result_exp_amt") = ds_1.NameValue(row,"cnt_exp_amt")
+   }      
+   else {   
+      ds_1.NameValue(row,"cm_cnt_result_mat_amt") = ds_1.NameValue(row,"cnt_mat_price") * ds_1.NameValue(row,"cm_cnt_result_qty") 
+      ds_1.NameValue(row,"cm_cnt_result_lab_amt") = ds_1.NameValue(row,"cnt_lab_price") * ds_1.NameValue(row,"cm_cnt_result_qty") 
+      ds_1.NameValue(row,"cm_cnt_result_exp_amt") = ds_1.NameValue(row,"cnt_exp_price") * ds_1.NameValue(row,"cm_cnt_result_qty") 
+   }     
+    
+   ds_1.NameValue(row,"cm_cnt_result_amt") = ds_1.NameValue(row,"cm_cnt_result_mat_amt") + 
+                                             ds_1.NameValue(row,"cm_cnt_result_lab_amt") + 
+                                             ds_1.NameValue(row,"cm_cnt_result_exp_amt")
+                                             
+   ds_1.NameValue(row,"cnt_result_qty") = ds_1.NameValue(row,"cm_cnt_result_qty") - 
+                                          ds_1.NameValue(row,"ls_cnt_result_qty")
+   ds_1.NameValue(row,"cnt_result_rate") = ds_1.NameValue(row,"cm_cnt_result_rate") -
+                                              ds_1.NameValue(row,"ls_cnt_result_rate")                                             
+   ds_1.NameValue(row,"cnt_result_mat_amt") = ds_1.NameValue(row,"cm_cnt_result_mat_amt") -
+                                              ds_1.NameValue(row,"ls_cnt_result_mat_amt")
+   ds_1.NameValue(row,"cnt_result_lab_amt") = ds_1.NameValue(row,"cm_cnt_result_lab_amt") -
+                                              ds_1.NameValue(row,"ls_cnt_result_lab_amt")
+   ds_1.NameValue(row,"cnt_result_exp_amt") = ds_1.NameValue(row,"cm_cnt_result_exp_amt") -
+                                              ds_1.NameValue(row,"ls_cnt_result_exp_amt")
+   ds_1.NameValue(row,"cnt_result_amt") =  ds_1.NameValue(row,"cm_cnt_result_amt") -  
+                                             ds_1.NameValue(row,"ls_cnt_result_amt") 
+}
+
+//-------------------------------------------------------------------------------
+function cnt_calculate(row)        //도급 기성중 당월 공통 로직(수량/기성율/금액) 일경우 
+//--------------------------------------------------------------------------------
+{
+   ds_1.NameValue(row,"cnt_result_mat_amt") = ds_1.NameValue(row,"cnt_mat_price") * ds_1.NameValue(row,"cnt_result_qty")
+   ds_1.NameValue(row,"cnt_result_lab_amt") = ds_1.NameValue(row,"cnt_lab_price") * ds_1.NameValue(row,"cnt_result_qty") 
+   ds_1.NameValue(row,"cnt_result_exp_amt") = ds_1.NameValue(row,"cnt_exp_price") * ds_1.NameValue(row,"cnt_result_qty") 
+               
+   ds_1.NameValue(row,"cnt_result_amt") = ds_1.NameValue(row,"cnt_result_mat_amt") + 
+                                          ds_1.NameValue(row,"cnt_result_lab_amt") + 
+                                          ds_1.NameValue(row,"cnt_result_exp_amt") 
+                                             
+   ds_1.NameValue(row,"cm_cnt_result_qty") = ds_1.NameValue(row,"cnt_result_qty") + 
+                                             ds_1.NameValue(row,"ls_cnt_result_qty")
+   ds_1.NameValue(row,"cm_cnt_result_rate") = ds_1.NameValue(row,"cnt_result_rate") +
+                                              ds_1.NameValue(row,"ls_cnt_result_rate")                                             
+   ds_1.NameValue(row,"cm_cnt_result_mat_amt") = ds_1.NameValue(row,"cnt_result_mat_amt") +
+                                              ds_1.NameValue(row,"ls_cnt_result_mat_amt")
+   ds_1.NameValue(row,"cm_cnt_result_lab_amt") = ds_1.NameValue(row,"cnt_result_lab_amt") +
+                                              ds_1.NameValue(row,"ls_cnt_result_lab_amt")
+   ds_1.NameValue(row,"cm_cnt_result_exp_amt") = ds_1.NameValue(row,"cnt_result_exp_amt") +
+                                              ds_1.NameValue(row,"ls_cnt_result_exp_amt")
+   ds_1.NameValue(row,"cm_cnt_result_amt") = ds_1.NameValue(row,"cm_cnt_result_mat_amt") + 
+                                             ds_1.NameValue(row,"cm_cnt_result_lab_amt") + 
+                                             ds_1.NameValue(row,"cm_cnt_result_exp_amt")
+
+}
+//-------------------------------------------------------------------------------
+function cm_calculate(row)        //실행  기성중 누계 공통 로직(수량/기성율/금액) 100%일경우 
+//--------------------------------------------------------------------------------
+{
+   if (ds_1.NameValue(row,"cm_result_rate") >= 100) {
+		   ds_1.NameValue(row,"cm_result_mat_amt") = ds_1.NameValue(row,"mat_amt") 
+		   ds_1.NameValue(row,"cm_result_lab_amt") = ds_1.NameValue(row,"lab_amt") 
+		   ds_1.NameValue(row,"cm_result_exp_amt") = ds_1.NameValue(row,"exp_amt") 
+		   ds_1.NameValue(row,"cm_result_equ_amt") = ds_1.NameValue(row,"equ_amt") 
+		   ds_1.NameValue(row,"cm_result_sub_amt") = ds_1.NameValue(row,"sub_amt") 
+   }		
+	else {	
+		   ds_1.NameValue(row,"cm_result_mat_amt") = ds_1.NameValue(row,"mat_price") * ds_1.NameValue(row,"cm_result_qty")
+		   ds_1.NameValue(row,"cm_result_lab_amt") = ds_1.NameValue(row,"lab_price") * ds_1.NameValue(row,"cm_result_qty") 
+		   ds_1.NameValue(row,"cm_result_exp_amt") = ds_1.NameValue(row,"exp_price") * ds_1.NameValue(row,"cm_result_qty")
+		   ds_1.NameValue(row,"cm_result_equ_amt") = ds_1.NameValue(row,"equ_price") * ds_1.NameValue(row,"cm_result_qty")
+		   ds_1.NameValue(row,"cm_result_sub_amt") = ds_1.NameValue(row,"sub_price") * ds_1.NameValue(row,"cm_result_qty")
+   } 
+   
+   ds_1.NameValue(row,"cm_result_amt") = ds_1.NameValue(row,"cm_result_mat_amt") + 
+                                             ds_1.NameValue(row,"cm_result_lab_amt") + 
+                                             ds_1.NameValue(row,"cm_result_exp_amt") +
+                                             ds_1.NameValue(row,"cm_result_equ_amt") +
+                                             ds_1.NameValue(row,"cm_result_sub_amt")
+                                             
+   ds_1.NameValue(row,"result_qty") = ds_1.NameValue(row,"cm_result_qty") - 
+                                          ds_1.NameValue(row,"ls_result_qty")
+   ds_1.NameValue(row,"result_rate") = ds_1.NameValue(row,"cm_result_rate") -
+                                              ds_1.NameValue(row,"ls_result_rate")   
+   ds_1.NameValue(row,"result_mat_amt") = ds_1.NameValue(row,"cm_result_mat_amt") -
+                                              ds_1.NameValue(row,"ls_result_mat_amt")
+   ds_1.NameValue(row,"result_lab_amt") = ds_1.NameValue(row,"cm_result_lab_amt") -
+                                              ds_1.NameValue(row,"ls_result_lab_amt")
+   ds_1.NameValue(row,"result_exp_amt") = ds_1.NameValue(row,"cm_result_exp_amt") -
+                                              ds_1.NameValue(row,"ls_result_exp_amt")
+   ds_1.NameValue(row,"result_equ_amt") = ds_1.NameValue(row,"cm_result_equ_amt") -
+                                              ds_1.NameValue(row,"ls_result_equ_amt")
+   ds_1.NameValue(row,"result_sub_amt") = ds_1.NameValue(row,"cm_result_sub_amt") -
+                                              ds_1.NameValue(row,"ls_result_sub_amt")
+   ds_1.NameValue(row,"result_amt") = ds_1.NameValue(row,"result_mat_amt") + 
+                                             ds_1.NameValue(row,"result_lab_amt") + 
+                                             ds_1.NameValue(row,"result_exp_amt") +
+                                             ds_1.NameValue(row,"result_equ_amt") +
+                                             ds_1.NameValue(row,"result_sub_amt")
+   ds_1.NameValue(row,"result_amt") =  ds_1.NameValue(row,"cm_result_amt") -  
+                                             ds_1.NameValue(row,"ls_result_amt") 
+   if (ds_1.NameValue(row,"result_amt") < 0) {
+      ds_1.NameValue(row,"result_qty") =0
+      ds_1.NameValue(row,"result_rate")=0
+      ds_1.NameValue(row,"result_mat_amt")=0
+      ds_1.NameValue(row,"result_lab_amt")=0
+      ds_1.NameValue(row,"result_exp_amt")=0
+      ds_1.NameValue(row,"result_equ_amt")=0
+      ds_1.NameValue(row,"result_sub_amt")=0 
+      ds_1.NameValue(row,"result_amt")=0
+      
+   }
+//  추정완성 금액=  총원가 * 총실행금액 / 총기성금액  아래의 cost_amt = cost_amt + ls_cost_amt로 sql에서 계산
+//   ds_1.NameValue(row,"pre_result_amt") = (ds_1.NameValue(row,"cost_amt")  *  ds_1.NameValue(row,"amt")) 
+//                                          / (ds_1.NameValue(row,"result_amt") + ds_1.NameValue(row,"ls_result_amt"))                                              
+                           
+                                             
+}
+//-------------------------------------------------------------------------------
+function amt_calculate(row)        //실행  기성중 당월 로직(수량/기성율/금액) 100%일경우 
+//--------------------------------------------------------------------------------
+{
+   ds_1.NameValue(row,"result_mat_amt") = ds_1.NameValue(row,"mat_price") * ds_1.NameValue(row,"result_qty")
+   ds_1.NameValue(row,"result_lab_amt") = ds_1.NameValue(row,"lab_price") * ds_1.NameValue(row,"result_qty")
+   ds_1.NameValue(row,"result_exp_amt") = ds_1.NameValue(row,"exp_price") * ds_1.NameValue(row,"result_qty")
+   ds_1.NameValue(row,"result_equ_amt") = ds_1.NameValue(row,"equ_price") * ds_1.NameValue(row,"result_qty")
+   ds_1.NameValue(row,"result_sub_amt") = ds_1.NameValue(row,"sub_price") * ds_1.NameValue(row,"result_qty")
+
+   ds_1.NameValue(row,"result_amt") = ds_1.NameValue(row,"result_mat_amt") + 
+                                             ds_1.NameValue(row,"result_lab_amt") + 
+                                             ds_1.NameValue(row,"result_exp_amt") +
+                                             ds_1.NameValue(row,"result_equ_amt") +
+                                             ds_1.NameValue(row,"result_sub_amt")
+                                             
+   ds_1.NameValue(row,"cm_result_qty") = ds_1.NameValue(row,"result_qty") + 
+                                          ds_1.NameValue(row,"ls_result_qty")
+   ds_1.NameValue(row,"cm_result_rate") = ds_1.NameValue(row,"result_rate") +
+                                              ds_1.NameValue(row,"ls_result_rate")                                             
+   ds_1.NameValue(row,"cm_result_mat_amt") = ds_1.NameValue(row,"result_mat_amt") +
+                                              ds_1.NameValue(row,"ls_result_mat_amt")
+   ds_1.NameValue(row,"cm_result_lab_amt") = ds_1.NameValue(row,"result_lab_amt") +
+                                              ds_1.NameValue(row,"ls_result_lab_amt")
+   ds_1.NameValue(row,"cm_result_exp_amt") = ds_1.NameValue(row,"result_exp_amt") +
+                                              ds_1.NameValue(row,"ls_result_exp_amt")
+   ds_1.NameValue(row,"cm_result_equ_amt") = ds_1.NameValue(row,"result_equ_amt") +
+                                              ds_1.NameValue(row,"ls_result_equ_amt")
+   ds_1.NameValue(row,"cm_result_sub_amt") = ds_1.NameValue(row,"result_sub_amt") +
+                                              ds_1.NameValue(row,"ls_result_sub_amt")
+   ds_1.NameValue(row,"cm_result_amt") = ds_1.NameValue(row,"cm_result_mat_amt") + 
+                                             ds_1.NameValue(row,"cm_result_lab_amt") + 
+                                             ds_1.NameValue(row,"cm_result_exp_amt") +
+                                             ds_1.NameValue(row,"cm_result_equ_amt") +
+                                             ds_1.NameValue(row,"cm_result_sub_amt")
+
+//  추정완성 금액=  총원가 * 총실행금액 / 총기성금액  아래의 cost_amt = cost_amt + ls_cost_amt로 sql에서 계산
+//   ds_1.NameValue(row,"pre_result_amt") = (ds_1.NameValue(row,"cost_amt")  *  ds_1.NameValue(row,"amt")) 
+//                                          / (ds_1.NameValue(row,"result_amt") + ds_1.NameValue(row,"ls_result_amt"))                                              
+}
+//------------------------------------------------------------------------
+function bt_profit()                     // 현장별 손익현황  
+//------------------------------------------------------------------------
+{
+   if (ds_tree_1.CountRow < 1) {
+      alert("선택한 현장이 없습니다")
+      return
+   }   
+   is_ea = '1'
+   il_screen_yymm = 1
+
+   makeCookie("@c_spec_const_parent_yymmdd@",is_yymm)
+
+   makeCookie("@c_spec_const_wbs_amt@",is_dept_code+ "@" + is_dept_name + "@" + il_screen_yymm + "@" +  is_ea)
+   window.showModalDialog("../06/c_spec_const_wbs_amt_1h.html","","dialogWidth:1012px;dialogHeight:690px");
+}
+//----------------------------------------------------------------
+function OnExit_rtn(row,colid,olddata)              
+//-----------------------------------------------------------------
+{
+
+
+if (colid == "cm_cnt_result_qty") {        //누계 기성 수량
+//   if (ds_1.NameValue(row,"cm_cnt_result_qty") > ds_1.NameValue(row,"cnt_qty")) {
+//      ds_1.NameValue(row,"cm_cnt_result_qty") = ds_1.OrgNameValue(row,"cm_cnt_result_qty")
+//      alert("계약수량을 초과할 수 없습니다")
+//      return false
+//   }   
+   if  (ds_1.NameValue(row,"cnt_qty") == 0) 
+       return false
+   ll_rate = ds_1.NameValue(row,"cm_cnt_result_qty") / ds_1.NameValue(row,"cnt_qty")
+   ds_1.NameValue(row,"cm_cnt_result_rate") = ll_rate * 100
+   if (ds_1.NameValue(row,"cm_cnt_result_rate") > 999) 
+      ds_1.NameValue(row,"cm_cnt_result_rate") = 999
+   cm_cnt_calculate(row)
+   return
+}  
+
+//------------------도급 누계 기성율
+if (colid == "cm_cnt_result_rate") {        //누계 기성 율
+//   if (ds_1.NameValue(row,"cm_cnt_result_rate") > 100 ) {
+//      ds_1.NameValue(row,"cm_cnt_result_rate") = ds_1.OrgNameValue(row,"cm_cnt_result_rate")
+//      alert("기성율이 100%를 초과할 수 없습니다")
+//      return false
+//   }   
+   if (ds_1.NameValue(row,"cm_cnt_result_rate") == 100) 
+      ds_1.NameValue(row,"cm_cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") 
+   else
+      ds_1.NameValue(row,"cm_cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cm_cnt_result_rate") / 100
+   cm_cnt_calculate(row)
+   return
+}
+//------------------도급 누계 기성금액
+if (colid == "cm_cnt_result_amt") {        //누계 기성 율
+//   if (ds_1.NameValue(row,"cm_cnt_result_amt") > ds_1.NameValue(row,"cnt_amt") ) {
+//      ds_1.NameValue(row,"cm_cnt_result_amt") = ds_1.OrgNameValue(row,"cm_cnt_result_amt")
+//      alert("도급 총금액을  초과할 수 없습니다")
+//      return false
+//   }   
+   ll_rate = ds_1.NameValue(row,"cm_cnt_result_amt") / ds_1.NameValue(row,"cnt_amt")
+   ds_1.NameValue(row,"cm_cnt_result_rate") = ll_rate * 100
+   if (ds_1.NameValue(row,"cm_cnt_result_rate") > 999) 
+   ds_1.NameValue(row,"cm_cnt_result_rate") = 999
+
+   ds_1.NameValue(row,"cm_cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cm_cnt_result_rate") / 100
+   cm_cnt_calculate(row)
+   return
+}
+
+//-----------------------------------------------------------------도급 금회 로틴----------------------
+//--------------------도급 금회수량 
+if (colid == "cnt_result_qty") {        //금회 기성 수량
+//   if ( (ds_1.NameValue(row,"cnt_result_qty") + ds_1.NameValue(row,"ls_cnt_result_qty")) > ds_1.NameValue(row,"cnt_qty")) {
+//      ds_1.NameValue(row,"cnt_result_qty") = ds_1.OrgNameValue(row,"cnt_result_qty")
+//      alert("계약수량을 초과할 수 없습니다")
+//      return  false
+//   }   
+   if  (ds_1.NameValue(row,"cnt_qty") == 0) 
+       return
+   ll_rate = ds_1.NameValue(row,"cnt_result_qty") / ds_1.NameValue(row,"cnt_qty")
+   ds_1.NameValue(row,"cnt_result_rate") = ll_rate * 100
+   if (ds_1.NameValue(row,"cnt_result_rate") > 999) 
+   ds_1.NameValue(row,"cnt_result_rate") = 999
+   
+   cnt_calculate(row)
+   return
+}
+
+if (colid == "cnt_result_rate") {        //금회  기성 율
+//   if ((ds_1.NameValue(row,"cnt_result_rate") + ds_1.NameValue(row,"ls_cnt_result_rate")) > 100 ) {
+//      ds_1.NameValue(row,"cnt_result_rate") = ds_1.OrgNameValue(row,"cnt_result_rate")
+//      alert("기성율이 100%를 초과할 수 없습니다")
+//      return false
+//   }   
+   ds_1.NameValue(row,"cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cnt_result_rate") / 100
+   cnt_calculate(row)
+   return
+}
+if (colid == "cnt_result_amt") {        //금회 기성 금액
+//   if ( (ds_1.NameValue(row,"cnt_result_amt") + ds_1.NameValue(row,"ls_cnt_result_amt")) > ds_1.NameValue(row,"cnt_amt") ) {
+//      ds_1.NameValue(row,"cnt_result_amt") = ds_1.OrgNameValue(row,"cnt_result_amt")
+//      alert("도급 총금액을  초과할 수 없습니다")
+//      return false
+//   }   
+   if ( (ds_1.NameValue(row,"cnt_result_amt") + ds_1.NameValue(row,"ls_cnt_result_amt")) == ds_1.NameValue(row,"cnt_amt") ) {
+      ds_1.NameValue(row,"cnt_result_rate") = 100 - ds_1.NameValue(row,"ls_cnt_result_rate")
+      ds_1.NameValue(row,"cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") -  ds_1.NameValue(row,"ls_cnt_result_qty")
+   }
+   else {
+      ll_rate = ds_1.NameValue(row,"cnt_result_amt") / ds_1.NameValue(row,"cnt_amt")
+      ds_1.NameValue(row,"cnt_result_rate") = ll_rate * 100
+      ds_1.NameValue(row,"cnt_result_qty") = ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cnt_result_rate") / 100
+   }      
+   cnt_calculate(row)        
+   return
+}
+
+//------------------------------------------------------------실행 누계 루틴---------------------------------
+//--------------------실행 누계수량 과 누계 기성율.
+if (colid == "cm_result_qty") {        //누계 기성 수량
+//   if (ds_1.NameValue(row,"cm_result_qty") > ds_1.NameValue(row,"qty")) {
+//      ds_1.NameValue(row,"cm_result_qty") = ds_1.OrgNameValue(row,"cm_result_qty")
+//      alert("실행수량을 초과할 수 없습니다")
+//      return false
+//   }   
+   if  (ds_1.NameValue(row,"qty") == 0) 
+       return false
+   ll_rate = ds_1.NameValue(row,"cm_result_qty") / ds_1.NameValue(row,"qty")
+   ds_1.NameValue(row,"cm_result_rate") = ll_rate * 100
+   if (ds_1.NameValue(row,"cm_result_rate") > 999) 
+   ds_1.NameValue(row,"cm_result_rate") = 999
+   cm_calculate(row)
+   return
+}
+
+if (colid == "cm_result_rate") {        //누계 기성 율
+//   if (ds_1.NameValue(row,"cm_result_rate") > 100 ) {
+//      ds_1.NameValue(row,"cm_result_rate") = ds_1.OrgNameValue(row,"cm_result_rate")
+//      alert("기성율이 100%를 초과할 수 없습니다")
+//      return false
+//   }   
+   ds_1.NameValue(row,"cm_result_qty") = ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"cm_result_rate") / 100
+   cm_calculate(row)
+   return
+}
+//------------------실행 누계 기성금액
+if (colid == "cm_result_amt") {        //누계 기성 율
+//   if (ds_1.NameValue(row,"cm_result_amt") > ds_1.NameValue(row,"amt") ) {
+//      ds_1.NameValue(row,"cm_result_amt") = ds_1.OrgNameValue(row,"cm_result_amt")
+//      alert("실행 총금액을  초과할 수 없습니다")
+//      return false
+//   }   
+   ll_rate = ds_1.NameValue(row,"cm_result_amt") / ds_1.NameValue(row,"amt")
+   ds_1.NameValue(row,"cm_result_rate") = ll_rate * 100
+
+   if (ds_1.NameValue(row,"cm_result_rate") > 999) 
+   ds_1.NameValue(row,"cm_result_rate") = 999
+   
+   ds_1.NameValue(row,"cm_result_qty") = ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"cm_result_rate") / 100
+   cm_calculate(row)
+   return
+}
+
+
+//--------------------실행 금회수량 과 금회 기성율.--------------------------------------
+if (colid == "result_qty") {        //금회 기성 수량
+//   if ( (ds_1.NameValue(row,"result_qty") + ds_1.NameValue(row,"ls_result_qty")) > ds_1.NameValue(row,"qty")) {
+//      ds_1.NameValue(row,"result_qty") = ds_1.OrgNameValue(row,"result_qty")
+//      alert("실행수량을 초과할 수 없습니다")
+//      return  false
+//   }   
+   if  (ds_1.NameValue(row,"qty") == 0) 
+       return
+   ll_rate = ds_1.NameValue(row,"result_qty") / ds_1.NameValue(row,"qty")
+   ds_1.NameValue(row,"result_rate") = ll_rate * 100
+   if (ds_1.NameValue(row,"result_rate") > 999) 
+   ds_1.NameValue(row,"result_rate") = 999
+   amt_calculate(row)
+   return
+}
+
+if (colid == "result_rate") {        //금회  기성 율
+//   if ((ds_1.NameValue(row,"result_rate") + ds_1.NameValue(row,"ls_result_rate")) > 100 ) {
+//      ds_1.NameValue(row,"result_rate") = ds_1.OrgNameValue(row,"result_rate")
+//      alert("기성율이 100%를 초과할 수 없습니다")
+//      return false
+//   }   
+   ds_1.NameValue(row,"result_qty") = ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"result_rate") / 100
+   amt_calculate(row)
+   return
+}
+
+if (colid == "result_amt") {        //금회 기성 금액
+//   if ( (ds_1.NameValue(row,"result_amt") + ds_1.NameValue(row,"ls_result_amt")) > ds_1.NameValue(row,"amt") ) {
+//      ds_1.NameValue(row,"result_amt") = ds_1.OrgNameValue(row,"result_amt")
+//      alert("실행 총금액을  초과할 수 없습니다")
+//      return false
+//   }   
+   if ( (ds_1.NameValue(row,"result_amt") + ds_1.NameValue(row,"ls_result_amt")) == ds_1.NameValue(row,"amt") ) {
+      ds_1.NameValue(row,"result_rate") = 100 - ds_1.NameValue(row,"ls_result_rate")
+      ds_1.NameValue(row,"result_qty") = ds_1.NameValue(row,"qty") -  ds_1.NameValue(row,"ls_result_qty")
+   }
+   else {
+      ll_rate = ds_1.NameValue(row,"result_amt") / ds_1.NameValue(row,"amt")
+      ds_1.NameValue(row,"result_rate") = ll_rate * 100
+      if (ds_1.NameValue(row,"result_rate") > 999) 
+      ds_1.NameValue(row,"result_rate") = 999
+      
+      ds_1.NameValue(row,"result_qty") = ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"result_rate") / 100
+   }      
+   amt_calculate(row)
+   return
+}
+
+}
+//-------------------------------------------------------------------------------
+function select_cost()                   //실 투입내역 확인  들어가기
+//-------------------------------------------------------------------------------
+{
+   window.showModalDialog("../06/c_spec_cost_detail_1h.html",is_dept_code+ '@' + dept_name.value + '@' + is_yymm + '@' +  ds_1.NameValue(ds_1.RowPosition,"spec_unq_num") +'@' +  ds_1.NameValue(ds_1.RowPosition,"name") ,"dialogWidth:1012px;dialogHeight:690px");
+//   top.frames['main_ct'].location.href("c_spec_const_wbs_amt_1h.html" +"?"+"r")
+
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+	var temp_1
+	temp_1 = ds_tree_1.NameValue(ds_tree_1.RowPosition,"name")
+	gd_excel_tot.Format = is_format_1_excel
+	ds_excel_tot.DataID='c_spec_const_progress_tot_excel_1q.jsp?arg_dept_code=' + is_dept_code + 
+						  	  '&arg_yymm=' + ds_tree_1.NameValue(ds_tree_1.RowPosition,"yymm") + '&arg_parent_sum_code=' + ds_tree_1.NameValue(ds_tree_1.RowPosition,'sum_code')
+	ds_excel_tot.SyncLoad=true
+	ds_excel_tot.Reset()
+   if  (! confirm("작업이 끝날때까지 기다려주세요")) return
+   else
+      gd_excel_tot.GridToExcel(temp_1,'c:\aa.xls',0)  
+     
+  ds_excel_tot.ClearData()           
+   
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()  
+   gd_1_button.style.visibility="visible"                    // 실행 내역 입력시 써브 메뉴 
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	is_yymm = is_yymm.substr(0,7) + ".01"
+	em_select_yymm.text = is_yymm.substr(0,7)
+	dept_name.value = is_dept_name
+
+   gd_1.format = is_format_1 
+   gd_parent_query.format=is_parent_format_1
+   tr_1.Action = is_tr_1_addr
+   tree_btnquery_onclick()
+    if  (ds_tree_1.CountRow < 1) 
+        return
+   tree_1_OnSelChanged()
+}
+</SCRIPT>
+<SCRIPT language=JavaScript  event=OnColumnChanged(row,colid) for=ds_1>
+  if (colid != 'mat_unit_fix') return
+  if (ds_1.NameValue(row,'mat_unit_fix') == 'T') {   // 실행단가 
+     ds_1.NameValue(row,'sup_unit_amt') = ds_1.NameValue(row,'price') 
+     ds_1.NameValue(row,'pre_result_amt') = ds_1.NameValue(row,'sup_qty') * ds_1.NameValue(row,'sup_unit_amt')
+     ds_1.NameValue(row,'cm_result_amt') = ds_1.NameValue(row,'amt') * ds_1.NameValue(row,'cost_amt') / ds_1.NameValue(row,'pre_result_amt') 
+  }   
+  else {
+     ds_1.NameValue(row,'sup_unit_amt') = ds_1.OrgNameValue(row,'sup_unit_amt')
+     ds_1.NameValue(row,'pre_result_amt') = ds_1.OrgNameValue(row,'pre_result_amt') 
+     ds_1.NameValue(row,'cm_result_amt') = ds_1.OrgNameValue(row,'cm_result_amt') 
+  }
+//   if (ds_1.NameValue(row,'unit') == '식') {
+//      ds_1.NameValue(row,'cm_result_amt') = ds_1.NameValue(row,'amt') * ds_1.NameValue(row,'cost_amt') / ds_1.NameValue(row,'pre_result_amt') 
+      OnExit_rtn(row,'cm_result_amt',1)
+  
+</SCRIPT>
+
+<SCRIPT language=JavaScript  event=OnExit(row,colid,olddata) for=gd_1>
+//OnColumnChanged
+//CanColumnPosChange
+//--------------------------------------------------------도급 누계 로틴-------------------------
+//--------------------도급 누계수량 
+if (ds_1.NameValue(row,colid) == olddata) return 
+OnExit_rtn(row,colid,olddata)
+
+if (colid == 'sup_qty') {
+   ds_1.NameValue(row,'pre_result_amt') = ds_1.NameValue(row,'sup_qty') * ds_1.NameValue(row,'sup_unit_amt')
+   if (ds_1.NameValue(row,'sup_qty') == 0) {
+      ds_1.NameValue(row,'cm_result_qty') = ds_1.NameValue(row,'qty')
+      OnExit_rtn(row,'cm_result_qty',olddata)
+   }
+   else {   
+       ds_1.NameValue(row,'cm_result_qty') = ds_1.NameValue(row,'qty') * ds_1.NameValue(row,'cost_qty') / ds_1.NameValue(row,'sup_qty') 
+       OnExit_rtn(row,'cm_result_qty',olddata)
+   }
+}
+if (colid == 'sup_unit_amt') {
+   ds_1.NameValue(row,'pre_result_amt') = ds_1.NameValue(row,'sup_qty') * ds_1.NameValue(row,'sup_unit_amt')
+   if (ds_1.NameValue(row,'unit') == '식') {
+      ds_1.NameValue(row,'cm_result_amt') = ds_1.NameValue(row,'amt') * ds_1.NameValue(row,'cost_amt') / ds_1.NameValue(row,'pre_result_amt') 
+      OnExit_rtn(row,'cm_result_amt',olddata)
+   }   
+}
+
+
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        return 
+    else{    
+        ds_1.RowPosition++
+    }    
+}
+</SCRIPT>
+
+<script language=JavaScript for=tree_1 event=OnSelChanged()>
+   tree_1_OnSelChanged()
+      
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+if (row < 1)  return
+  if (ds_1.NameValue(row,'unit') == '식')
+     gd_1.ColumnProp('sup_qty', 'Edit') = 'None'
+  else
+     gd_1.ColumnProp('sup_qty', 'Edit') = ''
+       
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+ if (eventid == 'sup_color') {
+    if (ds_1.NameValue(row,"unit") == '식') 
+       return '#EFEFEF'
+ }
+ if ((row % 2) == 0)
+    return "#F4F2D8"
+ else
+    return "#ffffff"
+
+
+
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+
+<SCRIPT language=JavaScript for=ds_tree_1 event=CanRowPosChange(row)>
+  if (il_screen_zindex == 2)    //  내역 tab이고 내역을 입력할수있는화면일경우  
+     btnsave_onclick()   //  tree가변경되면 ds_tree_2로 check할것.
+  return true  
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=gd_parent_query event=OnDblClick(row,colid)>
+ll_no_seq = ds_parent_query.NameValue(row,"no_seq")
+ll_row = ds_tree_1.NameValueRow("no_seq",ll_no_seq)    //찾기 
+ds_tree_1.RowPosition = ll_row
+
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1  event=OnDblClick(row,colid)>
+select_cost()
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=gd_parent_query event=OnRButtonDown(row,colid,xpos,ypos)>
+lw_sum_code = ds_parent_query.NameValue(row,"sum_code")
+if  (lw_sum_code.length >= 6) {
+     lw_sum_code = lw_sum_code.substr(0,lw_sum_code.length - 4)
+     ds_tree_1.RowPosition = ds_tree_1.NameValueRow("sum_code",lw_sum_code)
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnRButtonDown(row,colid,xpos,ypos)>
+lw_spec_no_seq = ds_1.NameValue(row,"spec_no_seq")
+ll_row = ds_tree_1.NameValueRow("spec_no_seq",lw_spec_no_seq)
+lw_sum_code = ds_tree_1.NameValue(ll_row,"sum_code")
+if  (lw_sum_code.length >= 4)  {
+     lw_sum_code = lw_sum_code.substr(0,lw_sum_code.length - 2)
+     ds_tree_1.RowPosition = ds_tree_1.NameValueRow("sum_code",lw_sum_code)
+}
+</SCRIPT>
+<script language=JavaScript for=gd_excel_tot event=OnUserColor(row,eventid)>
+	 if(eventid == "ucolor") {
+			if (ds_excel_tot.NameValue(row,"tag") == '1') {
+				return "yellow"
+			}
+			else
+	         return;
+    }
+</script>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_tree_1 event=OnLoadError()>
+  alert("Error Code(ds_tree_1) : " + ds_tree_1.ErrorCode + "\n" + "Error Message : " + ds_tree_1.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+  sp_call()
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_parent_query  event=OnLoadError()>
+  alert("Error Code(ds_parent_query) : " + ds_parent_query.ErrorCode + "\n" + "Error Message : " + ds_parent_query.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+<OBJECT id=ds_excel_tot 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<OBJECT id=ds_tree_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+	
+ <Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+    
+<OBJECT id=ds_parent_query 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_spec_const_progress_detail_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+						<input type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+         </tr>                 
+      </table>
+</DIV>      
+<LABEL id=Label_2  
+    	style="WIDTH: 75px; LEFT: 280px;POSITION: absolute; HEIGHT: 25px; TOP:9px">&nbsp;&nbsp;기성년월:
+</LABEL>
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+       style="Z-INDEX: 101; LEFT: 350px; WIDTH: 80px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Alignment" VALUE="1">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="6">
+	    <PARAM NAME="Format" VALUE="YYYY-MM">
+            <param name=ClipMode       value=false>
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+	if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()" 
+       style=" LEFT: 430px; WIDTH: 20px; POSITION: absolute; TOP: 5px; HEIGHT:20px">
+	
+<input type="radio" 
+       style="Z-INDEX: 100; LEFT: 500px; WIDTH: 20px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+       value="1" defaultChecked="true" onclick="rd_screen_onclick()">
+<LABEL id=Label_1 
+       style="LEFT: 521px; WIDTH: 72px; POSITION: absolute; TOP: 10px; HEIGHT: 19px">화면조정 
+</LABEL>       
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 2px; WIDTH: 220px; POSITION: absolute; TOP: 30px; HEIGHT: 100%"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_tree_1">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="name">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="llevel">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_tree_1">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+  
+  
+  
+  <DIV id=gd_1_button 
+      style="Z-INDEX: 107; LEFT: 590px; WIDTH: 400px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+     <input type="button" value="도급기성" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; width=60px; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=gd_1_bt_cnt()>
+     <input type="button" value="실행기성" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; width=60px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=gd_1_bt_sil()>
+     <input type="button" value="전체기성" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; width=60px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=gd_1_bt_tot()>
+     <input type="button" value="원가조회"  
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; width=60px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_profit()>
+     <input type="button" value="엑셀내리기"  
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; width=70px; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=excel_down()>
+  </div>	
+  <DIV id=tab_page_1 
+      style="Z-INDEX: 107; LEFT: 222px; WIDTH: 790px; POSITION: absolute; TOP: 30px; HEIGHT: 95%">
+     <comment id="__NSID__"><OBJECT id=gd_parent_query 
+         style="Z-INDEX: 111; LEFT: 1; WIDTH: 790px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="0">
+	     <PARAM NAME="Editable" VALUE="0">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+        <param name="MultiRowSelect"   value="0">
+	     <param name="ViewSummary"    value=1>
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_parent_query">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+     <comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 1; WIDTH: 790px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	     <PARAM NAME="Editable" VALUE="-1">
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <param name="ViewSummary"    value=1>
+	     <param name=UsingOneClick  value="1">
+	     <param name="DragDropEnable" value=1>
+	     <PARAM NAME="DataID" VALUE="ds_1">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</DIV>	
+     <comment id="__NSID__"><OBJECT id=gd_excel_tot 
+         style="Z-INDEX: 110; LEFT: 1; WIDTH: 790px; POSITION: absolute; TOP: 1px; HEIGHT: 100%; visibility:hidden" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	     <PARAM NAME="Editable" VALUE="-1">
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <param name=UsingOneClick  value="1">
+	     <param name="DragDropEnable" value=1>
+	     <PARAM NAME="DataID" VALUE="ds_excel_tot">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+</BODY></HTML>

@@ -1,0 +1,214 @@
+Create Or Replace View T_DEPT_CODE
+(
+	DEPT_CODE ,
+	CRTUSERNO ,
+	CRTDATE ,
+	MODUSERNO ,
+	MODDATE ,
+	DEPT_NAME ,
+	DEPT_SHORT_NAME ,
+	COMP_CODE ,
+	TAX_COMP_CODE ,
+	BUDG_CLS ,
+	GROUP_DEPT_CODE,
+	COST_DEPT_KND_TAG,
+	DEPT_PROJ_TAG,
+	INPUT_DT_F,
+	INPUT_DT_T,
+	ACC_GRP_CODE,
+	LEGA_DEPT,
+	SAUP_TAX_TAG,
+	EMP_CLASS_CODE,
+	COST_CONV_CODE,
+	P_DEPT_CODE,
+	DEPT_KIND_TAG,
+	ACC_CLOSE_DT,
+	ACC_CLOST_DT_SYS,
+	CONS_AMT,
+	BUDG_AMT,
+	BUDG_APPL_DT,
+	AS_AMT,
+	COST_DESC_TAG,
+	COST_GUESS_AMT,
+	F_CONS_AMT,
+	F_BUDG_AMT,
+	CHARGE_PERS,
+	TAX_MNG_OFFICE,
+	NP_PRT_TAG
+)
+As
+Select
+	b.DEPT_CODE ,
+	a.CRTUSERNO ,
+	a.CRTDATE ,
+	a.MODUSERNO ,
+	a.MODDATE ,
+	b.LONG_NAME ,
+	b.SHORT_NAME ,
+	b.COMP_CODE ,
+	a.TAX_COMP_CODE ,
+	a.BUDG_CLS ,
+	a.GROUP_DEPT_CODE,
+	a.COST_DEPT_KND_TAG,
+	b.DEPT_PROJ_TAG,
+	a.INPUT_DT_F,
+	a.INPUT_DT_T,
+	a.ACC_GRP_CODE,
+	a.LEGA_DEPT,
+	a.SAUP_TAX_TAG,
+	a.EMP_CLASS_CODE,
+	a.COST_CONV_CODE,
+	a.P_DEPT_CODE,
+	a.DEPT_KIND_TAG,
+	a.ACC_CLOSE_DT,
+	a.ACC_CLOST_DT_SYS,
+	a.CONS_AMT,
+	a.BUDG_AMT,
+	a.BUDG_APPL_DT,
+	a.AS_AMT,
+	a.COST_DESC_TAG,
+	a.COST_GUESS_AMT,
+	a.F_CONS_AMT,
+	a.F_BUDG_AMT,
+	a.CHARGE_PERS,
+	a.TAX_MNG_OFFICE,
+	a.NP_PRT_TAG
+From	T_DEPT_CODE_ORG a,
+		Z_CODE_DEPT b
+Where	b.DEPT_CODE = a.DEPT_CODE
+/
+Create Or Replace Trigger trg_T_DEPT_CODE
+Instead Of Insert Or Update Or Delete On T_DEPT_CODE
+For Each Row
+Begin
+	If Inserting Then
+		Raise_Application_Error(-20009,'이 테이블을 통한 입력은 허용되지 않습니다.');
+	ElsIf Updating Then
+		Begin
+			Insert Into T_DEPT_CODE_ORG
+			(
+				DEPT_CODE,
+				CRTUSERNO,
+				CRTDATE,
+				MODUSERNO,
+				MODDATE,
+				DEPT_NAME,
+				DEPT_SHORT_NAME,
+				COMP_CODE,
+				TAX_COMP_CODE,
+				BUDG_CLS,
+				GROUP_DEPT_CODE,
+				COST_DEPT_KND_TAG,
+				INPUT_DT_F,
+				INPUT_DT_T,
+				ACC_GRP_CODE,
+				LEGA_DEPT,
+				SAUP_TAX_TAG,
+				EMP_CLASS_CODE,
+				COST_CONV_CODE,
+				P_DEPT_CODE,
+				DEPT_KIND_TAG,
+				ACC_CLOSE_DT,
+				ACC_CLOST_DT_SYS,
+				CONS_AMT,
+				BUDG_AMT,
+				BUDG_APPL_DT,
+				AS_AMT,
+				COST_DESC_TAG,
+				COST_GUESS_AMT,
+				F_CONS_AMT,
+				F_BUDG_AMT,
+				CHARGE_PERS,
+				TAX_MNG_OFFICE,
+				NP_PRT_TAG
+			)
+			Values
+			(
+				:New.DEPT_CODE,
+				:New.CRTUSERNO,
+				:New.CRTDATE,
+				:New.MODUSERNO,
+				:New.MODDATE,
+				:New.DEPT_NAME,
+				:New.DEPT_SHORT_NAME,
+				:New.COMP_CODE,
+				:New.TAX_COMP_CODE,
+				:New.BUDG_CLS,
+				:New.GROUP_DEPT_CODE,
+				:New.COST_DEPT_KND_TAG,
+				:New.INPUT_DT_F,
+				:New.INPUT_DT_T,
+				:New.ACC_GRP_CODE,
+				:New.LEGA_DEPT,
+				:New.SAUP_TAX_TAG,
+				:New.EMP_CLASS_CODE,
+				:New.COST_CONV_CODE,
+				:New.P_DEPT_CODE,
+				:New.DEPT_KIND_TAG,
+				:New.ACC_CLOSE_DT,
+				:New.ACC_CLOST_DT_SYS,
+				:New.CONS_AMT,
+				:New.BUDG_AMT,
+				:New.BUDG_APPL_DT,
+				:New.AS_AMT,
+				:New.COST_DESC_TAG,
+				:New.COST_GUESS_AMT,
+				:New.F_CONS_AMT,
+				:New.F_BUDG_AMT,
+				:New.CHARGE_PERS,
+				:New.TAX_MNG_OFFICE,
+				:New.NP_PRT_TAG
+			);
+		Exception When Dup_Val_On_Index Then
+			Update	T_DEPT_CODE_ORG
+			Set
+				CRTUSERNO		=	:New.CRTUSERNO,
+				CRTDATE			=	:New.CRTDATE,
+				MODUSERNO		=	:New.MODUSERNO,
+				MODDATE			=	:New.MODDATE,
+				DEPT_NAME		=	:New.DEPT_NAME,
+				DEPT_SHORT_NAME	=	:New.DEPT_SHORT_NAME,
+				COMP_CODE		=	:New.COMP_CODE,
+				TAX_COMP_CODE	=	:New.TAX_COMP_CODE,
+				BUDG_CLS		=	:New.BUDG_CLS,
+				GROUP_DEPT_CODE	=	:New.GROUP_DEPT_CODE,
+				COST_DEPT_KND_TAG = :New.COST_DEPT_KND_TAG,
+				INPUT_DT_F		=	:New.INPUT_DT_F,
+				INPUT_DT_T		=	:New.INPUT_DT_T,
+				ACC_GRP_CODE	=	:New.ACC_GRP_CODE,
+				LEGA_DEPT		=	:New.LEGA_DEPT,
+				SAUP_TAX_TAG	=	:New.SAUP_TAX_TAG,
+				EMP_CLASS_CODE	=	:New.EMP_CLASS_CODE,
+				COST_CONV_CODE	=	:New.COST_CONV_CODE,
+				P_DEPT_CODE		=	:New.P_DEPT_CODE,
+				DEPT_KIND_TAG	=	:New.DEPT_KIND_TAG,
+				ACC_CLOSE_DT	=	:New.ACC_CLOSE_DT,
+				ACC_CLOST_DT_SYS =	:New.ACC_CLOST_DT_SYS,
+				CONS_AMT		=	:New.CONS_AMT,
+				BUDG_AMT		=	:New.BUDG_AMT,
+				BUDG_APPL_DT	=	:New.BUDG_APPL_DT,
+				AS_AMT			=	:New.AS_AMT,
+				COST_DESC_TAG	=	:New.COST_DESC_TAG,
+				COST_GUESS_AMT	=	:New.COST_GUESS_AMT,
+				F_CONS_AMT		=	:New.F_CONS_AMT,
+				F_BUDG_AMT		=	:New.F_BUDG_AMT,
+				CHARGE_PERS		=	:New.CHARGE_PERS,
+				TAX_MNG_OFFICE	=	:New.TAX_MNG_OFFICE,
+				NP_PRT_TAG		=	:New.NP_PRT_TAG
+			Where	DEPT_CODE = :Old.DEPT_CODE;
+		End;
+		Update	Z_CODE_DEPT
+		Set
+			LONG_NAME = :New.DEPT_NAME,
+			SHORT_NAME = :New.DEPT_SHORT_NAME,
+			COMP_CODE = :New.COMP_CODE,
+			DEPT_PROJ_TAG = :New.DEPT_PROJ_TAG
+		Where	DEPT_CODE = :Old.DEPT_CODE;
+	ElsIf Deleting Then
+		Delete	T_DEPT_CODE_ORG
+		Where	DEPT_CODE = :Old.DEPT_CODE;
+		Delete	Z_CODE_DEPT
+		Where	DEPT_CODE = :Old.DEPT_CODE;
+	End If;
+End;
+/

@@ -1,0 +1,186 @@
+CREATE OR REPLACE Procedure SP_T_BUDG_DEPT_CHG_CONFIRM_N
+(
+	Ar_COMP_CODE					Varchar2,
+	Ar_CLSE_ACC_ID					Varchar2,
+	Ar_DEPT_CODE					Varchar2,
+	Ar_CHG_SEQ						Number
+	
+)
+Is
+	lnPrevChgSeq				Number;
+Begin
+	
+	DELETE FROM T_BUDG_CHG_REASON a
+	Where	a.COMP_CODE  = AR_COMP_CODE
+	And     	a.CLSE_ACC_ID = AR_CLSE_ACC_ID
+	And		a.DEPT_CODE   = AR_DEPT_CODE
+	And		a.CHG_SEQ       = AR_CHG_SEQ;
+	Begin
+		Select
+			Max(CHG_SEQ)
+		Into
+			lnPrevChgSeq
+		From	T_BUDG_DEPT_H
+		Where	COMP_CODE = Ar_COMP_CODE
+		And		CLSE_ACC_ID = Ar_CLSE_ACC_ID
+		And		DEPT_CODE = Ar_DEPT_CODE
+		And		CHG_SEQ < Ar_CHG_SEQ;
+	Exception When No_Data_Found Then
+		Null;
+	End;
+	If lnPrevChgSeq Is Not Null Then
+		Merge Into T_BUDG_DEPT_ITEM_H t
+		Using
+		(
+			Select
+				COMP_CODE,
+				CLSE_ACC_ID,
+				DEPT_CODE,
+				Ar_CHG_SEQ CHG_SEQ,
+				BUDG_CODE_NO,
+				RESERVED_SEQ,
+				CRTUSERNO,
+				CRTDATE,
+				MODUSERNO,
+				MODDATE,
+				TARGET_DEPT_CODE,
+				BUDG_ADD_AMT,
+				BUDG_ITEM_REQ_AMT,
+				BUDG_ITEM_ASSIGN_AMT,
+				REMARKS
+			From	T_BUDG_DEPT_ITEM_H
+			Where	COMP_CODE = Ar_COMP_CODE
+			And		CLSE_ACC_ID = Ar_CLSE_ACC_ID
+			And		DEPT_CODE = Ar_DEPT_CODE
+			And		CHG_SEQ = lnPrevChgSeq
+		) s
+		On
+		(
+			s.COMP_CODE = t.COMP_CODE
+		And	s.CLSE_ACC_ID = t.CLSE_ACC_ID
+		And	s.DEPT_CODE = t.DEPT_CODE
+		And	s.CHG_SEQ = t.CHG_SEQ
+		And	s.BUDG_CODE_NO = t.BUDG_CODE_NO
+		And	s.RESERVED_SEQ = t.RESERVED_SEQ
+		)
+		When Matched Then
+		Update
+		Set	t.TARGET_DEPT_CODE = s.TARGET_DEPT_CODE,
+			t.BUDG_ADD_AMT = s.BUDG_ADD_AMT,
+			t.BUDG_ITEM_REQ_AMT = s.BUDG_ITEM_REQ_AMT,
+			t.BUDG_ITEM_ASSIGN_AMT = s.BUDG_ITEM_ASSIGN_AMT,
+			t.REMARKS = s.REMARKS
+		When Not Matched Then
+		Insert
+		(
+			COMP_CODE,
+			CLSE_ACC_ID,
+			DEPT_CODE,
+			CHG_SEQ,
+			BUDG_CODE_NO,
+			RESERVED_SEQ,
+			CRTUSERNO,
+			CRTDATE,
+			MODUSERNO,
+			MODDATE,
+			TARGET_DEPT_CODE,
+			BUDG_ADD_AMT,
+			BUDG_ITEM_REQ_AMT,
+			BUDG_ITEM_ASSIGN_AMT,
+			REMARKS
+		)
+		Values
+		(
+			s.COMP_CODE,
+			s.CLSE_ACC_ID,
+			s.DEPT_CODE,
+			s.CHG_SEQ,
+			s.BUDG_CODE_NO,
+			s.RESERVED_SEQ,
+			s.CRTUSERNO,
+			s.CRTDATE,
+			s.MODUSERNO,
+			s.MODDATE,
+			s.TARGET_DEPT_CODE,
+			s.BUDG_ADD_AMT,
+			s.BUDG_ITEM_REQ_AMT,
+			s.BUDG_ITEM_ASSIGN_AMT,
+			s.REMARKS
+		);
+		Merge Into T_BUDG_MONTH_AMT_H t
+		Using
+		(
+			Select
+				COMP_CODE,
+				CLSE_ACC_ID,
+				DEPT_CODE,
+				Ar_CHG_SEQ CHG_SEQ,
+				BUDG_CODE_NO,
+				RESERVED_SEQ,
+				BUDG_YM,
+				CRTUSERNO,
+				CRTDATE,
+				MODUSERNO,
+				MODDATE,
+				BUDG_MONTH_REQ_AMT,
+				BUDG_MONTH_ASSIGN_AMT,
+				REMARKS
+			From	T_BUDG_MONTH_AMT_H
+			Where	COMP_CODE = Ar_COMP_CODE
+			And		CLSE_ACC_ID = Ar_CLSE_ACC_ID
+			And		DEPT_CODE = Ar_DEPT_CODE
+			And		CHG_SEQ = lnPrevChgSeq
+		) s
+		On
+		(
+			s.COMP_CODE = t.COMP_CODE
+		And	s.CLSE_ACC_ID = t.CLSE_ACC_ID
+		And	s.DEPT_CODE = t.DEPT_CODE
+		And	s.CHG_SEQ = t.CHG_SEQ
+		And	s.BUDG_CODE_NO = t.BUDG_CODE_NO
+		And	s.RESERVED_SEQ = t.RESERVED_SEQ
+		And	s.BUDG_YM = t.BUDG_YM
+		)
+		When Matched Then
+		Update
+		Set	t.BUDG_MONTH_REQ_AMT = s.BUDG_MONTH_REQ_AMT,
+			t.BUDG_MONTH_ASSIGN_AMT = s.BUDG_MONTH_ASSIGN_AMT,
+			t.REMARKS = s.REMARKS
+		When Not Matched Then
+		Insert
+		(
+			COMP_CODE,
+			CLSE_ACC_ID,
+			DEPT_CODE,
+			CHG_SEQ,
+			BUDG_CODE_NO,
+			RESERVED_SEQ,
+			BUDG_YM,
+			CRTUSERNO,
+			CRTDATE,
+			MODUSERNO,
+			MODDATE,
+			BUDG_MONTH_REQ_AMT,
+			BUDG_MONTH_ASSIGN_AMT,
+			REMARKS
+		)
+		Values
+		(
+			s.COMP_CODE,
+			s.CLSE_ACC_ID,
+			s.DEPT_CODE,
+			s.CHG_SEQ,
+			s.BUDG_CODE_NO,
+			s.RESERVED_SEQ,
+			s.BUDG_YM,
+			s.CRTUSERNO,
+			s.CRTDATE,
+			s.MODUSERNO,
+			s.MODDATE,
+			s.BUDG_MONTH_REQ_AMT,
+			s.BUDG_MONTH_ASSIGN_AMT,
+			s.REMARKS
+		);
+	End If;
+End;
+/

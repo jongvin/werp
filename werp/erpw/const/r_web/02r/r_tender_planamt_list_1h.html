@@ -1,0 +1,312 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- *************************************************************	-->
+<!-- 1. 프로그램 id   : r_tender_planamt_1h.html								-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 입찰예가분석표         		                 	-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_code,is_date
+var is_html=""                    //되돌아갈 html주소 
+
+var is_dr_1_addr = 'r_tender_planamt_list_1q.jsp?arg_code='            //master
+var is_dr_2_addr = 'r_tender_planamt_list_2q.jsp?'                     //detail
+var is_dr_3_addr = 'r_tender_planamt_list_3q.jsp?arg_code='            //master
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+   rt_1.Preview()
+   window_onunload()
+}
+//------------------------------------------------------------------------
+function btnprint_onclick()                     // 즉시 출력  
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+   rt_1.Print()
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+var ls_work,li_page,i,j,init,li_tot,ls_code,ls_temp
+	dr_1.DataID = is_dr_1_addr + is_code + "&arg_date=" + is_date
+	dr_1.SyncLoad=true
+	dr_1.Reset()
+
+	dr_3.DataID = is_dr_3_addr + is_code + "&arg_date=" + is_date
+	dr_3.SyncLoad=true
+	dr_3.Reset()
+	
+	dr_2.DataID = is_dr_2_addr 
+	dr_2.SyncLoad=true
+	dr_2.Reset()
+	
+	if (dr_2.CountRow > 0 )
+		dr_2.DeleteRow(1)
+	
+	li_page = 79
+	i=1
+	init=1
+	li_tot=dr_3.CountRow
+	while(i<=li_tot)	{
+		for (j=init;j<=li_page;j++){
+			if (i > li_tot) {
+				break
+			}
+			dr_2.AddRow()
+			dr_2.NameValue(j,"no_1") = i
+			ls_code = dr_3.NameValue(i,"combination")
+			ls_temp = ls_code.substr(0,2) + ' ' + ls_code.substr(2,2) + ' ' + ls_code.substr(4,2) + ' ' + ls_code.substr(6,2)
+			dr_2.NameValue(j,"code_1") = ls_temp
+			dr_2.NameValue(j,"amt_1") = dr_3.NameValue(i,"avg_amt")
+			i++
+		}
+		for (j=init;j<=li_page;j++){
+			if (i > li_tot) {
+				break
+			}
+			dr_2.NameValue(j,"no_2") = i
+			ls_code = dr_3.NameValue(i,"combination")
+			ls_code = ls_code.substr(0,2) + ' ' + ls_code.substr(2,2) + ' ' + ls_code.substr(4,2) + ' ' + ls_code.substr(6,2)
+			dr_2.NameValue(j,"code_2") = ls_code
+			dr_2.NameValue(j,"amt_2") = dr_3.NameValue(i,"avg_amt")
+			i++
+		}
+		for (j=init;j<=li_page;j++){
+			if (i > li_tot) {
+				break
+			}
+			dr_2.NameValue(j,"no_3") = i
+			ls_code = dr_3.NameValue(i,"combination")
+			ls_code = ls_code.substr(0,2) + ' ' + ls_code.substr(2,2) + ' ' + ls_code.substr(4,2) + ' ' + ls_code.substr(6,2)
+			dr_2.NameValue(j,"code_3") = ls_code
+			dr_2.NameValue(j,"amt_3") = dr_3.NameValue(i,"avg_amt")
+			i++
+		}
+		for (j=init;j<=li_page;j++){
+			if (i > li_tot) {
+				break
+			}
+			dr_2.NameValue(j,"no_4") = i
+			ls_code = dr_3.NameValue(i,"combination")
+			ls_code = ls_code.substr(0,2) + ' ' + ls_code.substr(2,2) + ' ' + ls_code.substr(4,2) + ' ' + ls_code.substr(6,2)
+			dr_2.NameValue(j,"code_4") = ls_code
+			dr_2.NameValue(j,"amt_4") = dr_3.NameValue(i,"avg_amt")
+			i++
+		}
+		init = init + 79
+		li_page = li_page + 79
+	}
+		
+
+	
+}
+//----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//----------------------------------------------------------------
+{
+	top.frames['main_ct'].location.href(is_html +"?"+'u')
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	var result="";
+	var array = new Array();
+
+  	result = readCookie("@r_tender_planamt_list@")
+	
+	array = result.split("@");
+        
+   is_code = array[0]
+   is_date = array[1]
+	is_html = array[2]	
+
+	btnquery_prt_onclick()
+
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=window_onload() onunload=window_onunload() oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=dr_1 event=OnLoadError()>
+  alert("Error Code(dr_1) : " + dr_1.ErrorCode + "\n" + "Error Message : " + dr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=dr_2 event=OnLoadError()>
+  alert("Error Code(dr_2) : " + dr_2.ErrorCode + "\n" + "Error Message : " + dr_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=dr_3 event=OnLoadError()>
+  alert("Error Code(dr_3) : " + dr_3.ErrorCode + "\n" + "Error Message : " + dr_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=rt_1 event=OnError()>
+  alert("Error Code(rt_1) : " + rt_1.ErrorCode + "\n" + "Error Message : " + rt_1.ErrorMsg + "\n");
+</SCRIPT>
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=dr_1 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=dr_2 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=dr_3 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+    
+<comment id="__NSID__"><OBJECT id=rt_1 classid=CLSID:37D13B2F-E5EB-11D2-973D-00104B15E56F>
+    <param name="MasterDataID"      value="dr_1">
+    <PARAM name="DetailDataID"      VALUE="dr_2">
+    <PARAM name="PaperSize"         VALUE="A4">
+    <PARAM name="LandScape"         VALUE="false">
+    <param name="MargineX"             value="10">
+    <PARAM name="Format"            VALUE="
+<B>id=DHeader ,left=0,top=0 ,right=2000 ,bottom=382 ,face='굴림체' ,size=10 ,penwidth=1
+	<L> left=184 ,top=0 ,right=184 ,bottom=0 </L>
+	<L> left=269 ,top=0 ,right=269 ,bottom=0 </L>
+	<L> left=269 ,top=0 ,right=269 ,bottom=0 </L>
+	<L> left=956 ,top=116 ,right=956 ,bottom=319 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=956 ,top=116 ,right=1975 ,bottom=116 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1019 ,top=116 ,right=1019 ,bottom=319 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1297 ,top=116 ,right=1297 ,bottom=319 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1359 ,top=116 ,right=1359 ,bottom=319 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1634 ,top=116 ,right=1634 ,bottom=319 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1697 ,top=116 ,right=1697 ,bottom=319 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1975 ,top=116 ,right=1975 ,bottom=319 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<T>id='01' ,left=966 ,top=122 ,right=1016 ,bottom=153 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt01', left=1028, top=122, right=1294, bottom=150, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='06' ,left=1303 ,top=122 ,right=1353 ,bottom=150 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt06', left=1363, top=122, right=1631, bottom=150, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='11' ,left=1644 ,top=122 ,right=1691 ,bottom=153 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt11', left=1703, top=122, right=1969, bottom=150, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=956 ,top=156 ,right=1975 ,bottom=156 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<T>id='02' ,left=966 ,top=166 ,right=1016 ,bottom=194 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt02', left=1028, top=166, right=1294, bottom=191, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='07' ,left=1303 ,top=166 ,right=1353 ,bottom=194 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt07', left=1363, top=166, right=1631, bottom=191, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='12' ,left=1644 ,top=166 ,right=1691 ,bottom=194 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt12', left=1703, top=166, right=1969, bottom=191, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=956 ,top=197 ,right=1975 ,bottom=197 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<T>id='03' ,left=966 ,top=203 ,right=1016 ,bottom=234 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt03', left=1028, top=203, right=1294, bottom=231, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='08' ,left=1303 ,top=203 ,right=1353 ,bottom=234 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt08', left=1363, top=203, right=1631, bottom=231, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='13' ,left=1644 ,top=203 ,right=1691 ,bottom=234 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt13', left=1703, top=203, right=1969, bottom=231, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=956 ,top=241 ,right=1972 ,bottom=241 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<T>id='04' ,left=966 ,top=244 ,right=1016 ,bottom=275 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt04', left=1028, top=244, right=1294, bottom=272, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='09' ,left=1303 ,top=244 ,right=1353 ,bottom=275 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt09', left=1363, top=244, right=1631, bottom=272, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='14' ,left=1644 ,top=244 ,right=1691 ,bottom=275 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt14', left=1703, top=244, right=1969, bottom=272, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=956 ,top=278 ,right=1975 ,bottom=278 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<T>id='05' ,left=966 ,top=284 ,right=1016 ,bottom=316 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt05', left=1028, top=284, right=1294, bottom=312, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='10' ,left=1303 ,top=284 ,right=1353 ,bottom=316 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt10', left=1363, top=284, right=1631, bottom=312, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<T>id='15' ,left=1644 ,top=284 ,right=1691 ,bottom=316 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='plan_amt15', left=1703, top=284, right=1969, bottom=312, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=956 ,top=319 ,right=1975 ,bottom=319 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=0 ,top=331 ,right=0 ,bottom=382 ,penstyle=solid ,penwidth=5 ,pencolor=#000000 </L>
+	<L> left=0 ,top=331 ,right=1975 ,bottom=331 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=1975 ,top=331 ,right=1975 ,bottom=382 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<L> left=0 ,top=382 ,right=1975 ,bottom=382 ,penstyle=solid ,penwidth=3 ,pencolor=#000000 </L>
+	<T>id='입찰 예가  분석표' ,left=25 ,top=28 ,right=891 ,bottom=166 ,face='굴림체' ,size=24 ,bold=true ,underline=true ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='조합군' ,left=566 ,top=334 ,right=722 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='NO' ,left=3 ,top=334 ,right=66 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='조합군' ,left=72 ,top=334 ,right=231 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='금액' ,left=244 ,top=334 ,right=488 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='NO' ,left=494 ,top=334 ,right=559 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='금액' ,left=1725 ,top=334 ,right=1969 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='조합군' ,left=1550 ,top=334 ,right=1709 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='NO' ,left=1478 ,top=334 ,right=1544 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='금액' ,left=1228 ,top=334 ,right=1472 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='조합군' ,left=1056 ,top=334 ,right=1216 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='NO' ,left=988 ,top=334 ,right=1050 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='금액' ,left=741 ,top=334 ,right=981 ,bottom=369 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='비율:' ,left=609 ,top=278 ,right=709 ,bottom=322 ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='입찰일시:' ,left=13 ,top=281 ,right=184 ,bottom=322 ,align='left' ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='기초금액:' ,left=13 ,top=244 ,right=184 ,bottom=284 ,align='left' ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='발주처:' ,left=13 ,top=206 ,right=144 ,bottom=247 ,align='left' ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<T>id='공사명:' ,left=13 ,top=169 ,right=144 ,bottom=209 ,align='left' ,face='굴림체' ,size=8 ,bold=true ,underline=false ,italic=false ,forecolor=#000000 ,backcolor=WHITE</T>
+	<C>id='name', left=141, top=169, right=591, bottom=209, align='left', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='order_name', left=141, top=206, right=591, bottom=247, align='left', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='survey_amt', left=181, top=244, right=591, bottom=284, face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='tender_date', left=181, top=281, right=591, bottom=322, face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='rate', left=709, top=278, right=816, bottom=322, align='right', face='굴림체', size=8, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<L> left=1716 ,top=331 ,right=1716 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1547 ,top=331 ,right=1547 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1478 ,top=331 ,right=1478 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1225 ,top=331 ,right=1225 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=1053 ,top=331 ,right=1053 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=988 ,top=331 ,right=988 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=731 ,top=331 ,right=731 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=563 ,top=331 ,right=563 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=494 ,top=331 ,right=494 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=241 ,top=331 ,right=241 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+	<L> left=69 ,top=331 ,right=69 ,bottom=382 ,penstyle=solid ,penwidth=2 ,pencolor=#000000 </L>
+</B>
+<B>id=default ,left=0,top=0 ,right=2000 ,bottom=30 ,face='굴림체' ,size=10 ,penwidth=1
+	<L> left=0 ,top=0 ,right=0 ,bottom=30 </L>
+	<L> left=69 ,top=0 ,right=69 ,bottom=30 </L>
+	<L> left=241 ,top=0 ,right=241 ,bottom=30 </L>
+	<L> left=494 ,top=0 ,right=494 ,bottom=30 </L>
+	<L> left=731 ,top=0 ,right=731 ,bottom=30 </L>
+	<L> left=988 ,top=0 ,right=988 ,bottom=30 </L>
+	<L> left=1053 ,top=0 ,right=1053 ,bottom=30 </L>
+	<L> left=1225 ,top=0 ,right=1225 ,bottom=30 </L>
+	<L> left=1478 ,top=0 ,right=1478 ,bottom=30 </L>
+	<L> left=1547 ,top=0 ,right=1547 ,bottom=30 </L>
+	<L> left=1716 ,top=0 ,right=1716 ,bottom=30 </L>
+	<L> left=1975 ,top=0 ,right=1975 ,bottom=30 </L>
+	<L> left=0 ,top=30 ,right=1975 ,bottom=30 </L>
+	<C>id='no_1', left=3, top=3, right=66, bottom=30, face='굴림체', size=7, bold=true, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='code_1', left=70, top=3, right=240, bottom=30, face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='amt_1', left=244, top=3, right=488, bottom=30, align='right' ,mask='#,###', face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='no_2', left=495, top=3, right=562, bottom=30, face='굴림체', size=7, bold=true, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='code_2', left=559, top=3, right=725, bottom=30, face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='amt_2', left=734, top=3, right=978, bottom=30, align='right' ,mask='#,###', face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='code_4', left=1550, top=3, right=1716, bottom=30, face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='amt_4', left=1725, top=3, right=1969, bottom=30, align='right' ,mask='#,###', face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<L> left=563 ,top=0 ,right=563 ,bottom=30 </L>
+	<C>id='no_4', left=1479, top=3, right=1546, bottom=30, face='굴림체', size=7, bold=true, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='amt_3', left=1228, top=3, right=1472, bottom=30, align='right' ,mask='#,###', face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+	<C>id='code_3', left=1053, top=3, right=1219, bottom=30, face='굴림체', size=7, bold=false, underline=false, italic=false, forecolor=#000000, backcolor=WHITE</C>
+	<C>id='no_3', left=989, top=3, right=1052, bottom=30, face='굴림체', size=7, bold=true, underline=false, italic=false, forecolor=#000000, backcolor=WHITE, Dec=0</C>
+</B>
+<B>id=Footer ,left=0 ,top=2826 ,right=2000 ,bottom=2970 ,face='굴림체' ,size=8 ,penwidth=1
+	<C>id='sysdate', left=25, top=1, right=428, bottom=62</C>
+	<T>id='-#p/#T-' ,left=1703 ,top=1 ,right=1953 ,bottom=40</T>
+</B>
+
+
+               ">                                    
+
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

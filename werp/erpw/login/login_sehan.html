@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : login.html (그리드가 하나일경우)								-->
+<!-- 2. 유형(시나리오): user id check														-->
+<!-- 3. 기 능 정 의   : login check      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<TITLE> 유원 I&C 공사관리시스템 </TITLE>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<META content="Pragma" CONTENT="No-Cache">
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../comm_function/comm_function.js"></SCRIPT> 
+
+<STYLE>
+	#logpic {position:absolute;left:200;top:100;width:596;height:281}
+</STYLE>
+
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript> 
+var gs_home = 'erpw' 
+var is_user_id
+var is_ds_1_addr = 'm_authority_user_login_q.jsp?arg_user_id='
+var is_open_type = "1"
+//----------------------------------------------------------------
+function bt_confirm_onclick()
+//----------------------------------------------------------------
+{
+  is_user_id = tb_user_id.value
+  ds_1.DataID=is_ds_1_addr + is_user_id
+  ds_1.SyncLoad = true;
+  ds_1.reset()
+  if  (ds_1.CountRow != 1){
+     alert("사번이 틀렸습니다")
+     return
+  } 
+
+ if  (tb_user_id.value != ds_1.namevalue(1,"user_id"))
+        alert("사번이 틀렸습니다")
+     else if  (tb_password.value != ds_1.namevalue(1,"password"))
+              alert("암호가 틀렸습니다")   
+     else { makeCookie("@user_id@",tb_user_id.value)  
+            makeCookie("@empno@",ds_1.NameValue(1,"empno"))
+            makeCookie("@name@",ds_1.NameValue(1,"name"))
+            makeCookie("@deptcode@",ds_1.NameValue(1,"deptcode"))
+            makeCookie("@short_name@",ds_1.NameValue(1,"short_name"))
+            makeCookie("@gs_home@",gs_home)
+            ls_bb = readCookie("JSESSIONID")
+            makeCookie("@JFLAG@",ls_bb)
+//            location.href("main.html")
+      ll_height = screen.availHeight // - 90
+//		window.open("main.html","","height="+screen.availHeight+",width="+screen.availWidth+",left=0,top=0,scrollbars=1, resizable=0, status=1"); 
+     if (is_open_type == "1")
+		window.open("main.html","","height="+ll_height+",width="+screen.availWidth+",left=0,top=0,scrollbars=1, resizable=1, status=1"); 
+     else		
+      window.open("main.html")
+//        self.opener=self;
+//		 self.close();
+      is_open_type = 1      
+           }
+           
+}
+//----------------------------------------------------------------
+function click_event(e)
+//----------------------------------------------------------------
+{
+ if (e.keyCode == 113) {
+    is_open_type = 2
+    bt_confirm_onclick()
+     
+ }   
+}
+//----------------------------------------------------------
+function inkeyDown()  
+//----------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		bt_confirm_onclick()
+	} 
+}
+
+//----------------------------------------------------------------
+function window_onload()
+//----------------------------------------------------------------
+{
+
+// ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='01'") //home address
+
+// if (ll_cnt == 0) 
+//    alert("SYSTEM 정보가 설치 되어있지 않습니다")
+   
+// gs_home = ds_select.NameValue(1,"select_2")
+ document.links[0].href=gs_home + "/install/ADE_setup.exe"    //초기 셋업 주소 
+
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" bgcolor="#000000" onload=setTimeout('window_onload()',1) oncontextmenu="return false" onkeydown="click_event(event)">
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+   style="Z-INDEX: 1; LEFT: 650px; VISIBILITY: hidden;"
+	<PARAM NAME="DataID" VALUE="">
+	<PARAM NAME="CacheLoad" VALUE="0"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select
+     style="Z-INDEX: 1; LEFT: 650px; VISIBILITY: hidden;"
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<DIV id=tab_page_2 style="Z-INDEX: 200">     
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<A  HREF='erpw/install/ADE_setup.exe'>초기 셋업</A><BR>  
+  
+<LABEL id=Label_1 
+    style="LEFT: 296px; font-size:14px; POSITION: absolute; TOP: 540px; HEIGHT: 22px;  COLOR: gold">사&nbsp;&nbsp;번:&nbsp;</LABEL>
+<LABEL id=Label_1 
+    style="LEFT: 465px; POSITION: absolute; TOP: 540px; font-size:13px; HEIGHT: 22px ; COLOR: gold">PASSWORD:&nbsp;</LABEL>
+<INPUT id=tb_user_id onkeyDown="inkeyDown()"
+    style="Z-INDEX: 101; LEFT: 341px; WIDTH: 80px; POSITION: absolute; TOP: 535px; HEIGHT: 22px" 
+    tabIndex=1 maxLength=6 size=10 border=1>
+<INPUT id=tb_password onkeyDown="inkeyDown()"
+    style="Z-INDEX: 102; LEFT: 546px; WIDTH: 80px; POSITION: absolute; TOP: 535px; HEIGHT: 22px" 
+    tabIndex=2 type=password maxLength=8 size=10 border=1>
+<input id=bt_confirm type="button" value="확인" 
+          style="color:#2E4A4A; font-size:14px; CURSOR: hand;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:18px; LEFT: 635px; POSITION: absolute; TOP: 537px"  tabIndex=3  
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_confirm_onclick()>
+    
+</div>    
+<DIV id=tab_page_1 style="Z-INDEX: 10">     
+<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+style="Z-INDEX: 11; LEFT: 160px; POSITION: absolute; TOP: 50px"
+ codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"
+ WIDTH="640" HEIGHT="480" id="login_su" ALIGN="top">
+ <PARAM NAME=movie VALUE="login_su.swf"> <PARAM NAME=quality VALUE=high> <PARAM NAME=salign VALUE=LT> <PARAM NAME=bgcolor VALUE=#000000> <EMBED src="login_su.swf" quality=high salign=LT bgcolor=#000000  WIDTH="640" HEIGHT="480" NAME="login_su" ALIGN="top"
+ TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
+</OBJECT>
+</div>   
+ 
+</BODY></HTML>

@@ -1,0 +1,31 @@
+select  A.LONG_NAME, 
+              a.cust_name1, 
+              sum(nvl(A.T_AMT,0)) t_amt, 
+              sum(nvl(A.T_VAT,0)) t_vat
+         FROM ( SELECT c.LONG_NAME, 
+     			d.CUST_NAME, 
+     			b.AMT T_AMT, 
+     			b.VAT T_VAT, 
+            decode(e.company_tag,'Y', ' ' || d.CUST_NAME,d.cust_name) cust_name1,
+    			e.company_tag 
+     		 FROM F_REQUEST a, 
+     			F_JOINT_DISTRIBUTION b, 
+     			Z_CODE_DEPT c, 
+     			Z_CODE_CUST_CODE d,   
+                       ( select b.customer_no,b.company_tag  
+     			               from r_contract_register a, r_contract_succesful_bid b  
+          		            where a.dept_code = b.dept_code  
+     			                     and a.cont_no   = b.cont_no  
+     			                    and a.chg_degree = b.chg_degree  
+     			                   and a.dept_code =   'A0101'  
+      			                and a.last_tag = 'Y' ) e  
+     		WHERE ( a.DEPT_CODE = C.DEPT_CODE ) and    
+     			( b.cust_code = e.customer_no (+)) and  
+     			( a.dept_code = b.dept_code(+)) and    
+     			( a.rqst_date = b.rqst_date(+)) and    
+     			( a.seq       = b.seq(+)) and    
+     			( b.CUST_CODE = d.CUST_CODE (+)) and  
+     			( a.dept_code =   'A0101'   ) and  
+            (substr(to_char(a.rqst_date,'YYYY.MM.DD'),1,7) = substr('2003.02.01',1,7))  ) A 
+      GROUP BY A.LONG_NAME,a.cust_name1 
+/

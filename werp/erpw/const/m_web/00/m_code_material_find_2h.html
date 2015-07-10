@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : m_code_material_find_2h.html 								-->
+<!-- 2. 유형(시나리오): 자재소분류코드찾기 										-->
+<!-- 3. 기 능 정 의   : 										-->
+<!-- 4. 변 경 이 력   :  김동우 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 취급품목찾기  </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_code_material_find_2q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+/*   if (Textbox_1.value.length == 0) { 
+      alert("반드시 자재명을 입력하셔야 합니다")
+      return
+   }   */
+  ds_1.DataID =  is_ds_1_addr + "?arg_name=" + Textbox_1.value 
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  if( ds_1.RowPosition > 0 && ds_1.CountRow > 0) {
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'mtrgrand') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'name') + '@'  
+	}        
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+
+
+  array = result.split("@");
+ Textbox_1.value = array[0]
+
+ if (result == "") {}
+ else
+  btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+ 
+<br>
+<LABEL id=Label_1  
+    style="WIDTH: 30px; left: 5px;  POSITION: absolute; HEIGHT: 25px">명칭:
+</LABEL><INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+    style="Z-INDEX: 300; FONT-SIZE: 12px; LEFT: 40px; width: 155px; POSITION: absolute; TOP: 8px;"
+    onkeyDown="keyDown()">
+<INPUT  type=button style="Z-INDEX: 106; LEFT: 210px; POSITION: absolute; TOP: 7px"  class="img_btnFind"  value=검색 onclick=btnquery_onclick() >
+<INPUT  id=Button_confrim  type=button style="Z-INDEX: 106; LEFT: 275px; POSITION: absolute; TOP: 7px"  class="img_btnOk"  value=확인 onclick=Button_confirm_onclick() >
+<INPUT   id=Button_close type=button style="Z-INDEX: 106; LEFT: 330px; POSITION: absolute; TOP: 7px"  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+   
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 400px; POSITION: absolute; TOP: 35px; HEIGHT: 410px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+	<PARAM NAME="Editable" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name=자재코드 ID=mtrgrand Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	   <C> Name='자 재 명' ID=name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=300 </C>
+	   "> 
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_cn_contract_results_rpt_1h.html					-->
+<!-- 2. 유형(시나리오): 보고서														-->
+<!-- 3. 기 능 정 의   : 계약실적    					                    	-->
+<!-- 4. 변 경 이 력   : 권미생 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_start_date=""
+var is_end_date=""
+var is_work_date=""
+is_tag = "@"
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   print_condition_query()
+	is_tag = ccom_level.CodeValue
+   var arg_temp
+   arg_temp ="const_rpt/s_web/03r/"        // 보고서 디렉토리
+   arg_temp = arg_temp + "s_cn_contract_results"    // 보고서명 
+
+   arg_temp = arg_temp + "&RptParams=" + is_start_date +  
+                         "&RptParams=" + is_end_date + 
+                         "&RptParams=" + is_tag  
+
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+//------------------------------------------------------------------------
+function btnprint_onclick()                     // 즉시 출력  
+//------------------------------------------------------------------------
+{
+}
+//------------------------------------------------------------------------
+function print_condition_query()                     // 출력조건에따라 조회  
+//------------------------------------------------------------------------
+{
+   select_start_date()
+   select_end_date()
+
+  	makeCookie("@s_cn_dept_list@",is_start_date  + "@" + is_end_date + "@" + is_tag)
+}
+
+//-------------------------------------------------------------------------------
+function select_start_date()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_start_date = em_start_date.text.substr(0,4) + "." + em_start_date.text.substr(5,2)  + "." +  em_start_date.text.substr(8,2)
+ 
+}   
+//-------------------------------------------------------------------------------
+function select_end_date()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_end_date = em_end_date.text.substr(0,4) + "." + em_end_date.text.substr(5,2)  + "." +  em_end_date.text.substr(8,2)
+ 
+}   
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   
+	is_work_date 			= f_sysdate()
+   em_start_date.text 	= is_work_date.substr(0,4) + ".01.01"
+   em_end_date.text 		= is_work_date
+
+	ccom_level.Index = 0;
+
+}
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+    
+<DIV id=print_condition 
+      style="Z-INDEX: 107; LEFT: 300px; WIDTH: 300px; POSITION: absolute; TOP: 100px; HEIGHT: 150px">
+      <table width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">시작일자</div>
+                 </td>
+             <td> 
+						<comment id="__NSID__"><OBJECT id=em_start_date 
+						       style=" WIDTH: 80px;" 
+						      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							    <PARAM NAME="Alignment" VALUE="1">
+							    <PARAM NAME="IsComma" VALUE="0">
+							    <PARAM NAME="MaxLength" VALUE="8">
+							    <PARAM NAME="Format" VALUE="YYYY-MM-DD">
+						       <param name=ClipMode       value=false>
+							    <PARAM NAME="Numeric" VALUE="0">
+							    <PARAM NAME="SelectAll" VALUE="-1">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+								<img class="img_btnCalendar_S"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+									if(!is_null(result)){ em_start_date.text = result.substr(0,8);} ; select_start_date()" >
+                 </td>
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">종료일자</div>
+                 </td>
+             <td> 
+						<comment id="__NSID__"><OBJECT id=em_end_date 
+						       style=" WIDTH: 80px" 
+						      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							    <PARAM NAME="Alignment" VALUE="1">
+							    <PARAM NAME="IsComma" VALUE="0">
+							    <PARAM NAME="MaxLength" VALUE="8">
+							    <PARAM NAME="Format" VALUE="YYYY-MM-DD">
+						            <param name=ClipMode       value=false>
+							    <PARAM NAME="Numeric" VALUE="0">
+							    <PARAM NAME="SelectAll" VALUE="-1">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+								<img class="img_btnCalendar_S"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+									if(!is_null(result)){ em_end_date.text = result.substr(0,8);} ; select_end_date()" >
+                </td>
+         </tr>
+                  <tr BGCOLOR="white" > 
+		       		<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+             				<div align="right">계약구분</div>
+             		</td>
+             		<td>
+         					<comment id="__NSID__"><object id=ccom_level  style=" WIDTH: 100px" classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F height=200 width=50>
+            					<param name=Data     value="1^외주,2^납품설치,@^전체">
+             		         <param name=Index    value=0>
+								</object></comment> <script> __ws__(__NSID__);</script>
+	    		 		</td>
+	      </tr>                
+                 
+    </table>
+</DIV>
+
+</BODY></HTML>

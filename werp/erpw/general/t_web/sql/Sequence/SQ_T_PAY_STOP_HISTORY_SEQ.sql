@@ -1,0 +1,1 @@
+Create Sequence SQ_T_PAY_STOP_HISTORY_SEQ;

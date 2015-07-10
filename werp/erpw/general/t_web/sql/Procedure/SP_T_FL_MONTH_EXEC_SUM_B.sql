@@ -1,0 +1,13 @@
+Create Or Replace Procedure SP_T_FL_MONTH_EXEC_SUM_B
+(
+	Ar_COMP_CODE				Varchar2,
+	Ar_CLSE_ACC_ID				Varchar2,
+	Ar_DEPT_CODE				Varchar2,
+	Ar_WORK_YM					T_FL_MONTH_PLAN_EXEC.WORK_YM%Type
+)
+Is
+Begin
+	PKG_FL_DEPT_EXEC_B.ProcessAutoRecal(Ar_COMP_CODE,Ar_CLSE_ACC_ID,Ar_DEPT_CODE,Ar_WORK_YM,'0');
+	SP_T_FL_MONTH_EXEC_SUMUP_B(Ar_COMP_CODE,Ar_CLSE_ACC_ID,Ar_DEPT_CODE,Ar_WORK_YM);
+End;
+/

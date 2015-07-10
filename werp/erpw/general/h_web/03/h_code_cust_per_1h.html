@@ -1,0 +1,648 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_code_cust_per_1h.html								-->
+<!-- 2. 유형(시나리오): 고객등록(개인별)(분양)								-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   :  김동우 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 고객등록 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = '/general/h_web/03/h_code_cust_per_1q.jsp?arg_cust_code='
+var is_ds_2_addr = '/general/h_web/03/h_code_cust_per_2q.jsp'
+var is_ds_3_addr = '/general/h_web/03/h_code_cust_per_3q.jsp'
+var is_ds_4_addr = '/general/h_web/03/h_code_cust_per_4q.jsp?arg_cust_code='
+var is_ds_5_addr = '/general/h_web/03/h_code_cust_per_5q.jsp'
+var is_tr_1_addr = gs_home + '/general/h_web/03/h_code_cust_per_1tr.jsp'
+var is_confirm_check = 'no'
+var is_cust_code
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID = gs_home + is_ds_1_addr + is_cust_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+	if (ds_1.CountRow < 1) {
+		ds_1.AddRow()
+		ds_1.NameValue(ds_1.RowPosition,'cust_code') = is_cust_code
+		ds_1.NameValue(ds_1.RowPosition,'cust_div')  = '01'
+		ds_1.NameValue(ds_1.RowPosition,'cust_div2')  = '01'
+		ds_1.NameValue(ds_1.RowPosition,'dm_demand') = '01'
+		//ds_1.ResetStatus();
+	}
+
+}
+//---------------------------------------------------------------
+function dup_check()               //중복검사 
+//---------------------------------------------------------------
+{
+	var ls_code
+	
+	ls_code = ds_1.NameValue(ds_1.RowPosition,'cust_code')
+	
+	ds_4.DataID = gs_home + is_ds_4_addr + ls_code
+	ds_4.SyncLoad=true
+	ds_4.Reset()
+	
+	if (ds_4.CountRow > 0 ) {
+		alert('이미 존재하는 고객코드입니다...')
+	}
+	else {
+		alert('사용 가능한 고객코드입니다...')
+	}
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	var ls_code
+	
+
+	if (ds_1.IsUpdated ){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			if (ds_1.NameValue(ds_1.RowPosition,'cust_code') == '') {
+				alert('고객코드는 반드시 입력하시오...')
+				return
+			}
+			if (ds_1.NameValue(ds_1.RowPosition,'cust_name') == '') {
+				alert('성명은 반드시 입력하시오...')
+				return
+			}
+			ls_code = ds_1.NameValue(ds_1.RowPosition,'cust_code')
+			
+			ds_4.DataID = gs_home + is_ds_4_addr + ls_code
+			ds_4.SyncLoad=true
+			ds_4.Reset()
+			
+			tr_1.Post()
+		}
+	}
+}
+//---------------------------------------------------------------------
+function zip_contract_zip_code()                     //우편번호 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/comm_search/z_zip_find_1h.html", tx_contract_addr1.value,"dialogWidth:640px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	em_contract_zip_code.text = array[0]
+	tx_contract_addr1.value = array[1]
+	//if (em_receipt_zip_code.text == '' ) {
+	if (rd_prog[0].checked == true) {
+		em_receipt_zip_code.text = array[0]
+		tx_receipt_addr1.value = array[1]
+	}
+}
+//---------------------------------------------------------------------
+function zip_receipt_zip_code()                     //우편번호 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/comm_search/z_zip_find_1h.html", tx_receipt_addr1.value,"dialogWidth:640px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	em_receipt_zip_code.text = array[0]
+	tx_receipt_addr1.value = array[1]
+}
+//----------------------------------------------------------------------
+function jumin_check(arg_jumin)   // 주민등록번호 체크
+//----------------------------------------------------------------------
+{
+ var jumin 	
+ var i,k
+ var total = 0;
+ var totalmod,chd
+ var temp = new Array(13);    // 주민등록번호 각 자리를 저장할 배열 확보
+ jumin=arg_jumin             //주민번호 보관
+              
+ for(i=0; i<13; i++)
+	temp[i] = parseInt(jumin.charAt(i));  // 연산을 위해서 각 자리를 정수로 변환하여 배열에 저장함
+ for(i=0; i<12; i++)
+ {
+		k = i + 2;
+		if(k >= 10)
+			k = k % 10 + 2;
+		total = total + temp[i] * k;   // 각 자리에 2,3,4,....를 곱해서 그 결과를 누적함
+ }  
+ totalmod = total % 11;  // 11로 나눈 나머지를 구함
+ chd = 11 - totalmod;   // 11에서 뺌
+ if (chd==10)
+   chd=0;
+ if (chd==11)
+   chd=1;           // 최종 결과가 11이나 10처럼 두 자리일 경우에는 뒷 자리를 사용함
+ if(chd == temp[12])  // 최종 결과와 주민등록번호 끝자리가 같으면
+   return true
+ else
+   return false
+}
+//------------------------------------------------------------------------
+function home_phone_onchange() //전화번호 수정되었을 경우
+//------------------------------------------------------------------------
+{	 
+	if (rd_prog[0].checked == true) {
+		ds_1.NameValue(ds_1.RowPosition,"receipt_phone") = tx_home_phone.value
+	}   
+}
+//------------------------------------------------------------------------
+function cust_name_onchange() //고객명 수정되었을 경우
+//------------------------------------------------------------------------
+{
+	if (rd_prog[0].checked == true) {
+		ds_1.NameValue(ds_1.RowPosition,"receipt_name") = tx_cust_name.value
+	}   
+}
+//------------------------------------------------------------------------
+function contract_addr2_onchange() //주소가 수정되었을 경우
+//------------------------------------------------------------------------
+{
+	if (rd_prog[0].checked == true) {
+		ds_1.NameValue(ds_1.RowPosition,"receipt_addr2") = tx_contract_addr2.value
+	}   
+}
+
+//------------------------------------------------------------------------
+function rd_select(value)
+//------------------------------------------------------------------------
+{	if (rd_prog[0].checked){
+      ds_1.NameValue(ds_1.RowPosition,"receipt_phone") =	  tx_home_phone.value
+      ds_1.NameValue(ds_1.RowPosition,"receipt_name") =	  tx_cust_name.value
+		ds_1.NameValue(ds_1.RowPosition,"receipt_addr1") =		 tx_contract_addr1.value
+		ds_1.NameValue(ds_1.RowPosition,"receipt_addr2") =		 tx_contract_addr2.value
+		ds_1.NameValue(ds_1.RowPosition,"receipt_zip_code") =	 em_contract_zip_code.text
+	}
+	if (rd_prog[1].checked)	 {
+      ds_1.NameValue(ds_1.RowPosition,"receipt_phone") =	 ''
+      ds_1.NameValue(ds_1.RowPosition,"receipt_name") =	  ''
+		ds_1.NameValue(ds_1.RowPosition,"receipt_addr1") =		''
+		ds_1.NameValue(ds_1.RowPosition,"receipt_addr2") =		''
+		ds_1.NameValue(ds_1.RowPosition,"receipt_zip_code") =	''
+	}
+
+ 
+   //alert(rd_prog[0].value)
+	//alert(value)
+	
+
+}
+//------------------------------------------------------------------------
+
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+	var ls_cust_code,ls_cust_name,ls_cust_div, ls_cur_zip_code, ls_cur_addr1, ls_cur_addr2
+   var ls_return=""
+	
+	if (ds_1.IsUpdated ){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			if (ds_1.NameValue(ds_1.RowPosition,'cust_code') == '') {
+				alert('고객코드는 반드시 입력하시오...')
+				return
+			}
+			if (ds_1.NameValue(ds_1.RowPosition,'cust_name') == '') {
+				alert('성명은 반드시 입력하시오...')
+				return
+			}
+			ls_code = ds_1.NameValue(ds_1.RowPosition,'cust_code')
+			
+			ds_4.DataID = gs_home + is_ds_4_addr + ls_code
+			ds_4.SyncLoad=true
+			ds_4.Reset()
+			
+			tr_1.Post()
+		}
+	   else{
+			btnquery_onclick() 
+		}
+	}
+	
+	ls_email = ds_1.NameValue(ds_1.RowPosition,'e_mail')
+
+	ls_email = ls_email.replace(/@/g,"^a");
+
+	ls_return =ds_1.NameValue(ds_1.RowPosition,'cust_code') + '@' + 
+                       ds_1.NameValue(ds_1.RowPosition,'cust_name') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cust_div') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cust_div2') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_zip_code') + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_addr1')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cur_addr2')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'home_phone')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'office_phone')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'cell_phone')+ '@' + 
+							  ls_email + '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'match_jumin_no')+ '@' + 
+							  ds_1.NameValue(ds_1.RowPosition,'match_name')
+   
+ 	if (ls_cust_code == '') {
+ 		window.returnValue = ''
+	   window.close();
+ 	}
+ 	else {
+		
+	   window.returnValue = ls_return
+	   window.close();
+   }
+}
+//----------------------------------------------------------------
+function Button_cancel_onclick()               //취소
+//----------------------------------------------------------------
+{
+	window.returnValue = ''
+	window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+	array = result.split("@");
+	gs_home = array[0]                  // 0: 홈 디렉토리 
+	is_cust_code = array[1]
+	
+	is_tr_1_addr = gs_home + '/general/h_web/03/h_code_cust_per_1tr.jsp'
+	tr_1.Action = is_tr_1_addr
+
+//고객구분    
+	ds_2.DataID = gs_home + is_ds_2_addr 
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+//고객구분2    
+	ds_5.DataID = gs_home + is_ds_5_addr 
+	ds_5.SyncLoad=true
+	ds_5.Reset()
+
+//DM청구지 
+	ds_3.DataID = gs_home + is_ds_3_addr 
+	ds_3.SyncLoad=true
+	ds_3.Reset()
+	
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  //if (is_confirm_check == 'no')
+  //    window.returnValue = ""
+  null
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</SCRIPT>
+<script language=JavaScript for=ccom_cust_div event=onSelChange()>
+   //if (ccom_cust_div.CodeValue == '01')
+   //   em_cust_code.Format="######-#######"
+   //else
+   //   em_cust_code.Format="###-###-#######"      
+      
+   //em_match_jumin_no.Format="######-#######"
+      
+</script>
+<script language=JavaScript for=em_cust_code event=onKillFocus()>
+	if (ds_1.NameValue(ds_1.RowPosition,"cust_div") == "01") {
+	   ls_temp = em_cust_code.text;
+		ls_temp = ls_temp.replace('-', '')
+		//alert(ls_temp)
+	   if (jumin_check(ls_temp)) {}
+	   else
+	      alert("주민번호가 맞지않습니다:재확인하시기 바랍니다")
+	}   
+	is_cust_code = em_cust_code.text
+	btnquery_onclick()
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_5 event=OnLoadError()>
+  alert("Error Code(ds_5) : " + ds_5.ErrorCode + "\n" + "Error Message : " + ds_5.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_4 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_5 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:h_code_cust_per_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<BR>    
+ <div style="LEFT: 400px; POSITION: absolute; TOP: 8px">
+<input type="button" value="저장"  class="img_btn2_1" 
+	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=btnsave_onclick()>
+<input type="button" value="확인" class="img_btnOk"
+	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_close_onclick()>
+<input type="button" value="취소" class="img_btnClose"
+	onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=Button_cancel_onclick()>
+</div>
+         
+<DIV id=grid_page_1 
+      style="Z-INDEX: 111; LEFT: 20px; WIDTH: 540px; POSITION: absolute; TOP: 35px; HEIGHT: 540px;FONT-SIZE: 12px" >
+   <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=3> 
+              <div align="right">기본사항</div></td>
+          <td  width='20%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">고객 구분</div></td>
+          <td > 
+              <comment id="__NSID__"><OBJECT id=ccom_cust_div  
+                      style="WIDTH: 100px"
+                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+    	            <PARAM NAME="ComboDataID" VALUE="ds_2">
+                  <PARAM NAME="CodeCColumn" VALUE="code">
+                  <PARAM NAME="DataCColumn" VALUE="code_name">
+                  <param name=DataID     value=ds_1>
+                  <param name=CodeColumn value=cust_div></OBJECT></comment> <script> __ws__(__NSID__);</script>
+			 <comment id="__NSID__"><OBJECT id=ccom_cust_div2  
+                         style="WIDTH: 100px"
+                         classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+       	            <PARAM NAME="ComboDataID" VALUE="ds_5">
+	                  <PARAM NAME="CodeCColumn" VALUE="code">
+                  <PARAM NAME="DataCColumn" VALUE="code_name">
+                     <param name=DataID     value=ds_1>
+                     <param name=CodeColumn value=cust_div2></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr>                 
+      <tr BGCOLOR="white"  valign="center" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">주민/사업자번호</div></td>
+          <td > 
+              <comment id="__NSID__"><OBJECT id=em_cust_code  
+                      style="WIDTH: 100px"
+                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                      <param name=Numeric value=false>
+                      <param name=SelectAll       value=true>
+                      <param name=MaxDecimalPlace   value=0>
+                      </OBJECT></comment> <script> __ws__(__NSID__);</script>&nbsp;'-'포함해서 입력</td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">성 명</div></td>
+          <td  > 
+              <INPUT id=tx_cust_name  MAXLENGTH=50  onchange="cust_name_onchange()"> </td>
+      </tr>                 
+      <!-- <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">DM 청구지</div></td>
+          <td > 
+              <comment id="__NSID__"><OBJECT id=ccom_dm_demand 
+                      style="WIDTH: 100px"
+                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+    	            <PARAM NAME="ComboDataID" VALUE="ds_3">
+                  <PARAM NAME="CodeCColumn" VALUE="code">
+                  <PARAM NAME="DataCColumn" VALUE="code_name">
+                  <param name=DataID     value=ds_1>
+                  <param name=CodeColumn value=dm_demand></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr> -->                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=4 > 
+              <div align="right">연락처</div></td>
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">집</div></td>
+          <td > 
+              <INPUT id=tx_home_phone  MAXLENGTH=20 onkeyup="home_phone_onchange()" > </td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">직장</div></td>
+          <td > 
+              <INPUT id=tx_office_phone  MAXLENGTH=20  > </td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">휴대폰</div></td>
+          <td > 
+              <INPUT id=tx_cell_phone  MAXLENGTH=20 > </td>
+      </tr>
+		<tr BGCOLOR="white" > 
+			<td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">E-MAIL</div></td>
+          <td > 
+              <INPUT id=tx_e_mail  MAXLENGTH=50  size=50> </td>
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 > 
+              <div align="right">현주소</div></td>
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">주소-1</div></td>
+          <td  > 
+				   <comment id="__NSID__"><OBJECT id=em_contract_zip_code  
+                      style="WIDTH: 54px"
+				          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                       <param name=ReadOnly   value=true>
+                       <param name=ReadOnlyForeColor        value=black>
+                       <param name=ReadOnlyBackColor       value=silver>
+	                    <param name=Format value="###-###"> 
+	                    <param name=Numeric        value=false></OBJECT></comment> <script> __ws__(__NSID__);</script>
+               <INPUT id=Button_2   type=button   class="img_btnFind_S"
+						onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick=zip_contract_zip_code()>
+               <INPUT id=tx_contract_addr1  MAXLENGTH=100 size=39 readonly  ></td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">주소-2</div></td>
+          <td  > 
+               <INPUT id=tx_contract_addr2 MAXLENGTH=80 size=50  onkeyup="contract_addr2_onchange()" ></td>
+      </tr>                 
+     
+		<tr BGCOLOR="white" > 
+		    
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=5 > 
+              <div align="right">수령지</div></td>
+			 <td  width='15%'   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right" >현주소와 동일</div></td>
+             <td >
+				     <input type="radio" value="Y" name="rd_prog" onclick=rd_select(value) checked>예
+                 <input type="radio" value="N" name="rd_prog" onclick=rd_select(value) >아니오 </TD>
+		</tr>
+		<tr>
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">성 명</div></td>
+          <td  > 
+               <INPUT id=tx_receipt_name  MAXLENGTH=10  ></td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">전화번호</div></td>
+          <td > 
+              <INPUT id=tx_receipt_phone  MAXLENGTH=20   > </td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">주소-1</div></td>
+          <td  > 
+				   <comment id="__NSID__"><OBJECT id=em_receipt_zip_code  
+                      style="WIDTH: 54px"
+				          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                       <param name=ReadOnly   value=true>
+                       <param name=ReadOnlyForeColor        value=black>
+                       <param name=ReadOnlyBackColor       value=silver>
+	                    <param name=Format value="###-###"> 
+	                    <param name=Numeric        value=false></OBJECT></comment> <script> __ws__(__NSID__);</script>
+               <INPUT id=Button_2   type=button   class="img_btnFind_S"
+						onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=zip_receipt_zip_code()>
+               <INPUT id=tx_receipt_addr1  MAXLENGTH=80 size=39 readonly ></td>
+      </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">주소-2</div></td>
+          <td  > 
+               <INPUT id=tx_receipt_addr2  MAXLENGTH=80 size=50 ></td>
+      </tr>                 
+         <tr BGCOLOR="white" > 
+             <td  width='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=3 > 
+                 <div align="right">배우자</div></td>
+             <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">주민번호(*)</div></td>
+             <td > 
+                 <comment id="__NSID__"><OBJECT id=em_match_jumin_no  
+                         style="WIDTH: 100px"
+                         classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                         <param name=Numeric value=false>
+                         <param name=SelectAll       value=true>
+                         <param name=MaxDecimalPlace   value=0>
+                         </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         </tr>                 
+         <tr BGCOLOR="white" > 
+             <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">성 명(*)</div></td>
+             <td  > 
+                 <INPUT id=tx_match_name  MAXLENGTH=50 > </td>
+         </tr>      
+         <tr BGCOLOR="white" > 
+             <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+                 <div align="right">전화번호</div></td>
+             <td > 
+                 <INPUT id=tx_match_phone  MAXLENGTH=20   > </td>
+         </tr>                 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=4 > 
+              <div align="right">기타사항</div></td>
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">대표자</div></td>
+          <td > 
+              <INPUT id=tx_represent  MAXLENGTH=10 > </td>
+      </tr>      
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">법인번호</div></td>
+          <td > 
+              <INPUT id=tx_comp_no  MAXLENGTH=20 > </td>
+      </tr>      
+		<tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">업 태</div></td>
+          <td > 
+              <INPUT id=tx_biz_status  MAXLENGTH=30 size=50> </td>
+      </tr> 
+      <tr BGCOLOR="white" > 
+          <td  width='15%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+              <div align="right">종 목</div></td>
+          <td > 
+              <INPUT id=tx_biz_type  MAXLENGTH=30 size=50 > </td>
+      </tr>      
+    </table>
+</DIV>    
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=cust_code Ctrl=em_cust_code Param=text Enable=enable</C>
+	   <C>Col=cust_name Ctrl=tx_cust_name Param=value Enable=enable</C>
+	   <C>Col=home_phone Ctrl=tx_home_phone Param=value Enable=enable</C>
+	   <C>Col=office_phone Ctrl=tx_office_phone Param=value Enable=enable</C>
+	   <C>Col=cell_phone Ctrl=tx_cell_phone Param=value Enable=enable</C>
+	   <C>Col=cur_zip_code Ctrl=em_contract_zip_code Param=text Enable=enable</C>
+	   <C>Col=cur_addr1 Ctrl=tx_contract_addr1 Param=value Enable=enable</C>
+	   <C>Col=cur_addr2 Ctrl=tx_contract_addr2 Param=value Enable=enable</C>
+	   <C>Col=receipt_name Ctrl=tx_receipt_name Param=value Enable=enable</C>
+	   <C>Col=receipt_phone Ctrl=tx_receipt_phone Param=value Enable=enable</C>
+	   <C>Col=receipt_zip_code Ctrl=em_receipt_zip_code Param=text Enable=enable</C>
+	   <C>Col=receipt_addr1 Ctrl=tx_receipt_addr1 Param=value Enable=enable</C>
+	   <C>Col=receipt_addr2 Ctrl=tx_receipt_addr2 Param=value Enable=enable</C>
+	   <C>Col=e_mail Ctrl=tx_e_mail Param=value Enable=enable</C>
+	   <C>Col=biz_status Ctrl=tx_biz_status Param=value Enable=enable</C>
+	   <C>Col=represent Ctrl=tx_represent Param=value Enable=enable</C>
+	   <C>Col=biz_type Ctrl=tx_biz_type Param=value Enable=enable</C>
+	   <C>Col=match_jumin_no Ctrl=em_match_jumin_no Param=text Enable=enable</C>
+	   <C>Col=match_name Ctrl=tx_match_name Param=value Enable=enable</C>
+	   <C>Col=match_phone Ctrl=tx_match_phone Param=value Enable=enable</C>
+		<C>Col=comp_no Ctrl=tx_comp_no Param=value Enable=enable</C>
+          ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

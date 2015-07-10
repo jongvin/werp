@@ -1,0 +1,659 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_week_status_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 주간 공사현황      	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_yymm = top.frames['security'].gs_sysdate.value
+var is_week_date=""
+var is_ds_1_addr = gs_home + '/const/c_web/03/c_week_status_bonsa_1q.jsp?arg_where='         
+var is_tr_1_addr = gs_home + '/const/c_web/03/c_week_status_1tr.jsp'
+var is_tr_photo_addr = gs_home + '/const/c_web/03/c_week_status_photo_1tr.jsp'
+var is_ds_seq_addr = gs_home + '/const/c_web/00/c_unq_num_1q.jsp'                 // seq_no구하기 
+var is_home = '/const/c_web/picture/'
+var is_url_addr=''
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ var ls_arg_where
+ var ls_ccom_process_code
+ if (ccom_process_code.CodeValue == '99')
+    ls_arg_where = "  b.dept_code = a.dept_code         "  
+
+else
+    ls_arg_where = "    b.process_code = '" + ccom_process_code.CodeValue + "'        "    + 
+                   " and  b.dept_code = a.dept_code         "  
+ ls_arg_where =  ls_arg_where + 
+     "        and  b.dept_proj_tag = 'P'       " + 
+     "        and  to_date(a.c_this ,'yyyy-mm-dd') = '" + ccom_week_date.CodeValue + "'        " + 
+     "      ";
+  ds_1.DataID=is_ds_1_addr + ls_arg_where
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+  
+   ll_row = ds_1.NameValueRow('dept_code',is_dept_code)
+   ds_1.RowPosition = ll_row
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+// dup check logic   	
+ var ll_row
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?")) {
+       tr_1.Post()
+       btnquery_onclick()
+    }   
+ } 
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	il_screen = 1
+	ll_row = ds_1.NameValueRow('dept_code',is_dept_code)
+   ds_1.RowPosition = ll_row
+
+}   
+ //-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_yymm = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)
+   is_yymm = is_yymm + ".01"
+   ll_cnt = f_ds_select_q("ds_week"," select distinct c_this select_1, c_this select_2 " + 
+                                 " from c_week_status  " + 
+                                 " where to_date(c_this,'yyyy.mm.dd') >='" + is_yymm + "' "  + 
+                                 " order by to_date(c_this,'yyyy.mm.dd') desc ")
+   ccom_week_date.Index=0
+   
+   ds_1.ClearData()
+   btnquery_onclick()
+}   
+//---------------------------------------------------------------------------
+function photo_retrieve()                      // 사진조회
+//---------------------------------------------------------------------------
+{
+   var ls_parm,ls_week
+   ls_week = ds_1.NameValue(ds_1.RowPosition,'week_date')
+   if (ls_week == '') {
+      ls_week = ccom_week_date.DataValue
+   }
+
+   ls_parm = ds_1.NameValue(ds_1.RowPosition,'dept_code') + '@' + ds_1.NameValue(ds_1.RowPosition,'long_name') + '@' + ls_week + 
+             '@' + is_url_addr + '@' +  ds_1.NameValue(ds_1.RowPosition,'photo_addr')
+	is_returnvalue = window.showModalDialog("c_week_photo_1h.html" ,ls_parm,"dialogWidth:"+1200+"px; dialogHeight:"+800+"px");
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	
+	tr_1.Action = is_tr_1_addr
+	
+	dept_name.value = is_dept_name
+	is_yymm = is_yymm.substr(0,7) + ".01"
+	em_select_yymm.text = is_yymm.substr(0,7)
+	
+	ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '990' and etc_code ='02'") // url + home
+	
+	if (ll_cnt == 0) 
+		alert("사진 정보가 설치 되어있지 않습니다")
+	
+	is_url_addr = ds_select.NameValue(1,"select_2")
+	ccom_process_code.Index=0
+	ll_cnt = f_ds_select_q("ds_week"," select distinct c_this select_1, c_this select_2 " + 
+	                       " from c_week_status  " + 
+	                       " where to_date(c_this,'yyyy.mm.dd') >='" + is_yymm + "' "  + 
+	                       " order by to_date(c_this,'yyyy.mm.dd') desc ")
+	                       
+	ccom_week_date.Index=0
+	btnquery_onclick()
+
+/*  
+	tx_a_this.readonly  = false
+	tx_a_next.readonly = false
+	tx_c_this.readonly = false
+	tx_c_next.readonly = false
+	tx_l_this.readonly = false
+	tx_l_next.readonly = false
+	tx_e_this.readonly = false
+	tx_e_next.readonly = false
+	tx_m_this.readonly = false
+	tx_m_next.readonly = false
+	tx_t_this.readonly = false
+	tx_t_next.readonly = false
+	tx_main_this.readonly = false
+	tx_main_next.readonly = false
+	tx_problem_this.readonly = false
+	tx_problem_next.readonly = false
+	tx_floor.readonly = false */
+
+} 
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_week event=OnLoadError()>
+  alert("Error Code(ds_week) : " + ds_week.ErrorCode + "\n" + "Error Message : " + ds_week.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_bef event=OnLoadError()>
+  alert("Error Code(ds_bef) : " + ds_bef.ErrorCode + "\n" + "Error Message : " + ds_bef.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+  
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_photo event=OnFail()>
+  alert("Error Code(tr_photo) : " + tr_photo.ErrorCode + "\n" + "Error Message : " + tr_photo.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        return
+    else     
+        ds_1.RowPosition++
+}
+</script>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<script language=JavaScript for=ccom_process_code event=OnCloseUp()>
+  btnquery_onclick()
+</script>
+<script language=JavaScript for=ccom_week_date event=OnCloseUp()>
+	if (ds_1.NameValue(ds_1.RowPosition, "master_confirm") == 'X')
+		return
+		
+  	btnquery_onclick()
+</script>
+
+
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+	if (row < 1) return
+	
+	if (ds_1.NameValue(row, "master_confirm") == 'X') {
+//		ds_week.ClearData()
+	}
+	else {
+//		ds_week.Reset()
+	}
+	
+   gf_protect_on('tab_page_1') 
+   ccom_master_confirm.Enable=false
+   em_gross_floor_area_sum.ReadOnly=true
+   em_ground_area.ReadOnly=true
+   tx_floor.disabled=true
+   em_const_start_date.ReadOnly=true
+   em_const_end_date.ReadOnly=true
+   em_const_term.ReadOnly=true
+   em_chg_const_start_date.ReadOnly=true
+   em_chg_const_end_date.ReadOnly=true
+   em_chg_const_term.ReadOnly=true
+</script>
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+  if(eventid == "ucolor") {
+     if (ds_1.NameValue(row,"master_confirm")== 'X')
+         return "#FF9999"
+     if (ds_1.NameValue(row,"master_confirm")== 'N')
+         return "#FFFFCC"
+     if ((row % 2) == 0)
+         return "#F4F2D8"
+     else
+         return "ffffff"
+  }
+</script>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_week 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_bef 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_week_status_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_photo 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:c_week_status_photo_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="23px">
+		<TD class=td_green colspan="2">
+			<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>현장명</td>
+             	<td width="166px">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()"></td>
+					<td width="65px">
+						<input id=dept_name_button type="button" value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="56px" class=font_green_bold>진행구분</td>
+					<td width="105px">
+						<comment id="__NSID__"><OBJECT id=ccom_process_code width=80px 
+					   	classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					      <param name=Data     value="01^진행,02^준공,03^마감,99^전체"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="32px" class=font_green_bold>년월</td>
+					<td width="85px">
+						<comment id="__NSID__"><OBJECT id=em_select_yymm 
+                       style="Z-INDEX: 101;  WIDTH: 80px; background: white;" 
+                      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                	    <PARAM NAME="Alignment" VALUE="1">
+                	    <PARAM NAME="IsComma" VALUE="0">
+                	    <PARAM NAME="MaxLength" VALUE="6">
+                	    <PARAM NAME="Format" VALUE="YYYY-MM">
+                      <param name=ClipMode       value=false>
+                	    <PARAM NAME="Numeric" VALUE="0">
+                	    <PARAM NAME="SelectAll" VALUE="-1">
+                	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+               </td>
+               <td width="40px">
+               	<input type="button" id=img_fr class=img_btnCalendar_S OnClick="var result = gn_Cal_Yymm(); 
+                	if(!is_null(result)){ em_select_yymm.text = result.substr(0,6);} ; select_yymm()">
+               </td>
+               <td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="32px" class=font_green_bold>주간</td>
+					<td width="100px">
+						 <comment id="__NSID__"><OBJECT id=ccom_week_date width=100px 
+					    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+							<param name=ComboDataID        value=ds_week>
+                     <param name=CodeCColumn        value=select_1>
+                     <param name=DataCColumn        value=select_2>
+		               <param name=Auto       value=false>
+                     <param name=Enable     value=true>
+						 </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					<td width="*" align="right">
+						<input type="button" id=button_photo_retrieve value="사진조회" onclick=photo_retrieve() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+	         	</td>
+	         </tr>
+	      </table>
+
+<DIV id=div_approve_class visibility:hidden
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 660px; WIDTH: 138px; POSITION: absolute; TOP: 1px; HEIGHT: 20px; visibility:hidden" >
+      <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+                         <td width="40%"   BGCOLOR="#CA7944" style="COLOR: BLACK"  > 
+                              <div align="right">승인구분</div></td>
+                        <td width="60%"> 
+					              <comment id="__NSID__"><OBJECT id=ccom_master_confirm width=80px 
+					                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+     		                      <param name=DataID     value=ds_1>
+		                         <param name=Auto       value=false>
+                                <param name=Enable     value=true>
+                                <param name=Data     value="N^미결재,Y^결재">
+						              </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+        </tr>
+      </table>
+</div>
+		</td>
+	</tr>
+	<tr height="*">
+		<td width="22%" rowspan="2">
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AutoInsert" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+				<PARAM NAME="Editable" VALUE="-1">
+				<PARAM NAME="ColSizing" VALUE="0">
+				<PARAM NAME="Format" VALUE="
+			     <C> Name='현장명'  id=long_name Edit=None width=155  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='확인'  id=master_confirm  EditStyle=Combo Data='N:미결재,Y:결재,X:미작성' width=45  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+				  ">
+				<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td width="78%" height="20%">
+		<div id=tab_page_1>
+  <table width="100%"  height="100%"  BORDER="1"  align="center"   CELLSPACING="0">
+     <tr BGCOLOR="white"  > 
+         <td  width="7%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2> 
+             <div align="right">공사규모</td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="right">대지면적</td>
+         <td > 
+				 <comment id="__NSID__"><OBJECT id=em_ground_area   
+                  style="WIDTH: 80px"
+				        classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+				        <PARAM NAME="Alignment" VALUE="2">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                <param name=Numeric value=true></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+             <div align="right">연면적</div></td>
+         <td  > 
+				 <comment id="__NSID__"><OBJECT id=em_gross_floor_area_sum   
+                  style="WIDTH: 80px"
+				        classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+				        <PARAM NAME="Alignment" VALUE="2">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                <param name=Numeric value=true></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+         <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 > 
+             <div align="right">공사기간</div></td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="right">당초</div></td>
+         <td  > 
+				 <comment id="__NSID__"><OBJECT id=em_const_start_date   
+                     style="WIDTH: 80px"
+					          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							  <PARAM NAME="Alignment" VALUE="1">
+					        <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					        <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+				 <comment id="__NSID__"><OBJECT id=em_const_end_date  
+                     style="WIDTH: 80px"
+					          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							  <PARAM NAME="Alignment" VALUE="1">
+					        <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					        <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+				 <comment id="__NSID__"><OBJECT id=em_const_term  
+                  style="WIDTH: 80px"
+				        classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                <param name=Numeric value=true></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+       </tr>
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="right">층수</td>
+         <td colspan=3> 
+               <INPUT id=tx_floor     size=40 disabled></td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="right">변경</div></td>
+         <td  > 
+				 <comment id="__NSID__"><OBJECT id=em_chg_const_start_date   
+                     style="WIDTH: 80px"
+					          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							  <PARAM NAME="Alignment" VALUE="1">
+					        <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					        <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+				 <comment id="__NSID__"><OBJECT id=em_chg_const_end_date
+                     style="WIDTH: 80px"
+					          classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							  <PARAM NAME="Alignment" VALUE="1">
+					        <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					        <param name=PromptChar   value="_"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+				 <comment id="__NSID__"><OBJECT id=em_chg_const_term  
+                  style="WIDTH: 80px"
+				        classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                   <param name=ReadOnly   value=true>
+                    <param name=ReadOnlyForeColor        value=black>
+                    <param name=ReadOnlyBackColor       value=silver>
+                <param name=Numeric value=true></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+       </tr>
+  </table>
+  </div>
+		</td>
+	</tr>
+	<tr>
+		<td height="80%">
+  <table width="100%"  height="100%"  BORDER="1"  align="center"   CELLSPACING="0">
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="center">구분</td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="center">금주실적</td>
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="center">차주계획</td>
+     </tr>    
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="center">기간</td>
+         <td align="center">
+         	<table border="0" cellspacing="0" cellpadding="0">
+         		<tr>
+         			<td>
+             <comment id="__NSID__"><OBJECT id=em_c_this style="WIDTH: 80px; background: white;" 
+				      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+                   <PARAM NAME="Alignment" VALUE="1">
+					    <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                   <param name=ReadOnlyForeColor        value=black>
+                   <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					    <param name=PromptChar   value="_">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+						<td> ~ </td>
+						<td>
+				<comment id="__NSID__"><OBJECT id=em_c_next style="WIDTH: 80px; background: white;" 
+				      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					    <PARAM NAME="Alignment" VALUE="1">
+					    <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                   <param name=ReadOnlyForeColor        value=black>
+                   <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					    <param name=PromptChar   value="_">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					</tr>
+				</table>
+			</td>
+         <td align="center">
+            <table border="0" cellspacing="0" cellpadding="0">
+         		<tr>
+         			<td>
+             <comment id="__NSID__"><OBJECT id=em_l_this style="WIDTH: 80px; background: white;" 
+				      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					    <PARAM NAME="Alignment" VALUE="1">
+					    <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                   <param name=ReadOnlyForeColor        value=black>
+                   <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					    <param name=PromptChar   value="_">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+						<td> ~ </td>
+						<td>
+				<comment id="__NSID__"><OBJECT id=em_l_next style="WIDTH: 80px; background: white;" 
+				      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+					    <PARAM NAME="Alignment" VALUE="1">
+					    <param name=Format value="YYYY-MM-DD">
+                   <param name=ReadOnly   value=true>
+                   <param name=ReadOnlyForeColor        value=black>
+                   <param name=ReadOnlyBackColor       value=silver>
+                   <param name=Numeric value=false>
+					    <param name=PromptChar   value="_">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+					</tr>
+				</table>
+			</td>
+    </tr>      
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+             <div align="center">주요공사현황</td>
+         <td>
+                 <TEXTAREA id=tx_a_this  rows=10 cols=44 readonly ></TEXTAREA></td>
+         <td>
+                 <TEXTAREA id=tx_a_next  rows=10 cols=44 readonly ></TEXTAREA></td>
+    </tr>        
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+             <div align="center">중점추진업무</td>
+         <td>
+                 <TEXTAREA id=tx_main_this  rows=8 cols=44 readonly ></TEXTAREA></td>
+         <td>
+                 <TEXTAREA id=tx_main_next  rows=8 cols=44 readonly ></TEXTAREA></td>
+    </tr>             
+     <tr BGCOLOR="white"  > 
+         <td    BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+             <div align="center">미해결 현안 문제점 및 대책</td>
+         <td>
+                 <TEXTAREA id=tx_problem_this  rows=10 cols=44 readonly ></TEXTAREA></td>
+         <td>
+                 <TEXTAREA id=tx_problem_next  rows=10 cols=44 readonly ></TEXTAREA></td>
+    </tr>             
+  </table>
+		</td>
+	</tr>
+</table>
+
+
+<comment id="__NSID__"><object id="if_1" classid="clsid:69F1348F-3EBE-11D3-973D-0060979E2A03" codebase="../toinbocx/toinbifile.cab#version=1,0,10,0"
+	 	style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+</object></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=master_confirm           Ctrl=ccom_master_confirm        Param=codevalue Enable=enable</C>
+	   <C>Col=a_this                   Ctrl=tx_a_this                  Param=value Enable=enable</C>
+	   <C>Col=a_next                   Ctrl=tx_a_next                  Param=value Enable=enable</C>
+	   <C>Col=c_this                   Ctrl=em_c_this                  Param=text  Enable=enable</C>
+	   <C>Col=c_next                   Ctrl=em_c_next                  Param=text  Enable=enable</C>
+	   <C>Col=l_this                   Ctrl=em_l_this                  Param=text  Enable=enable</C>
+	   <C>Col=l_next                   Ctrl=em_l_next                  Param=text  Enable=enable</C>
+	   <C>Col=e_this                   Ctrl=tx_e_this                  Param=value Enable=enable</C>
+	   <C>Col=e_next                   Ctrl=tx_e_next                  Param=value Enable=enable</C>
+	   <C>Col=m_this                   Ctrl=tx_m_this                  Param=value Enable=enable</C>
+	   <C>Col=m_next                   Ctrl=tx_m_next                  Param=value Enable=enable</C>
+	   <C>Col=t_this                   Ctrl=tx_t_this                  Param=value Enable=enable</C>
+	   <C>Col=t_next                   Ctrl=tx_t_next                  Param=value Enable=enable</C>
+	   <C>Col=main_this                Ctrl=tx_main_this               Param=value Enable=enable</C>
+	   <C>Col=main_next                Ctrl=tx_main_next               Param=value Enable=enable</C>
+	   <C>Col=problem_this             Ctrl=tx_problem_this            Param=value Enable=enable</C>
+	   <C>Col=problem_next             Ctrl=tx_problem_next            Param=value Enable=enable</C>
+	   <C>Col=ground_area              Ctrl=em_ground_area             Param=text  Enable=enable</C>
+	   <C>Col=gross_floor_area_sum     Ctrl=em_gross_floor_area_sum    Param=text  Enable=enable</C>
+	   <C>Col=floor                    Ctrl=tx_floor                   Param=value Enable=enable</C>
+	   <C>Col=const_start_date         Ctrl=em_const_start_date        Param=text  Enable=enable</C>
+	   <C>Col=const_end_date           Ctrl=em_const_end_date          Param=text  Enable=enable</C>
+	   <C>Col=const_term               Ctrl=em_const_term              Param=text  Enable=enable</C>
+	   <C>Col=chg_const_start_date     Ctrl=em_chg_const_start_date    Param=text  Enable=enable</C>
+	   <C>Col=chg_const_end_date       Ctrl=em_chg_const_end_date      Param=text  Enable=enable</C>
+	   <C>Col=chg_const_term           Ctrl=em_chg_const_term          Param=text  Enable=enable</C>
+          "></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</div>
+</BODY></HTML>

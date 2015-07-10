@@ -1,0 +1,98 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+ServiceLoader loader = new ServiceLoader(request, response);
+GauceService service = loader.newService();
+GauceContext context = service.getContext();
+Logger logger = context.getLogger();
+GauceDBConnection conn = null;
+conn = service.getDBConnection();
+GauceStatement stmt = null;
+GauceRequest req = service.getGauceRequest();
+GauceResponse res = service.getGauceResponse();
+try {
+     String strUserID = new String(session.getAttribute("userid").toString());
+     conn.setAutoCommit(false);
+     GauceDataSet dSet = req.getGauceDataSet("l_taxrate_1tr");
+   	int idx_taxrate_apply_date = dSet.indexOfColumn("taxrate_apply_date");
+   	int idx_key_taxrate_apply_date = dSet.indexOfColumn("key_taxrate_apply_date");
+   	int idx_deduction_amt = dSet.indexOfColumn("deduction_amt");
+   	int idx_income_taxrate = dSet.indexOfColumn("income_taxrate");
+   	int idx_civil_taxrate = dSet.indexOfColumn("civil_taxrate");
+   	int idx_deduction_taxrate = dSet.indexOfColumn("deduction_taxrate");
+   	int idx_insurance_taxrate = dSet.indexOfColumn("insurance_taxrate");
+    int  rowCnt = dSet.getDataRowCnt();
+    for(int i=0; i< rowCnt; i++){
+    	GauceDataRow rows = dSet.getDataRow(i);
+	if(rows.getJobType() == GauceDataRow.TB_JOB_INSERT){
+		String sSql = " INSERT INTO L_TAXRATE ( taxrate_apply_date," + 
+                    "deduction_amt," + 
+                    "income_taxrate," + 
+                    "civil_taxrate," + 
+                    "deduction_taxrate," + 
+                    "insurance_taxrate )      ";
+      sSql = sSql + " VALUES ( :1, :2, :3, :4, :5, :6 ) ";
+      stmt = conn.getGauceStatement(sSql);
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_taxrate_apply_date);
+      stmt.bindColumn(2, idx_deduction_amt);
+      stmt.bindColumn(3, idx_income_taxrate);
+      stmt.bindColumn(4, idx_civil_taxrate);
+      stmt.bindColumn(5, idx_deduction_taxrate);
+      stmt.bindColumn(6, idx_insurance_taxrate);
+      stmt.executeUpdate();
+      stmt.close();
+ 
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_UPDATE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "update l_taxrate set " + 
+                            "taxrate_apply_date=?,  " + 
+                            "deduction_amt=?,  " + 
+                            "income_taxrate=?,  " + 
+                            "civil_taxrate=?,  " + 
+                            "deduction_taxrate=?,  " + 
+                            "insurance_taxrate=?  where taxrate_apply_date=? ";  
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+      stmt.bindColumn(1, idx_taxrate_apply_date);
+      stmt.bindColumn(2, idx_deduction_amt);
+      stmt.bindColumn(3, idx_income_taxrate);
+      stmt.bindColumn(4, idx_civil_taxrate);
+      stmt.bindColumn(5, idx_deduction_taxrate);
+      stmt.bindColumn(6, idx_insurance_taxrate);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(7, idx_key_taxrate_apply_date);
+      stmt.executeUpdate();
+      stmt.close();
+   }else if(rows.getJobType() ==  GauceDataRow.TB_JOB_DELETE){
+ /* 다음 문장은 반드시 수정하시요 (where 아래의 변수 갯수만큼 */ 
+      String sSql = "delete from l_taxrate where taxrate_apply_date=? "; 
+      stmt = conn.getGauceStatement(sSql); 
+      stmt.setGauceDataRow(rows);
+ /* 다음 문장은 반드시 수정하시요(변수갯수 만큼) */ 
+      stmt.bindColumn(1, idx_key_taxrate_apply_date);
+      stmt.executeUpdate();
+      stmt.close();
+    }
+     }
+     dSet.flush();
+     res.commit("성공적으로 마쳤습니다");
+     res.close();
+} catch (Exception e) {
+    res.writeException("Native","9999",e.toString());
+    res.commit();
+    res.close();
+    if (conn != null) {
+       conn.rollback();
+    }
+    if (stmt != null) {
+       stmt.close();
+    }
+} finally {
+    if (conn != null) {
+        try {
+            conn.commit();
+            conn.close();
+        } catch (Exception e) {}
+    }
+    loader.restoreService(service);
+}
+%>

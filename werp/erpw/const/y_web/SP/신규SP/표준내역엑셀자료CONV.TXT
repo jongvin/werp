@@ -1,0 +1,33 @@
+각현장의 실행내역자료를 명칭규격단위로 묵어서 동일한것 걸러내기
+
+1. EXCEL 자료
+2. EXCEL LAYOUT
+   1. 순번   /  파트구분   / 중공종   / 종공종명   / 소공종   / 소공종명   / 명칭  / 규격  / 단위 
+3. Y_TEMP에 파워빌더로 IMPORT
+4. NAME KEY 조합    
+update Y_TEMP set  KEY_NAME = 
+    REPLACE(G_1 || G_1_NAME || G_2 || G_2_NAME || TRIM(NAME) || TRIM(SSIZE) || TRIM(UNIT),' ','');
+    COMMIT;
+5. NAME KEY로 그룹을걸어서 Y_TEMP_END 테이블에 입력
+
+   INSERT INTO Y_TEMP_END
+          SELECT MAX(NO_SEQ),MAX(GUBUN),MAX(G_1),MAX(G_1_NAME),
+                 MAX(G_2),MAX(G_2_NAME),MAX(NAME),MAX(SSIZE),
+                 MAX(UNIT),KEY_NAME
+               FROM Y_TEMP
+              GROUP BY KEY_NAME;
+   COMMIT;              
+6. 건축 : 23610--> 15457
+   설비 : 70252--> 12657
+   전기 : 45337--> 9718
+   조경 : 2090 --> 1424
+   토목 : 4835 -->  2435
+              
+7. 다른 파트
+   DELETE FROM Y_TEMP ;
+   COMMIT;    
+   
+8. SELECT * 
+ FROM Y_TEMP_END
+ WHERE GUBUN = 'J'
+ ORDER BY G_1,G_1_NAME,G_2,G_2_NAME,NAME,SSIZE,UNIT;            

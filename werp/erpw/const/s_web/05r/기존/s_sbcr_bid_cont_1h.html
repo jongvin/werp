@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0048)file://H:\const\s_web\05r\s_sbcr_bid_cont_1h.html -->
+<!-- **************************************************************	       -->
+<!-- 1. 프로그램 id   : s_sbcr_bid_cont_1h.html								       -->
+<!-- 2. 유형(시나리오): 보고서															 -->
+<!-- 3. 기 능 정 의   : 입찰 및 계약 현황표                           	    -->
+<!-- 4. 변 경 이 력   : 권미생 작성														 -->
+<!-- 5. 관련프로그램  :																		 -->
+<!-- 6. 특 기 사 항   :																		 -->
+<!-- *************************************************************			 -->
+<HTML>
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2800.1106" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_profession_wbs = ""
+var is_from_dt, is_to_dt
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   
+   if (profession_wbs_name.value <= " ") {
+   	is_profession_wbs = "@"                 // 전체출력 하기 위해서  (%는 파라메터 값이 안넘어감)
+   }
+   
+   var arg_temp
+   arg_temp ="const_rpt/s_web/05r/"           // 보고서 디렉토리
+	arg_temp = arg_temp + "s_sbcr_bid_cont"    // 보고서명 
+	arg_temp = arg_temp + "&RptParams=" + is_profession_wbs
+	
+   f_crystal_report(arg_temp)                 //보고서 호출
+}
+//---------------------------------------------------------------------
+function wbs_search()                     //전문 공종 찾기 
+//---------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/const/s_web/00/s_profession_wbs_search_1h.html", profession_wbs_name.value,"dialogWidth:600px;dialogHeight:500px");
+	if(result == "") return;
+
+	array = result.split("@");
+	is_profession_wbs         = array[0]
+	profession_wbs_name.value = array[1]
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		wbs_search();
+	} 
+}
+//-------------------------------------------------------------------------------
+function select_from_dt()                  //from 일자
+//--------------------------------------------------------------------------------
+{
+   is_from_dt = em_from_dt.text.substr(0,4) + "." + em_from_dt.text.substr(5,2)  + "." +  em_from_dt.text.substr(8,2)
+}   
+//-------------------------------------------------------------------------------
+function select_to_dt()                  //to 일자
+//--------------------------------------------------------------------------------
+{
+   is_to_dt = em_to_dt.text.substr(0,4) + "." + em_to_dt.text.substr(5,2)  + "." +  em_to_dt.text.substr(8,2)
+}  
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+
+	em_from_dt.text 	= is_work_date
+	em_to_dt.text 		= is_work_date
+	is_from_dt			= is_work_date
+	is_to_dt				= is_work_date
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_from_dt event=onKillFocus()>
+   if (em_from_dt.Modified){ 
+	   select_from_dt()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_from_dt event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_from_dt()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_to_dt event=onKillFocus()>
+   if (em_to_dt.Modified){ 
+	   select_to_dt()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_to_dt event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   select_to_dt()
+	}
+</SCRIPT>        	
+</HEAD>
+<BODY oncontextmenu="return false" style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)>
+
+<DIV id=print_condition 
+	style="Z-INDEX: 107; LEFT: 300px; WIDTH: 300px; POSITION: absolute; TOP: 100px; HEIGHT: 130px">
+	<table width="100%" height="100%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" > 
+		<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+			<div align="right">전문공종명</div></td>
+		<td> 
+			<INPUT style="FONT-SIZE:12px;" id=profession_wbs_name  onkeyDown="keyDown()">
+			<input type="button_query" value=" 검색" style="color:#2E4A4A; font-size:12px; CURSOR: hand; width:40px;
+			background-color:#E9F5F5; border:1 #A1A9A9 solid; " onmouseover="this.style.backgroundColor='#C0E8DB'; 
+			this.style.color='#EF315E'" onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=wbs_search()></td>
+	</tr>                 
+	<tr BGCOLOR="white" > 
+		<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+			<div align="right">from</div></td>
+		<td> 
+			<comment id="__NSID__"><OBJECT id=em_from_dt 
+			style=" WIDTH: 80px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+				<PARAM NAME="Alignment" VALUE="1">
+				<PARAM NAME="IsComma" VALUE="0">
+				<PARAM NAME="MaxLength" VALUE="8">
+				<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+				<PARAM NAME="PromptChar" VALUE="">
+				<param name=ClipMode       value=false>
+				<PARAM NAME="Numeric" VALUE="0">
+				<PARAM NAME="SelectAll" VALUE="-1">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+			if(!is_null(result)){ em_from_dt.text = result.substr(0,8);} ; select_from_dt()" ></td>
+	</tr>                 
+	<tr BGCOLOR="white" > 
+		<td width="30%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+			<div align="right">to</div></td>
+		<td> 
+			<comment id="__NSID__"><OBJECT id=em_to_dt 
+			style=" WIDTH: 80px" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+				<PARAM NAME="Alignment" VALUE="1">
+				<PARAM NAME="IsComma" VALUE="0">
+				<PARAM NAME="MaxLength" VALUE="8">
+				<PARAM NAME="Format" VALUE="YYYY.MM.DD">
+				<PARAM NAME="PromptChar" VALUE="">
+				<param name=ClipMode       value=false>
+				<PARAM NAME="Numeric" VALUE="0">
+				<PARAM NAME="SelectAll" VALUE="-1">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+			if(!is_null(result)){ em_to_dt.text = result.substr(0,8);} ; select_to_dt()" ></td>
+	</tr>                 
+	</table>
+</DIV>
+
+</BODY>
+</HTML>

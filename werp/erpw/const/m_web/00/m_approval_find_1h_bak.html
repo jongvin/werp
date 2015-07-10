@@ -1,0 +1,490 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : m_request_find_1h.html 					-->
+<!-- 2. 유형(시나리오): 조회							-->
+<!-- 3. 기 능 정 의   : 품의내역찾기                                             -->
+<!-- 4. 변 경 이 력   : 김동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE>발주 내역 선택</TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_approval_find_1q.jsp?arg_dept_code='                        //품의 목록 
+var is_ds_2_addr = 'm_approval_detail_find_1q.jsp?arg_dept_code='                     //품의내역
+var is_tr_1_addr 
+var is_ds_seq_addr = gs_home + '/const/m_web/00/m_spec_unq_no_1q.jsp'                 // seq_no구하기 
+var is_dept_code = '',is_sbcr_code,is_inouttypecode
+var id_date
+var ii_seq
+var is_confirm_check = 'no'
+var il_screen = 1
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	if (il_screen > 1){
+		div_btnquery_onclick()
+		return
+	}   
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_sbcr_code=" +is_sbcr_code
+	ds_1.SyncLoad=true
+	ds_1.reset()
+	div_btnquery_onclick()
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = ds_1.NameValue(ds_1.RowPosition,'approtitle');
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_select()               //전체선택
+//--------------------------------------------------------------------
+{
+var i
+	for(i=1; i <= ds_2.CountRow ; i++)
+		ds_2.NameValue(i,"comp_chk") = 'T'
+}
+//--------------------------------------------------------------------
+function Button_noselect()               //전체선택
+//--------------------------------------------------------------------
+{
+var i
+	for(i=1; i <= ds_2.CountRow ; i++)
+		ds_2.NameValue(i,"comp_chk") = 'F'
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return="",li_seq
+	var ls_approym,ll_approseq,ll_chg_cnt,ll_approval_unq_num,ld_qty
+	var ls_mtrcode,ll_input_unq_num,ld_vatamt,ls_tag,li_tot_qty,li_input_qty,li_sum_qty,li_chk_qty
+	ls_tag = ds_1.NameValue(ds_1.RowPosition,'price_class')
+	if (ls_tag != '0') {
+		if (ls_tag == '1') {
+			ll_cnt = f_select_q("select nvl(sum(a.qty),0) select_1 " +
+									  " from m_request_detail a, " +
+									  " 	  ( select max(dept_code) dept_code,max(requestseq) requestseq,max(chg_cnt) chg_cnt " +
+									  " 			from m_request " +
+									  " 		  where dept_code = '" + is_dept_code + "'" +
+									  " 			 and receipdate is not null " +
+									  " 			 and order_class = '2' " +
+									  " 	  group by dept_code,requestseq ) b " +
+									  " where a.dept_code = b.dept_code " +
+									  "   and a.requestseq = b.requestseq " +
+									  "   and a.chg_cnt    = b.chg_cnt " +
+									  "   and a.dept_code = '" + is_dept_code + "'" +
+									  "   and substrb(a.mtrcode,1,6) = '001009'      " )
+			li_tot_qty = ds_select.NameValue(ds_select.RowPosition,'select_1');
+			ll_cnt = f_select_q("select nvl(sum(a.qty),0) select_1 " +
+									  "  from m_input_detail a " +
+									  " where a.dept_code = '" + is_dept_code + "'" +
+									  "   and substrb(a.mtrcode,1,6) = '001009'" )
+			li_input_qty = ds_select.NameValue(ds_select.RowPosition,'select_1');
+		}
+		else {
+			ll_cnt = f_select_q("select nvl(sum(a.qty),0) select_1 " +
+									  " from m_request_detail a, " +
+									  " 	  ( select max(dept_code) dept_code,max(requestseq) requestseq,max(chg_cnt) chg_cnt " +
+									  " 			from m_request " +
+									  " 		  where dept_code = '" + is_dept_code + "'" +
+									  " 			 and receipdate is not null " +
+									  " 			 and order_class = '2' " +
+									  " 	  group by dept_code,requestseq ) b " +
+									  " where a.dept_code = b.dept_code " +
+									  "   and a.requestseq = b.requestseq " +
+									  "   and a.chg_cnt    = b.chg_cnt " +
+									  "   and a.dept_code = '" + is_dept_code + "'" +
+									  "   and substrb(a.mtrcode,1,6) = '001003'      " )
+			li_tot_qty = ds_select.NameValue(ds_select.RowPosition,'select_1');
+			ll_cnt = f_select_q("select nvl(sum(a.qty),0) select_1 " +
+									  "  from m_input_detail a " +
+									  " where a.dept_code = '" + is_dept_code + "'" +
+									  "   and substrb(a.mtrcode,1,6) = '001003'" )
+			li_input_qty = ds_select.NameValue(ds_select.RowPosition,'select_1');
+		}
+
+		li_sum_qty = ds_2.NameSum('input_qty',0,0);
+		li_chk_qty = li_tot_qty - li_input_qty - li_sum_qty;
+
+		if (li_chk_qty < 0) {
+			li_chk_qty = li_chk_qty * -1;
+			alert(li_chk_qty + ' 만큼 수량이 초과되었습니다(작업은 계속진행됩니다)...')
+//			return
+		}
+	}
+	for (i=1 ; i <= ds_2.CountRow ;i++){
+		if (ds_2.NameValue(i,"comp_chk") == 'T'){
+			ls_approym           = ds_2.NameValue(i,"approym")
+			ll_approseq  	      = ds_2.NameValue(i,"approseq")
+			ll_chg_cnt  	      = ds_2.NameValue(i,"chg_cnt")
+			ll_approval_unq_num  = ds_2.NameValue(i,"approval_unq_num")
+			ld_qty               = ds_2.NameValue(i,"input_qty")
+			ls_mtrcode	         = ds_2.NameValue(i,"mtrcode")
+			ld_vatamt            = ds_2.NameValue(i,"tmp_vatamt")
+			
+			ll_cnt = f_select_q("select nvl(input_unq_num,0) select_1 " +
+				    " from m_input_detail where dept_code = " + "'" + is_dept_code + "'" +
+				    " and yymmdd = " + "'" + id_date + "'" + 
+				    " and seq = " + ii_seq  +
+				    " and approval_unq_num = " + "'" + ll_approval_unq_num + "'" +
+				    " and deliverytag <> '1' ")
+			if (ll_cnt > 0 && parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1")) != 0 && ls_tag == '0' ) {
+				ll_input_unq_num = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1"))
+				if (ls_tag != '1' && ls_tag != '2') {
+					arg_cmd = " UPDATE m_input_detail " +
+						  "    set qty = qty ! " + ld_qty + "," +
+						  "        noout_qty = noout_qty ! " + ld_qty + "," +
+						  "        amt = nvl(trunc(( qty ! " + ld_qty + " ) * unitprice,0),0)," +
+						  "        vatamt = vatamt ! " + ld_vatamt  +
+						  "  where dept_code = " + "'" + is_dept_code + "'" +
+						  "    and yymmdd = " + "'" + id_date + "'" +
+						  "    and seq = " + ii_seq +
+						  "    and input_unq_num = " + ll_input_unq_num +
+						  "@ update m_approval_detail " +
+						  "     set noinput_qty = noinput_qty - " + ld_qty + 
+						  "   where dept_code = '" + is_dept_code + "'" +
+						  "     and approym = '" + ls_approym +
+				        "     and approseq = " + ll_approseq  + 
+				        "     and chg_cnt = " + ll_chg_cnt  + 
+				        "     and approval_unq_num = " + ll_approval_unq_num  
+	
+					f_update_sql_multy(arg_cmd)
+				}
+				else {
+					arg_cmd = " UPDATE m_input_detail " +
+						  "    set qty = qty ! " + ld_qty + "," +
+						  "        noout_qty = noout_qty ! " + ld_qty + "," +
+						  "        amt = nvl(trunc(( qty ! " + ld_qty + " ) * unitprice,0),0)," +
+						  "        vatamt = vatamt ! " + ld_vatamt  +
+						  "  where dept_code = " + "'" + is_dept_code + "'" +
+						  "    and yymmdd = " + "'" + id_date + "'" +
+						  "    and seq = " + ii_seq +
+						  "    and input_unq_num = " + ll_input_unq_num 
+	
+					f_update_sql(arg_cmd)
+				}
+			}
+			else {
+				ll_cnt = f_select_q("select nvl(max(detailseq),0) select_1 " +
+					    " from m_input_detail where dept_code = " + "'" + is_dept_code + "'" +
+					    " and yymmdd = " + "'" + id_date + "'" + 
+					    " and seq = " + ii_seq )
+	
+				li_seq = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1")) + 1
+				
+				if (ls_tag != '1' && ls_tag != '2') {
+					arg_cmd = "  INSERT INTO m_input_detail  " +
+					     	    "  SELECT a.DEPT_CODE, " + "'" + id_date + "'" + "," + ii_seq +
+					     	    "         ,m_spec_unq_no.nextval," + li_seq + 
+					          "	        ,a.MTRCODE,a.NAME,a.SSIZE,a.UNITCODE,b.acctag, " + ld_qty + 
+					          "         ,a.unitprice,trunc(a.unitprice * " + ld_qty + " ,0), " + ld_vatamt + ",0," + 
+					          "'" + is_inouttypecode + "'" + "," + "'" + is_sbcr_code + "'" + 
+					          "	    ,c.vattag,0,a.SPEC_NO_SEQ,a.SPEC_UNQ_NUM,a.REQUEST_UNQ_NUM,a.est_unq_num " +
+					          "         ,a.approval_unq_num,'', " + ld_qty + ",0" +
+					          "    FROM m_approval_detail a, m_code_material b, m_approval c  " + 
+					          "   WHERE ( a.mtrcode = b.mtrcode ) and " +
+					          "         ( c.dept_code = '" + is_dept_code + "' ) and " +
+					          "         ( c.approym = '" + ls_approym + "' ) and " +
+					          "         ( c.approseq = " + ll_approseq + " ) and " +
+					          "         ( c.chg_cnt = " + ll_chg_cnt + " ) and " +
+					          "	       ( a.DEPT_CODE = " + "'" + is_dept_code + "'" + " ) AND  " +
+					          "        ( a.approym = " + "'" + ls_approym  + "'" + " ) AND  " +
+					          "        ( a.approseq = " + ll_approseq  + " ) AND  " +
+					          "        ( a.chg_cnt = " + ll_chg_cnt  + " ) AND  " +
+					          "        ( a.approval_unq_num = " + ll_approval_unq_num  + " )   "
+								 "@ update m_approval_detail " +
+								 "     set noinput_qty = noinput_qty - " + ld_qty + 
+								 "   where dept_code = '" + is_dept_code + "'" +
+								 "     and approym = '" + ls_approym +
+						       "     and approseq = " + ll_approseq  + 
+						       "     and chg_cnt = " + ll_chg_cnt  + 
+						       "     and approval_unq_num = " + ll_approval_unq_num  
+					f_update_sql_multy(arg_cmd)
+				}
+				else {
+					arg_cmd = "  INSERT INTO m_input_detail  " +
+					     	    "  SELECT a.DEPT_CODE, " + "'" + id_date + "'" + "," + ii_seq +
+					     	    "         ,m_spec_unq_no.nextval," + li_seq + 
+					          "	        ,a.MTRCODE,a.NAME,a.SSIZE,a.UNITCODE,b.acctag, " + ld_qty + 
+					          "         ,a.unitprice,trunc(a.unitprice * " + ld_qty + " ,0), " + ld_vatamt + ",0," + 
+					          "'" + is_inouttypecode + "'" + "," + "'" + is_sbcr_code + "'" + 
+					          "	    ,c.vattag,0,a.SPEC_NO_SEQ,a.SPEC_UNQ_NUM,a.REQUEST_UNQ_NUM,a.est_unq_num " +
+					          "         ,a.approval_unq_num,'', " + ld_qty + ",0" +
+					          "    FROM m_approval_detail a, m_code_material b, m_approval c  " + 
+					          "   WHERE ( a.mtrcode = b.mtrcode ) and " +
+					          "         ( c.dept_code = '" + is_dept_code + "' ) and " +
+					          "         ( c.approym = '" + ls_approym + "' ) and " +
+					          "         ( c.approseq = " + ll_approseq + " ) and " +
+					          "         ( c.chg_cnt = " + ll_chg_cnt + " ) and " +
+					          "	       ( a.DEPT_CODE = " + "'" + is_dept_code + "'" + " ) AND  " +
+					          "        ( a.approym = " + "'" + ls_approym  + "'" + " ) AND  " +
+					          "        ( a.approseq = " + ll_approseq  + " ) AND  " +
+					          "        ( a.chg_cnt = " + ll_chg_cnt  + " ) AND  " +
+					          "        ( a.approval_unq_num = " + ll_approval_unq_num  + " )   "
+					f_update_sql(arg_cmd)
+				}
+			}
+		}
+                                                                 
+	}          
+	arg_cmd = "  update m_input  " +
+				 "     set total_amt = ( select nvl(sum(amt),0) " +
+				 "                         from m_input_detail " +
+				 "                        where dept_code = '" + is_dept_code + "'" +
+				 "                          and yymmdd = '" + id_date + "'" +
+				 "                          and seq = " + ii_seq + ") " +
+				 "   where dept_code = '" + is_dept_code + "'" +
+				 "     and yymmdd = '" + id_date + "'" +
+				 "     and seq = " + ii_seq
+
+	f_update_sql(arg_cmd)
+
+	ds_spcall.DataID = gs_home + '/const/m_web/03/y_m_input_cmpt_procedure.jsp?arg_dept_code=' + is_dept_code + '&arg_date=' + id_date + '&arg_seq=' + ii_seq
+	ds_spcall.SyncLoad = true
+	ds_spcall.reset()
+	
+	Button_close_onclick()
+//	div_btnquery_onclick()
+
+//	if (ds_2.CountRow < 1 ) btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_2.Undo(ds_2.RowPosition)
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	if (ds_1.CountRow < 1) return
+	
+	ds_2.DataID = is_ds_2_addr  + is_dept_code + 
+			"&arg_date=" + ds_1.NameValue(ds_1.RowPosition,"approym")  +
+			"&arg_seq=" + ds_1.NameValue(ds_1.RowPosition,"approseq") +
+			"&arg_chg_cnt=" + ds_1.NameValue(ds_1.RowPosition,"chg_cnt")
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+}
+
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	gs_home          = array[0];     
+	is_dept_code     = array[1];
+	id_date          = array[2];
+	ii_seq           = array[3];
+	is_sbcr_code   = array[4];
+	is_inouttypecode = array[5];
+	is_tr_1_addr = gs_home + '/const/m_web/00/m_approval_detail_find_1tr.jsp'
+	tr_1.Action = is_tr_1_addr
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+ 
+</SCRIPT>
+<script language=JavaScript for=gd_2 event=OnClick(row,colid)>
+if (colid == "comp_chk") {
+	if (ds_2.NameValue(row,colid) == 'T')
+		ds_2.NameValue(row,colid) = 'F'
+	else
+		ds_2.NameValue(row,colid) = 'T'    
+}
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_2 event=OnColumnChanged(row,colid)>
+	var ll_vatamt,ll_cmp_vatamt,ls_tag
+	
+	ls_tag = ds_1.NameValue(ds_1.RowPosition,'price_class')
+	if (colid == "input_qty") {
+        	if (ds_2.NameValue(row,"noinput_qty") < ds_2.NameValue(row,"input_qty") && ls_tag != '1' && ls_tag != '2') {
+        		alert("품의수량을 초과하여 입력할 수 없습니다...")
+        		ds_2.NameValue(row,"input_qty") = 0
+        		return
+        	}
+        	if (ds_2.NameValue(row,"input_qty") == 0 ) {
+        		ds_2.NameValue(row,"tmp_vatamt") = 0
+        		ds_2.NameValue(row,"comp_chk") = 'F'
+        	}
+        	else {
+        		ds_2.NameValue(row,"tmp_vatamt") = parseInt(ds_2.NameValue(row,"input_qty") * ds_2.NameValue(row,"UNITPRICE") * 0.1);
+        		ds_2.NameValue(row,"comp_chk") = 'T'
+        	}
+        		
+	}   
+	if (colid == "comp_chk") {
+		if (ds_2.NameValue(row,"comp_chk") == 'T' ) {
+	        	if (ds_2.NameValue(row,"input_qty") == 0 ) {
+					ds_2.NameValue(row,"input_qty") = ds_2.NameValue(row,"noinput_qty")
+					if (ds_2.NameValue(row,"qty") == ds_2.NameValue(row,"noinput_qty")) {
+						ds_2.NameValue(row,"tmp_vatamt") = ds_2.NameValue(row,"vatamt")
+					}
+					else {
+						ll_cmp_vat_amt = ds_2.NameValue(row,"vatamt") - parseInt(ds_2.NameValue(row,"AMT") * 0.1);
+						ll_vatamt = parseInt(ds_2.NameValue(row,"noinput_qty") * ds_2.NameValue(row,"UNITPRICE") * 0.1) + ll_cmp_vat_amt;
+						ds_2.NameValue(row,"tmp_vatamt") = ll_vatamt;
+					}
+			}
+		}
+		else {
+			ds_2.NameValue(row,"input_qty") = 0
+			ds_2.NameValue(row,"tmp_vatamt") = 0
+		}
+	}
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	if  (row < 1) return;
+	div_btnquery_onclick()  
+</SCRIPT> 
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+ <comment id="__NSID__"><OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:m_approval_detail_find_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 600px; WIDTH: 300px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<input type="button" value="전체선택" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=Button_select()>
+	<input type="button" value="전체해제" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=Button_noselect()>
+	<input type="button" value="입고처리" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=Button_confirm_onclick()>
+	<input type="button" value="닫기" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	         onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	         onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	       "  onclick=Button_close_onclick()>
+</DIV>
+  <comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 380px; POSITION: absolute; TOP: 30px; HEIGHT: 610px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="0">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	     <PARAM NAME="Editable" VALUE="0">
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_1">
+	     <PARAM NAME="Format" VALUE="
+	        <FC> Name='품의일자' ID=approym Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	        <FC> Name='품의번호' ID=approseq Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=55 </FC>
+	        <FC> Name='발주일자' ID=approdate Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	        <FC> Name='제    목' ID=approtitle HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </FC>
+	        ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+  <comment id="__NSID__"><OBJECT id=gd_2 onfocus="get_focus(2)"
+         style="Z-INDEX: 110; LEFT: 380px; WIDTH: 610px; POSITION: absolute; TOP: 30px; HEIGHT: 610px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_2">
+	     <PARAM NAME="Format" VALUE="
+	        <FC> Name='순번' ID=approdetailseq Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=30 </FC>
+	        <FC> Name='자재명' ID=name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 </FC>
+	        <C>  Name='규격' ID=ssize Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=120 </C>
+	        <C>  Name='단위' ID=unitcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 </C>
+	        <C>  Name='발주수량' ID=noinput_qty Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=65 </C>
+	        <C>  Name='입고할수량' ID=input_qty HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=65 </C>
+	        <C>  Name='선택' ID=comp_chk EditStyle=CheckBox HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=30 </C>
+	        <C>  Name='투입내역' ID=spec_name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=300 </C>
+	        ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

@@ -1,0 +1,410 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_person_grade_age_1h.html            	-->
+<!-- 2. 유형(시나리오): 조회														-->
+<!-- 3. 기 능 정 의   : 직위/연령별 인원현황          	    			-->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_comp_code
+var is_work_date
+var is_grade_code
+var is_div
+var il_nindex = 1
+var is_focus_enter='N'
+var is_ds_1_addr = gs_home + '/general/p_web/11/p_person_grade_age_1q.jsp?arg_date='
+var is_ds_2_addr = gs_home + '/general/p_web/11/p_person_grade_age_list_1q.jsp?arg_date='
+var is_ds_3_addr = gs_home + '/general/p_web/11/p_person_grade_age_1q.jsp?arg_date='
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (f_check_date(is_work_date) == false){
+   	alert('기준일이 날짜 형식에 맞지 않습니다')
+   	return
+  	}
+   
+   if (female_div.value == 1){
+		is_div = " "
+	}
+	else{
+		is_div = " and (substr(master.resident_no,8,1) = '2' or substr(master.resident_no,8,1) = '4') "
+	}
+	
+	ds_1.DataID = is_ds_1_addr + is_work_date + "&arg_div=" + is_div 
+						+ "&arg_comp_code=" + is_comp_code + '&arg_grade_code=' + ''
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+	rds_1.DataID = 'ds_1'
+   rds_1.SyncLoad = true
+   rds_1.Reset()
+   rds_1.DataID = ''
+   
+   if (ds_1.CountRow < 1) {
+		ds_2.ClearData()	
+		ds_3.ClearData()
+		return		
+	}
+}
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	ds_2.DataID = is_ds_2_addr + is_work_date + "&arg_grade_code=" + is_grade_code 
+						+ "&arg_div=" + is_div + "&arg_comp_code=" + is_comp_code
+	ds_2.SyncLoad=true 
+	ds_2.Reset()
+}
+//------------------------------------------------------------------------
+function div2_btnquery_onclick()                     // 하위 조회  
+//------------------------------------------------------------------------
+{
+	ds_3.DataID = is_ds_3_addr + is_work_date + "&arg_grade_code=" + is_grade_code 
+						+ "&arg_div=" + is_div + "&arg_comp_code=" + is_comp_code
+	ds_3.SyncLoad=true
+	ds_3.Reset()
+	gr_1.Reset()	// 그래프를 Reset해주어야 함
+	
+}
+//---------------------------------------------------------------------
+function tab_changed()
+//---------------------------------------------------------------------
+{
+	if (il_nindex == 1) {
+		setTimeout("div_btnquery_onclick()",0.5)
+	}
+	else{
+		setTimeout("div2_btnquery_onclick()",0.5)
+	}
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_2.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_2.Post()
+ } 
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_date = em_select_date.text
+   btnquery_onclick()
+}   
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = '부서직위별 인원현황 [' + is_work_date + ']'
+ gd_1.RunExcelSheet(temp_1)
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_work_date = f_sysdate()
+	em_select_date.text = is_work_date
+	ll_cnt = f_ds_select_q("ds_select", " select comp_code select_1, comp_name select_2 from z_code_comp order by comp_code ")
+	ccom_comp_code.Index = 0
+	is_comp_code = ccom_comp_code.CodeValue
+	if (is_comp_code == ' ') is_comp_code = ''
+	female_div.value = '1'
+   is_div = female_div.value
+  
+	btnquery_onclick()	
+}
+//---------------------------------------------------------------------
+function get_focus(focus)   // 각각의 gd에 focus를 부여함.
+//---------------------------------------------------------------------
+{
+	il_screen = focus
+}
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=rds_1>
+	if (row < 1) {
+		ds_2.ClearData()	
+		return
+	}
+	else{
+		is_grade_code = rds_1.NameValue(row,"grade_code")
+		
+	if (il_nindex == 1) {
+		setTimeout("div_btnquery_onclick()",0.5)
+	}
+	else{
+		setTimeout("div2_btnquery_onclick()",0.5)
+	}
+	}
+</SCRIPT>
+<script language=JavaScript for=gd_2 event=OnDblClick(row,colid)>
+	if  (ds_2.RowPosition < 1) return
+ 
+	var result;
+	var send_arg;
+	var array = new Array();
+	
+	ls_emp_no = ds_2.NameValue(ds_2.RowPosition,"emp_no")
+	send_arg = gs_home + '@' + 'Y' + '@' + ls_emp_no
+	
+	result = window.showModalDialog(gs_home + "/general/p_web/02/p_pers_master_emp_1h.html",
+												send_arg,"dialogWidth:1015px;dialogHeight:710px");
+
+</script>
+<script language=JavaScript for=gd_2 event=OnKeyPress(kcode)>
+	if (kcode == 13) {
+    	if (ds_2.RowPosition == ds_2.CountRow)  
+        btnadd_onclick()
+    	else     
+        ds_2.RowPosition++
+	}
+</script>
+<script language=JavaScript for=ccom_comp_code event=onCloseUp()>  // 사업체 변경시 재조회
+   is_comp_code = ccom_comp_code.CodeValue
+	if (is_comp_code == ' ') is_comp_code = ''
+  	btnquery_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_date event=onKillFocus()>
+	if (is_focus_enter == em_select_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_date event=onKeyDown(kcode,scode)>
+   if (kcode == 13){ 
+		is_focus_enter=em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>  
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  il_nindex = nIndex
+  tab_changed()
+ }             
+</SCRIPT>
+<SCRIPT language=JavaScript event=CanSelChange(nIndex) for=tb_1>
+{
+  var ret
+  il_nindex = nIndex
+
+} 
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code ds_1: " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code ds_2: " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code ds_3: " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gr_1 event=OnError()>
+ alert("Error Code : " + gr_1.ErrorCode + "\n" + "Error Message : " + gr_1.ErrorMsg + "\n");
+</script>
+
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+        <param name=UseFilter       value=true>
+</OBJECT>
+<OBJECT id=ds_2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_3
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_select 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<object classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 id=rds_1>
+    <param name=Logical value=true>
+    <param name=DataID  value="">
+   <param name=GroupExpr    value="grade_code:grade_name,age,cnt">
+</object>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 3px; WIDTH: 225px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="center">&nbsp사업체</div></td>
+          	 <td >
+	       <OBJECT id=ccom_comp_code style="WIDTH: 170px; color=#CC3333"
+	               classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       <PARAM NAME="ComboDataID" VALUE="ds_select">
+	          <PARAM NAME="CodeCColumn" VALUE="select_1">
+	          <PARAM NAME="DataCColumn" VALUE="select_2">
+	          <param name=Auto       value=true>
+	          <param name=CodeColumn value=comp_code>
+	          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111;visibility:hidden; LEFT: 240px; WIDTH: 160px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">기준일</div></td>
+          	 <td width="63%" >
+		     <OBJECT id=em_select_date style="WIDTH: 80px " 
+		      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			    <PARAM NAME="Alignment" VALUE="1">
+			    <PARAM NAME="IsComma" VALUE="0">
+			    <PARAM NAME="MaxLength" VALUE="8">
+			    <PARAM NAME="Format" VALUE="YYYY.MM.DD">
+		            <param name=ClipMode  value=false>
+			    <PARAM NAME="Numeric" VALUE="0">
+			    <PARAM NAME="SelectAll" VALUE="-1">
+		      </OBJECT>
+		      <img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+			if(!is_null(result)){ em_select_date.text = result.substr(0,10);} ; select_yymm()"
+			style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_3
+     style="Z-INDEX: 111; LEFT: 240px; WIDTH: 110px; POSITION: absolute; TOP: 4px; HEIGHT: 25px;FONT-SIZE: 12px" >
+      <table width="100%" height=28px  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td WIDTH='37%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">&nbsp구분</div></td>
+             <td WIDTH='63%'>
+             <SELECT id=female_div
+		             style="Z-INDEX: 100; LEFT: 43px; WIDTH: 60px; height:20px; POSITION: absolute; TOP: 4px; 
+		             FONT-SIZE: 12px"  onchange="btnquery_onclick()" >
+		           <OPTION value=1 selected>전체</OPTION> 
+		           <OPTION value=2>여직원</OPTION>
+		      </SELECT> </td>
+         </tr>                 
+      </table>
+</DIV>
+
+<DIV id=gd_2_button 
+style="Z-INDEX: 107; LEFT: 870px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<input id=bt_excel_gd_parent_query type="button" value="엑셀로 내려받기" 
+			style="color:#2E4A4A; font-size:13px;  WIDTH=100px; CURSOR: hand;
+			background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+			onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+			onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=excel_down()>
+</DIV>
+
+<OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px;TOP: 35px;  WIDTH: 1005px; POSITION: absolute; HEIGHT: 280px; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=2>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='직위'    id=grade_name Edit=None width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  
+	  			SumText='합 계'  SumColor=Black SumBgColor=Pink </C>
+     <R>
+        <C>name=$xkeyname_$$ ID=cnt_$$ Edit=None align=center  width=80 Value={IF(cnt_$$=0,null,cnt_$$)} BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK
+	              SumText=@sum  SumColor=Black SumBgColor=Pink </C>
+     </R>       
+     <C> Name='합계'    id=grade_sum  value={CrossTabSum(cnt)} align=center width=70  BgColor='#ffe8f4'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+          SumText={sum(CrossTabSum(cnt))}  SumColor=Black SumBgColor=Pink  </C>
+     ">
+   <PARAM NAME="DataID" VALUE="rds_1"></OBJECT>
+
+<OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 2px; WIDTH: 700px; POSITION: absolute; TOP: 317px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=리스트</T>
+    <T>divid=tab_page_2 title=분포도</T>
+    ">
+</OBJECT>
+   
+   <DIV id=tab_page_1 
+   	style="Z-INDEX: 110; LEFT: 2px; WIDTH:1005px; POSITION: absolute; TOP: 317px; HEIGHT: 46%;FONT-SIZE: 12px" >
+			<OBJECT id=gd_2 
+			    style="FONT-SIZE: 12px; Z-INDEX: 110; LEFT: 0px; WIDTH:1005px; POSITION: absolute; TOP: 20px; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=2>
+				<param name="ViewSummary"    value=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+			   <PARAM NAME="SortView" VALUE="Right">
+			   <PARAM NAME="DataID" VALUE="ds_2">
+				<PARAM NAME="Format" VALUE=" 
+			     <C> Name='부서명'  id=dept_name  width=200  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND
+			     		SumText='합 계'  SumColor=Black SumBgColor=Pink </C>
+			     <C> Name='연령'  id=age align=center width=70  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND
+			     		SumText=@count  SumColor=Black SumBgColor=Pink </C>
+			     <C> Name='사번'    id=emp_no  width=80  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND
+			     		SumText='명'  SumColor=Black SumBgColor=Pink </C>
+			     <C> Name='성명'    id=emp_name  width=80  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND
+			     		SumColor=Black SumBgColor=Pink </C>
+			     <C> Name='입사일'  id=join_date align=center	width=100  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK CURSOR=HAND
+			     		SumColor=Black SumBgColor=Pink </C>
+			      ">
+			</OBJECT>
+	</div>
+	<DIV id=tab_page_2 
+   	style="Z-INDEX: 110; LEFT: 2px; WIDTH:1005px; POSITION: absolute; TOP: 337px; HEIGHT: 46%;FONT-SIZE: 12px" >
+			<object id=gr_1 classid=CLSID:B5F6727A-DD38-11D2-973D-00104B15E56F style="width:1000px; height:100%">
+                  <param name="DataID"          value="ds_3">
+                  <param name="Title"           value="직위/연령별 인원현황">
+                  <param name="TitleFontName"   value="굴림체">
+                  <param name="TitleFontSize"   value="10">
+                  <param name="XValueColumn"    value=age>
+                  <param name="YValueColumns"   value=cnt>
+                  <param name="ChartType"       value="3">
+                  <param name="LegendPosition"  value="4">
+                  <param name="SeriesColor"     value="#3a6ea5">
+                  <param name="BackColorStr"    value="#89add6,#89add6">
+                  <param name="WallColor"       value="#ffffee">
+                  <param name="MinValue"        value="0">
+<!--                  <param name="MaxValue"        value="50">                  -->      
+						<param name="View3D"          value="true">
+						<param name="ViewValue"       value="true">
+						<param name="XLabelStep"      value="0">
+						<param name="ItemPerPage"     value="7">
+                  <param name="BorderStyle"     value="1">
+         </object>
+
+	</div>
+</BODY></HTML>

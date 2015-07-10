@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_contract_name_chg_1h.html							-->
+<!-- 2. 유형(시나리오): 조회및 입력												-->
+<!-- 3. 기 능 정 의   : 임대료일괄인상 (임대) 	 				                 	-->
+<!-- 4. 변 경 이 력   : 임종빈 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_sell_code = top.frames['security'].gs_sell_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+var is_sell_name = top.frames['security'].gs_sell_name.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+var is_ds_1_addr = 'h_leas_lease_raise_batch_1q.jsp?arg_dept_code='                        
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_sell_code=" + is_sell_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+	
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) {
+		if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+		{  //저장 routine
+		}   
+	
+	}     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+	
+	// top.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기(분양) 
+//---------------------------------------------------------------------------
+{
+	result = f_hdept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	is_sell_code = top.frames['security'].gs_sell_code.value
+	is_sell_name = top.frames['security'].gs_sell_name.value
+
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+
+	btnquery_onclick()
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//------------------------------------------------------------------------
+function f_process_raise()
+//------------------------------------------------------------------------
+{
+   var result,ls_recont_date, ls_cont_date, i, raised_amt
+	var array = new Array();
+
+	result = window.showModalDialog(gs_home + "/general/h_web/08/h_leas_lease_raise_batch_arg_1h.html", gs_home+'@'+is_work_date,"dialogWidth:330px;dialogHeight:200px;status:no");
+	if (result == "") {
+		return;
+	}
+	
+  
+	//array = result.split("@");
+   ls_recont_date = result
+
+
+
+  for (i=1 ;i <=ds_1.countrow ;i++){
+		  if ( ds_1.namevalue(i, 'chk') == 'T') {
+
+			  raised_amt = ds_1.namevalue(i, 'chg_amt') 
+			  
+			  ds_spcall.DataID = 'h_leas_raise_lease_batch.jsp?arg_dept_code=' + is_dept_code + 
+																													  '&arg_sell_code=' + is_sell_code +
+																													  '&arg_pyong=' + ds_1.namevalue(i, 'pyong') +
+																													  '&arg_style=' + ds_1.namevalue(i, 'style') +
+																													  '&arg_class=' + ds_1.namevalue(i, 'class') +
+																													  '&arg_option_code=' + ds_1.namevalue(i, 'option_code') +
+																													  '&arg_lease_supply=' + ds_1.namevalue(i, 'lease_supply') +
+																													  '&arg_recont_date=' + ls_recont_date +	
+																													  '&arg_raise_amt=' + raised_amt +
+																													  '&arg_input_id=' +  top.frames['security'].empno.value 
+			 
+			  ds_spcall.SyncLoad = true;
+			  ds_spcall.reset();
+		  }
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+  
+
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+
+	ll_cnt = f_select1_q("select code select_1, code_name select_2  from h_code_common  where code_div = '04' order by code ")       //계약구분코드 
+
+	btnquery_onclick()
+
+	
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadCompleted(rowcnt)>
+  //alert("처리완료");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=CanColumnPosChange(row,colid)>
+	if (colid == 'chg_amt'){
+	   if (ds_1.namevalue(row,'lease_supply') > ds_1.namevalue(row,'chg_amt')){
+			alert("변경임대료가 현재임대료보다 커야합니다");
+			ds_1.namevalue(row, 'chk') = 'F'
+			return false;
+		}
+		if ((ds_1.namevalue(row,'lease_supply') < 1)&&(ds_1.namevalue(row,'chg_amt') > 0)) {
+			alert('현재 임대료가 등록 안된세대입니다. 선택할 수 없습니다')
+			ds_1.namevalue(row,'chg_amt') = 0
+			return true;
+		}
+	   if (ds_1.namevalue(row,'lease_supply') < ds_1.namevalue(row,'chg_amt')){
+		   ds_1.namevalue(row, 'chk') = 'T'
+			return true;
+		}
+		
+		
+	}
+   return true;
+</script>
+
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+      
+      if (colid == 'chk'){
+		   
+		   if (ds_1.namevalue(row, 'chk')=='T'){
+			   ds_1.namevalue(row, 'chk') = ''
+			}
+			else{
+			   if (ds_1.namevalue(row,'lease_supply') < 1) {
+				  alert('현재 임대료가 등록 안된세대입니다. 선택할 수 없습니다')
+				}
+			   else{
+				   if (ds_1.namevalue(row,'lease_supply') >= ds_1.namevalue(row,'chg_amt')){
+		            alert("변경임대료가 현재임대료보다 커야합니다. 선택할 수 없습니다.");
+					}
+               else{
+						ds_1.namevalue(row, 'chk') = 'T'
+					}
+				}
+			}
+				
+      }
+</SCRIPT>
+
+
+<OBJECT id=ds_1
+		style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+		classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+		<param name=SortExpr        value="+pyong+style+class+option_code">
+      <param name=SubsumExpr value="sum_pyongl,1:pyong">
+ </OBJECT>
+<Object id=ds_select
+		style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+		classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_sysdate
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=div_button 
+	style="Z-INDEX: 107; LEFT: 500px; WIDTH: 300px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_query type="button" value="임대료 인상 처리" 
+		style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+		background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+		onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		"  onclick=f_process_raise()>
+	
+</DIV>
+
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 430px; POSITION: absolute; TOP: 1px; HEIGHT: 25px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td WIDTH='10%'  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td WIDTH='50%'>
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" size=25 onkeyDown="keyDown()" style=" FONT-SIZE: 12px">
+						<input type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+             <td WIDTH='13%'   BGCOLOR="#BBE0F4" style="COLOR: BLACK" > 
+                 <div align="right">분양구분</div></td>
+             <td WIDTH='27%'>
+						<INPUT id=sell_name SIZE=15  style=" FONT-SIZE: 12px" READONLY DISABLED></td>
+				 <td>
+         </tr>                 
+      </table>
+</DIV>      
+
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 2px; WIDTH:900px; POSITION: absolute; TOP: 30px; HEIGHT: 620px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE=true>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="Format" VALUE=" 
+     <C> Name='평형' ID=pyong  Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70  edit=none  suppress=1 SumText='합계' SubSumText='평형별소계' SubBgColor=yellow </C>
+	  <C> Name='타입' ID=style Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=40 edit=none SubBgColor=yellow</C>
+     <C> Name='군' ID=class_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 edit=none SubBgColor=yellow </C>
+     <C> Name='선택사양' ID=option_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=70 edit=none SubBgColor=yellow</C>
+	  <C> Name='현재임대료' ID=lease_supply Align=right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 edit=none  SumText=@sum SubBgColor=yellow</C> 
+	  <C> Name='세대수' ID=cnt Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 edit=none  SumText=@sum SubBgColor=yellow</C> 
+	  <C> Name='변경임대료' ID=chg_amt Align=right  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100  edit=Numeric SumText=@sum SubBgColor=yellow</C>
+	  <C> Name='인상율(%)' ID=raise_rate Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80  edit=none     Value={(chg_amt - lease_supply)*100/lease_supply} SubBgColor=yellow </C>
+	  <C> Name='변경처리' ID=chk Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 EditStyle=CheckBox edit=none    SubBgColor=yellow</C>
+      ">
+</OBJECT>
+
+</BODY></HTML>

@@ -1,0 +1,37 @@
+<%@ page session="true"  import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%><%@ 
+include file="../../../comm_function/conn_q_pool.jsp"%><%
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+ //---------------------------------------------------------- 
+     dSet.addDataColumn(new GauceDataColumn("opinion_type",GauceDataColumn.TB_STRING,1));
+     dSet.addDataColumn(new GauceDataColumn("seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("key_seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("part_code",GauceDataColumn.TB_STRING,40));
+     dSet.addDataColumn(new GauceDataColumn("part_name",GauceDataColumn.TB_STRING,100));
+     dSet.addDataColumn(new GauceDataColumn("item_code",GauceDataColumn.TB_STRING,40));
+     dSet.addDataColumn(new GauceDataColumn("item_name",GauceDataColumn.TB_STRING,100));
+     dSet.addDataColumn(new GauceDataColumn("key_item",GauceDataColumn.TB_STRING,40));
+     dSet.addDataColumn(new GauceDataColumn("or_item",GauceDataColumn.TB_STRING,100));
+     dSet.addDataColumn(new GauceDataColumn("or_point",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("check_seq",GauceDataColumn.TB_STRING,40));
+    String query = "  SELECT a.opinion_type, " +
+      "                      a.seq, " +
+      "                      a.part_code, " +
+		"				           b.child_name part_name,  " +
+      "                      a.item_code,  " +
+		"				           b.item_name item_name,  " +
+      "                      a.or_item, " +
+//      "                      (SELECT max(aa.or_point) select_1 " +
+//      "                           FROM  e_opinion_register_detail aa " +
+//      "                           WHERE aa.opinion_type = '1' and  aa.seq = a.seq and  aa.item_code = a.item_code) or_point, " +
+      "							  a.or_point, " +
+      "                      a.seq key_seq, " +
+      "                      a.item_code key_item, " +
+      "                      (a.item_code||a.seq) check_seq " +
+      "                  FROM e_opinion_register a, " +
+      "                       (select substr(a.safety_code,1,2) part_code, b.child_name, a.safety_code, a.child_name item_name from e_safety_code_child a, (select safety_code, child_name from e_safety_code_child where class_tag=77) b where a.class_tag=78 and substr(a.safety_code,1,2)=b.safety_code) b " +
+	   "				       WHERE a.opinion_type=1 and a.part_code=b.part_code and a.item_code=b.safety_code " +
+      "                  ORDER BY a.opinion_type ASC, " +
+      "                           a.part_code ASC," +
+      "                           a.item_code ASC," +
+      "                           a.seq ASC ";
+%><%@ include file="../../../comm_function/conn_q_end.jsp"%>

@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : f_uni_cont_1h.html								-->
+<!-- 2. 유형(시나리오): 입력 															-->
+<!-- 3. 기 능 정 의   : 공동도급 내역입력                        	-->
+<!-- 4. 변 경 이 력   : 정호준 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var gs_home = top.frames['security'].gs_home.value
+var is_ds_1_addr = 'f_uni_cont_1q.jsp?as_dept_code='
+var is_tr_1_addr = gs_home + '/const/f_web/04/f_uni_cont_1tr.jsp'
+var is_dept_code
+var is_dept_name
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	ds_1.AddRow()
+	ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+	gd_1.SetColumn("cust_code")
+}
+
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+	if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+	   btnadd_onclick()
+	   return
+ 	}  
+   ds_1.InsertRow(ds_1.RowPosition)
+   ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+   gd_1.SetColumn("cust_code")
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	if (gd_1.MultiRowSelect){               // multi row select 일 경우
+      ds_1.DeleteMarked()  
+    	ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+  	}
+  	else
+     	ds_1.DeleteRow(ds_1.RowPosition)  
+}
+
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		if (ds_1.CountRow>0) {
+			if ( ds_1.Sum(6, 0, 0) != 100){
+				alert("지분율의 합은 100 이 되어야 합니다.")
+				return
+			}
+			if ( ds_1.Max(4, 0, 0) != "Y"){
+				alert("당사를 선택해 주십시오.")
+				return
+			}
+			if ( ds_1.Max(5, 0, 0) != "Y"){
+				alert("시공사를 선택해 주십시오.")
+				return
+			}
+		}
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+			var ll_dup
+			ll_dup = f_dup_chk("ds_1","cust_code")
+			if (ll_dup > 0) {
+			   alert("거래처는 중복될수 없습니다.")
+			   ds_1.RowPosition = ll_dup
+		     	gd_1.SetColumn("cust_code");
+			   return
+			}
+			tr_1.Post()
+		}
+	}
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.UndoAll()
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+}
+  
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+   
+   tr_1.Action = is_tr_1_addr
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function resize()                      // resize event
+//---------------------------------------------------------------------------
+{
+   gd_1.width  = document.body.clientWidth - 10
+	gd_1.height = document.body.clientHeight - 30 - 10
+}
+
+
+//---------------------------------------------------------------------------
+function window_onunload()                      // window open event
+//---------------------------------------------------------------------------
+{
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnSuccess()>
+	btnquery_onclick()
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnCloseUp(row,colid)>
+	if (ds_1.NameValue(row, colid) == "Y"){
+		for (i = 1;i <= ds_1.CountRow;i++){
+			if (i == row) continue
+				ds_1.NameValue(i, colid) = "N"
+		}
+	}
+</script>
+<script language=JavaScript for=gd_1 event=OnPopup(row,colid,data)>
+	var result
+	var array = new Array()
+	result = showModalDialog(gs_home + "/const/f_web/00/f_cust_code_find_1h.html", '',"dialogWidth:640px;dialogHeight:470px")
+	if ( result=="") return
+	array = result.split("@")
+	ds_1.NameValue(row, colid) 		= array[0]
+	ds_1.NameValue(row, "cust_name") = array[1]
+</script>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:f_uni_cont_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin:0" onload=window_onload() onunload=window_onunload() oncontextmenu="return false">
+<DIV class=main_div>
+<TABLE WIDTH="100%" HEIGHT="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+	<TR HEIGHT="20px">
+		<TD class=td_green>
+			<table border="0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px" class=font_green_bold>현장명</td>
+					<td width="166">
+						<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()">
+					</td>
+					<td width="50">
+						<input type="button" id="button_query" value="검색" class="img_btnFind" onclick=dept_code_find()
+								 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="*">&nbsp;</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+				style="FONT-SIZE: 12px; Z-INDEX: 105; WIDTH: 100%; HEIGHT: 100%;" 
+				classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+					<PARAM NAME="MultiRowSelect" VALUE="0">
+					<PARAM NAME="BorderStyle"    VALUE=1>
+					<PARAM NAME="AllShowEdit"    VALUE="-1">
+					<PARAM NAME="Editable"       VALUE="-1">
+					<PARAM NAME="ColSizing"      VALUE="-1">
+					<PARAM NAME="DataID"         VALUE="ds_1">
+					<PARAM NAME="ViewSummary"    VALUE="1">
+					<PARAM NAME="Format"         VALUE=" 
+						<C> Name='회원사코드'  id=cust_code  width=88  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK EditStyle=Popup 
+						    SumText='지분율 계 '  SumColor=Black SumBgColor=Pink</C>
+						<C> Name='회원사명'    id=cust_name width=170  BgColor='#f2f2f2' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Edit=None</C>
+						<C> Name='당사구분'    id=company_tag width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK EditStyle=Combo Data='Y:예,N:아니오 '</C>
+						<C> Name='시공구분'    id=operation_tag width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK EditStyle=Combo Data='Y:예,N:아니오 '</C>
+						<C> Name='지분율'      id=division_rate  width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+						    SumText = @sum  SumColor=Black SumBgColor=Pink</C>
+						<C> Name='담당자'      id=charger  width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						<C> Name='전화번호 '   id=tel  width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						<C> Name='비 고'       id=remark  width=180  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+					">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</TD>
+	</TR>
+</TABLE></DIV>
+</BODY>
+</HTML>

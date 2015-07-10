@@ -1,0 +1,48 @@
+CREATE OR REPLACE package h_calc_income_ontime is
+PROCEDURE y_sp_h_income_ontime_calc(as_dept_code              IN   VARCHAR2,
+															  as_sell_code              IN   VARCHAR2,
+															  as_dongho                 IN   VARCHAR2,
+															  as_seq                    IN   INTEGER,
+                                               as_input_date             IN   DATE,
+															  as_daily_seq              IN   INTEGER,
+                                               as_input_amt              IN   NUMBER,
+															  as_input_class            IN   VARCHAR2,
+															  as_input_deposit          IN   VARCHAR2,
+															  as_user                   IN   VARCHAR2,
+															  as_receipt_class_code     IN   VARCHAR2,
+															  as_receipt_number         IN   VARCHAR2,
+															  as_card_app_num           IN   VARCHAR2,
+															  as_card_bank_code         IN   VARCHAR2 );
+PROCEDURE y_sp_h_income_ontime_cmpt(as_dept_code              IN   VARCHAR2,
+															  as_sell_code              IN   VARCHAR2,
+															  as_dongho                 IN   VARCHAR2,
+															  as_seq                    IN   INTEGER,
+                                               as_input_date             IN   DATE,
+                                               as_input_amt              IN   NUMBER,
+															  as_input_class            IN   VARCHAR2,
+															  as_input_deposit          IN   VARCHAR2,
+															  as_user                   IN   VARCHAR2,
+															  as_receipt_class_code     IN   VARCHAR2,
+															  as_receipt_number         IN   VARCHAR2,
+															  as_card_app_num           IN   VARCHAR2,
+															  as_card_bank_code         IN   VARCHAR2 );
+PROCEDURE y_sp_h_delete_daily_income_ont(as_dept_code    IN   VARCHAR2,
+	                                                    as_sell_code    IN   VARCHAR2,
+	                                                    as_dongho       IN   VARCHAR2,
+	                                                    as_seq          IN   INTEGER,
+																		 as_receipt_date IN   DATE,
+																		 as_daily_seq    IN   INTEGER,
+																		 as_recalc_tag   IN   integer);
+PROCEDURE y_sp_h_delay_recalc_ontime(as_dept_code    IN   VARCHAR2,
+                                                as_sell_code    IN   VARCHAR2,
+                                                as_dongho       IN   VARCHAR2,
+                                                as_seq          IN   INTEGER,
+																as_degree_code  IN   VARCHAR2,
+																as_degree_seq   IN   INTEGER,
+																as_receipt_date IN   DATE,
+																as_daily_seq    IN   INTEGER,
+																as_delay_amt    IN   NUMBER,
+																as_discount_amt IN   NUMBER);
+end;
+/
+

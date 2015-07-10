@@ -1,0 +1,90 @@
+select owner,table_name,tablespace_name
+from t_col
+where (owner,table_name)
+in
+(select   owner,max(table_name) from t_col group by owner)
+/
+select owner,table_name,tablespace_name
+from t_col
+where (owner,table_name)
+in
+(select  /*+FIRST_ROWS*/ owner,max(table_name) from t_col group by owner)
+/
+select owner,table_name,tablespace_name
+from t_col a
+where exists
+(select /*+FIRST_ROWS*/ null from t_col b where a.owner = b.owner group by b.owner having max(b.table_name) = a.table_name)
+/
+select owner,table_name,tablespace_name
+from t_col a
+where a.table_name = 
+(select  max(b.table_name) from t_col b where a.owner = b.owner )
+/
+select owner,table_name,tablespace_name
+from t_col a
+where a.table_name = 
+(select /*+FIRST_ROWS*/ max(b.table_name) from t_col b where a.owner = b.owner )
+/
+select owner,table_name,tablespace_name
+from t_col a
+where a.table_name = 
+(select /*+INDEX_DESC(b SYS_C0017903)*/ max(b.table_name) from t_col b where a.owner = b.owner )
+/
+select owner,table_name,tablespace_name
+from t_col a
+where a.table_name = 
+(select /*+INDEX_DESC(b SYS_C0017903)*/ b.table_name from t_col b where a.owner = b.owner and rownum = 1)
+/
+select owner,table_name,tablespace_name
+from t_col a
+where a.table_name = 
+(select /*+FIRST_ROWS*/ b.table_name from t_col b where a.owner = b.owner and rownum = 1)
+/
+
+
+select a.owner,a.table_name,a.tablespace_name
+from t_col a
+where exists
+(
+	select
+		null
+	from (
+		select b.owner,max(b.table_name) table_name from t_col b group by b.owner
+	) b
+	where	a.owner = b.owner and a.table_name = b.table_name
+)
+/
+select a.owner,a.table_name,a.tablespace_name
+from t_col a,(
+		select b.owner,max(b.table_name) table_name from t_col b group by b.owner
+	) b
+where a.owner = b.owner
+and a.table_name = b.table_name
+/
+
+insert into t_col (owner,table_name,tablespace_name)
+select
+	distinct
+	owner,table_name||'#$%' || to_char(b.rn),tablespace_name
+from	t_col a,
+		(
+			select
+				rownum rn
+			from	t_col b
+			where	rownum < 100
+		) b
+/
+
+
+select /*+INDEX_DESC(b SYS_C0017903)*/ b.owner,max(b.table_name) table_name from t_col b group by b.owner
+/
+select b.owner,max(b.table_name) table_name from t_col b group by b.owner
+/
+select /*+RULE*/ b.owner,min(b.table_name) table_name from t_col b group by b.owner
+/
+
+
+select b.owner,max(b.table_name) table_name from t_col2 b group by b.owner
+/
+select b.owner,max(b.table_name) table_name from t_col3 b group by b.owner
+/

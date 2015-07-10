@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_stand_detail_1h.html 				-->
+<!-- 2. 유형(시나리오): 표준내역  찾기							-->
+<!-- 3. 기 능 정 의   : 								-->
+<!-- 4. 변 경 이 력   : 박두현 작성						-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE> 표준내역  찾기 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'y_stand_detail_find_1q.jsp'
+var is_ds_code_addr = 'y_stand_detail_find_code_1q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+   
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+   if (Textbox_1.value.length == 0 && Textbox_2.value.length == 0) { 
+      alert("반드시 자원명을 입력하셔야 합니다")
+      return
+   }   
+  var ls_temp
+  ls_temp = Textbox_1.value
+  if (Textbox_1.value.length != 0)
+     ds_1.DataID =  is_ds_code_addr + "?arg_name=" + Textbox_1.value 
+  else     
+     ds_1.DataID =  is_ds_1_addr + "?arg_name=" + Textbox_2.value 
+     
+  ds_1.SyncLoad=true
+  
+  ds_1.reset()
+  
+  var ll_row
+  if (Textbox_1.value.length != 0) {
+      ll_row = ds_1.NameValueRow('detail_code',Textbox_1.value)
+      ds_1.RowPosition = ll_row
+  }    
+
+
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  if( ds_1.RowPosition > 0 && ds_1.CountRow > 0) {
+    ls_return = ds_1.NameValue(ds_1.RowPosition,'detail_code') + '@'  +
+                ds_1.NameValue(ds_1.RowPosition,'name') + '@'  +
+                ds_1.NameValue(ds_1.RowPosition,'ssize') + '@' +
+                ds_1.NameValue(ds_1.RowPosition,'unit') + '@' + 
+                ds_1.NameValue(ds_1.RowPosition,'res_class') + '@' +  
+                ds_1.NameValue(ds_1.RowPosition,'mat_code') + '@' +
+                ds_1.NameValue(ds_1.RowPosition,'high_detail_code')  
+ }       
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ 
+ result = window.dialogArguments;
+ ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '003' order by etc_code")
+ if (result == "") return 
+ array = result.split("@");
+ if (array[1] == 'code') {
+    Textbox_1.value = array[0]         // 0: 찾고자하는 값.
+ }
+ else 
+    Textbox_2.value = array[0]         // 0: 찾고자하는 값.
+ btnquery_onclick()
+ this.focus()
+ this.Textbox_1.focus()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<div class=main_div>
+	<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="58px" class=font_green_bold>코드검색</td>
+							<td width="80">
+								<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  onmousedown="this.focus()"   style=" FONT-SIZE: 12px" style="ime-mode:active;width:100% "  onkeyDown="keyDown()"   >
+							</td>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="58px" class=font_green_bold>명칭검색</td>
+							<td width="80">
+								<INPUT id=Textbox_2  ondblclick="Textbox_2.select()" onfocus="Textbox_2.select()"  onmousedown="this.focus()"  style=" FONT-SIZE: 12px" style="ime-mode:active ;width:100%"  onkeyDown="keyDown()"   >
+							</td>
+							
+							<td width="*">&nbsp;</td>
+							<td width="150px">
+									<INPUT id=Button_query  class="img_btn2_1"
+										 style="LEFT: 500px; POSITION: absolute; TOP: 7px" 
+										 onclick=btnquery_onclick() type=button value='조회'>      
+									<INPUT id=Button_confrim class="img_btnOk"
+										 style="LEFT: 560px; POSITION: absolute; TOP: 7px" 
+										 onclick=Button_confirm_onclick() type=button value='확인'>     
+									<INPUT id=Button_close class="img_btnClose"
+										 style="LEFT: 620px; POSITION: absolute; TOP: 7px" 
+										 onclick=Button_close_onclick() type=button value='닫 기'>    
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+					<comment id="__NSID__"><OBJECT id=gd_1 
+						 style="WIDTH: 100%;  HEIGHT: 100%" 
+						 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+						<PARAM NAME="AutoInsert" VALUE="0">
+						<PARAM NAME="AllShowEdit" VALUE="0">
+						 <param name="MultiRowSelect"   value="0">
+						<PARAM NAME="BorderStyle"  VALUE=1>
+						<PARAM NAME="Editable" VALUE="0">
+						<PARAM NAME="ColSizing" VALUE="-1">
+						<PARAM NAME="DataID" VALUE="ds_1">
+						<PARAM NAME="Format" VALUE="
+						  <C> Name='표준내역코드'  id=detail_code  width=90  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						  <C> Name='명   칭'  id=name  width=246  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						  <C> Name='규  격'  id=ssize  width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						  <C> Name='단위'  id=unit  width=42  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+						  <C> Name='구분'  id=res_class  EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+						  <C> Name='자재코드'  id=mat_code  width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+							"> 
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</TD>
+		</TR>
+	</TABLE>
+</DIV>
+
+
+
+
+
+</BODY></HTML>

@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_order_approve_process_1h.html				-->
+<!-- 2. 유형(시나리오): shared window 조회및 입력					-->
+<!-- 3. 기 능 정 의   : 발주내역승인 프로세스  	  				-->
+<!-- 4. 변 경 이 력   : 김 동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_user = top.frames['security'].user_id.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_ds_1_addr = gs_home + '/const/m_web/04/m_tmat_master_1q.jsp?arg_name='
+var is_name=''
+var is_sort      = " "
+var is_from_date,is_to_date
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	sbcr_search()
+	ds_1.DataID = is_ds_1_addr + is_name 
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+}
+//--------------------------------------------------------------------------
+function sbcr_search()
+//----------------------------------------------------------------
+{
+	if (tx_long_name.value == '') {
+		is_name = ''
+	} else {
+		is_name = tx_long_name.value
+	}
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"
+	top.frames['main_title'].div_u.style.visibility="hidden"
+	// top.frames['main_ct'].window.close()
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+	top.frames['main_title'].title_name.value = " " + "가설재 관리대장"  
+	top.frames['main_title'].div_r.style.visibility="visible"
+	top.frames['main_title'].div_u.style.visibility="hidden"
+
+	is_work_date = f_sysdate()
+
+	btnquery_onclick()
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError() >
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT>
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+	<param name=SubSumExpr          value="1:name:ssize:unitcode">
+</OBJECT>
+<OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%" height="100%" border="0" cellspacing="0">
+	<tr height="20px">
+	   <td class=td_green>
+			<table BORDER="0"  CELLSPACING="0" cellpadding="0" class=main_table>
+				<tr> 
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="55px" class=font_green_bold>명칭검색</td>
+					<td width="130px">
+					  	<INPUT id=tx_long_name  tabIndex=1 size=18 onchange="sbcr_search()"  ></td>
+					<td width="60px">
+					  	<INPUT id=bt_sbcr_name  type=button  tabIndex=2 value=검색 onclick=sbcr_search() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="*">&nbsp;</td>
+	         </tr>                 
+	      </table>
+	   </td>
+	</tr>
+	<tr height="*">
+		<td> 
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%; HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AutoInsert" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE=" 
+					<C> Name='자재명' ID=name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Color=#CC0066  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=180 
+							SubSumText={decode(CurLevel,1,'소계','합계')}  SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='규격' ID=ssize HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK    BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=140 
+							SubSumText={decode(CurLevel,1,'','')}  SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='단위' ID=unitcode Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=40 
+							SubSumText={decode(CurLevel,1,'','')}  SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='재고수량' ID=qty  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 
+							SubSumText={Subsum(qty)} SubColor=Black SubBgColor=#ffebcd</C>
+					<C> Name='입고금액' ID=unitprice  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80
+							 SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='잔존가' ID=amt  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=80 
+							 SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='잔여개월' ID=rent_cnt Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=70 
+							 SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='사용처' ID=long_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=200 
+							SubColor=Black SubBgColor=#ffebcd</C> 
+					<C> Name='취득처' ID=sbcr_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Width=200 
+							 SubColor=Black SubBgColor=#ffebcd</C> 
+				   "></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>
+</BODY></HTML>

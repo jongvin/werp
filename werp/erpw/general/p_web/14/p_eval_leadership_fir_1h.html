@@ -1,0 +1,617 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_leadership_fir_1h.html		            -->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : 월드진단 자기평가				                  -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home
+var is_fir
+var is_work_date			//작업일
+var is_eval_code = '03'	//평가종류는 월드진단 리더쉽역량
+var is_self_comp			//피평가자 사업체
+var is_self_dept			//피평가자 부서
+var is_self_grade			//피평가자 직위
+var is_self_title			//피평가자 직책
+var is_fir_present_yn	//제출여부
+var is_return
+var is_html
+var is_menu					//메뉴에서 클릭한 경우 'Y', 2차평가자 화면에서 더블클릭한 경우 'N'
+var is_ds_1_addr = gs_home + '/general/p_web/14/p_eval_leadership_detail_1q.jsp?arg_eval_degree='         
+var is_tr_1_addr = gs_home + '/general/p_web/14/p_eval_world_detail_1tr.jsp'
+var is_ds_2_addr = gs_home + '/general/p_web/14/p_eval_world_detail_fir_1q.jsp?arg_eval_code='
+var is_tr_2_addr = gs_home + '/general/p_web/14/p_eval_world_detail_fir_1tr.jsp'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+	ds_list_init_query()
+	
+	if (ccom_self_evaluator.CodeValue == ""){
+		ds_1.ClearData()
+		ds_2.ClearData()
+		return
+	}
+	
+	//부하평가
+	ds_1.DataID = is_ds_1_addr + ccom_eval_degree.CodeValue + "&arg_self_evaluator=" + ccom_self_evaluator.CodeValue
+   ds_1.SyncLoad=true
+	ds_1.Reset()	
+	
+	//1차평가자
+	ds_2.DataID = is_ds_2_addr + is_eval_code + 
+						"&arg_eval_degree=" + ccom_eval_degree.CodeValue + 
+						"&arg_self_evaluator=" + ccom_self_evaluator.CodeValue
+   ds_2.SyncLoad=true
+	ds_2.Reset()
+	
+}	
+//------------------------------------------------------------------------
+function ds_list_init_query()						// 목록 기본정보 조회
+//------------------------------------------------------------------------
+{	
+
+	if (is_fir_present_yn == 'Y'){	//제출이면 수정못함
+		if (is_pgrm == 'menu') {
+			top.frames['main_title'].div_s.style.visibility = "hidden"	
+			top.frames['main_title'].div_r.style.visibility = "visible"	
+		}
+		bt_present_yn.style.visibility = "hidden"
+		bt_return_yn.style.visibility = "hidden"
+		gd_2.Editable = false  		
+	}
+	else{
+		if (is_pgrm == 'menu') {
+			top.frames['main_title'].div_s.style.visibility = "visible"	
+			top.frames['main_title'].div_r.style.visibility = "hidden"	
+		}
+		bt_present_yn.style.visibility = "visible"
+		bt_return_yn.style.visibility = "visible"
+		gd_2.Editable = true 
+  	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_2.IsUpdated){
+  		if (confirm("변경되었습니다 저장하시겠습니까?")){
+  			if (ds_2.IsUpdated) {
+		   	for (i=1 ;i<=ds_2.CountRow ;i++) {
+					if (ds_2.NameValue(i, "base_code") == ''){		//평가기준코드가 ''이면 건수가 없는 것임.
+						ds_2.UserStatus(i) = 1
+						ds_2.NameValue(i,"eval_code") 	  = is_eval_code		//평가종류는 월드진단(리더쉽역량)
+						ds_2.NameValue(i,"eval_degree") 	  = ccom_eval_degree.CodeValue			//평가차수
+						ds_2.NameValue(i,"self_evaluator") = ccom_self_evaluator.CodeValue		//피평가자
+						ds_2.NameValue(i,"base_code")      = ds_2.NameValue(i, "b_base_code")	//조회한 평가기준 셋팅 
+					}
+				}
+		   	tr_2.Post()	   
+		   }
+		   
+		   btnquery_onclick()	// UserStatus를 사용하여 insert로 변경한것을 원상태로 복구하기 위해 재조회
+		}
+  }
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//---------------------------------------------------------------------------
+function present_yn()							// 제출
+//---------------------------------------------------------------------------
+{
+	if (ds_2.IsUpdated){
+		alert("변경된 사항을 먼저 저장하십시오!")
+		return
+	}
+	
+	for (i=1 ;i<=ds_2.CountRow ;i++) {
+		if (ds_2.NameValue(i,"fir_base_grade") == ""){
+			alert("반드시 평가기준별 평가등급을 입력하셔야 합니다.")
+			gd_2.Focus()
+			ds_2.RowPosition = i
+			gd_2.SetColumn("fir_base_grade")
+			return
+		}		
+		
+		if (ds_2.NameValue(i,"fir_comment") == ""){
+			alert("반드시 평가기준별 평가자코멘트를 입력하셔야 합니다.")
+			gd_2.Focus()
+			ds_2.RowPosition = i
+			gd_2.SetColumn("fir_comment")
+			return
+		}
+	}
+	
+	//제출여부를 'Y'로 셋팅
+	if (confirm("제출한 이후에는 수정할 수 없게 됩니다.\n제출하시겠습니까?")){
+		arg_cmd = " update p_eval_leadership		" + 
+			  		 "    set fir_present_yn = 'Y', " +
+			  		 "        fir_present_date = '" + is_work_date + "' " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+			  		 "    and self_evaluator = '" + ccom_self_evaluator.CodeValue + "' " 
+		f_update_sql(arg_cmd)
+		
+		btnquery_onclick()
+	}
+}
+//---------------------------------------------------------------------------
+function return_yn()							// 반송
+//---------------------------------------------------------------------------
+{
+	if (confirm("피드백 하시겠습니까?")){
+		
+		//피평가자 제출여부를 'N'으로 셋팅
+		arg_cmd = " update p_eval_leadership		" + 
+			  		 "    set fir_present_yn = 'N', " +
+			  		 "			 suc_present_yn = 'N', " +
+			  		 "        suc_present_date = null " +
+			  		 "  where eval_code = '" + is_eval_code + "' " +
+			  		 "    and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+			  		 "    and self_evaluator = '" + ccom_self_evaluator.CodeValue + "' " 
+		f_update_sql(arg_cmd)		
+		
+		self_list()	//피평가자 리스트 조회
+		ccom_self_evaluator.Index = 0		//반송후 피평가자 리스트 조회후 첫번째값 셋팅
+   			
+		btnquery_onclick()
+	}
+}
+//---------------------------------------------------------------------------
+function pers_master()						// 인사기본
+//---------------------------------------------------------------------------
+{	
+	var result;
+	var send_arg;
+	//피평가자 기본정보
+   ll_cnt = f_ds_select_q("ds_master","select max(emp_no)   select_1 " +
+  												 "  from p_pers_master " +
+  												 " where resident_no = '" + ccom_self_evaluator.CodeValue + "' ")
+	ls_emp_no = ds_master.NameValue(1,"select_1")
+	send_arg = gs_home + '@' + 'Y' + '@' + ls_emp_no
+	result = window.showModalDialog(gs_home + "/general/p_web/02/p_pers_master_emp_1h.html",
+												send_arg,"dialogWidth:1015px;dialogHeight:710px");
+}
+//---------------------------------------------------------------------------
+function self_list()                      // 피평가자 리스트조회
+//---------------------------------------------------------------------------
+{
+	var ls_where
+	
+	if (is_pgrm == 'not_menu')
+		ls_where = " and a.fir_present_yn = 'Y' "
+	else {
+		if (is_menu == 'Y')		//메뉴에서 클릭
+			ls_where = " and a.fir_evaluator = '" + is_fir + "' "
+		else 							//2차평가자 화면에서 더블클릭
+			ls_where = " and w.sec_evaluator = '" + is_fir + "' "		//리더쉽은 1차평가까지 있음
+	}
+	
+	ll_cnt = f_ds_select_q("ds_select","select a.self_evaluator select_1, b.emp_name select_2, " +
+												  "       a.fir_present_yn select_3, c.long_name select_4, " +
+												  "       d.grade_name select_5  " +
+   											  "  from p_eval_leadership a, " +
+   											  "		 p_eval_world_list w, " +
+   											  "       (select distinct resident_no, emp_name from p_pers_master) b, " +
+   											  "       z_code_dept c, " +
+   											  "       p_code_grade d " +
+   											  " where a.eval_degree  	= w.eval_degree(+) " +
+   											  "   and a.self_evaluator = w.self_evaluator(+) " +
+   											  "   and a.self_evaluator = b.resident_no(+) " +
+   											  "   and a.self_dept_code = c.dept_code(+) " +
+   											  "   and a.self_grade_code = d.grade_code(+) " +
+   											  "	and a.suc_present_yn = 'Y'  " +		//선임부하 제출인 것만.
+   											  "   and a.eval_code = '" + is_eval_code + "' " +
+   											  "	and a.eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+   											  "   " + ls_where + " ")
+   
+   if (ll_cnt > 0){
+	   ccom_self_evaluator.Enable=true
+	   tx_self_dept_name.value  = ds_select.NameValue(1,"select_4")
+		tx_self_grade_name.value = ds_select.NameValue(1,"select_5")
+		is_fir_present_yn = ds_select.NameValue(1,"select_3")
+		ccom_self_evaluator.Index = 0		
+		is_return = 'true'
+   }
+	else{
+		ccom_self_evaluator.Enable=false
+		tx_self_dept_name.value  = ''
+		tx_self_grade_name.value = ''
+		is_fir_present_yn 		 = ''
+		is_return = 'false'		//피평가자가 없으면 수정권한을 안주기 위한것.
+	}
+	
+	suc_evaluator()	//선임부하조회
+}
+//---------------------------------------------------------------------------
+function suc_evaluator()                      //선임부하조회
+//---------------------------------------------------------------------------
+{
+	ll_cnt = f_ds_select_q("ds_select1","select a.suc_evaluator select_1, b.emp_name select_2, " +
+												  "       c.long_name select_3,      d.grade_name select_4  " +
+   											  "  from p_eval_leadership a, " +
+   											  "       (select distinct resident_no, emp_name from p_pers_master) b, " +
+   											  "       z_code_dept c, " +
+   											  "       p_code_grade d " +
+   											  " where a.suc_evaluator = b.resident_no " +
+   											  "   and a.suc_dept_code = c.dept_code " +
+   											  "   and a.suc_grade_code = d.grade_code " +
+   											  "   and a.eval_code = '" + is_eval_code + "' " +
+   											  "	and a.eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+   											  "	and a.self_evaluator = '" + ccom_self_evaluator.CodeValue + "' " )   											  
+   
+   if (ll_cnt > 0){
+      tx_suc_eval_name.value  = ds_select1.NameValue(1,"select_2")
+	   tx_suc_dept_name.value  = ds_select1.NameValue(1,"select_3")
+		tx_suc_grade_name.value = ds_select1.NameValue(1,"select_4")
+   }
+	else{
+		tx_suc_eval_name.value  = ''
+	   tx_suc_dept_name.value  = ''
+		tx_suc_grade_name.value = ''
+	}	
+}
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+	if (is_pgrm == 'not_menu'){
+		window.returnValue = "";
+ 		window.close();
+ 	}
+ 	else{
+		if (is_html == 'p_eval_sec_grade_1h.html'){		//2차평가자 화면
+			makeCookie("@p_eval_sec_grade@", '02' + "@" + ccom_eval_degree.CodeValue)	//2차평가는 월드진단 공통기준이므로 '02'
+			top.frames['main_ct'].location.href(gs_home + "/general/p_web/13/p_eval_sec_grade_1h.html" +"?"+'r')	
+		}
+		else{		//1차평가자 화면
+			makeCookie("@p_eval_fir_suggest_list@", is_eval_code + "@" + ccom_eval_degree.CodeValue)
+			top.frames['main_ct'].location.href(gs_home + "/general/p_web/13/p_eval_fir_suggest_list_1h.html" +"?"+'r')	
+		}
+	}
+}
+//---------------------------------------------------------------------------
+function eval_degree()                      // 평가차수 조회
+//---------------------------------------------------------------------------
+{
+  ll_cnt = f_ds_select_q("ds_degree","select eval_degree   select_1 " +
+  												 "  from p_eval_degree " +
+  												 " where eval_code = '" + is_eval_code + "' " +
+  												 " order by eval_degree desc ")
+  eval_base()		//평가기준 조회  												 
+}  
+//---------------------------------------------------------------------------
+function eval_base()                      // 평가기준 조회
+//---------------------------------------------------------------------------
+{
+	ll_cnt = f_ds_select_q("ds_base","select base_code select_1, base_name select_2 " +
+  												 "  from p_eval_base " +
+  												 " where eval_code = '" + is_eval_code + "' " +
+  												 "   and eval_degree = '" + ccom_eval_degree.CodeValue + "' " +
+  												 " order by base_code ")  
+}
+//----------------------------------------------------------------
+function rpt_print()                      // 출력
+//----------------------------------------------------------------
+{
+	if (is_pgrm == 'not_menu')		// 팝업으로 띄운경우 전체경로
+		arg_temp = "http://rpt.worldro.net:100/reportViewer.asp?Rptname=general_rpt/p_web/02r/p_eval_leader"        // 보고서 명
+	else
+		arg_temp = "general_rpt/p_web/02r/p_eval_leader"        // 보고서 명
+		
+	arg_temp = arg_temp + "&RptParams=" + ccom_eval_degree.CodeValue +
+	 							 "&RptParams=" + ccom_self_evaluator.CodeValue
+  				 
+	f_crystal_report(arg_temp)   //보고서 호출
+	
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  var ls_self = ''
+  var ls_fir_present_yn	//임시변수
+	
+  if (top.frames['main_title'] == null) {
+	   is_pgrm = 'not_menu'				//*화면이동(showmodal)하여 띄운 경우
+	   
+	   var result;
+	   var array = new Array();
+	   result = window.dialogArguments;
+	   array = result.split("@");		
+	   is_eval_code 		= array[0]
+		ls_eval_degree 	= array[1]
+	   ls_self 				= array[2]
+	   is_self_dept_name = array[3]
+	   is_self_grade_name= array[4]
+	   ls_fir_present_yn = array[5]
+	   gs_home				= array[6]
+	   bt_close.style.visibility = "visible"
+	}
+	else {
+	   is_pgrm = 'menu'					//*location.href로 띄운 경우		
+		gs_home = top.frames['security'].gs_home.value
+	   is_work_date = top.frames['security'].gs_sysdate.value
+	   is_fir = top.frames['security'].empno.value
+	
+	  	var ls_eval_degree = ''
+	   var result="";
+	   var array = new Array();
+	   result = ""
+	   result = readCookie("@p_eval_leadership_fir@")
+	   array = result.split("@");
+	
+	   if (result == "err"){			//직접 메뉴에서 띄움
+	   	is_menu = 'Y'
+	      is_fir = top.frames['security'].empno.value
+	   }
+		else{									//목록에서 더블클릭하여 띄움
+			bt_close.style.visibility = "visible"
+	   	is_eval_code 		= array[0]
+		   ls_eval_degree 	= array[1]
+		   ls_self 				= array[2]
+		   is_self_dept_name = array[3]
+		   is_self_grade_name= array[4]
+		   ls_fir_present_yn = array[5]
+		   is_html 				= array[6]
+		   is_fir = array[7]
+		   if (is_html == 'p_eval_fir_suggest_list_1h.html')	//1차평가자 조회화면
+		   	is_menu = 'Y'
+		   else
+		   	is_menu = 'N'
+		   
+		   tx_self_dept_name.value  = is_self_dept_name
+			tx_self_grade_name.value = is_self_grade_name
+			makeCookie("@p_eval_leadership_fir@","")
+		}
+	}
+  
+	is_ds_1_addr = gs_home + '/general/p_web/14/p_eval_leadership_detail_1q.jsp?arg_eval_degree='         
+	is_tr_1_addr = gs_home + '/general/p_web/14/p_eval_world_detail_1tr.jsp'
+	is_ds_2_addr = gs_home + '/general/p_web/14/p_eval_world_detail_fir_1q.jsp?arg_eval_code='
+	is_tr_2_addr = gs_home + '/general/p_web/14/p_eval_world_detail_fir_1tr.jsp'
+	
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+	
+	eval_degree() 	//평가차수 조회
+	self_list()				//피평가자 리스트 조회
+	ccom_eval_degree.Index = 0
+	if (ls_eval_degree != '') ccom_eval_degree.CodeValue 	= ls_eval_degree
+	if (ls_self != '') {
+		ccom_self_evaluator.CodeValue = ls_self
+		tx_self_dept_name.value  = is_self_dept_name
+		tx_self_grade_name.value = is_self_grade_name
+		is_fir_present_yn = ls_fir_present_yn
+	}
+	suc_evaluator()	//선임부하조회
+	
+	if (is_return == 'false'){		//피평가자 리스트가 없으면..
+		alert('피평가자 리스트가 없습니다.')
+		if (is_pgrm == 'menu') top.frames['main_title'].div_u.style.visibility = "hidden"	
+		bt_present_yn.style.visibility = "hidden"
+		return
+	}
+	
+	btnquery_onclick()
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_2 event=OnKeyPress(kcode)>
+if (kcode == 13) {		// Enter키를 치면서 점수 입력 가능하게.
+	    ds_2.RowPosition++
+}
+</script>
+<script language=JavaScript for=ccom_eval_degree event=onCloseUp()>
+	eval_base()		//평가기준 조회
+	btnquery_onclick()
+</SCRIPT>
+<script language=JavaScript for=ccom_self_evaluator event=onCloseUp()>
+	suc_evaluator()		//선임부하 조회
+	btnquery_onclick()
+</SCRIPT>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code ds_update: " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_code
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_degree
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_base
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_master
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_1
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_2
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_world_detail_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_2
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_eval_world_detail_fir_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 610px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr rowspan=2 >
+         	<td width="13%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가차수</div></td>
+          	 <td width="10%" >
+			       <OBJECT id=ccom_eval_degree width=90px
+	                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+	             <PARAM NAME="ComboDataID" VALUE="ds_degree">
+	             <PARAM NAME="CodeCColumn" VALUE="select_1">
+	             <PARAM NAME="DataCColumn" VALUE="select_1">
+	             <param name=Auto       value=false>
+		          <param name=Enable     value=true></OBJECT></td>
+         	<td width="77%"   style="COLOR: BLACK"  > 
+			      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+						<tr>
+			         	<td width="20%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+								<div align="right">피평가자</div></td>
+							<td width="10%">
+							  	<OBJECT id=ccom_self_evaluator width=100px
+				                    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+				             <PARAM NAME="ComboDataID" VALUE="ds_select">
+				             <PARAM NAME="CodeCColumn" VALUE="select_1">
+				             <PARAM NAME="DataCColumn" VALUE="select_2">
+				             <param name=Auto       value=false>
+					          <param name=Enable     value=true></OBJECT></td>
+					      <td width="70%" >    
+							  	<INPUT id=tx_self_grade_name size=8  disabled >
+				     		  	<INPUT id=tx_self_dept_name  size=25  disabled ></td>
+							</td>
+						</tr>
+						<tr >
+			         	<td width="15%"   BGCOLOR="#BBE0F4" style="COLOR: BLACK"  > 
+								<div align="right">선임부하</div></td>
+							<td width="16%">
+							  	<INPUT id=tx_suc_eval_name size=12  disabled ></td>
+					      <td width="46%" >    
+							  	<INPUT id=tx_suc_grade_name size=8  disabled >
+				     		  	<INPUT id=tx_suc_dept_name  size=25  disabled ></td>
+			     		</tr>
+			      </table>
+				</td>
+	      </table>
+</DIV>
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 650px; WIDTH: 350px; POSITION: absolute; TOP: 35px; HEIGHT: 20px">
+	<input id=bt_return_yn type="button" value="&nbsp;반&nbsp;송&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=return_yn()>
+   <input id=bt_present_yn type="button" value="&nbsp;제&nbsp;출&nbsp;" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=present_yn()>
+   <input id=bt_pers_master type="button" value="인사기본" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=pers_master()>
+   <input id=bt_print type="button" value="평가출력" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=rpt_print()>
+   <input id=bt_close type="button" value="닫기" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; visibility:hidden;
+            border:1 #A1A9A9 solid"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=close_rtn()>
+</div>
+	   
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 65px;
+    HEIGHT: 400px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <FC> Name='순번'  id=b_seq width=50  align=center Edit=None BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가구분'  id=b_section_item    suppress=1  Edit=None EditStyle=Combo Data='1:공통역량(태도),2:공통역량(능력),3:''' width=100  BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가기준'  id=b_base_code width=150    suppress=2 Edit=None EditStyle=Lookup Data='ds_base:select_1:select_2' BgColor=#ffffff  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='평가항목'  id=b_detail_item width=600   BgColor=#F2F2F2 Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <C> Name='평가'  id=self_eval_score width=60  align=center BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+	
+<OBJECT id=gd_2 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 465px;
+    HEIGHT: 160px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="HeadBorder"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='평가기준'  id=b_base_code width=150  Edit=None  EditStyle=Lookup Data='ds_base:select_1:select_2' BgColor=#F2F2F2 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가등급'  id=fir_base_grade width=70   EditStyle=Combo Data='1:상,2:중,3:하' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='평가자 코멘트'  id=fir_comment width=740   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_2"></OBJECT>
+</BODY></HTML>

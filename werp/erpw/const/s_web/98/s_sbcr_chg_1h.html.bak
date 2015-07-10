@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : s_sbcr_chg_1h.html 									-->
+<!-- 2. 유형(시나리오): 업체기본사항-변경이력관리							-->
+<!-- 3. 기 능 정 의   : 															-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 변경이력관리 </TITLE>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 's_sbcr_chg_1q.jsp?arg_sbcr_code='                        //품의 목록 
+var is_tr_1_addr 
+var is_ds_seq_addr
+var is_dept_code = '',is_sbcr_code
+var is_date
+var is_confirm_check = 'no'
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	var arg_cmd
+	
+	ds_1.DataID = is_ds_1_addr + is_sbcr_code
+	ds_1.SyncLoad=true
+	ds_1.reset()
+}
+//-----------------------------------------------------------------------
+function init_move()                       // 초기값
+//------------------------------------------------------------------------
+{
+	var ll_row,ll_unq
+	if (ds_1.RowPosition < 2) {
+	   arg_cmd = "  INSERT INTO S_SBCR_CHG  " +
+	             "  SELECT SBCR_CODE,m_spec_unq_no.nextval,sysdate,SBCR_NAME,BUSINESSMAN_NUMBER,   " +
+	             "         CORP_NO,ZIP_NUMBER1,ADDRESS1,TEL_NUMBER1,REP_NAME1,REP_NAME2 " +
+	             "    FROM S_SBCR  WHERE sbcr_code = '" + is_sbcr_code + "'"
+	
+	   f_update_sql(arg_cmd)
+		ds_1.reset()
+		ds_1.UserStatus(1) = 1;
+		gd_1.Editable="true"
+		return
+	}	
+	
+  	ds_seq.DataID = is_ds_seq_addr                       // SEQ NO 의 DATAID
+	ds_seq.SyncLoad=true;             // seq no 구하기
+	ds_seq.reset()
+	ll_row = ds_1.RowPosition - 1;
+	ll_unq = ds_seq.NameValue(1,"nextval")
+	ds_1.NameValue(ds_1.RowPosition,"detail_unq_num")     = ll_unq
+	ds_1.NameValue(ds_1.RowPosition,'sbcr_code')          = is_sbcr_code
+	ds_1.NameValue(ds_1.RowPosition,'chg_dt')             = is_date
+	ds_1.NameValue(ds_1.RowPosition,'sbcr_name')          = ds_1.NameValue(ll_row,'sbcr_name')
+	ds_1.NameValue(ds_1.RowPosition,'businessman_number') = ds_1.NameValue(ll_row,'businessman_number')
+	ds_1.NameValue(ds_1.RowPosition,'corp_no')            = ds_1.NameValue(ll_row,'corp_no')
+	ds_1.NameValue(ds_1.RowPosition,'zip_number1')        = ds_1.NameValue(ll_row,'zip_number1')
+	ds_1.NameValue(ds_1.RowPosition,'address1')           = ds_1.NameValue(ll_row,'address1')
+	ds_1.NameValue(ds_1.RowPosition,'tel_number1')        = ds_1.NameValue(ll_row,'tel_number1')
+	ds_1.NameValue(ds_1.RowPosition,'rep_name1')          = ds_1.NameValue(ll_row,'rep_name1')
+	ds_1.NameValue(ds_1.RowPosition,'rep_name2')          = ds_1.NameValue(ll_row,'rep_name2')
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	
+	ds_1.AddRow()
+	init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	var ll_row,ls_sbcr_name,ls_businessman_number,ls_corp_no,ls_zip_number,ls_addr,ls_tel,ls_rep1,ls_rep2
+	var ls_unq
+	
+	if  (confirm("삭제하시면 바로 저장이됩니다. 계속하시겠습니까?")){
+		if (ds_1.RowPosition < 2){
+			ds_1.DeleteRow(1)
+			tr_1.Post()
+			return
+		}
+		ll_row = ds_1.RowPosition - 1;
+		ls_sbcr_name          = ds_1.NameValue(ll_row,'sbcr_name')
+		ls_businessman_number = ds_1.NameValue(ll_row,'businessman_number')
+		ls_corp_no            = ds_1.NameValue(ll_row,'corp_no')
+		ls_zip_number         = ds_1.NameValue(ll_row,'zip_number1')
+		ls_addr               = ds_1.NameValue(ll_row,'address1')
+		ls_tel                = ds_1.NameValue(ll_row,'tel_number1')
+		ls_rep1               = ds_1.NameValue(ll_row,'rep_name1')
+		ls_rep2               = ds_1.NameValue(ll_row,'rep_name2')
+		ls_unq = ds_1.NameValue(ds_1.RowPosition,'detail_unq_num')
+		
+	   arg_cmd = "  update S_SBCR  " +
+	             "     set sbcr_name = '" + ls_sbcr_name + "', businessman_number = '" + ls_businessman_number + "'," +
+	             "         corp_no = '" + ls_corp_no + "', zip_number1 = '" + ls_zip_number + "', " +
+	             "         address1 = '" + ls_addr + "', tel_number1 = '" + ls_tel + "', " +
+	             "         rep_name1 = '" + ls_rep1 + "', rep_name2 = '" + ls_rep2 + "'" +
+	             "   where sbcr_code = '" + is_sbcr_code + "'" + 
+	             " @ delete from s_sbcr_chg where sbcr_code = '" + is_sbcr_code + "' and detail_unq_num = " + ls_unq
+	
+	   f_update_sql_multy(arg_cmd)
+		ds_1.reset()
+		
+	}
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?")){
+     		tr_1.Post()
+		}
+	}
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+	btnsave_onclick()
+	window.returnValue = ''
+	window.close();
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+//	il_screen = focus
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	gs_home          = array[0];     
+	is_sbcr_code   = array[1];
+	is_date = array[2];
+	is_tr_1_addr = gs_home + '/const/s_web/98/s_sbcr_chg_1tr.jsp'
+	is_ds_seq_addr = gs_home + '/const/m_web/00/m_spec_unq_no_1q.jsp'                 // seq_no구하기 
+	tr_1.Action = is_tr_1_addr
+   btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+ 
+</SCRIPT>
+<script language="javascript" for=gd_1 event=OnPopup(row,colid,data)>
+	var result,ls_code;
+	var array = new Array();
+	if  (colid == "zip_number1") { 
+		ls_code = ds_1.NameValue(row,'zip_number1')
+		result = window.showModalDialog(gs_home + "/comm_search/z_zip_find_1h.html", ls_code,"dialogWidth:640px;dialogHeight:500px");
+		if(result == "") return;
+	
+		array = result.split("@");
+		ds_1.NameValue(row,'zip_number1') = array[0]
+		ds_1.NameValue(row,'address1')    = array[1]
+		return
+	}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	if  (row < 1) return;
+	if (ds_1.RowStatus(row)== 1) {
+		gd_1.Editable="true"
+	}
+	else{
+		gd_1.Editable="false"
+	}
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true></OBJECT>
+
+<OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+ <OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:s_sbcr_chg_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+
+
+<DIV id=gd_text 
+	style="Z-INDEX: 107; LEFT: 4px; WIDTH: 500px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+				<td width="100%"   BGCOLOR="#FFFFFF" style="COLOR: BLACK " colspan=20 > 
+					<div align="left">사업자번호(법인번호)는 '-'를 입력하지 마십시오...</div></td>
+         </tr>                 
+      </table>
+</DIV>
+	
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 600px; WIDTH: 300px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<input type="button" value="추가" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=btnadd_onclick()>
+	<input type="button" value="삭제" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=btndelete_onclick()>
+	<input type="button" value="저장" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=btnsave_onclick()>
+	<input type="button" value="닫기" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	         onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	         onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	       "  onclick=Button_close_onclick()>
+</DIV>
+  <OBJECT id=gd_1 onfocus="get_focus(1)"
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 960px; POSITION: absolute; TOP: 30px; HEIGHT: 400px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+	     <PARAM NAME="Editable" VALUE="-1">
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_1">
+	     <PARAM NAME="Format" VALUE="
+	        <C> Name='변경일자' ID=chg_dt Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	        <C> Name='협력업체명' ID=sbcr_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180 </C>
+	        <C> Name='사업자번호' ID=businessman_number Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	        <C> Name='법인번호' ID=corp_no Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	        <C> Name='대표자명' ID=rep_name1 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	        <C> Name='전화번호' ID=tel_number1 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+		     <C> Name='우편번호' ID=zip_number1 EditStyle=Popup HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 </C> 
+	        <C> Name='주소' ID=address1 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=230 </C>
+	        ">
+ 	     </OBJECT>
+</BODY></HTML>

@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+  <head>
+    <title>GAUCE SAMPLE MUTI--> I/O</title>
+    <meta http-equiv="content-type" content="text/html; charset=ks_c_5601">
+    <meta name="generator" content="pld ">
+    <style type="text/css">
+      body  { font-family :굴림체;font-size: 9pt }
+      div.tab1 {
+        position:absolute; 
+        top:115px; height:450px; 
+        left:10px; width:720px;
+        border-style : outset; border-color:#ffffee;
+        background-color:#ffffee;
+        z-index:1;
+      }
+    </style>
+    
+    <script language="javascript">
+      function btn_save_onclick() {
+        tbtr_1.Post();
+      }
+      
+      function btn_list_onclick(){
+        tbtr_2.Post();
+      }
+      
+      function btn_ins_onclick() {
+        if(tb_Tab.ActiveIndex == 2) {
+          tbds_detail.addRow();
+        } else if(tb_Tab.ActiveIndex == 3) {
+          tbds_group.addRow();
+        }
+      }
+      
+      function btn_del_onclick() {
+        if (tb_Tab.ActiveIndex == 2) {
+          tbds_detail.deleteRow(tbds_detail.RowPositon);
+        } else if(tb_Tab.ActiveIndex == 3) {
+          tbds_group.deleteRow(tbds_group.RowPositon);
+        }
+      }
+      
+      function btn_t_onclick() {
+        alert(tbds_detail.dataid);
+        tbds_detail.reset();
+      }
+      
+      function onTabChange(idx) {
+        tb_Tab.ActiveIndex = idx;
+      }
+    </script>
+    
+    <script language=JavaScript for=tbtr_1 event=onSuccess>
+      alert("Transaction Success!!\n" + "ErrorCode : " + tbtr_1.ErrorCode + "\n" + "ErrorMsg  : " + tbtr_1.ErrorMsg);
+      for(i=0;i<tbtr_1.SrvErrCount('UserMsg');i++) {
+        alert(tbtr_1.SrvErrMsg('UserMsg',i));		 		
+      }
+      onTabChange(1);
+    </script>
+    
+    <script language=JavaScript for=tbtr_1 event=onFail>
+      alert("Transaction Fail!!!\n" + "ErrorCode : " + tbtr_1.ErrorCode + "\n" + "ErrorMsg  : " + tbtr_1.ErrorMsg);	
+      for(i=1;i<tbtr_1.SrvErrCount('Native');i++) {
+        alert(tbtr_1.SrvErrMsg('Native',i));
+      }
+    </script>
+    
+    <script language=JavaScript for=tbds_list event=OnLoadCompleted(row)>
+      alert("tbds_list : LoadCompleted!!" + "\n" + "RowCount : " + row );
+    </script>
+    
+    <script language=JavaScript for=tbds_list event=OnLoadError>
+      alert("tbds_list : LoadError!!" + "\n" + "ErrorCode : " + tbds_list.ErrorCode + "\n" + "ErrorMsg  : " + tbds_list.ErrorMsg);
+    </script>
+    
+    <script language=JavaScript for=tbds_group event=OnLoadCompleted(row)>
+      alert("tbds_group : LoadCompleted!!" + "\n" + "RowCount : " + row );
+    </script>
+    
+    <script language=JavaScript for=tbds_group event=OnLoadError>
+      alert("tbds_group : LoadError!!" + "\n" + "ErrorCode : " + tbds_group.ErrorCode + "\n" + "ErrorMsg  : " + tbds_group.ErrorMsg);
+    </script>
+    
+    <script language=JavaScript for=tbds_detail event=OnLoadCompleted(row)>
+      alert("tbds_detail : LoadCompleted!!" + "\n" + "RowCount : " + row );
+    </script>
+    
+    <script language=JavaScript for=tbds_detail event=OnLoadError>
+      alert("tbds_detail : LoadError!!" + "\n" + "ErrorCode : " + tbds_detail.ErrorCode + "\n" + "ErrorMsg  : " + tbds_detail.ErrorMsg);
+    </script>
+    
+    <script language=JavaScript for=tb_Tab event=OnSelChanged(idx)>
+      if(idx == 2) {
+        var empno = tbds_list.NameString(tbds_list.RowPosition,"empno");
+        var dempno = tbds_detail.NameString(1,"empno");
+        if(empno != dempno) {
+          empno = tbds_list.NameString(tbds_list.RowPosition,"empno");
+          tbds_detail.DataId = "db_ds_select.jsp?empno=" + empno;
+          tbds_detail.reset();
+        }
+        //tbds_detail.RowPositon = tbds_list.RowPosition;
+      }
+    </script>
+    
+    <!--DataSet Component-->
+    <object id="tbds_list" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" >
+    </object>
+    
+    <object id="tbds_detail" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" >
+    </object>
+    
+    <object id="tbds_group" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" >
+    </object>
+    
+    <!--TR Component-->
+    <object id="tbtr_1" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5" > 
+      <param name="ServerIP"  value="">
+      <param name="KeyName"   value="Toinb_dataid4">
+      <param name="KeyValue"  value="JSP(I:USER=tbds_detail, I:GROUP=tbds_group, O:USERLIST=tbds_list)">
+      <param name="Action"    value="../../gauce40/tr/db_tr_iio.jsp">
+      <param name="Protocol"  value="1">
+    </object>
+    
+    <object id="tbtr_2" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5" > 
+      <param name="ServerIP"  value="">
+      <param name="Action"    value="../../gauce40/tr/db_tr_oo.jsp"> 
+      <param name="KeyName"   value="Toinb_dataid4">
+      <param name="KeyValue"  value="JSP(O:USER=tbds_list, O:GROUP=tbds_group)">
+    </object>
+  </head>
+  <body>
+    <input id="btn_1" value="SAVE" type="button"
+      style="left:88px; top:407px; width:60px; height:30px; font-family:±¼¸²u; font-size:9pt;" 
+      onclick="btn_save_onclick()">
+    <input id="btn_2" value="LIST" type="button"
+      style="left:150px; top:407px; width:60px; height:30px; font-family:±¼¸²u; font-size:9pt;" 
+      onclick="btn_list_onclick()">
+    <input id="btn_3" value="INSERT" type="button"
+      style="left:212px; top:407px; width:60px; height:30px; font-family:±¼¸²u; font-size:9pt;" 
+      onclick="btn_ins_onclick()">
+    <input id="btn_4" value="DELETE" type="button"
+      style="left:272px; top:407px; width:60px; height:30px; font-family:±¼¸²u; font-size:9pt;" 
+      onclick="btn_del_onclick()">
+    <BR>	 
+    
+    <object id=tb_Tab classid=CLSID:6BA6E0F6-E3A1-45ed-9E03-CBFC682EC63C
+        style="LEFT: 9px; WIDTH: 200px; POSITION: absolute; TOP: 93px; HEIGHT: 20px" >
+      <param name="BackColor"     value="#00ffff">
+      <param name="DisableBackColor"  value="#ffffee">
+      <param name="Format"      value='
+        <T>divid="tb_Tab_page1"   title="user"</T> 
+        <T>divid="tb_Tab_page2"   title="userinfo"</T>
+        <T>divid="tb_Tab_page3"   title="group"</T>
+      '> 
+    </object>
+    <div id="tb_tab_page1" class="tab1" >
+      <!--Grid Component-->
+      <object id="tbgd_list" classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" style="left:5px; top:150px; width:700px; height:400px;"> 
+      <param name="DataID"	value="tbds_list">
+      <param name="Format"	value= '
+        <F> id=empno, name=empno,width=70</F>
+        <c> id=ename, name=ename, width=100</c>
+        <c> id=job, name=job, width=70</c>
+        <c> id=mgr, name=mgr, width=70</c>
+        <c> id=sal, name=sal, width=70</c>
+        <c> id=comm, name=comm, width=70</c>
+        <c> id=deptno, name=deptno, width=70</c>
+      '>
+      </object>
+    </div>
+    <div id="tb_tab_page2" class="tab1">
+      <label id="lbl_1" tabindex="-1"
+        style="position:absolute; left:15px; top:10px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">EmpNo</label>
+      <input id="cuser_id" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:8px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      <label id="lbl_2" tabindex="-1"
+        style="position:absolute; left:15px; top:40px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">ename</label>
+      <input id="cuser_nm" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:38px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      <label id="lbl_4" tabindex="-1"
+        style="position:absolute; left:15px; top:80px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">job</label>
+      <input id="cused_yn" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:78px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      <label id="lbl_5" tabindex="-1"
+        style="position:absolute; left:15px; top:115px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">mgr</label>
+      <input id="cstatus" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:110px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      <label id="lbl_3" tabindex="-1"
+        style="position:absolute; left:15px; top:155px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">sal</label>
+      <input id="cremark" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:160px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+
+      <label id="lbl_6" tabindex="-1"
+        style="position:absolute; left:15px; top:190px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">comm</label>
+      <input id="comm" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:220px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      
+      <label id="lbl_7" tabindex="-1"
+        style="position:absolute; left:15px; top:260px; width:70px; height:17px; font-family:±¼¸²u; font-size:9pt;">deptno</label>
+      <input id="deptno" type="text" tabindex="-1" 
+        style="position:absolute; left:95px; top:280px; width:155px; height:22px; font-family:±¼¸²u; font-size:9pt;">
+      
+
+      <OBJECT ID="SiftWBind" CLASSID="CLSID:4A35BB2C-B831-4199-A486-FEA332D085D9">
+        <PARAM NAME="DataID" VALUE="tbds_detail">
+        <PARAM NAME="BindInfo" VALUE="
+          <C>col=empno, ctrl=cuser_id, param=value </C>
+          <C>col=ename, ctrl=cuser_nm,param=value </C>
+          <C>col=job, ctrl=cused_yn, param=value </C>
+          <C>col=mgr, ctrl=cstatus, param=value </C>
+          <C>col=sal, ctrl=cremark, param=value </C>
+          <C>col=comm, ctrl=comm, param=value </C>
+          <C>col=deptno, ctrl=deptno, param=value </C>
+        ">
+      </OBJECT>
+    
+    </div>
+    <div id="tb_tab_page3" class="tab1" >
+      <!--Grid Component-->
+      <object id="tbgd_list" classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" style="left:5px; top:150px; width:700px; height:400px;"> 
+      <param name="DataID"	value="tbds_group">
+      <param name="Editable"	value="True">
+      <param name="Format"	value= '
+        <F> id=deptno, name=deptno, width=80</F>
+        <c> id=dname, name=dname, width=100</c>
+        <c> id=loc, name=loc, width=100</c>
+      '>
+      </object>
+    </div>
+  </body>
+</html>

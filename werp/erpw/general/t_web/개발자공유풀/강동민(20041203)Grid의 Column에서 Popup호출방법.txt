@@ -1,0 +1,55 @@
+<!-- Grid Column 에서 PopUp 띄우는 방법 --> 
+
+1. Initialize 에 G_setLovCol(grid, col_name);을 추가한다.
+
+   추가 후 Grid상에 해당 컬럼색이 주황색으로 표시됨을 확인한다.
+
+2. OnPopup(dataset, grid, row, colid, data) 을 정의한다.
+
+   정의시 Grid, Column을 정의하여 해당 Grid 의 해당 Column에서만 popup을 호출할 수 있게 한다.
+
+3. Grid의 Column이 반드시 Editable 이여야함을 기억한다.
+   
+   <PARAM NAME="Editable" VALUE="-1"> or <PARAM NAME="Editable" VALUE="true"> 이어야함.
+   
+================================================================================================
+   
+//Initialize에 G_setLovCol(gridMAIN, "WBS_CODE"); 추가
+function Initialize()
+{
+	G_addDataSet(dsMAIN, null, gridMAIN, "WAcEmBdgtRegister_S.jsp?ACT=MAIN", "실행내역마스타");	
+	G_setLovCol(gridMAIN, "WBS_CODE");
+	G_Load(dsMAIN, null);
+	
+}
+
+//popup 호출하는 function OnPopup()을 정의한다.
+function OnPopup(dataset, grid, row, colid, data)
+{
+	if(grid == gridMAIN && colid == "WBS_CODE")    <-- 해당 Grid 와 해당 Column 을 비교하여 popup을 호출
+	{
+		imgWBS_OnClick();						   <-- popup 호출하는 함수 호출...
+	}
+}
+
+//popup 호출
+function	imgWBS_OnClick()
+{
+	
+	var lrArgs = new C_Dictionary();
+	var lrRet = null;
+
+	lrRet = C_LOV("WBS_FIND", lrArgs);
+	
+	if(lrRet == null) return;
+	
+	if(dsMAIN.CountRow == 0)
+	{
+		C_msgOk("입력 후 공종을 입력하세요.","알림");
+		return;
+	}
+	
+	dsMAIN.NameString(dsMAIN.RowPosition,"WBS_CODE") = lrRet.get("WBS_CODE");
+	dsMAIN.NameString(dsMAIN.RowPosition,"NAME")     = lrRet.get("WBS_NAME");
+	dsMAIN.NameString(dsMAIN.RowPosition,"LVL")      = lrRet.get("LVL");
+}

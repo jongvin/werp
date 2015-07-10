@@ -1,0 +1,523 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+
+<script language="javascript">
+function fn_Search() {
+	goData();
+}
+
+function fn_Print(){
+//	ln_Report_MakeData("pgm7_Rpt.csv");				//csv화일로 생성
+	ln_Report_Popup("Program7.mrd",RMapper1);		// 뷰어 오픈 => arg1 : mrd화일명, arg2 : Mapper 오브젝트명
+}
+
+function goData() {
+	window.status = "";
+	
+    DataSet.dataID = "./finance2_select.jsp?dsn=2dchart";
+    DataSet.reset();
+	DataSet2.dataID = "./finance2_select.jsp?dsn=3dchart";
+    DataSet2.reset();
+	DataSet3.dataID = "./finance2_select.jsp?dsn=grid1";
+    DataSet3.reset();
+}
+
+function cfInitXChart(oXChart) {
+    //먼저 기존의 Series들을 클리어 한다
+    oXChart.RemoveAllSeries();
+    
+    //XChart의 보기,기울기등의 속성을 설정한다
+    oXChart.Aspect.View3D = true;
+    oXChart.Aspect.Chart3DPercent = 30;
+    oXChart.Aspect.Elevation = 270;
+    oXChart.Aspect.Zoom = 100;
+    
+    //Xchart의 타이틀에 관련된 속성을 설정한다
+    //주의 : XChart에는 Title속성이 없고 대신 Header속성이 존재한다 
+    oXChart.Header.Alignment = 2;
+    oXChart.Header.Text.Clear();
+    oXChart.Header.Font.Size=11;
+    oXChart.Header.Text.Add ('');
+    
+    //XChart의 판넬의 속성을 설정한다
+    //XChart가 표시되는 전체영역의 바탕을 설정하는것이다
+    oXChart.Panel.Color = oXChart.ToOLEColor("#dddddd,#ffffff");
+    oXChart.Panel.BorderStyle = 1;
+	oXChart.Panel.Gradient.Visible = true;
+	oXChart.Panel.Gradient.Direction = 0;
+	oXChart.Panel.Gradient.StartColor = oXChart.ToOLEColor('#B8B8B8');
+	oXChart.Panel.Gradient.EndColor = oXChart.ToOLEColor('#E7E7E7');
+    
+    //XChart의 좌표축에 관련된 속성을 설정한다
+    
+    //XChart의 각축의 벽에 색을 지정한다
+    oXChart.Walls.Left.Color   = oXChart.ToOLEColor("YELLOW");
+    oXChart.Walls.Right.Color  = oXChart.ToOLEColor("RED");
+    oXChart.Walls.Bottom.Color = oXChart.ToOLEColor("WHITE");
+    
+    //축을 나타내는 선에 대해 설정한다
+    oXChart.Axis.Bottom.GridPen.visible = false;
+    oXChart.Axis.Left.GridPen.visible = false;
+    oXChart.Axis.Right.GridPen.visible = false;
+    
+    //축에 표시되는 좌표값의 색을 지정한다
+    oXChart.Axis.Left.Labels.Font.Color   = oXChart.ToOLEColor("BLUE");
+    oXChart.Axis.Right.Labels.Font.Color  = oXChart.ToOLEColor("RED");
+    oXChart.Axis.Bottom.Labels.Font.Color = oXChart.ToOLEColor("BLACK");
+    
+    //Legend의 속성을 설정한다
+    oXChart.Legend.Visible =false;
+    oXChart.Legend.LegendStyle = 0;
+    oXChart.Legend.TextStyle = 0;
+    oXChart.Legend.CheckBoxes = false;      //Legend 영역에 checkbox표현 여부 설정
+    oXChart.Legend.Symbol.Width = 20;
+    oXChart.Legend.Alignment = 1;
+    oXChart.Legend.Font.Size = 8.7;
+    oXChart.Legend.TopPos = 5;
+    oXChart.Legend.VertSpacing = 0;
+    oXChart.Legend.ShadowSize = 5;
+    oXChart.Legend.ShapeStyle = 1;
+    oXChart.Legend.Color = oXChart.ToOLEColor("yellow");
+    oXChart.Legend.ShadowColor = oXChart.ToOLEColor("green");
+
+    //툴팁(마우스를 Series위에 올렸을때 값을 보여 주기위한 설정	
+/*
+    var Toolsidx = oXChart.Tools.Add(8);
+    oXChart.Tools.Items(Toolsidx).asMarksTip.MouseAction = 0;
+    oXChart.Tools.Items(Toolsidx).asMarksTip.Style = 4;
+    oXChart.Tools.Items(Toolsidx).asMarksTip.Delay = 0;
+*/
+}
+
+//
+function cfAddSeriesOne(oXChart,nDataSet,vType,vTitle,vColor,cLabel,cYvalue) {
+	var idx = oXChart.AddSeries(vType);
+
+	//Series의 종류와 상관없이 주는 속성들이다
+	oXChart.Series(idx).DataID = nDataSet;
+	oXChart.Series(idx).Title = vTitle;
+	oXChart.Series(idx).LabelColumn = cLabel;
+	oXChart.Series(idx).color = oXChart.ToOLEColor(vColor);
+	oXChart.Series(idx).YValueColumn = cYvalue;
+	oXChart.Series(idx).Marks.visible = false;
+	
+//	if(vType == 16) {
+//		oXChart.Series(idx).asBezier.Pointer.Visible = true;
+//	}
+
+	oXChart.reset();
+}
+
+function cfAddSeriesTwo(oXChart,nDataSet,vType,vTitle,vColor,cLabel,cYvalue,cZvalue) {
+	var idx = oXChart.AddSeries(vType);
+
+	//Series의 종류와 상관없이 주는 속성들이다
+	oXChart.Series(idx).DataID = nDataSet;
+	oXChart.Series(idx).Title = vTitle;
+	oXChart.Series(idx).LabelColumn = cLabel;
+	oXChart.Series(idx).color = oXChart.ToOLEColor(vColor);
+	oXChart.Series(idx).YValueColumn = cYvalue;
+//	oXChart.Series(idx).ZValueColumn = cZvalue;
+	oXChart.Series(idx).Marks.visible = false;
+
+//	oXChart.TimerEnabled = false;
+//	oXChart.TimerInterval = 100;
+
+//	oXChart.Aspect.Orthogonal=false;
+//	oXChart.Aspect.Chart3DPercent=80;
+//	oXChart.Aspect.Perspective=50;
+//	oXChart.Aspect.Perspective=30;
+//	oXChart.Aspect.Width3D = 0;
+
+//	oXChart.Series(idx).asBar.AutoBarSize=true;
+
+	oXChart.reset();
+}
+
+function cfAddSeriesThree(oXChart,nDataSet,vType,vTitle,vColor,cLabel,cYvalue,cZvalue) {
+	var idx = oXChart.AddSeries(vType);
+
+	//Series의 종류와 상관없이 주는 속성들이다
+	oXChart.Series(idx).DataID = nDataSet;
+	oXChart.Series(idx).Title = vTitle;
+	oXChart.Series(idx).LabelColumn = cLabel;
+	oXChart.Series(idx).color = oXChart.ToOLEColor(vColor);
+	oXChart.Series(idx).YValueColumn = cYvalue;
+//	oXChart.Series(idx).ZValueColumn = cZvalue;
+	oXChart.Series(idx).Marks.visible = false;
+
+//-----------------------------------------------------------------------------------------
+//	oXChart.TimerEnabled = true;
+//	oXChart.TimerInterval = 100;
+
+//	oXChart.Aspect.Orthogonal=true;
+//	oXChart.Aspect.Chart3DPercent=80;
+//	oXChart.Aspect.Perspective=50;
+
+//	oXChart.Series(idx).asBar.AutoBarSize=true;
+	oXChart.Header.Text.Clear();
+	oXChart.Header.Font.Color = 6666;
+	oXChart.Header.Font.Size = 12;
+	
+	oXChart.Walls.Left.Color = oXChart.ToOLEColor("#FFFFFF");
+	oXChart.Walls.Bottom.Color = oXChart.ToOLEColor("blue");
+	
+	oXChart.Axis.Left.Labels.Font.Color = oXChart.ToOLEColor("blue");
+	
+	var ToolsIdxTd = oXChart.Tools.Add(0);
+	oXChart.Tools.Items(ToolsIdxTd).asTeeCursor.Series = 1;
+    oXChart.Tools.Items(ToolsIdxTd).asTeeCursor.FollowMouse = 1;
+    oXChart.Tools.Items(ToolsIdxTd).asTeeCursor.Snap = 0;
+    oXChart.Tools.Items(ToolsIdxTd).asTeeCursor.Style = 2;
+
+	oXChart.reset();
+}
+
+function ChangeSeries(gubun, oXChart, dataset) {
+
+	if(gubun == 1) {
+		SeriesType = document.Form1.Target1.options(document.Form1.Target1.selectedIndex).value;
+		cfInitXChart(oXChart);
+		cfAddSeriesOne(oXChart, dataset.id, SeriesType, "당월실적", "green", "dd", "siljuk" );
+	} else if(gubun == 2) {
+		SeriesType = document.Form1.Target2.options(document.Form1.Target2.selectedIndex).value;
+		cfInitXChart(oXChart);
+		cfAddSeriesOne(oXChart, dataset.id, SeriesType, "당월실적", "blue", "dd", "siljuk" );
+	} else if(gubun == 3) {
+		SeriesType = document.Form1.Target3.options(document.Form1.Target3.selectedIndex).value;
+		DataSet2.Reset();
+		cfInitXChart(oXChart);
+		cfAddSeriesTwo(oXChart, dataset.id, SeriesType, "당월실적", "red", "Index", "Y", "Z" );
+		oXChart.redraw();
+	} else if(gubun == 4) {
+		SeriesType = document.Form1.Target4.options(document.Form1.Target4.selectedIndex).value;
+		cfInitXChart(oXChart);
+		cfAddSeriesThree(oXChart, dataset.id, SeriesType, "당월실적", "purple", "Index", "Y", "Z" );
+	}
+}
+</script>
+<!-- ======================================================================= -->
+<!--                      component 기본사용 이벤트                         -->
+<!-- ======================================================================= -->
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnError(ErrorCode,ErrorMsg)>
+	alert("Mapper ErrorMsg   " + ErrorMsg );
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=RMapper1 EVENT=OnCompleted()>
+	//alert("Mapper Completed");
+</SCRIPT>
+
+<script language=JavaScript for=DataSet event=OnLoadCompleted(rowcnt)>
+	//초기화
+	cfInitXChart(MxChart_1);
+	cfInitXChart(MxChart_2);
+
+	cfAddSeriesOne(MxChart_1, DataSet.id, 16, "당월실적", "green",  "dd", "siljuk" );
+	cfAddSeriesOne(MxChart_2, DataSet.id, 29, "전월실적", "blue",   "dd", "siljukL");
+	
+</script>
+<script language=JavaScript for=DataSet2 event=OnLoadCompleted(rowcnt)>
+	//초기화
+	cfInitXChart(MxChart_3);
+	cfInitXChart(MxChart_4);
+
+	cfAddSeriesTwo(MxChart_3, DataSet2.id, 4, "신장율",   "red",    "Index", "Y", "Z");
+	cfAddSeriesThree(MxChart_4, DataSet2.id, 2, "신장율", "purple", "Index", "Y", "Z");
+</script>
+
+<script language="javascript" for=MxChart_3 event=OnMouseUp(Button,EShiftState,X,Y)>
+//  ****우측 마우스를 이용해서 CHART MENU를 구동시켜 보자 *****
+	if (Button == 2) {
+		MxChart_3.ShowEditor();
+	}
+</script>
+
+<script language="javascript" for=MxChart_4 event=OnMouseUp(Button,EShiftState,X,Y)>
+//  ****우측 마우스를 이용해서 CHART MENU를 구동시켜 보자 *****
+	if (Button == 2) {
+		MxChart_4.ShowEditor();
+	}
+</script>
+
+<script language=JavaScript for=MxChart_3 event=OnTimer()>
+	var DeltaRot;
+	var DeltaElev;
+	var DeltaZoom;
+
+	DeltaRot=2;
+	DeltaElev=2;
+	DeltaZoom=2;
+
+	MxChart_3.Aspect.OpenGL.Active=true;
+//	MxChart_3.Aspect.OpenGL.LightPosition.X = 1000;
+//	MxChart_3.Aspect.OpenGL.LightPosition.Y = 450;
+//	MxChart_3.Aspect.OpenGL.LightPosition.Z = -700;
+/*
+	MxChart_3.Aspect.OpenGL.LightPosition.X = 1000;
+	MxChart_3.Aspect.OpenGL.LightPosition.Y = 1000;
+	MxChart_3.Aspect.OpenGL.LightPosition.Z = 1000;
+*/
+	if(MxChart_3.SeriesCount > 0) {
+		MxChart_3.Aspect.Rotation = MxChart_3.Aspect.Rotation + DeltaRot;
+//		if((MxChart_3.Aspect.Rotation <= 275) || (MxChart_3.Aspect.Rotation >= 355)) DeltaRot = -DeltaRot;
+		if((MxChart_3.Aspect.Rotation <= 20) || (MxChart_3.Aspect.Rotation >= 355)) DeltaRot = -DeltaRot;
+		
+		MxChart_3.Aspect.Elevation = 1;
+		
+//		MxChart_3.Aspect.Elevation = MxChart_3.Aspect.Elevation + DeltaElev;
+//		if((MxChart_3.Aspect.Elevation <= 275) || (MxChart_3.Aspect.Elevation >= 355)) DeltaElev = -DeltaElev;
+
+		MxChart_3.Aspect.Zoom = 158;
+
+//		MxChart_3.Aspect.Zoom = MxChart_3.Aspect.Zoom + DeltaZoom;
+//		if((MxChart_3.Aspect.Zoom <= 40) || (MxChart_3.Aspect.Zoom >= 60)) DeltaZoom = -DeltaZoom;
+    }
+</script>
+
+<script language=JavaScript for=MxChart_4 event=OnTimer()>
+	var DeltaRot;
+	var DeltaElev;
+	var DeltaZoom;
+
+	DeltaRot=2;
+	DeltaElev=2;
+	DeltaZoom=2;
+
+	MxChart_4.Aspect.OpenGL.Active=true;
+
+	if(MxChart_4.SeriesCount > 0) {
+		MxChart_4.Aspect.Rotation = MxChart_4.Aspect.Rotation + DeltaRot;
+//		if((MxChart_4.Aspect.Rotation <= 275) || (MxChart_4.Aspect.Rotation >= 355)) DeltaRot = -DeltaRot;
+		if((MxChart_4.Aspect.Rotation <= 20) || (MxChart_4.Aspect.Rotation >= 355)) DeltaRot = -DeltaRot;
+		
+		MxChart_4.Aspect.Elevation = 1;
+		
+//		MxChart_4.Aspect.Elevation = MxChart_4.Aspect.Elevation + DeltaElev;
+//		if((MxChart_4.Aspect.Elevation <= 275) || (MxChart_4.Aspect.Elevation >= 355)) DeltaElev = -DeltaElev;
+
+		MxChart_4.Aspect.Zoom = 195;
+
+//		MxChart_4.Aspect.Zoom = MxChart_4.Aspect.Zoom + DeltaZoom;
+//		if((MxChart_4.Aspect.Zoom <= 40) || (MxChart_4.Aspect.Zoom >= 60)) DeltaZoom = -DeltaZoom;
+    }
+</script>
+
+<!-- ======================================================================= -->
+<!--                      program에 사용될 components                         -->
+<!-- ======================================================================= -->
+
+<!--DataSet Component-->
+<object id="DataSet" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"> 
+</object> 
+<object id="DataSet2" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"> 
+</object> 
+<object id="DataSet3" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"> 
+</object> 
+
+
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script>
+</head>
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="goData();na_preload_img(false, '../images/print_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="30">&nbsp;</td>
+					<td width="395" height="30">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm7_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>연체현황</b></font></td>
+							</tr>
+						</table>
+			</td>
+					<td width="395" height="30">
+						<p align="right">
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="2" valign="top">
+			<FORM NAME="Form1" ACTION="">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30" colspan="4">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="210" height="25">
+											</td>
+											<td width="60" height="25"><font size="2"><b>Chart-I</b></font></td>
+											<td width="231" height="25">
+												<SELECT NAME="Target1" language="JavaScript" onchange="ChangeSeries(1,MxChart_1, DataSet)">
+												<OPTION SELECTED VALUE="0">Line</option>
+												<OPTION VALUE="1">Bar</option>
+												<OPTION VALUE="2">HorizBar</option>
+												<OPTION VALUE="3">Area</option>
+												<OPTION VALUE="4">Point</option>
+												<OPTION VALUE="16">Bezier</option>
+												<OPTION VALUE="35">Pyramid</option>
+												<OPTION VALUE="37">HorizLine
+												</option>
+												</SELECT>
+																				</td>
+																				<td width="60" height="25"><font size="2"><b>Chart-II</b></font></td>
+																				<td width="149" height="25">
+												<SELECT NAME="Target2" language="JavaScript" onchange="ChangeSeries(2, MxChart_2, DataSet)">
+												<OPTION SELECTED VALUE="31">BarJoin</option>
+												<OPTION VALUE="14">Volume</option>
+												<OPTION VALUE="29">Histogram</option>
+												</SELECT>
+											</td>
+										</tr>
+									</table></td>
+							</tr>
+							<tr>
+								<td width="197" height="25" valign="bottom"><b><font size="2">일반현황</font></b></td>
+								<td width="10" height="25" valign="bottom">&nbsp;</td>
+								<td width="290" height="25" valign="bottom">
+									<p align="center"><b><font size="2">총대출액(최근12개월)</font></b></p>
+								</td>
+								<td width="293" height="25" valign="bottom">
+									<p align="center"><b><font size="2">1인당평균대출액(최근12개월)</font></b></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="197" height="203"><p>
+									<!-- Grid Component 1 -->
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_1">
+										<param name="DataID"    value="DataSet">
+										<param name="IndWidth"	    value="0">
+										<param name="HeadBorder"	value="4">
+										<param name="BorderStyle"	value="1">
+										<param name="LineColor"	    value="#FFFFFF">
+										<param name="HeadLineColor"	value="#FFFFFF">
+										<param name="colsizing"	    value="true">
+										<param name="UsingOneClick" value=1> 
+										<param name="HiddenHScroll"     value=false>
+										 <param name="TitleHeight"           value=30>
+										<param name="SortView"      value="Left">
+										<param name="Format"                 value='
+										   <C>ID=dd			name="번호"  width=30 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE edit=none </C>
+										   <C>ID=SILJUK        name="연체금액\\(천원)"  width=74 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE edit=none sort=true</C>
+										   <C>ID=SILJUKL       name="연체자수"  width=74 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE edit=none sort=true</C>'>
+									</object>
+								</p></td>
+								<td width="10" height="203">&nbsp;</td>
+								<td width="290" height="203"><p>
+									<!-- XChart Component 1 -->
+									<object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_1" width="100%" height="100%"></object>
+								</p></td>
+								<td width="293" height="203"><p>
+									<!-- XChart Component 2 -->
+									<object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_2" width="100%" height="100%"></object>
+								</p></td>
+							</tr>
+							<tr>
+								<td width="197" height="25" valign="bottom"><b><font size="2">연체현황</font></b></td>
+								<td width="10" height="25" valign="bottom">&nbsp;</td>
+								<td width="290" height="25" valign="bottom">
+									<p align="center"><b><font size="2">총연체액(최근12개월)</font></b></p>
+								</td>
+								<td width="293" height="25" valign="bottom">
+									<p align="center"><b><font size="2">1인당평균연체액(최근12개월)</font></b></p>
+								</td>
+							</tr>
+							<tr>
+								<td width="197" height="210"><p>
+									<!-- Grid Component 2 -->
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="100%" id="MxGrid_2">
+										<param name="DataID"        value="DataSet3">
+										<param name="IndWidth"	    value="0">
+										<param name="HeadBorder"	value="4">
+										<param name="BorderStyle"	value="1">
+										<param name="LineColor"	    value="#FFFFFF">
+										<param name="HeadLineColor"	value="#FFFFFF">
+										<param name="colsizing"	    value="true">
+										<param name="UsingOneClick" value=1> 
+										<param name="HiddenHScroll"     value=false>
+										<param name="SortView"      value="Left">
+										<param name="IndWidth"      value="0">
+										<param name="Format"                 value='
+										   <C>ID=Index name="번호" width=30 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE edit=none </C>
+										   <C>ID=X     name="연체자" width=74 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=Center BgColor=#FFFFCE edit=none </C>
+										   <C>ID=Y     name="연체율" width=74 Dec=5 HeadBgColor=#908F8B HeadColor=#FFFFFF  Align=right  BgColor=#FFFFCE edit=none sort=true</C>'>
+									</object>
+								</p></td>
+								<td width="10" height="210">&nbsp;</td>
+								<td width="290" height="210"><p>
+									<!-- XChart Component 3 -->
+									<object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_3" width="100%" height="100%"></object>
+								</p></td>
+								<td width="293" height="210"><p>
+									<!-- XChart Component 4 -->
+									<object classid="clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2" id="MxChart_4" width="100%" height="100%">
+									</object>
+								</p></td>
+							</tr>
+						</table>
+			</FORM>
+			</td>
+				</tr>
+			</table>
+			<OBJECT id=RMapper1 classid=clsid:8F07B2E3-C012-4F81-B365-1384057095D0>
+				<PARAM NAME="MappingInfo" VALUE="
+				EXTRACT *
+				  FROM DataSet
+				UNION ALL
+				EXTRACT *
+				  FROM DataSet3
+				">
+			</OBJECT>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+
+<head>
+<title>CommonBlob Sample</title>
+
+<meta http-equiv="content-type" content="text/html; charset=ks_c_5601">
+
+<style type="text/css">
+body  { font-family :굴림체;font-size: 9pt }
+</style>
+
+<!--  general script  -->
+<script language="javascript">
+function btn_1_onclick()
+{
+	tbds_1.AddRow();
+}
+function btn_2_onclick()
+{
+	tbds_1.DeleteRow(tbds_1.RowPosition);
+}
+function btn_3_onclick()
+{
+
+alert(tbds_1.Text);
+
+	tbtr_1.Post();
+}
+
+function btn_4_onclick()
+{
+	tbif_1.Open();
+	tbds_1.NameString(tbds_1.RowPosition, "data_url")  = tbif_1.value;
+	tbds_1.NameString(tbds_1.RowPosition, "data_name") = tbif_1.value;
+	return;
+}
+
+function btn_5_onclick()
+{
+	tbds_1.Reset();
+
+}
+
+</script>
+
+<!--  toinb script -->
+<script language="javascript"  for=tbtr_1 event=OnSuccess()>
+  tbds_1.Reset();
+</script>
+
+<script language="javascript"  for=tbtr_1 event=OnFail()>
+	alert(tbtr_1.ErrorMsg);
+</script>
+
+<script language=JavaScript for=tbds_1 event=OnLoadError(row)>
+		alert("OnLoadError()");
+		alert("cnt===" + tbds_1.SrvErrCount('Native'));
+		for(i=0;i<tbds_1.SrvErrCount('Native');i++) {
+		    alert(tbds_1.SrvErrMsg('Native',i));
+		}
+
+</script>
+
+<script language=JavaScript for=tbds_1 event=OnLoadCompleted(row)>
+//	alert("Return Message : "+ tbds_1.SrvErrMsg('UserMsg',0));
+//	alert(tbds_1.NameString(tbds_1.RowPosition, "data_url"));
+</script>
+
+<!--DataSet Component-->
+<object id="tbds_1" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB"> 
+	<param name="DataID"	value="blob_sel.jsp">
+	<param name="SyncLoad"  value=true>
+</object>
+
+
+<!--TR Component-->
+<object id="tbtr_1" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5"> 
+	<param name="Action"	value="../../gauce40/blob/blob_tr.jsp">
+	<param name="KeyName"	value="Toinb_dataid4">
+	<param name="KeyValue"	value="JSP(I:BLOB=tbds_1)">
+	<param name="Protocol"  value="1">
+</object>
+
+</head>
+<body bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/image_bar.gif" border=0>
+<br>
+<br>
+			<img src="../image/icon/search_icon.gif" alt="데이터를 조회합니다." style="cursor:hand;" onClick="btn_5_onclick();">
+			<img src="../image/icon/insert_icon.gif" alt="데이터를 추가합니다." style="cursor:hand;" onClick="btn_1_onclick();">
+			<img src="../image/icon/del_icon.gif" alt="데이터를 삭제합니다." style="cursor:hand;" onClick="btn_2_onclick();">
+			<img src="../image/icon/save_icon.gif" alt="데이터를 저장합니다." style="cursor:hand;" onClick="btn_3_onclick();">
+			<img src="../image/icon/file_open_bu.gif" alt="파일을 지정합니다." style="cursor:hand;" onClick="btn_4_onclick();">
+<br>
+	<!--InputFile Component-->
+	<object id="tbif_1" classid="clsid:C722848E-C7EE-4dc6-947E-C2CD49BBA9DE" style="position:absolute; left:460px; top:32px; width:0px; height:0px;"> 
+		<param name="Text"	value="inputfile">
+	</object>
+
+
+	<!--Grid Component-->
+	<object id="tbgd_1" classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" style="width:60%; height:50%;"> 
+		<param name="DataID"	value="tbds_1">
+		<param name="ColSizing"	value=true>
+		<param name="Editable"	value=true>
+		<param name="Format"	value='
+			<C> id=data_name, name=Name,width=100</C>
+			<c> id=data_url,  name=photo_url,width=250</c>
+			'>
+	</object>
+
+	<img id="img_1"
+	 	style="width:30%; height:50%;">
+
+
+<!--Bind Component-->
+	<object id="tbbn_1" classid="clsid:4A35BB2C-B831-4199-A486-FEA332D085D9"> 
+			<param name="DataID"	value="tbds_1">
+			<param name="BindInfo"	value='
+				<C>Col=data_url,  Ctrl=img_1,  Param=Src</C>'>
+	</object>
+</body>
+</html>

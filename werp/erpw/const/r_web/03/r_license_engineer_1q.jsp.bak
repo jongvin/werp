@@ -1,0 +1,30 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+<%@ include file="../../../comm_function/conn_q.jsp"%><%
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+     String arg_class = req.getParameter("arg_class");
+     String arg_kind = req.getParameter("arg_kind");
+     String arg_seq = req.getParameter("arg_seq");
+ //---------------------------------------------------------- 
+     dSet.addDataColumn(new GauceDataColumn("license_class_code",GauceDataColumn.TB_STRING,1));
+     dSet.addDataColumn(new GauceDataColumn("license_kind_code",GauceDataColumn.TB_STRING,2));
+     dSet.addDataColumn(new GauceDataColumn("seq",GauceDataColumn.TB_DECIMAL,18,0));
+     dSet.addDataColumn(new GauceDataColumn("engineer_empno",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("key_engineer_empno",GauceDataColumn.TB_STRING,10));
+     dSet.addDataColumn(new GauceDataColumn("regist_tag",GauceDataColumn.TB_STRING,20));
+     dSet.addDataColumn(new GauceDataColumn("license_term",GauceDataColumn.TB_STRING,20));
+     dSet.addDataColumn(new GauceDataColumn("engineer_name",GauceDataColumn.TB_STRING,30));
+    String query = "  SELECT LICENSE_CLASS_CODE,   " + 
+     "         LICENSE_KIND_CODE,   " + 
+     "         SEQ,   " + 
+     "         ENGINEER_EMPNO,   " + 
+     "         ENGINEER_EMPNO   KEY_ENGINEER_EMPNO,   " + 
+     "         REGIST_TAG,   " + 
+     "         LICENSE_TERM,   " + 
+     "         ENGINEER_NAME  " + 
+     "    FROM R_GENERAL_LICENSE_ENGINEER  " + 
+     "   WHERE LICENSE_CLASS_CODE = " + "'" + arg_class + "'" + "  AND  " + 
+     "         LICENSE_KIND_CODE = " + "'" + arg_kind + "'" + " AND  " + 
+     "         SEQ = " + "'" + arg_seq   + "'" + 
+     "ORDER BY ENGINEER_EMPNO ASC        ";
+%>
+<%@ include file="../../../comm_function/conn_q_end.jsp"%>

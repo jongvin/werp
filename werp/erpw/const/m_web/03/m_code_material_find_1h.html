@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : z_dept_find_1h.html (tree sample)					-->
+<!-- 2. 유형(시나리오): 부서 찾기	(현장만 나옴) 								-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 자재 찾기  </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_code_material_find_1q.jsp'
+var is_confirm_check = 'no'
+var intersection 
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+/*   if (Textbox_1.value.length == 0) { 
+      alert("반드시 자재명을 입력하셔야 합니다")
+      return
+   }   */
+  ds_1.DataID =  is_ds_1_addr + "?arg_name=" + Textbox_1.value  //+ '&arg_intersection=' + intersection 
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  if( ds_1.RowPosition > 0 && ds_1.CountRow > 0) {
+  
+  	  if  (gd_1.MultiRowSelect)
+	  {                                   // multi row select 일 경우
+	     for (i=0 ;i <=ds_1.CountRow ;i++)                          // 로우의 제일끝에서부터 앞으로 루핑
+	     {
+	        if (ds_1.RowMark(i) == 1)                              // 선택되어 있으며는 
+			  {
+			  
+			    ls_return += ds_1.NameValue(i,'mtrcode') + '@'  +
+             				 ds_1.NameValue(i,'name') + '@'  +
+             				 ds_1.NameValue(i,'ssize') + '@' +
+              				 ds_1.NameValue(i,'unitcode') + '@' 
+ 
+			  }
+		  }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+	  }
+	  else
+	  {
+			    ls_return += ds_1.NameValue(i,'mtrcode') + '@'  +
+             				 ds_1.NameValue(i,'name') + '@'  +
+             				 ds_1.NameValue(i,'ssize') + '@' +
+              				 ds_1.NameValue(i,'unitcode') + '@' 
+  
+     }
+    
+  
+/*  
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'mtrcode') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'name') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'ssize') + '@' +
+              ds_1.NameValue(ds_1.RowPosition,'unitcode') + '@' +
+              ds_1.NameValue(ds_1.RowPosition,'ditag') + '@' +  
+              ds_1.NameValue(ds_1.RowPosition,'mtrgrand') + '@' +
+              ds_1.NameValue(ds_1.RowPosition,'acctag') + '@'
+*/              
+	}        
+ 
+ 
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+
+
+  array = result.split("^");
+ Textbox_1.value = array[0]
+ intersection = array[1]
+
+ if (result == "") {}
+ else
+  btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+ 
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<div class=main_div>
+	<table border=0 cellpadding=0 cellspacing=0 width="100%" height="100%" >
+		<tr>
+			<td width="100%" height="20">
+			   <table width="*" cellpadding=0 cellspacing=0>
+			   	<tr>
+						<td width="15"><img src="../../../image/bullet3.gif"></td>
+						<td width="30" class=font_green_bold>명칭</td>	
+                  <td width="130">						
+							<INPUT type="text" id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+						    style="Z-INDEX: 300; FONT-SIZE: 12px;"    onkeyDown="keyDown()"></td>
+				      <td>		
+							<INPUT  type=button style="Z-INDEX: 106;"  class="img_btnFind"  value=검색 onclick=btnquery_onclick() >
+						</td>
+						<td width="150"> </td>
+						<td >
+							<INPUT  id=Button_confrim  type=button style="Z-INDEX: 106; "  class="img_btnOk"  value=확인 onclick=Button_confirm_onclick()>
+							<INPUT   id=Button_close type=button style="Z-INDEX: 106;"  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+						</td>			   	
+			   	</tr>
+			   </table>
+			</td>
+		</tr>
+		<tr>
+			<td width="100%" height="*">		
+		   	<comment id="__NSID__"><OBJECT id=gd_1 
+				    style="Z-INDEX: 105; WIDTH: 100% ; HEIGHT: 100% " 
+				    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					<PARAM NAME="AutoInsert" VALUE="0">
+					<PARAM NAME="AllShowEdit" VALUE="0">
+					<param name="MultiRowSelect"   value="-1">
+					<PARAM NAME="Editable" VALUE="0">
+				   <PARAM NAME="BorderStyle"  VALUE=1>
+					<PARAM NAME="ColSizing" VALUE="-1">
+					<PARAM NAME="DataID" VALUE="ds_1">
+					<PARAM NAME="Format" VALUE="
+					   <C> Name=자재코드 ID=mtrcode Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+					   <C> Name='자 재 명' ID=name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+					   <C> Name='규    격' ID=ssize HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+					   <C> Name='단위' ID=unitcode Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 </C>
+					   <C> Name='구분' ID=ditag Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80  </C>
+					   "> 
+				 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+	</table>
+</div>
+</BODY></HTML>

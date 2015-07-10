@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : jsptest.html (jsp test)								-->
+<!-- 2. 유형(시나리오): jsp compile 															-->
+<!-- 3. 기 능 정 의   : jsp test 	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+var ll_sub = 0
+var ls_to_filename = ""
+//-------------------------------------------------------------------------
+function btnquery_onclick()                //조회
+//-------------------------------------------------------------------------
+{
+ds_1.DataID = 'jsp_real.jsp'
+ds_1.SyncLoad=true
+ds_1.Reset()
+}
+
+//-------------------------------------------------------------------------------
+function window_onload()                    //window open event
+//-------------------------------------------------------------------------------
+{
+}
+
+//------------------------------------------------------------------------------
+function Button_1_onclick()               //argment search
+//------------------------------------------------------------------------------
+{
+if (File_1.value == ""){
+   alert("정확한 파일을 선택하십시요")
+   return
+}   
+tx_1.Src = File_1.value
+tx_1.reset()
+ls_filename = tx_1.Src
+ll_sub = 0
+for (i=0; i <= ls_filename.length ; i++) {
+   if  (ls_filename.substr(i,1) == ":") {
+       ls_to_filename = "/werp"               // 이스텝 고칠것 원상복귀
+       continue
+   }
+   else {
+       if  (ls_filename.substr(i,1) == "\\")
+           ls_to_filename = ls_to_filename + "/"
+       else
+           ls_to_filename = ls_to_filename + ls_filename.substr(i,1)
+  }             
+}
+//ls_to_filename = ls_to_filename.substr(1,1000)  // 이스텝 삭제할것.
+
+for (i=0; i < 2000; i++){
+    ll_tmp = tx_1.Text.substr(i,99999)
+    ll_pos1 = ll_tmp.indexOf('req.getParameter("')
+    if (ll_pos1 > 0){
+        sa_ll_pos1 = ll_pos1 + 18 + i
+        sa_start_pos = ll_pos1 + 18
+        for (ll_pos2=sa_start_pos; ll_pos2 < sa_start_pos + 50; ll_pos2++) {
+            if  (ll_tmp.substr(ll_pos2,1) == '"') {
+                ll_sub = ll_sub + 1
+                if  (ll_sub == 1)
+                    arg_1.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+                else if (ll_sub == 2)
+                     arg_2.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+                else if (ll_sub == 3)
+                     arg_3.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+                else if (ll_sub == 4)
+                     arg_4.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+                else if (ll_sub == 5)
+                     arg_5.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+                else if (ll_sub == 6)
+                     arg_6.value =  ll_tmp.substring(sa_start_pos,ll_pos2) 
+             break              
+             }
+        }
+    i = sa_ll_pos1
+    }        
+}
+
+
+
+
+}
+//------------------------------------------------------------------------------
+function Button_2_onclick()               //jsp 실행
+//------------------------------------------------------------------------------
+{
+ls_addr = ls_to_filename
+if  (ll_sub == 1)
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value 
+else if (ll_sub == 2) 
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value  + "&" + 
+                                     arg_2.value + "=" +  value_2.value
+else if (ll_sub == 3) 
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value  + "&" + 
+                                     arg_2.value + "=" +  value_2.value  + "&" + 
+                                     arg_3.value + "=" +  value_3.value    
+else if (ll_sub == 4) 
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value  + "&" + 
+                                     arg_2.value + "=" +  value_2.value  + "&" + 
+                                     arg_3.value + "=" +  value_3.value  + "&" +
+                                     arg_4.value + "=" +  value_4.value  
+else if (ll_sub == 5) 
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value  + "&" + 
+                                     arg_2.value + "=" +  value_2.value  + "&" + 
+                                     arg_3.value + "=" +  value_3.value  + "&" +
+                                     arg_4.value + "=" +  value_4.value  + "&" + 
+                                     arg_5.value + "=" +  value_5.value    
+else if (ll_sub == 6) 
+    ls_addr = ls_to_filename + "?" + arg_1.value + "=" +  value_1.value  + "&" + 
+                                     arg_2.value + "=" +  value_2.value  + "&" + 
+                                     arg_3.value + "=" +  value_3.value  + "&" +
+                                     arg_4.value + "=" +  value_4.value  + "&" + 
+                                     arg_5.value + "=" +  value_5.value  + "&" +  
+                                     arg_6.value + "=" +  value_6.value 
+alert(ls_addr)
+makeCookie("@jsptest_run@",ls_addr)
+btnquery_onclick()
+window.open(ls_addr)                                        
+window.open("jsptest_run.html")                                        
+                                      
+    
+    
+}
+//------------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------------
+function File_1_onclick()
+//------------------------------------------------------------------------------------
+{
+arg_1.value = ""
+arg_2.value = ""
+arg_3.value = ""
+arg_4.value = ""
+arg_5.value = ""
+arg_6.value = ""
+value_1.value = ""
+value_2.value = ""
+value_3.value = ""
+value_4.value = ""
+value_5.value = ""
+value_6.value = ""
+
+
+}
+
+</SCRIPT>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 103; LEFT: 50px; POSITION: absolute; TOP: 38px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>
+
+<LABEL id=Label_1 
+    style="LEFT: 17px; POSITION: absolute; TOP: 8px">조&nbsp; 건: </LABEL>
+<INPUT id=File_1 
+    style="Z-INDEX: 40; LEFT: 55px; WIDTH: 600px; POSITION: absolute; TOP: 5px; HEIGHT: 21px" 
+    onclick=File_1_onclick() type=file size=24>
+
+<INPUT id=Button_1 
+    style="Z-INDEX: 106; LEFT: 660px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_1_onclick() type=button value=argment_search> 
+<INPUT id=Button_2 
+    style="Z-INDEX: 106; LEFT: 850px; POSITION: absolute; TOP: 5px" 
+    onclick=Button_2_onclick() type=button value=jsp실행> 
+<LABEL id=Label_1 
+      style="LEFT: 61px; POSITION: absolute; TOP: 34px">argment&nbsp;</LABEL>
+<LABEL  id=Label_2 
+      style="LEFT: 318px; POSITION: absolute; TOP: 34px">value&nbsp;</LABEL>
+<INPUT  id=arg_1 
+      style="Z-INDEX: 100; LEFT: 30px; WIDTH: 191px; POSITION: absolute; TOP: 63px; HEIGHT: 21px" size=25>
+<INPUT id=arg_2 
+     style="Z-INDEX: 100; LEFT: 28px; WIDTH: 191px; POSITION: absolute; TOP: 93px; HEIGHT: 21px" size=25>
+<INPUT id=arg_3 
+     style="Z-INDEX: 100; LEFT: 28px; WIDTH: 191px; POSITION: absolute; TOP: 120px; HEIGHT: 21px" size=25>
+<INPUT id=arg_4 
+     style="Z-INDEX: 100; LEFT: 27px; WIDTH: 191px; POSITION: absolute; TOP: 148px; HEIGHT: 21px" size=25>
+<INPUT id=arg_5 
+     style="Z-INDEX: 100; LEFT: 27px; WIDTH: 191px; POSITION: absolute; TOP: 178px; HEIGHT: 21px" size=25>
+<INPUT id=arg_6 
+     style="Z-INDEX: 100; LEFT: 27px; WIDTH: 191px; POSITION: absolute; TOP: 207px; HEIGHT: 21px" size=25>
+<INPUT id=value_1  
+     style="Z-INDEX: 100; LEFT: 248px; WIDTH: 245px; POSITION: absolute; TOP: 60px; HEIGHT: 21px" size=32>
+<INPUT id=value_2 
+     style="Z-INDEX: 100; LEFT: 247px; WIDTH: 245px; POSITION: absolute; TOP: 90px; HEIGHT: 21px" size=32>
+<INPUT id=value_3 
+     style="Z-INDEX: 100; LEFT: 248px; WIDTH: 245px; POSITION: absolute; TOP: 120px; HEIGHT: 21px" size=32>
+<INPUT id=value_4 
+     style="Z-INDEX: 100; LEFT: 247px; WIDTH: 245px; POSITION: absolute; TOP: 147px; HEIGHT: 21px" size=32>
+<INPUT id=value_5 
+     style="Z-INDEX: 100; LEFT: 247px; WIDTH: 245px; POSITION: absolute; TOP: 175px; HEIGHT: 21px" size=32>
+<INPUT id=value_6 
+     style="Z-INDEX: 100; LEFT: 246px; WIDTH: 245px; POSITION: absolute; TOP: 203px; HEIGHT: 21px" size=32>    
+
+<OBJECT id=tx_1 
+    style="Z-INDEX: 108; LEFT: 5px; WIDTH: 192px; POSITION: absolute; TOP: 503px; HEIGHT: 0px " 
+    border=0 classid=clsid:91B0A4F0-3206-4564-9BB4-AF9055DEF8A1   VIEWASTEXT></OBJECT>
+</BODY>
+</HTML>

@@ -1,0 +1,54 @@
+<%@ page import="com.gauce.*,com.gauce.io.*,com.gauce.common.*,com.gauce.log.*,com.gauce.db.*,java.sql.*"%>
+ServiceLoader loader = new ServiceLoader(request, response);
+GauceService service = loader.newService();
+GauceContext context = service.getContext();
+Logger logger = context.getLogger();
+GauceDBConnection conn = null; 
+conn = service.getDBConnection();
+CallableStatement stmt = null;
+GauceRequest req = service.getGauceRequest();
+GauceResponse res = service.getGauceResponse();
+try {
+     String strUserID = new String(session.getAttribute("userid").toString());
+     conn.setAutoCommit(false);
+ // 다음 문장은 수정 하시요 (파라메터 갯수만큼 (없으면 //로 막으세요)--r
+     String arg_receive_code = req.getParameter("arg_receive_code");
+     String arg_comp_code = req.getParameter("arg_comp_code");
+     String arg_seq_key = req.getParameter("arg_seq_key");
+     String arg_class = req.getParameter("arg_class");
+     String arg_year = req.getParameter("arg_year");
+ //---------------------------------------------------------- 
+     GauceDataSet dSet = new GauceDataSet();
+     res.enableFirstRow(dSet);
+      dSet.addDataColumn(new GauceDataColumn("sqlcode",GauceDataColumn.TB_DECIMAL,18,0));
+      stmt = conn.prepareCall("{call y_sp_r_proj_create(?,?,?,?,?)}");
+      stmt.setString(1,arg_receive_code);
+      stmt.setString(2,arg_comp_code);
+      stmt.setString(3,arg_seq_key);
+      stmt.setString(4,arg_class);
+      stmt.setString(5,arg_year);
+    stmt.executeQuery();   // dSet);
+    stmt.close();
+    dSet.flush();
+    res.commit("성공적으로 마쳤습니다");
+    res.close();
+} catch (Exception e) {
+    res.writeException("Native","9999",e.toString());
+    res.commit();
+    res.close();
+    if (conn != null) {
+       conn.rollback();
+    }
+    if (stmt != null) {
+       stmt.close();
+    }
+} finally {
+    if (conn != null) {
+        try {
+            conn.commit();
+            conn.close();
+        } catch (Exception e) {}
+    }
+    loader.restoreService(service);
+}
+%>

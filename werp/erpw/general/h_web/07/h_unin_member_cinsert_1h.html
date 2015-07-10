@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : h_unin_member_cinsert_1h.html 						-->
+<!-- 2. 유형(시나리오): 조합원 찾기(해약자추가처리)(분양관리)				-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   : 김동우 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<TITLE> 해약자 등록 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_dept_code,is_sell_code,gs_home
+
+var is_ds_1_addr = 'h_unin_member_cinsert_1q.jsp?arg_dept_code='
+var is_tr_1_addr = 'h_unin_member_cancel_1tr.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_sell_code=" + is_sell_code
+	ds_1.SyncLoad=true
+	ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  
+ 	for (i=1; i<= ds_1.CountRow; i++){
+ 		if (ds_1.RowMark(i) == 1 ){
+ 			ds_1.NameValue(i,'change_div') = '03'
+ 		}
+ 	}
+
+	tr_1.Post()
+
+ window.returnValue = 'ok'
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+
+	array = result.split("@");
+	
+	is_dept_code = array[0]
+	is_sell_code = array[1]
+	gs_home      = array[2]
+ 	
+ 	is_tr_1_addr = gs_home + '/general/h_web/07/h_unin_member_cancel_1tr.jsp'
+
+	tr_1.Action = is_tr_1_addr 
+
+ if (result == "") return 
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    	classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:h_unin_member_cancel_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<BR>    
+
+<INPUT id=Button_confrim 
+    style="Z-INDEX: 106; LEFT: 558px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_confirm_onclick() type=button value='확인'>     
+<INPUT id=Button_close 
+    style="Z-INDEX: 106; LEFT: 600px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_close_onclick() type=button value='닫 기'>    
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 640px; POSITION: absolute; TOP: 35px; HEIGHT: 620px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='조합명' ID=union_name HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=160  suppress=2</C>
+	  <C> Name='조합원ID' ID=union_id Align=Center HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=100  suppress=1</C>
+	  <C> Name='순번' ID=union_seq  Align=Center HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=40  </C>
+	  <C> Name='고객번호' ID=cust_code Align=Center HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=100  </C>
+	  <C> Name='고객명' ID=cust_name HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=115  </C>
+	  <C> Name='계약일자' ID=contract_date Align=Center HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=80  </C>
+	   ">
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

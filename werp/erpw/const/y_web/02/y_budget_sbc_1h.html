@@ -1,0 +1,476 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_outside_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 실행외 내역 작성   	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+
+var is_ds_1_addr = 'y_budget_sbc_1q.jsp?arg_dept_code='         
+var is_ds_2_addr = 'y_budget_sbc_detail_1q.jsp?arg_dept_code='         
+var is_dept_code = ""
+var is_dept_name = ""
+var is_pyo_chk = 'Y'
+var is_detail_code='N' // 표준내역코드를 popup에서 찾았을경우 columnchanged event에서는 로직을 타지않기위해서
+var il_budget_parent_cnt=0   // 0 이면 실행이 승인이 안되었다는 의미...
+var is_filter=''
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  var arg_approve=""
+  var arg_order=""
+  if (il_budget_parent_cnt == 0) {
+    ds_1.ClearData()
+    alert("실행이 승인 안되었습니다")
+    return
+  }  
+  if (input_gong_name.value == "") {
+     alert('집계구조선택을 반드시 하셔야합니다')
+     return
+  }   
+  if (tb_1.ActiveIndex == 1){
+		
+     ds_1.DataID = 'y_budget_sbc_1q.jsp?arg_dept_code=' + is_dept_code + '&arg_sum_code=' + is_filter
+	}
+  else{
+     ds_1.DataID = 'y_budget_mat_1q.jsp?arg_dept_code=' + is_dept_code + '&arg_sum_code=' + is_filter 
+	 }
+ 	document.all.LowerFrame.style.visibility="visible";     
+  ds_1.SyncLoad=false
+  ds_1.Reset()
+ 	document.all.LowerFrame.style.visibility="hidden";     
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false) return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+   ll_cnt = f_ds_select_q("ds_select2","select count(*) select_1 from y_budget_parent where dept_code = '" + is_dept_code + "'")
+   ll_cnt = ds_select2.NameValue(1,"select_1")
+   il_budget_parent_cnt = parseInt(ll_cnt,10)
+	set_tree_str()
+   btnquery_onclick()
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//-------------------------------------------------------------------------------
+function tab_changed()                  // tab changed 
+//-------------------------------------------------------------------------------
+{
+  btnquery_onclick()
+}
+//-----------------------------------------------------------------------
+function gong_code_find()               //공종선택 
+//-----------------------------------------------------------------------
+{
+  if (il_budget_parent_cnt == 0) {
+    ds_1.ClearData()
+    alert("실행이 승인 안되었습니다")
+    return
+  }
+   ll_cnt = f_ds_select_q("ds_max_chg_no_seq","select max(chg_no_seq) select_1 from y_chg_degree " + 
+                          " where dept_code = '" + is_dept_code + "' " + 
+                          "   and approve_class = '4'") 
+   ll_chg_no_seq = ds_max_chg_no_seq.NameValue(1,'select_1')
+                            
+   parm = is_dept_code + "@" + ll_chg_no_seq
+	
+	is_returnvalue = window.showModalDialog("../99/y_chg_budget_gong_find_1h.html" ,parm,"dialogWidth:"+300+"px; dialogHeight:"+600+"px");
+	if (is_returnvalue == "") 
+	{   
+       is_filter = "0"
+	    input_gong_name.value = ""
+       return
+	}	
+	else
+	{
+     ls_tempvalue = new Array();
+	  ls_tempvalue=is_returnvalue.split("@");
+	  input_gong_name.value = ls_tempvalue[0]    //선택 공종명
+     is_filter = ls_tempvalue[1] // sum_code 
+     btnquery_onclick()
+	}                            // 항상 조회버튼을 누르므로 
+	
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기 
+//----------------------------------------------------------------
+{
+   if (tb_1.ActiveIndex == 1)
+      gd_1.GridToExcel('외주(미발주)','c:\aa.xls',1)  
+   else
+      gd_3.GridToExcel('자재(미발주)','c:\aa.xls',1)  
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('tab_page_1', 'tab_page_2');
+	var xArr =new Array(true, true);
+	var yArr =new Array(true, true);
+
+	f_reSize(objArr, xArr, yArr);
+} 
+
+//---------------------------------------------------------------------------
+function set_tree_str()
+//---------------------------------------------------------------------------
+{
+	 ll_cnt = f_ds_select_q("ds_sumcode"," select name select_1 "+
+																									"		from y_chg_budget_parent "+
+																									"	  where dept_code = '"+is_dept_code+"'"+
+																									"		  and chg_no_seq = (select max(chg_no_seq) select_1 from y_chg_degree  "+
+																									"							                    where dept_code = '" + is_dept_code + "' " + 
+																									"															and approve_class = '4') "+
+																									"		 and spec_no_seq = (select min(spec_no_seq) "+
+																									"															from y_chg_budget_parent "+
+																									"														where dept_code = '" + is_dept_code + "' " + 
+																									"															and chg_no_seq = 1)");
+
+	input_gong_name.value = ds_sumcode.namevalue(1,'select_1')
+
+	ll_cnt = f_ds_select_q("ds_sumcode"," select sum_code select_1 "+
+																									"		from y_chg_budget_parent "+
+																									"	  where dept_code = '"+is_dept_code+"'"+
+																									"		  and chg_no_seq = (select max(chg_no_seq) select_1 from y_chg_degree  "+
+																									"							                    where dept_code = '" + is_dept_code + "' " + 
+																									"															and approve_class = '4') "+
+																									"		 and spec_no_seq = (select min(spec_no_seq) "+
+																									"															from y_chg_budget_parent "+
+																									"														where dept_code = '" + is_dept_code + "' " + 
+																									"															and chg_no_seq = 1)");
+
+	
+   is_filter = ds_sumcode.namevalue(1,'select_1')
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return
+  f_set_resize()
+   top.frames['main_title'].mouse_over()
+   
+ 	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+   ll_cnt = f_ds_select_q("ds_select2","select count(*) select_1 from y_budget_parent where dept_code = '" + is_dept_code + "'")
+   ll_cnt = ds_select2.NameValue(1,"select_1")
+   il_budget_parent_cnt = parseInt(ll_cnt,10)
+
+	set_tree_str()
+   btnquery_onclick()
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+  if(eventid == "ucolor") {
+     if (ds_1.NameValue(row,"sub_qty")== 0)
+         return "#66FF99"      // 년녹색        
+
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") > 0 )
+         return "#FFFF99"                       
+     
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") == 0 )
+         return "white"                       
+
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") < 0 )
+         return "#FF6666"                       
+     else
+        return "white"    
+  }
+  
+  
+</script>
+<script language=JavaScript for=gd_3 event=OnUserColor(row,eventid)>
+  if(eventid == "ucolor") {
+     if (ds_1.NameValue(row,"sub_qty")== 0)
+         return "#66FF99"      // 년녹색        
+
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") > 0 )
+         return "#FFFF99"                       
+     
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") == 0 )
+         return "white"                       
+
+     if (ds_1.NameValue(row,"qty") - ds_1.NameValue(row,"sub_qty") < 0 )
+         return "#FF6666"                       
+     else
+        return "white"    
+  }
+  
+  
+</script>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  tab_changed()
+ }             
+</SCRIPT>
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+if (tb_1.ActiveIndex !=1) return
+if (row < 1) {
+   ds_2.ClearData()
+   return
+}
+
+ if (ds_1.NameValue(row,'spec_unq_num') == 0 ) {
+    ds_2.ClearData()
+    return
+ }
+ ds_2.DataID = 'y_budget_sbc_detail_1q.jsp?arg_dept_code=' + is_dept_code + '&arg_spec_unq_num=' + 
+               ds_1.NameValue(row,'spec_unq_num')
+ ds_2.SyncLoad=true
+ ds_2.Reset() 
+ 
+</script>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_sumcode event=OnLoadError()>
+  alert("Error Code(ds_sumcode) : " + ds_sumcode.ErrorCode + "\n" + "Error Message : " + ds_sumcode.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code (tr_1): " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+ 
+  <comment id="__NSID__"><Object id=ds_sumcode
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_max_chg_no_seq
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin:0;" onload="setTimeout('window_onload()',1)" onresize='f_set_resize()' oncontextmenu="return false" >
+<div class=main_div>
+	<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR  height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="45px" class=font_green_bold>현장명</td>
+							<td width="166">
+								<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()"   >
+							</td>
+							<td width="50">
+								<input id="button_query" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+							</td>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="100">
+								<input id="button_gong" type="button" value=" 집계구조 선택" class="img_btn6_1"
+									onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gong_code_find()></td>
+							<td width="300px">
+								<INPUT id=input_gong_name readonly tabindex=-1 style="width:100%" >
+							</td>
+							
+							</td>
+							<td width="*">&nbsp;</td>
+							<td width="100px">
+								<input type="button" value=" 엑셀내리기"  class="img_btn5_1"
+									 style="right: 100px; POSITION: absolute;  TOP: 7px;  "   
+									  onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=excel_down()>	
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<TR  height="20px">
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width=80px> 
+								<comment id="__NSID__"><OBJECT id=tb_1 
+									 style="WIDTH: 100%; HEIGHT: 100%" 
+									 classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+								  <param name="BackColor"  value="#BBE0F4">
+								  <param name="TextColor"  value="BLACK">
+								  <PARAM NAME="Format" VALUE="
+									 <T>divid=tab_page_1 title='외주'</T>
+									 <T>divid=tab_page_2 title='자재'</T>"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+							<td width="*">&nbsp;</td>
+							<td width="1px">
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<tr>
+			<td height="*">
+			</td>
+		</tr>
+	</table>
+
+
+
+
+  <DIV id=tab_page_1 
+      style="Z-INDEX: 107; LEFT: 5px; WIDTH: 1009px; POSITION: absolute; TOP: 50px; HEIGHT: 95%" >
+		<TABLE WIDTH= "100%"  HEIGHT="100%" style="FONT-SIZE: 12px"  BORDER="0"    CELLSPACING="0"  align="center" >
+		<TR height="80%">
+			<TD><comment id="__NSID__"><OBJECT id=gd_1 WIDTH= "100%"  HEIGHT="100%"
+							  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+							<PARAM NAME="MultiRowSelect" VALUE="0">
+							<PARAM NAME="AutoInsert" VALUE="0">
+							<PARAM NAME="AllShowEdit" VALUE="0">
+							 <PARAM NAME="BorderStyle"  VALUE=1>
+							<param name=SortView  value="Left">
+							<PARAM NAME="Editable" VALUE="0">
+							<PARAM NAME="ColSizing" VALUE="-1">
+							<PARAM NAME="Format" VALUE="
+								<C> Name='공종구조'  id=parent_name  sort=true width=230 suppress=2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='표준내역'  id=detail_code sort=true  width=80  bgcolor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='명칭'  id=name  width=190 sort=true bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='규격'  id=ssize  width=140  bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='단위'  id=unit  width=40  bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='실행수량'  id=qty  width=67  bgcolor=@ucolor decao=3  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='외주발주수량'  id=sub_qty  width=78  bgcolor=@ucolor decao=3  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='누계기성수량'  id=tot_prgs_qty  width=75  bgcolor=@ucolor decao=3  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='미발주수량'  id=min_qty  width=70  bgcolor=@ucolor  decao=3 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								<C> Name='내부코드'  id=spec_unq_num  width=80  bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+								">
+							<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script></TD>
+		</TR>
+		<TR>
+			<TD><comment id="__NSID__"><OBJECT id=gd_2 WIDTH= "100%"  HEIGHT="100%"
+							 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+							<PARAM NAME="MultiRowSelect" VALUE="0">
+							<PARAM NAME="AutoInsert" VALUE="0">
+							<PARAM NAME="AllShowEdit" VALUE="0">
+							<PARAM NAME="Editable" VALUE="0">
+							<PARAM NAME="ColSizing" VALUE="-1">
+							<PARAM NAME="DataID" VALUE="ds_2">
+							<PARAM NAME="BorderStyle"  VALUE=1>
+							<PARAM NAME="Format" VALUE="
+							  <C> Name='발주번호'  id=order_number  width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+							  <C> Name='계약명'  id=sbc_name  width=328  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+							  ">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>       	</TD>
+		</TR>
+		</TABLE>
+      
+   </div>
+  <DIV id=tab_page_2 
+      style="Z-INDEX: 107; LEFT: 5px; WIDTH: 1009px; POSITION: absolute; TOP: 50px; HEIGHT: 95%">
+		<TABLE WIDTH= "100%"  HEIGHT="100%" style="FONT-SIZE: 12px"  BORDER="0"    CELLSPACING="0"  align="center" >
+		<tr><td>
+       <comment id="__NSID__"><OBJECT id=gd_3 
+           style="FONT-SIZE: 12px; Z-INDEX: 102;  WIDTH: 100%; HEIGHT: 100%" 
+			  classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+       	<PARAM NAME="MultiRowSelect" VALUE="0">
+       	<PARAM NAME="AutoInsert" VALUE="0">
+       	<PARAM NAME="AllShowEdit" VALUE="0">
+         <param name=SortView  value="Left">
+          <PARAM NAME="BorderStyle"  VALUE=1>
+       	<PARAM NAME="Editable" VALUE="0">
+       	<PARAM NAME="ColSizing" VALUE="-1">
+       	<PARAM NAME="Format" VALUE="
+            <C> Name='공종구조'  id=parent_name sort=true width=230 suppress=2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='표준내역'  id=detail_code sort=true width=80  bgcolor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='명칭'  id=name  width=200 sort=true bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='규격'  id=ssize  width=140  bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='단위'  id=unit  width=60  bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='실행수량'  id=qty  width=80  bgcolor=@ucolor decao=3  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='자재발주수량'  id=sub_qty  width=90  decao=3 bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            <C> Name='미발주수량'  id=min_qty  width=80 decao=3 bgcolor=@ucolor   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+            ">
+       	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</tr></td>
+		</table>
+   </div>
+	<script language="javascript"  for=ds_1 event=OnLoadStarted()>
+		document.all.LowerFrame.style.visibility="visible";
+	</script>
+	<script language="javascript"  for=ds_1 event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+	</script>
+	<iframe id="LowerFrame" name="work" style=" position:absolute; left:350px;Z-INDEX: 105; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe>  
+
+</div>
+</BODY></HTML>

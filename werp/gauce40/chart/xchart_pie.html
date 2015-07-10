@@ -1,0 +1,103 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ks_c_5601-1987">
+<title>GAUCE - 도로공사 신정보화 Component Sample</title>
+
+<script language="javascript">
+	function On_Load()
+	{
+		ds_chart.DataID = "chart1.jsp?PGM=B";
+		ds_chart.Reset();
+	}
+</script>
+<SCRIPT LANGUAGE=javascript FOR=XChart1 EVENT=OnClickSeries(SeriesIndex,ValueIndex,Button,Shift,X,Y)>
+
+	var popup_value1 = ds_chart.NameValue(ValueIndex+1, 'data');
+	var popup_value2 = ds_chart.NameValue(ValueIndex+1, 'gubun');
+	var popup_value = popup_value1+";"+popup_value2;
+	var result ="";
+	result = window.showModalDialog('popup.html',popup_value,"dialogWidth:480px; dialogHeight:400px; scrollbar:no;");
+    if (result == -1 || result == null || result == "")
+    return;
+
+</SCRIPT>
+<SCRIPT LANGUAGE=javascript FOR=XChart1 EVENT=OnCreate>
+
+        this.Panel.Gradient.Visible = "True";
+        this.Panel.Gradient.Direction = 5;
+        this.Panel.Gradient.StartColor = this.ToOLEColor("#FFFFFF");
+        this.Panel.Gradient.MidColor = this.ToOLEColor("#FFFFFF");
+        this.Panel.Gradient.EndColor = this.ToOLEColor("#BBDDFF");
+
+        //**********[XChart WallBgcolor  정보입력]**********//
+		this.Panel.Color = this.ToOLEColor("white");
+		this.Panel.BevelInner = 0;
+		this.Panel.BevelOuter = 0;
+		this.Panel.BorderStyle = 1;
+
+		//**********[XChart Legend  정보입력]**********//
+		this.Legend.Visible = 1;
+		this.Legend.Symbol.Width = 50;
+		this.Legend.Alignment = 3;
+		this.Legend.Font.Size = 10;
+		this.Legend.ShadowSize = 0;
+	    this.Legend.Frame.Visible = true;
+
+		var SeriesIdx = this.AddSeries(25);
+		this.Series(SeriesIdx).DataID = "ds_chart";
+		//this.Series(SeriesIdx).Title = "gubun";
+		this.Series(SeriesIdx).YValueColumn = "data";
+		//this.Series(SeriesIdx).XValueColumn = "gubun";
+		this.Series(SeriesIdx).LabelColumn = "gubun";
+		this.Series(SeriesIdx).Marks.Style = 3;
+
+		//this.General.Animated.steps = 8;
+
+		this.Zoom.Animated = true;
+		this.Zoom.AnimatedSteps = 8;
+
+	    this.Reset();
+</script>
+
+<!-- Component 선언부 -->
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/chart_pie_bar.gif" border=0>
+<br>
+
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_chart"></object>
+
+
+<table cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td width="600" bgcolor="#99CCFF" align="center">
+			<OBJECT id=XChart1 style="WIDTH: 600px; HEIGHT: 400px"
+				classid=clsid:2A99B1B3-E263-4a00-A167-C1B967716DE2>
+				<PARAM NAME="Base64" VALUE="">
+			</OBJECT>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>
+                        <font style="">Legend.Postion
+                        <select id="sel_1" onchange="javascript:XChart1.Legend.Alignment = sel_1.value;"
+                            style="position:relative;left:0px;top:0px;width:120px;height:50px;font-family:굴림체;font-size:8.7pt;">
+                            <option value="0" selected>Left</option>
+                            <option value="1">Right</option>
+                            <option value="2">Top</option>
+                            <option value="3">Bottom</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

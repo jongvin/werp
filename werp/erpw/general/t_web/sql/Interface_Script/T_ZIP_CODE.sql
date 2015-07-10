@@ -1,0 +1,35 @@
+Create Or Replace View T_ZIP_CODE
+(
+	ZIP_SEQ,
+	CRTUSERNO,
+	CRTDATE,
+	MODUSERNO,
+	MODDATE,
+	ZIPCODE,
+	MASKED_ZIPCODE,
+	AREA_NAME_1,
+	AREA_NAME_2,
+	AREA_NAME_3,
+	AREA_NAME_4,
+	AREA_NAME_FULL,
+	AREA_NAME
+)
+As
+Select
+	a.SEQ ZIP_SEQ,
+	To_Number(Null) CRTUSERNO,
+	To_Date(Null) CRTDATE,
+	To_Number(Null) MODUSERNO,
+	To_Date(Null) MODDATE,
+	a.ZIPCODE ZIPCODE,
+	SubStrb(a.ZIPCODE,1,3) || '-' || SubStrb(a.ZIPCODE,-3) MASKED_ZIPCODE,
+	a.SIDO AREA_NAME_1,
+	a.GUGUN AREA_NAME_2,
+	a.DONG AREA_NAME_3,
+	a.BUNJI AREA_NAME_4,
+	a.SIDO || ' '||a.GUGUN||' '||a.DONG||' '||a.BUNJI AREA_NAME_FULL,
+	a.SIDO || ' '||a.GUGUN||' '||a.DONG AREA_NAME
+From	Z_CODE_ZIP a
+Order By
+	a.ZIPCODE
+/

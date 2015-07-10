@@ -1,0 +1,935 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_efin_eis_growth_1h.html 								-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 재무정보) 주요경영지표			   					-->
+<!-- 4. 변 경 이 력   :  권미생 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home 	= top.frames['security'].gs_home.value
+var is_sysdate = top.frames['security'].gs_sysdate.value
+
+var is_ds_1_addr = gs_home + '/const/g_web/05/g_efin_eis_growth_1q.jsp?arg_group_id='         
+var is_ds_2_addr = gs_home + '/const/g_web/05/g_efin_eis_earning_1q.jsp?arg_group_id='         
+var is_ds_3_addr = gs_home + '/const/g_web/05/g_efin_eis_stable_1q.jsp?arg_group_id='         
+var is_proj_code=""
+var is_error_code=""
+var il_group_id=""
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ document.all.LowerFrame.style.visibility="visible"; 
+ //alert('aa')
+ setTimeout('retrieve()',1);
+ 
+}
+
+//------------------------------------------------------------------------
+function retrieve()                     // 조회  
+//------------------------------------------------------------------------
+{
+ 
+	sp_call()
+// 성장성지표
+	if (ds_update.CountRow == 0 || ds_update.NameValue(1,'group_id') == 'error') {
+		alert('생성시 에러 발생')
+		return
+	}
+	ds_1.DataID = is_ds_1_addr + ds_update.NameValue(1,'group_id') 
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+ ll_cnt = f_update_sql("delete from efin_eis_growth where group_id = " + ds_update.NameValue(1,'group_id') + " ")
+
+// 수익성지표
+	if (ds_update2.CountRow == 0 || ds_update2.NameValue(1,'group_id') == 'error') {
+		alert('생성시 에러 발생')
+		return
+	}
+	ds_2.DataID = is_ds_2_addr + ds_update2.NameValue(1,'group_id') 
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+
+ ll_cnt = f_update_sql("delete from efin_eis_earning where group_id = " + ds_update2.NameValue(1,'group_id') + " ")
+
+// 안정성지표
+	if (ds_update3.CountRow == 0 || ds_update3.NameValue(1,'group_id') == 'error') {
+		alert('생성시 에러 발생')
+		return
+	}
+	ds_3.DataID = is_ds_3_addr + ds_update3.NameValue(1,'group_id') 
+	ds_3.SyncLoad=true
+	ds_3.Reset()
+
+ ll_cnt = f_update_sql("delete from efin_eis_stable where group_id = " + ds_update3.NameValue(1,'group_id') + " ")
+
+}
+//-----------------------------------------------------------------
+function sp_call()               // 프로젝트 손익계산서 생성 프로시져. 
+//------------------------------------------------------------------
+{
+   ds_update3.DataID = 'efin_eis_stable_proc.jsp?arg_proj_code=' + ccom_corp_code.CodeValue + 
+                      '&arg_yymm=' + em_select_yymm.text
+   ds_update3.SyncLoad = true
+   ds_update3.reset()
+
+   ds_update2.DataID = 'efin_eis_earning_proc.jsp?arg_proj_code=' + ccom_corp_code.CodeValue + 
+                      '&arg_yymm=' + em_select_yymm.text
+   ds_update2.SyncLoad = true
+   ds_update2.reset()
+
+   ds_update.DataID = 'efin_eis_growth_proc.jsp?arg_proj_code=' + ccom_corp_code.CodeValue + 
+                      '&arg_yymm=' + em_select_yymm.text
+   ds_update.SyncLoad = true
+   ds_update.reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   btnquery_onclick()   
+}   
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return
+   top.frames['main_title'].mouse_over()
+
+	em_select_yymm.text = is_sysdate.substr(0,7)
+	
+	ll_cnt = f_ds_select_q("ds_corp","select co_code select_1, co_desc select_2 from efin_corp_v  order by co_code")
+
+	btnquery_onclick()
+
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update2 event=OnLoadError()>
+  alert("Error Code(ds_update2) : " + ds_update2.ErrorCode + "\n" + "Error Message : " + ds_update2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update3 event=OnLoadError()>
+  alert("Error Code(ds_update3) : " + ds_update3.ErrorCode + "\n" + "Error Message : " + ds_update3.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		select_yymm()
+	}
+</SCRIPT>  
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+	if ((em_select_yymm.Modified) && kcode == 13 ){ 
+		select_yymm()
+	}
+</SCRIPT>	   
+<script language=JavaScript for=ccom_corp_code event=OnCloseUp()>
+  select_yymm()
+</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_3 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_corp
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update2 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update3 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=hdept_page_1 
+	style="Z-INDEX: 111; LEFT: 4px; WIDTH: 280px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+	<tr BGCOLOR="white" > 
+		<td width="25%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+			<div align="right">사업체명</div></td>
+		<td width="75%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8>
+			<comment id="__NSID__"><OBJECT id=ccom_corp_code  tabIndex=0 
+			style="WIDTH: 200px"
+			classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+			<param name=DisabledBackColor         value="#E1E1E1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<PARAM NAME="ComboDataID" VALUE="ds_corp">
+			<PARAM NAME="CodeCColumn" VALUE="select_1">
+			<PARAM NAME="DataCColumn" VALUE="select_2"></OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>                 
+	</table>
+</DIV>      
+
+<DIV id=div_title
+	style="Z-INDEX: 111; LEFT:300px; WIDTH: 120px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px;HEIGHT: 24px">
+	<tr BGCOLOR="white"> 
+		<td width="45%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=4> 
+			<div align="right">기준월</div></td>
+		<td width="55%"  BGCOLOR="white" style="COLOR: BLACK" colspan=6>
+			<comment id="__NSID__"><OBJECT id=em_select_yymm 
+			style=" WIDTH: 55px; " 
+			classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="1">
+			<PARAM NAME="IsComma" VALUE="0">
+			<PARAM NAME="MaxLength" VALUE="6">
+			<PARAM NAME="Format" VALUE="YYYY-MM">
+			<param name=ClipMode       value=false>
+			<PARAM NAME="Numeric" VALUE="0">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	</table>
+</div>      
+
+<DIV id=hdept_page_2
+     style="Z-INDEX: 111; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 45px; HEIGHT: 20px;FONT-SIZE: 12px; bold;" >
+		1. 안정성지표
+</DIV>
+<div id=tab_page_1>
+  <table width="100%"  height="100%"  BORDER="1"  align="center"   CELLSPACING="0" 
+          style="FONT-SIZE: 12px;  LEFT: 2px; WIDTH: 1000px; POSITION: absolute; TOP:65px; HEIGHT: 160px"  >
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=4> 
+		<div align="center">구분 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=8> 
+		<div align="center">산식 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=8> 
+		<div align="center">비율 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당기 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전기 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">유동비율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">유동자산/유동부채 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_quick
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_quick
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_quick
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_quick
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">부채비율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">부채총계/자기자본 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_liability
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_liability
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_liability
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_liability
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">차입금의존도 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">차입금/총자산 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_debt
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_debt
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_debt
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_debt
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">영업이익대비/이자보상배율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">영업이익/이자비용 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+  </table>
+</DIV>
+<DIV id=hdept_page_3
+     style="Z-INDEX: 111; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 235px; HEIGHT: 20px;FONT-SIZE: 12px; bold;" >
+		2. 수익성지표
+</DIV>
+<div id=tab_page_2>
+  <table width="100%"  height="100%"  BORDER="1"  align="center"   CELLSPACING="0" 
+          style="FONT-SIZE: 12px; LEFT: 2px; WIDTH: 1000px; POSITION: absolute; TOP:255px; HEIGHT: 160px"  >
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=4> 
+		<div align="center">구분 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=8> 
+		<div align="center">산식 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=8> 
+		<div align="center">비율 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당기 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전기 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">매출액영업이익률 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">영업이익/매출액 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_r_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_r_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_r_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_r_operating_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">매출액순이익률 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기순이익/매출액 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_r_net_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_r_net_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_r_net_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_r_net_income
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">총자산순이익률 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기순이익/총자산 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_n_asset_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_n_asset_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_n_asset_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_n_asset_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">자기자본순이익률 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기순이익/자기자본 * 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_n_liability_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_n_liability_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_n_liability_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_n_liability_total
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+  </table>
+</DIV>
+<DIV id=hdept_page_4
+     style="Z-INDEX: 111; LEFT: 2px; WIDTH: 1008px; POSITION: absolute; TOP: 425px; HEIGHT: 20px;FONT-SIZE: 12px; bold;" >
+		3. 성장성 및 활동성지표
+</DIV>
+<div id=tab_page_3>
+  <table width="100%"  height="100%"  BORDER="1"  align="center"   CELLSPACING="0" 
+          style="FONT-SIZE: 12px;  LEFT: 2px; WIDTH: 1000px; POSITION: absolute; TOP:445px; HEIGHT: 190px"  >
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=4> 
+		<div align="center">구분 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" rowspan=2 colspan=8> 
+		<div align="center">산식 </td>
+		<td  width="40%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=8> 
+		<div align="center">비율 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전월 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">당기 </td>
+		<td  width="10%"  BGCOLOR="#BBE0F4" style="COLOR: BLACK" colspan=2> 
+		<div align="center">전기 </td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">매출액증가율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기매출액/전기매출액 * 100 - 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_rev_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_rev_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_rev_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_rev_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">영업이익증가율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기영업이익/전기영업이익 * 100 - 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_oi_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_oi_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_oi_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_oi_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">당기순이익증가율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기순이익/전기순이익 * 100 - 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_ni_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_ni_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_ni_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_ni_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">총자산증가율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">당기말총자산/전기말총자산 * 100 - 100 </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_asset_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_asset_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_asset_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_asset_increase
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+	<tr BGCOLOR="white"  > 
+		<td  width="20%"  BGCOLOR="white" style="COLOR: BLACK" colspan=4> 
+		<div align="left">자산회전율 </td>
+		<td  width="40%"  BGCOLOR="white" style="COLOR: BLACK" colspan=8> 
+		<div align="center">매출액/((기초총자산+기말총자산)/2) </td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cp_asset_turn
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_pp_asset_turn
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_cy_asset_turn
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		<td  width="10%"  BGCOLOR="white" style="COLOR: BLACK" colspan=2> 
+			<comment id="__NSID__"><OBJECT id=em_py_asset_turn
+			style="WIDTH: 100px;" classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			<PARAM NAME="Alignment" VALUE="2">
+			<PARAM NAME="SelectAll" VALUE="-1">
+			<PARAM NAME="Alignment" VALUE="1">
+			<param name=MaxDecimalPlace   value=2>
+			<param name=ReadOnly   value=true>
+			</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+	</tr>
+  </table>
+</DIV>
+<comment id="__NSID__"><OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_3">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=cp_quick_ratio     	        Ctrl=em_cp_quick                   Param=text Enable=enable</C>
+	  <C>Col=pp_quick_ratio     	        Ctrl=em_pp_quick                   Param=text Enable=enable</C>
+	  <C>Col=cy_quick_ratio     	        Ctrl=em_cy_quick                   Param=text Enable=enable</C>
+	  <C>Col=py_quick_ratio     	        Ctrl=em_py_quick                   Param=text Enable=enable</C>
+	  <C>Col=cp_liability_ratio     	     Ctrl=em_cp_liability               Param=text Enable=enable</C>
+	  <C>Col=pp_liability_ratio     	     Ctrl=em_pp_liability               Param=text Enable=enable</C>
+	  <C>Col=cy_liability_ratio     	     Ctrl=em_cy_liability               Param=text Enable=enable</C>
+	  <C>Col=py_liability_ratio     	     Ctrl=em_py_liability               Param=text Enable=enable</C>
+	  <C>Col=cp_debt_ratio    	        	  Ctrl=em_cp_debt                    Param=text Enable=enable</C>
+	  <C>Col=pp_debt_ratio    	        	  Ctrl=em_pp_debt                    Param=text Enable=enable</C>
+	  <C>Col=cy_debt_ratio    	        	  Ctrl=em_cy_debt                    Param=text Enable=enable</C>
+	  <C>Col=py_debt_ratio    	        	  Ctrl=em_py_debt                    Param=text Enable=enable</C>
+	  <C>Col=cp_operating_income_ratio    Ctrl=em_cp_operating_income        Param=text Enable=enable</C>
+	  <C>Col=pp_operating_income_ratio    Ctrl=em_pp_operating_income        Param=text Enable=enable</C>
+	  <C>Col=cy_operating_income_ratio    Ctrl=em_cy_operating_income        Param=text Enable=enable</C>
+	  <C>Col=py_operating_income_ratio    Ctrl=em_py_operating_income        Param=text Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=bd_data2 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=cp_r_operating_income_ratio     	        Ctrl=em_cp_r_operating_income         Param=text Enable=enable</C>
+	  <C>Col=pp_r_operating_income_ratio     	        Ctrl=em_pp_r_operating_income         Param=text Enable=enable</C>
+	  <C>Col=cy_r_operating_income_ratio     	        Ctrl=em_cy_r_operating_income         Param=text Enable=enable</C>
+	  <C>Col=py_r_operating_income_ratio     	        Ctrl=em_py_r_operating_income         Param=text Enable=enable</C>
+	  <C>Col=cp_r_net_income_ratio     	     			  Ctrl=em_cp_r_net_income               Param=text Enable=enable</C>
+	  <C>Col=pp_r_net_income_ratio     	     			  Ctrl=em_pp_r_net_income               Param=text Enable=enable</C>
+	  <C>Col=cy_r_net_income_ratio     	     			  Ctrl=em_cy_r_net_income               Param=text Enable=enable</C>
+	  <C>Col=py_r_net_income_ratio     	     			  Ctrl=em_py_r_net_income               Param=text Enable=enable</C>
+	  <C>Col=cp_n_asset_total_ratio    	        	  	  Ctrl=em_cp_n_asset_total              Param=text Enable=enable</C>
+	  <C>Col=pp_n_asset_total_ratio    	        	  	  Ctrl=em_pp_n_asset_total              Param=text Enable=enable</C>
+	  <C>Col=cy_n_asset_total_ratio    	        	  	  Ctrl=em_cy_n_asset_total              Param=text Enable=enable</C>
+	  <C>Col=py_n_asset_total_ratio    	        	  	  Ctrl=em_py_n_asset_total              Param=text Enable=enable</C>
+	  <C>Col=cp_n_liability_total_ratio    			  Ctrl=em_cp_n_liability_total          Param=text Enable=enable</C>
+	  <C>Col=pp_n_liability_total_ratio    			  Ctrl=em_pp_n_liability_total          Param=text Enable=enable</C>
+	  <C>Col=cy_n_liability_total_ratio    			  Ctrl=em_cy_n_liability_total          Param=text Enable=enable</C>
+	  <C>Col=py_n_liability_total_ratio    			  Ctrl=em_py_n_liability_total          Param=text Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=bd_data3 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	  <C>Col=cp_rev_increase_ratio     	        Ctrl=em_cp_rev_increase         Param=text Enable=enable</C>
+	  <C>Col=pp_rev_increase_ratio     	        Ctrl=em_pp_rev_increase         Param=text Enable=enable</C>
+	  <C>Col=cy_rev_increase_ratio     	        Ctrl=em_cy_rev_increase         Param=text Enable=enable</C>
+	  <C>Col=py_rev_increase_ratio     	        Ctrl=em_py_rev_increase         Param=text Enable=enable</C>
+	  <C>Col=cp_oi_increase_ratio     	     	  Ctrl=em_cp_oi_increase          Param=text Enable=enable</C>
+	  <C>Col=pp_oi_increase_ratio     	     	  Ctrl=em_pp_oi_increase          Param=text Enable=enable</C>
+	  <C>Col=cy_oi_increase_ratio     	     	  Ctrl=em_cy_oi_increase          Param=text Enable=enable</C>
+	  <C>Col=py_oi_increase_ratio     	     	  Ctrl=em_py_oi_increase          Param=text Enable=enable</C>
+	  <C>Col=cp_ni_increase_ratio    	        Ctrl=em_cp_ni_increase          Param=text Enable=enable</C>
+	  <C>Col=pp_ni_increase_ratio    	        Ctrl=em_pp_ni_increase          Param=text Enable=enable</C>
+	  <C>Col=cy_ni_increase_ratio    	        Ctrl=em_cy_ni_increase          Param=text Enable=enable</C>
+	  <C>Col=py_ni_increase_ratio    	        Ctrl=em_py_ni_increase          Param=text Enable=enable</C>
+	  <C>Col=cp_asset_increase_ratio    		  Ctrl=em_cp_asset_increase       Param=text Enable=enable</C>
+	  <C>Col=pp_asset_increase_ratio    		  Ctrl=em_pp_asset_increase       Param=text Enable=enable</C>
+	  <C>Col=cy_asset_increase_ratio    		  Ctrl=em_cy_asset_increase       Param=text Enable=enable</C>
+	  <C>Col=py_asset_increase_ratio    		  Ctrl=em_py_asset_increase       Param=text Enable=enable</C>
+	  <C>Col=cp_asset_turn_ratio    	        	  Ctrl=em_cp_asset_turn           Param=text Enable=enable</C>
+	  <C>Col=pp_asset_turn_ratio    	        	  Ctrl=em_pp_asset_turn           Param=text Enable=enable</C>
+	  <C>Col=cy_asset_turn_ratio    	        	  Ctrl=em_cy_asset_turn           Param=text Enable=enable</C>
+	  <C>Col=py_asset_turn_ratio    	        	  Ctrl=em_py_asset_turn           Param=text Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+	<script language="javascript"  for=ds_update event=OnLoadStarted()>
+	   //document.all.LowerFrame.style.visibility="visible";
+	</script>
+	<script language="javascript"  for=ds_update event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+	</script>
+   
+	<iframe id="LowerFrame" name="work" style=" position:absolute; left:350px; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe> 
+
+</BODY></HTML>

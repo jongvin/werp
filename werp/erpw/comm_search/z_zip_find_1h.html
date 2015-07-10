@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_tree_h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 부서 찾기														-->
+<!-- 3. 기 능 정 의   : 										-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../erpw.css">
+<TITLE> 우편번호 찾기 </TITLE>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'z_zip_find_1q.jsp'
+var is_confirm_check = 'no'
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+   if (Textbox_1.value.length == 0) { 
+      alert("반드시 동을 입력하셔야 합니다")
+      return
+   }   
+
+  ds_1.DataID =  is_ds_1_addr + "?arg_zip_dong=" + Textbox_1.value 
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'zipcode') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'sido') + " " + 
+              ds_1.NameValue(ds_1.RowPosition,'gugun')  + " " +
+              ds_1.NameValue(ds_1.RowPosition,'dong') 
+        
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ 
+ Textbox_1.value = result         // 0: 찾고자하는 값.
+ if (result == "") return 
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+<div class=main_div>
+	<table border="0" width="100%" height="100%" cellspacing="0">
+		<tr height="20">
+			<td width="300">
+				&nbsp;&nbsp;검색조건:
+				<INPUT id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+					style="Z-INDEX: 100; FONT-SIZE: 12px; "
+					onkeyDown="keyDown()">
+				<INPUT  type=button style="Z-INDEX: 106;"  class="img_btnFind"  value=검색 onclick=btnquery_onclick() >
+
+			</td>
+			<td>
+				<INPUT  id=Button_confrim  type=button style="Z-INDEX: 106; "  class="img_btnOk"  value=확인 onclick=Button_confirm_onclick() >
+				<INPUT   id=Button_close type=button style="Z-INDEX: 106;"  class="img_btnClose"  value=닫기 onclick=Button_close_onclick() >
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2>
+				<comment id="__NSID__"><OBJECT id=gd_1 
+				style="Z-INDEX: 105; WIDTH: 100%; HEIGHT: 100%" 
+				classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+				<PARAM NAME="AutoInsert" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				 <param name="MultiRowSelect"   value="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE="
+				   <C> Name=우편번호 ID=zipcode MASK='XXX-XXX'  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 </C>
+				   <C> Name='시 도 ' ID=sido HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 </C> 
+				   <C> Name='군' ID=gugun HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+				   <C> Name='동' ID=dong HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180 </C>
+				   <C> Name='번지' ID=bunji HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180 </C>
+				   "> 
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</tr>
+	</table>
+</BODY></HTML>

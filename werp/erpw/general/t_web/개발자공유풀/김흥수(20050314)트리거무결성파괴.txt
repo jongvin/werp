@@ -1,0 +1,51 @@
+트리거를 사용한 계수기의 논리적 에러
+
+create table t_trigger
+( id number);
+
+create table t_trigger_counter
+( cnt number);
+
+insert into t_trigger_counter ( cnt) values(0);
+
+commit;
+
+create or replace trigger t_ai_t_trigger
+after insert on t_trigger
+for each row
+declare
+	ln_cnt			number;
+begin
+	Select
+		cnt
+	Into
+		ln_cnt
+	from	t_trigger_counter;
+	update t_trigger_counter
+	set cnt = ln_cnt + 1;
+end;
+/
+
+1 세션
+
+insert into t_trigger(id) values(1);
+
+2 세션
+
+insert into t_trigger(id) values(2);
+
+1세션
+
+commit;
+
+2 세션
+
+commit;
+
+SQL> select * from t_trigger_counter;
+
+       CNT
+----------
+         1
+
+

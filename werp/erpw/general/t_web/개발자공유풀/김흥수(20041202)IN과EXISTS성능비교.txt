@@ -1,0 +1,141 @@
+아래의 두 SQL은 특정 전표와 관련이 있는 전표일집계 테이블 목록을 가져오는 SQL이다
+1. 정상적이 조인
+Select
+	x.*
+From	TIA_ACC_TRANS_DAILY_SUM x,
+		TIA_ACC_SLIP_HEAD a,
+		TIA_ACC_SLIP_BODY b
+Where	x.CONF_YMD = '20040501'
+And		a.SLIP_ID = b.SLIP_ID
+And		a.SLIP_ID = 2
+And		x.CONF_YMD = a.KEEP_DT_TRANS
+And		x.PROJ_CODE = b.POSS_DEPT_PROJ
+And		x.ACC_CODE = b.ACC_CODE
+
+PLAN
+SELECT STATEMENT     Cost = 608:34:09
+  NESTED LOOPS     08:34:09
+    NESTED LOOPS     08:34:09
+      TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_HEAD  2 08:34:09		--전표상이 제1 구동테이블이 된다.(1)
+        INDEX UNIQUE SCAN XPKTIA_ACC_SLIP_HEAD UNIQUE  08:34:09
+      TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_BODY  3 08:34:09		--전표하가 제2 구동테이블이 된다.(2)
+        INDEX RANGE SCAN XPKTIA_ACC_SLIP_BODY UNIQUE  08:34:09
+    TABLE ACCESS BY INDEX ROWID TIA_ACC_TRANS_DAILY_SUM  1 08:34:09	--위의 결과를 기준으로 TIA_ACC_TRANS_DAILY_SUM을 유니크 스캔(3)
+      INDEX UNIQUE SCAN XPKTIA_ACC_TRANS_DAILY_SUM UNIQUE  08:34:09
+
+
+2. EXISTS를 사용하여....
+Select
+	*
+From	TIA_ACC_TRANS_DAILY_SUM x
+Where	x.CONF_YMD = '20040501'
+And		Exists
+(
+	Select
+		Null
+	From	TIA_ACC_SLIP_HEAD a,
+			TIA_ACC_SLIP_BODY b
+	Where	a.SLIP_ID = b.SLIP_ID
+	And		a.SLIP_ID = 2
+	And		x.CONF_YMD = a.KEEP_DT_TRANS
+	And		x.PROJ_CODE = b.POSS_DEPT_PROJ
+	And		x.ACC_CODE = b.ACC_CODE
+)
+
+
+PLAN
+SELECT STATEMENT     Cost = 308:31:57
+  TABLE ACCESS BY INDEX ROWID TIA_ACC_TRANS_DAILY_SUM  1 08:31:57
+    INDEX RANGE SCAN XPKTIA_ACC_TRANS_DAILY_SUM UNIQUE  08:31:57		-- 이부분으 잘보라(x.CONF_YMD = '20040501') 이부분 때문에 느려진다.
+      NESTED LOOPS     08:31:57
+        TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_HEAD  2 08:31:57
+          INDEX UNIQUE SCAN XPKTIA_ACC_SLIP_HEAD UNIQUE  08:31:57
+        TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_BODY  3 08:31:57
+          INDEX RANGE SCAN XPKTIA_ACC_SLIP_BODY UNIQUE  08:31:57
+
+3. in을 사용
+
+Select
+	*
+From	TIA_ACC_TRANS_DAILY_SUM x
+Where	(x.CONF_YMD,x.PROJ_CODE,x.ACC_CODE)				-- In을 이런식으로도 쓸 수 있다.
+		In
+		(
+			Select
+				Distinct
+				a.KEEP_DT_TRANS,b.POSS_DEPT_PROJ,b.ACC_CODE
+			From	TIA_ACC_SLIP_HEAD a,
+					TIA_ACC_SLIP_BODY b
+			Where	a.SLIP_ID = b.SLIP_ID
+			And		a.SLIP_ID = 2
+		)
+
+PLAN
+SELECT STATEMENT     Cost = 808:36:25
+  NESTED LOOPS     08:36:25												--View가 구동테이블이 되어 TIA_ACC_TRANS_DAILY_SUM와 조인 된다.(4)
+    VIEW  VW_NSO_1   08:36:25											--내부적인 View 생성(결과 집합이 작다)(3)
+      SORT UNIQUE    08:36:25
+        NESTED LOOPS     08:36:25
+          TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_HEAD  2 08:36:25		--전표상이 제1구동(1)
+            INDEX UNIQUE SCAN XPKTIA_ACC_SLIP_HEAD UNIQUE  08:36:25
+          TABLE ACCESS BY INDEX ROWID TIA_ACC_SLIP_BODY  3 08:36:25		--전표하가 제2구동(2)
+            INDEX RANGE SCAN XPKTIA_ACC_SLIP_BODY UNIQUE  08:36:25
+    TABLE ACCESS BY INDEX ROWID TIA_ACC_TRANS_DAILY_SUM  1 08:36:25
+      INDEX UNIQUE SCAN XPKTIA_ACC_TRANS_DAILY_SUM UNIQUE  08:36:25
+
+
+******************************************************************
+
+위의 3가지 SQL은 동일한 결과이다.
+단 성능은 1->3->2의 성능이다.
+그럼 조인을 하면 되지 왜 in을 쓰는 것을 말할까?
+그 이유는 이 Select SQL을 삭제 SQL로 만들어보면 조인 SQL은 사용할 수 없다는 것을 알 수 있다.
+in SQL은 이런 경우 유용하다. 물론 in SQL이 거의 조인과 같은 속도로 수행된다지만 항상 만능은 아니다.
+
+*******************************************************************
+
+4. In 을 사용하여 Select를 Delete로 바꾼 경우의 SQL
+
+Delete	TIA_ACC_TRANS_DAILY_SUM x
+Where	(x.CONF_YMD,x.PROJ_CODE,x.ACC_CODE)				-- In을 이런식으로도 쓸 수 있다.
+		In
+		(
+			Select
+				Distinct
+				a.KEEP_DT_TRANS,b.POSS_DEPT_PROJ,b.ACC_CODE
+			From	TIA_ACC_SLIP_HEAD a,
+					TIA_ACC_SLIP_BODY b
+			Where	a.SLIP_ID = b.SLIP_ID
+			And		a.SLIP_ID = 2
+		)
+
+
+
+==> 상당히 빨리 지워 진다.(순간)
+
+
+5. EXISTS를 사용하여....
+Delete	TIA_ACC_TRANS_DAILY_SUM x
+Where	x.CONF_YMD = '20040501'
+And		Exists
+(
+	Select
+		Null
+	From	TIA_ACC_SLIP_HEAD a,
+			TIA_ACC_SLIP_BODY b
+	Where	a.SLIP_ID = b.SLIP_ID
+	And		a.SLIP_ID = 2
+	And		x.CONF_YMD = a.KEEP_DT_TRANS
+	And		x.PROJ_CODE = b.POSS_DEPT_PROJ
+	And		x.ACC_CODE = b.ACC_CODE
+)
+
+
+==> 약간의 시간이 흐르고(약 0.5초) 지워진다.
+
+************************************************************************
+
+책을 읽자
+위의 내용은 이펙티브 오라클이라는 책에 나오는 내용을 응용하여 우리 프로젝트의 테이블에 적용한 결과이다.....
+
+************************************************************************

@@ -1,0 +1,447 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : y_projmng_basic_1h.html 									-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 현장관리비 기준입력									   	-->
+<!-- 4. 변 경 이 력   : 김동우 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_code = ""
+var il_focus = 1
+var is_ds_1_addr = gs_home + '/const/y_web/99/y_projmng_basic_1q.jsp'
+var is_ds_2_addr = gs_home + '/const/y_web/99/y_projmng_basic_detail_1q.jsp?arg_code='
+var is_tr_1_addr = gs_home + '/const/y_web/99/y_projmng_basic_1tr.jsp'
+var is_tr_2_addr = gs_home + '/const/y_web/99/y_projmng_basic_detail_1tr.jsp'
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function insert_init()                 //하위 입력시 초기 셋팅.
+//------------------------------------------------------------------------
+{
+  ds_2.NameValue(ds_2.RowPosition,"wbs_code") = is_code
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	 if (il_focus == 1) { 
+	   ds_1.SyncLoad=true
+	   ds_1.Reset()
+	   if ( ds_1.CountRow < 1 ) ds_2.ClearData()
+	 }   
+	 else {
+	   ds_2.SyncLoad=true
+	   ds_2.Reset()
+	 }
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if  (il_focus == 1) {
+	   ds_1.AddRow()
+	   bt_wbs_onclick()
+	}
+	else
+	   div_btnadd_onclick()  
+
+}
+//------------------------------------------------------------------------
+function div_btnadd_onclick()                  // 하위 추가
+//------------------------------------------------------------------------
+{
+    if (is_code != ""){
+       ds_2.AddRow()
+       insert_init()
+    }
+ }
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+  if  (il_focus == 1) {
+      ds_1.InsertRow(ds_1.RowPosition);
+      bt_wbs_onclick()
+  }
+  else
+    if (is_code != "")  {
+      ds_2.InsertRow(ds_1.RowPosition);
+      insert_init()    
+  }    
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  if  (il_focus == 1) {
+  	  if (ds_2.CountRow > 0 ){
+  	  		alert('하위의 자료부터 삭제하십시오...')
+  	  		return
+  	  	}
+     if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+        for (i=ds_1.CountRow ;i >0 ;i--){
+           if (ds_1.RowMark(i) == 1)
+                  ds_1.DeleteRow(i)
+         } 
+      if  (ds_1.RowPosition != 0)     
+       ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+      }    
+    else
+       ds_1.DeleteRow(ds_1.RowPosition)
+  }     
+  else
+      div_btndelete_onclick()        
+} 
+//------------------------------------------------------------------------     
+function div_btndelete_onclick()           //하위 삭제
+//------------------------------------------------------------------------
+{
+  if  (gd_2.MultiRowSelect){               // multi row select 일 경우
+     for (i=ds_2.CountRow ;i >0 ;i--){
+        if (ds_2.RowMark(i) == 1)
+               ds_2.DeleteRow(i)
+      }  
+   if  (ds_2.RowPosition != 0)          
+       ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)  //삭제작업완료후 MARK
+    }
+  else
+     ds_2.DeleteRow(ds_2.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+ is_code = ds_1.NameValue(ds_1.RowPosition,"wbs_code");
+
+// dup check logic   	
+  if (ds_1.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_1","wbs_code")
+	 if (ll_dup > 0) {
+	     alert("공종코드가 중복되었습니다: 공종코드를 수정하십시요 ")
+	     ds_1.RowPosition = ll_dup
+     	  gd_1.SetColumn("wbs_code");
+     	  il_focus = 1
+	     return
+	 }
+  }
+  if (ds_2.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_2","detail_code")
+	 if (ll_dup > 0) {
+	     alert("공종코드가 중복되었습니다: 공종코드를 수정하십시요 ")
+	     ds_2.RowPosition = ll_dup
+     	  gd_2.SetColumn("detail_code");
+     	  il_focus = 2
+	     return
+	 }
+  }
+
+ if (il_focus == 1) {
+   if (ds_1.IsUpdated){
+      if  (confirm("변경되었습니다 저장하시겠습니까?"))
+			if (ds_2.IsUpdated){
+				tr_2.Post()
+			}	
+          tr_1.Post()
+   }       
+ }
+ else
+    div_btnsave_onclick()  
+}
+//---------------------------------------------------------------------------
+function div_btnsave_onclick()                  //하위 저장
+//--------------------------------------------------------------------------- 
+{
+
+// dup check logic   	
+  if (ds_1.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_1","wbs_code")
+	 if (ll_dup > 0) {
+	     alert("공종코드가 중복되었습니다: 공종코드를 수정하십시요 ")
+	     ds_1.RowPosition = ll_dup
+     	  gd_1.SetColumn("wbs_code");
+     	  il_focus = 1
+	     return
+	 }
+  }
+  if (ds_2.IsUpdated){
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_2","detail_code")
+	 if (ll_dup > 0) {
+	     alert("코드가 중복되었습니다: 코드를 수정하십시요 ")
+	     ds_2.RowPosition = ll_dup
+     	  gd_2.SetColumn("detail_code");
+     	  il_focus = 2
+	     return
+	 }
+  }
+
+	if (ds_2.IsUpdated){
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+			if (ds_1.IsUpdated){
+				tr_1.Post()
+			}	
+			tr_2.Post()
+	}         
+}
+//----------------------------------------------------------------------------
+function bt_wbs_onclick() //공종코드찾기
+//----------------------------------------------------------------------------
+{
+	var result;
+	var send_arg,ll_cnt,i,j,ll_chk;
+	var array = new Array();
+	send_arg = ''
+	result = window.showModalDialog(gs_home + "/const/y_web/00/y_wbs_find_1h.html", send_arg,"dialogWidth:515px;dialogHeight:500px");
+	
+	if(result == ""){
+		ds_1.DeleteRow(ds_1.RowPosition)
+	 	return;
+	}
+	array = result.split("@");
+	ll_cnt = array[0]
+	if ( ll_cnt > 1 ) {
+		for(i=1;i<=ll_cnt;i++) {
+			j = i * 2 - 1
+			ll_chk = ds_1.ValueRow(1,array[j])
+			if (ll_chk == 0) {
+				if (j != 1 ) {
+		   		ds_1.AddRow()
+		   	}
+				ds_1.NameValue(ds_1.RowPosition,"wbs_code") = array[j]
+				ds_1.NameValue(ds_1.RowPosition,"name") = array[j+1]
+			}
+			else {
+				if ( j ==1 ) {
+					ds_1.DeleteRow(ds_1.RowPosition)
+				}
+			}
+		}
+	}
+	else {
+		ll_chk = ds_1.ValueRow(1,array[1])
+		if (ll_chk == 0) {
+			ds_1.NameValue(ds_1.RowPosition,"wbs_code") = array[1]
+			ds_1.NameValue(ds_1.RowPosition,"name") = array[2]
+		}
+		else {
+			ds_1.DeleteRow(ds_1.RowPosition)
+		}
+			
+	}
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+ if (il_focus == 1) 
+    ds_1.Undo(ds_1.RowPosition);
+ else
+    ds_2.Undo(ds_2.RowPosition);    
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+       }     
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_focus = focus
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	ds_1.DataID=is_ds_1_addr
+	ds_1.SyncLoad=true
+	ds_1.reset()
+	ds_2.DataID=is_ds_2_addr +  is_code
+	
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+}
+</script>
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</script>
+<script language=JavaScript for=gd_2 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_2.RowPosition == ds_2.CountRow)  
+        div_btnadd_onclick()
+    else     
+        ds_2.RowPosition++
+}
+</script>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	if (row < 1)  return
+
+	if (ds_1.IsUpdated){
+//		btnsave_onclick()
+	}	
+
+	if (ds_2.IsUpdated){
+		div_btnsave_onclick()
+	}	
+	
+	is_code = ds_1.NameString(row,"wbs_code");
+	ds_2.DataID=is_ds_2_addr +  is_code;
+	ds_2.SyncLoad=true
+	ds_2.reset();
+</SCRIPT>
+<SCRIPT language="javascript" for=gd_2 event=OnPopup(row,colid,data)>
+	if (colid == "acntcode") {
+		var result;
+		var send_arg;
+		var array = new Array();
+		send_arg = data
+		result = window.showModalDialog(gs_home + "/const/f_web/00/f_acnt_code_find_1h.html", send_arg,"dialogWidth:380px;dialogHeight:500px");
+		
+		if(result == "") return;
+	
+		array = result.split("@");
+		ds_2.NameValue(row,"acntcode") = array[0]
+	}    
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=gd_1 event=CanColumnPosChange(row,colid)>
+	if (colid == "wbs_code")
+	   is_code = ds_1.NameString(row,"wbs_code");
+   return true	   
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 139px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2
+    style="Z-INDEX: 103; LEFT: 265px; POSITION: absolute; TOP: 8px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="KeyName" VALUE="toinb_dataid4">
+   <PARAM NAME="KeyValue" VALUE="JSP(I:y_projmng_basic_1tr=ds_1)">
+   <PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_2 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="KeyName" VALUE="toinb_dataid4">
+   <PARAM NAME="KeyValue" VALUE="JSP(I:y_projmng_basic_detail_1tr=ds_2)">
+   <PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px;margin=0"  onload=setTimeout('window_onload()',1)  oncontextmenu="return false" >
+<table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+<TR>
+	<TD width="302px">
+			<comment id="__NSID__"><OBJECT id=gd_1 onfocus="get_focus(1)"
+				 width="100%" height="100%"
+				 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AutoInsert" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+				<PARAM NAME="BorderStyle"  VALUE=4>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE=" 
+				  <C> Name='공종코드' ID=wbs_code  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=55 </C> 
+				  <C> Name='공 종 명' ID=name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=210 </C> 
+				  ">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</TD>
+	<TD>
+			<comment id="__NSID__"><OBJECT id=gd_2 onfocus="get_focus(2)"
+			 width="100%" height="100%"
+			 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+			<PARAM NAME="MultiRowSelect" VALUE="-1">
+			<PARAM NAME="AutoInsert" VALUE="-1">
+			<PARAM NAME="AllShowEdit" VALUE="-1">
+			<PARAM NAME="BorderStyle"  VALUE=4>
+			<PARAM NAME="Editable" VALUE="-1">
+			<PARAM NAME="ColSizing" VALUE="-1">
+			<PARAM NAME="DataID" VALUE="ds_2">   
+			<PARAM NAME="Format" VALUE=" 
+			  <FC> Name='코드' ID=detail_code Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+			  <FC> Name='항목명' ID=name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+			  <FC> Name='규격' ID=ssize BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=110 </C>
+			  <C> Name='단위' ID=unit BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 </C>
+			  <C> Name='단가' ID=price BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+			  <C> Name='산출근거' ID=remark BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+			  <C> Name='비고' ID=note BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=190 </C>
+			  ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</TD>
+</TR>
+</TABLE>
+
+
+</BODY></HTML>

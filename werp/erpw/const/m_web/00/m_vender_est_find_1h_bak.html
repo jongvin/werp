@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : m_vender_est_find_1h.html 			-->
+<!-- 2. 유형(시나리오): 견적 찾기						-->
+<!-- 3. 기 능 정 의   : 							-->
+<!-- 4. 변 경 이 력   : 김동우 작성					-->
+<!-- 5. 관련프로그램  :							-->
+<!-- 6. 특 기 사 항   :							-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<TITLE> 견적 찾기 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_vender_est_find_1q.jsp?'
+var is_ds_2_addr = 'm_vender_est_find_2q.jsp?arg_date='
+var is_dept_code = ''
+var is_confirm_check = 'no'
+var is_work_date 
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID =  is_ds_1_addr
+  ds_1.SyncLoad=true
+  ds_1.reset()
+  
+  div_btnquery_onclick()
+
+}
+//---------------------------------------------------------------
+function div_btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	if (ds_1.RowPosition < 1) return
+	
+	ds_2.DataID =  is_ds_2_addr + ds_1.NameValue(ds_1.RowPosition,"estimateyymm") + '&arg_seq=' +
+						ds_1.NameValue(ds_1.RowPosition,"estimateseq")
+	ds_2.SyncLoad=true
+	ds_2.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'estimateyymm') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'estimateseq') + '@'  +
+              ds_2.NameValue(1,'sbcr_code') + '@' +
+              is_work_date + '@'
+        
+ window.returnValue = ls_return
+ window.close();
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_date = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)  + "." +  em_select_yymm.text.substr(8,2)
+
+//   makeCookie("@l_labor_daily_work_1h@",is_work_date)
+ 
+}   
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+
+
+
+if ( result != '' ) {
+	array = result.split("@");
+	gs_home = array[0];     
+	is_work_date = array[1];
+	em_select_yymm.text = is_work_date
+
+}
+	
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+{
+	div_btnquery_onclick()  
+}  
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>        	
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<BR>    
+<LABEL id=Label_2  
+    	style="WIDTH: 75px; LEFT: 280px;POSITION: absolute; HEIGHT: 25px; TOP:9px">&nbsp;&nbsp;품의일자:
+</LABEL>
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+       style="Z-INDEX: 101; LEFT: 350px; WIDTH: 80px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Alignment" VALUE="1">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="8">
+	    <PARAM NAME="Format" VALUE="YYYY-MM-DD">
+            <param name=ClipMode       value=false>
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+	if(!is_null(result)){ em_select_yymm.text = result.substr(0,8);} ; select_yymm()" 
+       style=" LEFT: 430px; WIDTH: 20px; POSITION: absolute; TOP: 5px; HEIGHT:20px">
+<INPUT id=Button_confrim 
+    style="Z-INDEX: 106; LEFT: 565px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_confirm_onclick() type=button value='확인'>     
+<INPUT id=Button_close 
+    style="Z-INDEX: 106; LEFT: 610px; POSITION: absolute; TOP: 7px" 
+    onclick=Button_close_onclick() type=button value='닫 기'>    
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 310px; POSITION: absolute; TOP: 35px; HEIGHT: 400px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name=견적일자 ID=estimateyymm Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	   <C> Name=견적번호 ID=estimateseq Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 </C>
+	   <C> Name=견적제목 ID=esttitle HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	   "> 
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=gd_2 
+    style="Z-INDEX: 105; LEFT: 320px; WIDTH: 380px; POSITION: absolute; TOP: 35px; HEIGHT: 400px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="Format" VALUE="
+	   <C> Name='업체코드' ID=sbcr_code  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	   <C> Name='선정업체명' ID=sbcr_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	   <C> Name='견적금액' ID=chg_amt HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 </C>
+	   "> 
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

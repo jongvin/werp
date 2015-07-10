@@ -1,0 +1,127 @@
+
+1. z_code_dept_title 테이블 추가 (부서코드 상위 레벨)
+2. z_code_dept 테이블 컬럼 요청사항
+   high_dept_code 자리 null 허용 
+   nation_code forign key 없에줄것.
+4. z_authority_use테이블 컬럼 요청사항
+    querytag 를 null허용 
+5. view table 추가 요청
+   CREATE VIEW view_dept_code (dept_code,comp_code,comp_name,level_code,title_name,long_name,
+               short_name,english_name,dept_proj_tag,use_tag,dept_seq_key) 
+               AS SELECT z_code_dept.dept_code, z_code_dept_title.comp_code,z_code_comp.comp_name,
+                z_code_dept_title.level_code, z_code_dept_title.title_name,
+                 z_code_dept.long_name, z_code_dept.short_name, 
+                 z_code_dept.english_name, z_code_dept.dept_proj_tag, 
+                 z_code_dept.use_tag, z_code_dept_title.dept_seq_key 
+            FROM z_code_dept, z_code_dept_title, z_code_comp 
+            WHERE ( z_code_comp.comp_code = z_code_dept_title.comp_code )
+             and ( z_code_dept_title.dept_seq_key = z_code_dept.dept_seq_key ) 
+;    
+아래 sequence table 추가 (공통에서 프로그램 등록)
+CREATE SEQUENCE Z_PGRM_UNQ_SEQ 
+INCREMENT BY 1 
+START WITH 100 
+MINVALUE 1 
+MAXVALUE 9999999999999 
+CYCLE 
+NOCACHE 
+NOORDER;
+아래 sequence table 추가          (실행에서 내역작성)
+CREATE SEQUENCE Y_SPEC_UNQ_NO 
+INCREMENT BY 1 
+START WITH 1 
+MINVALUE 1 
+MAXVALUE 9999999999999999 
+CYCLE 
+NOCACHE 
+NOORDER;
+아래 sequence table 추가          (원가에서 그림파일 등록(c_prgs_picture))
+
+CREATE SEQUENCE C_UNQ_NUM 
+INCREMENT BY 1 
+START WITH 1 
+MINVALUE 1 
+MAXVALUE 9999999999999999 
+CYCLE 
+NOCACHE 
+NOORDER;
+//       로그인 상태 기록하기위한 파일 키 
+CREATE SEQUENCE Z_UNQ_NUM 
+INCREMENT BY 1 
+START WITH 1 
+MINVALUE 1 
+MAXVALUE 9999999999999999 
+CYCLE 
+NOCACHE 
+NOORDER;
+
+원가에서 현장별 구조 등록 테이블 추가 (기존거 삭제)
+
+CREATE TABLE erpw."C_SPEC_CLASS_PARENT" ("SPEC_NO_SEQ" NUMBER(18,0) NOT NULL, "NO_SEQ" NUMBER(10,0) NOT NULL, "SUM_CODE" VARCHAR2(20) NOT NULL, "PARENT_SUM_CODE" VARCHAR2(20) NOT NULL, "LLEVEL" NUMBER(1,0) NOT NULL, "NAME" VARCHAR2(40)) ;
+ALTER TABLE erpw.C_SPEC_CLASS_PARENT ADD ( CONSTRAINT C_SPEC_CLASS_PARENT_P1 PRIMARY KEY ( SPEC_NO_SEQ )) ;
+CREATE UNIQUE INDEX "C_SPEC_CLASS_PARENT_P1" ON erpw."C_SPEC_CLASS_PARENT" ("SPEC_NO_SEQ" ) ;
+
+CREATE TABLE erpw."C_SPEC_CLASS_CHILD" ("SPEC_NO_SEQ" NUMBER(18,0) NOT NULL, "DEPT_CODE" VARCHAR2(7) NOT NULL, "NO_SEQ" NUMBER(10,0) NOT NULL) ;
+ALTER TABLE erpw.C_SPEC_CLASS_CHILD ADD ( CONSTRAINT c_spec_class_child_p1 PRIMARY KEY ( SPEC_NO_SEQ, DEPT_CODE )) ;
+ALTER TABLE erpw.C_SPEC_CLASS_CHILD ADD ( CONSTRAINT C_SPEC_CLASS_CHILD_F1 FOREIGN KEY ( SPEC_NO_SEQ ) REFERENCES erpw.C_SPEC_CLASS_PARENT ) ;
+CREATE UNIQUE INDEX "C_SPEC_CLASS_CHILD_P1" ON erpw."C_SPEC_CLASS_CHILD" ("SPEC_NO_SEQ" ) ;
+
+원가에서 VIEW 테이블 (원가 집계 테이블과 실행의 최종 테이블과의 연결(SUM_CODE='01')인건만 연결
+CREATE VIEW view_c_spec_const_parent
+ (yymm,sum_code,parent_sum_code,dept_code,long_name,use_tag,no_seq,cnt_result_amt,
+ cnt_result_mat_amt,cnt_result_lab_amt,cnt_result_exp_amt,result_amt,
+ result_mat_amt,result_sub_amt,result_lab_amt,result_equ_amt,result_exp_amt,
+ cost_amt,cost_mat_amt,cost_sub_amt,cost_lab_amt,cost_equ_amt,cost_exp_amt,
+ wbs_code,pre_result_amt,pre_result_rate,ls_cnt_result_amt,ls_cnt_result_mat_amt,ls_cnt_result_lab_amt,
+ ls_cnt_result_exp_amt,ls_result_amt,ls_result_mat_amt,ls_result_sub_amt,
+ ls_result_lab_amt,ls_result_equ_amt,ls_result_exp_amt,ls_cost_amt,ls_cost_mat_amt,
+ ls_cost_sub_amt,ls_cost_lab_amt,ls_cost_equ_amt,ls_cost_exp_amt,cnt_amt,cnt_mat_amt,
+ cnt_lab_amt,cnt_exp_amt,amt,mat_amt,lab_amt,exp_amt,equ_amt,sub_amt,
+  proj_pos,proj_charge,chg_const_start_date,chg_const_end_date) 
+  AS SELECT c_spec_const_parent.yymm, c_spec_class_parent.sum_code,c_spec_class_parent.parent_sum_code,
+   c_spec_const_parent.dept_code, z_code_dept.long_name, z_code_dept.use_tag,
+    c_spec_class_child.no_seq, c_spec_const_parent.cnt_result_amt, 
+  c_spec_const_parent.cnt_result_mat_amt, c_spec_const_parent.cnt_result_lab_amt, 
+  c_spec_const_parent.cnt_result_exp_amt, c_spec_const_parent.result_amt, c_spec_const_parent.result_mat_amt, 
+  c_spec_const_parent.result_sub_amt, c_spec_const_parent.result_lab_amt, c_spec_const_parent.result_equ_amt, 
+  c_spec_const_parent.result_exp_amt, c_spec_const_parent.cost_amt, c_spec_const_parent.cost_mat_amt, 
+  c_spec_const_parent.cost_sub_amt, c_spec_const_parent.cost_lab_amt, c_spec_const_parent.cost_equ_amt, 
+  c_spec_const_parent.cost_exp_amt, c_spec_const_parent.wbs_code, 
+  c_spec_const_parent.pre_result_amt, c_spec_const_parent.pre_result_rate,
+   c_spec_const_parent.ls_cnt_result_amt, 
+  c_spec_const_parent.ls_cnt_result_mat_amt, c_spec_const_parent.ls_cnt_result_lab_amt, 
+  c_spec_const_parent.ls_cnt_result_exp_amt, c_spec_const_parent.ls_result_amt, 
+  c_spec_const_parent.ls_result_mat_amt, c_spec_const_parent.ls_result_sub_amt, 
+  c_spec_const_parent.ls_result_lab_amt, c_spec_const_parent.ls_result_equ_amt, 
+  c_spec_const_parent.ls_result_exp_amt, c_spec_const_parent.ls_cost_amt, c_spec_const_parent.ls_cost_mat_amt, 
+  c_spec_const_parent.ls_cost_sub_amt, c_spec_const_parent.ls_cost_lab_amt, c_spec_const_parent.ls_cost_equ_amt, 
+  c_spec_const_parent.ls_cost_exp_amt, y_budget_parent.cnt_amt, y_budget_parent.cnt_mat_amt, y_budget_parent.cnt_lab_amt, 
+  y_budget_parent.cnt_exp_amt, y_budget_parent.amt, y_budget_parent.mat_amt, y_budget_parent.lab_amt, 
+  y_budget_parent.exp_amt, y_budget_parent.equ_amt, y_budget_parent.sub_amt,
+  z_code_dept.proj_pos,z_code_dept.proj_charge,z_code_dept.chg_const_start_date,z_code_dept.chg_const_end_date 
+  FROM c_spec_class_child, 
+  c_spec_const_parent, y_budget_parent, z_code_dept, c_spec_class_parent 
+  WHERE ( c_spec_class_child.spec_no_seq = c_spec_class_parent.spec_no_seq ) and 
+  ( c_spec_class_child.dept_code = z_code_dept.dept_code ) and 
+  ( c_spec_const_parent.dept_code = c_spec_class_child.dept_code ) and 
+  ( c_spec_const_parent.dept_code = y_budget_parent.dept_code ) and 
+  ( c_spec_const_parent.spec_no_seq = y_budget_parent.spec_no_seq ) and 
+  ( ( y_budget_parent.sum_code = '01' ) ) 
+;
+추가 해주세요.
+CREATE TABLE erpw."Z_USER" ("USER_KEY" NUMBER(13,0) NOT NULL, "USER_NAME" VARCHAR2(50), "EMPNO" VARCHAR2(8)) ;
+ALTER TABLE erpw.Z_USER ADD ( CONSTRAINT Z_USER_P1 PRIMARY KEY ( USER_KEY )) ;
+
+CREATE TABLE erpw."Z_USER_PGRM_TITLE" ("USER_KEY" NUMBER(13,0) NOT NULL, "USER_SEQ_KEY" NUMBER(13,0) NOT NULL, "NO_SEQ" NUMBER(10,0) NOT NULL, "LEVEL1" VARCHAR2(1), "TITLE_NAME" VARCHAR2(40), "RW_TAG" VARCHAR2(1)) ;
+ALTER TABLE erpw.Z_USER_PGRM_TITLE ADD ( CONSTRAINT Z_USER_PGRM_TITLE_P1 PRIMARY KEY ( USER_KEY, USER_SEQ_KEY )) ;
+CREATE UNIQUE INDEX "Z_USER_PGRM_TITLE_X" ON erpw."Z_USER_PGRM_TITLE" ("USER_KEY" , "USER_SEQ_KEY" ) ;
+
+CREATE TABLE erpw."Z_USER_PGRM_CONTENT" ("USER_KEY" NUMBER(13,0) NOT NULL,"USER_SEQ_KEY" NUMBER(13,0) NOT NULL, "PGRM_SEQ_KEY" NUMBER(13,0) NOT NULL, "NO_SEQ" NUMBER(13,0), "RW_TAG" VARCHAR2(1)) ;
+ALTER TABLE erpw.Z_USER_PGRM_CONTENT ADD ( CONSTRAINT Z_USER_PGRM_CONTENT PRIMARY KEY (USER_KEY, USER_SEQ_KEY, PGRM_SEQ_KEY )) ;
+CREATE UNIQUE INDEX "Z_USER_PGRM_CONTENT_X" ON erpw."Z_USER_PGRM_CONTENT" ("USER_KEY", "USER_SEQ_KEY" , "PGRM_SEQ_KEY" ) ;
+//켈렌더 테이블 추가요청
+CREATE TABLE erpw."C_CALENDAR_YYMM" ("C_YYMM" DATE NOT NULL) ;
+ALTER TABLE erpw.C_CALENDAR_YYMM ADD ( CONSTRAINT C_CALENDAR_YYMM_PK1 PRIMARY KEY ( C_YYMM )) ;
+
+//자재 코드 high에서 
+  parent_mtrgrand column을 null을 허용해줄것.

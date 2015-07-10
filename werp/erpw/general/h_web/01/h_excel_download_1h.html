@@ -1,0 +1,621 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : h_sale_loan_comm_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 엑셀다운로드(계약자,약정사항,기간별입금사항)                       	-->
+<!-- 4. 변 경 이 력   : 임종빈 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   : 엑셀다운로드(계약자,약정사항,기간별입금사항)      									-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_ds_1_addr = new Array(26)
+
+/*is_ds_1_addr[11] = 'h_excel_download_1q.jsp?arg_dept_code='
+is_ds_1_addr[12] = 'h_excel_download_2q.jsp?arg_dept_code='
+is_ds_1_addr[13] = 'h_excel_download_3q.jsp?arg_dept_code='
+is_ds_1_addr[21] = 'h_excel_download_4q.jsp?arg_dept_code=' //임대계약자
+//is_ds_1_addr[22] = 'h_excel_download_5q.jsp?arg_dept_code='
+is_ds_1_addr[22] = 'h_excel_download_6q.jsp?arg_dept_code='	 //임대료약정
+//is_ds_1_addr[24] = 'h_excel_download_7q.jsp?arg_dept_code='
+is_ds_1_addr[23] = 'h_excel_download_8q.jsp?arg_dept_code='  //임대료입금
+*/
+is_ds_1_addr[11] = 'h_excel_download_1q.jsp?arg_dept_code=' //분양계약자
+is_ds_1_addr[12] = 'h_excel_download_2q.jsp?arg_dept_code=' //분양    약정
+is_ds_1_addr[13] = 'h_excel_download_3q.jsp?arg_dept_code='	//분양금입금
+is_ds_1_addr[21] = 'h_excel_download_4q.jsp?arg_dept_code=' //임대계약자
+is_ds_1_addr[22] = 'h_excel_download_5q.jsp?arg_dept_code=' //보증금약정
+is_ds_1_addr[23] = 'h_excel_download_6q.jsp?arg_dept_code=' //보증금입금
+is_ds_1_addr[24] = 'h_excel_download_7q.jsp?arg_dept_code=' //임대료약정
+is_ds_1_addr[25] = 'h_excel_download_8q.jsp?arg_dept_code=' //임대료입금
+
+var is_form = new Array(23)
+
+
+var is_dept_code = ""
+var is_dept_name = ""
+var is_sell_code = ""
+var is_sell_name = ""
+var is_from_date, is_to_date
+var ii_boder = 2
+
+is_form[11] = ""+
+			     "<C> Name='동호' ID=dongho  Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center     HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 </C>"+
+				  "<C> Name='평형' ID=pyong Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=50 </C>"+
+				  "<C> Name='TYPE' ID=style Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=40 </C> "+
+				  "<C> Name='군' ID=class_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 </C>"+ 
+				  "<C> Name='선택사양' ID=option_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 sumtext=@count </C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 </C>"+ 
+				  "<C> Name='주민번호' ID=cust_code Align=Center Mask='XXXXXXXXXXXXXX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 </C>"+ 
+				  "<C> Name='계약구분'  id=code_name Align=Center width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='계약일자'  id=contract_date Align=Center width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='전화(자택)'  id=home_phone Align=Center width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='전화(회사)'  id=office_phone Align=Center width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='핸드폰'  id=cell_phone Align=Center width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='우편번호'  id=cur_zip_code Align=Center width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='주소'  id=cur_addr1 Align=left width=600  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"
+
+is_form[12] = ""+
+			     "<C> Name='동호' ID=dongho  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60  suppress=9</C>"+
+				  "<C> Name='평형' ID=pyong Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=50 suppress=8</C>"+
+				  "<C> Name='TYPE' ID=style Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=40 suppress=7</C> "+
+				  "<C> Name='군' ID=class_name Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=6</C> "+
+				  "<C> Name='선택사양' ID=option_name Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 sumtext=@count suppress=5</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=4</C> "+
+				  "<C> Name='주민번호' ID=cust_code Align=Center Mask='XXXXXXXXXXXXXX'   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 suppress=3</C> "+
+				  "<C> Name='계약구분'  id=code_name Align=Center width=60    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=2</C>"+
+				  "<C> Name='계약일자'  id=contract_date Align=Center width=80    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=1</C>"+
+				  "<C> Name='차수'  id=degree_name Align=Center width=60   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='약정일자'  id=agree_date Align=Center width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='약정금액'  id=sell_amt Align=Right width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumText=@sum</C>"+
+				  "<C> Name='입금액'  id=tot_amt Align=Right width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK SumText=@sum</C>"+
+				  "<C> Name='완납여부'  id=f_pay_yn Align=Center width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"
+is_form[13] = ""+
+			     "<C> Name='동호' ID=dongho  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60  suppress=10</C>"+
+				  "<C> Name='평형' ID=pyong Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=50 suppress=9</C>"+
+				  "<C> Name='TYPE' ID=style Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=40 suppress=8</C> "+
+				  "<C> Name='군' ID=class_name Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=7</C> "+
+				  "<C> Name='선택사양' ID=option_name Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 sumtext=@count suppress=6</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=5</C> "+
+				  "<C> Name='주민번호' ID=cust_code Align=Center Mask='XXXXXXXXXXXXXX'   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 suppress=4</C> "+
+				  "<C> Name='계약구분'  id=code_name Align=Center width=60    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=3</C>"+
+				  "<C> Name='계약일자'  id=contract_date Align=Center width=80    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=2</C>"+
+				  "<C> Name='차수'  id=degree_name Align=Center width=60  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=1</C>"+
+				  "<C> Name='납입일자' ID=receipt_date Edit=None Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=65 color=@ucolor  SubSumText={decode(curlevel,1,'소 계','합 계')} SumText='총 계' </C>"+
+				  "<C> Name='입금액' ID=income_amt HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80		Value={r_amt+delay_amt-discount_amt} color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='연체일수' ID=delay_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='연체료' ID=delay_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='할인일수' ID=discount_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='할인료' ID=discount_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='실납입액' ID=r_amt HeadAlign=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='토지가' ID=r_land_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='건물가' ID=r_build_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='부가세' ID=r_vat_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor SumText=@sum</C>"+
+				  "<C> Name='입금구분' id=receipt_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  Align=Center     width=140 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK color=@ucolor</C>"+
+				  "<C> Name='입금형태' id=receipt_class_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  Align=Center   width=55 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK color=@ucolor</C>"+
+				  "<C> Name='계좌번호' ID=deposit_no BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=120 color=@ucolor</C>"+
+				  "<C> Name='은행명'   ID=bank_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=120 color=@ucolor</C>"+
+				  "<C> Name='카드승인번호'   ID=card_app_num BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 color=@ucolor</C>"+
+				  "<C> Name='카드회사'   ID=card_bank_head_name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  EditStyle=Popup Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 color=@ucolor</C>"+
+				  "<C> Name='입금표'   ID=receipt_number BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=60 color=@ucolor</C>"
+is_form[21] =""+
+			      "<C> Name='계약번호' ID=cont_num  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=110 suppress=1</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 </C>"+
+				  "<C> Name='고객코드' ID=cust_code Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>"+ 
+				  "<C> Name='계약일자' ID=cont_date Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>"+ 
+				  "<C> Name='계약구분' ID=code_name Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 sumtext=@count </C>"+
+				  "<C> Name='임대세대(동호)' ID=dongho Align=Center Mask='XXXX-XXXX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>"+ 
+				  "<C> Name='임대시작일' ID=lease_s_date Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 </C>"+ 
+				  "<C> Name='임대종료일'  id=lease_e_date Align=Center width=70  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='보증금'  id=grt_amt Align=Right width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='임대료 적용년월'  id=apply_date Align=Center width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='임대료'  id=rent_amt Align=Right width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+	
+				  "<C> Name='임대부가세'  id=rent_vat Align=Right width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+	
+				  "<C> Name='전화(자택)'  id=home_phone Align=Left width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+	
+				  "<C> Name='전화(회사)'  id=office_phone Align=Left width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				   "<C> Name='핸드폰'  id=office_phone Align=Left width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='우편번호'  id=cur_zip_code Align=Center width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='주소1'  id=cur_addr1 Align=Left width=400  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+				  "<C> Name='주소2'  id=cur_addr2 Align=Left width=300  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"
+is_form[22] =""+
+			      "<C> Name='계약번호' ID=cont_num  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=110 suppress=1</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=2</C>"+
+				  "<C> Name='고객코드' ID=cust_code Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 suppress=3</C>"+ 
+				  "<C> Name='계약일자' ID=cont_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 suppress=4</C>"+ 
+				   "<C> Name='차수'  id=degree_code Align=Center  EditStyle=Lookup   Data='ds_select4:select_1:select_2' width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+               "<C> Name='약정일자' ID=agree_date Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 </C>"+
+	            "<C> Name='약정금액' ID=amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 SumText=@sum SumColor=Black SumBgColor=Pink</C>"+
+	            "<C> Name='완납' ID=f_pay_yn  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center Align=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 	  		EditStyle=Combo Data='Y:완납,N:미납' edit=none</C>"+
+              "<C> Name='납부금액' ID=tot_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 edit=none SumText=@sum SumColor=Black SumBgColor=Pink</C>"
+is_form[23] =""+
+			      "<C> Name='계약번호' ID=cont_num  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=110 suppress=1</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=2</C>"+
+				  "<C> Name='고객코드' ID=cust_code Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 suppress=3</C>"+ 
+				  "<C> Name='계약일자' ID=cont_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 suppress=4</C>"+ 
+				   "<C> Name='차수'  id=degree_code Align=Center   width=80  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=5</C>"+
+               "<C> Name='약정일자' ID=agree_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 suppress=6</C>"+
+	            "<C> Name='약정금액' ID=amt  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 SumText=@sum SumColor=Black SumBgColor=Pink suppress=7</C>"+
+	            "<C> Name='완납' ID=f_pay_yn  Align=Center HeadAlign=Center  HeadAlign=Center Align=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 	  		EditStyle=Combo Data='Y:완납,N:미납' edit=none suppress=8</C>"+
+              "<C> Name='납부금액' ID=tot_amt  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 edit=none SumText=@sum SumColor=Black SumBgColor=Pink suppress=9</C>"	+
+				  "<C> Name='회수'     ID=degree_seq BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=30  </C>"+
+				   "<C> Name='납입일자' ID=receipt_date Edit=None Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=65 color=@ucolor  SubSumText={decode(curlevel,1,'소 계','합 계')}</C>"+
+				   "<C> Name='입금액' ID=cp_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80 Value={r_amt+delay_amt-discount_amt} color=@ucolor</C>"+
+				  "<C> Name='연체일수' ID=delay_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='연체료' ID=delay_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor</C>"+
+				  "<C> Name='할인일수' ID=discount_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='할인료' ID=discount_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor</C>"+
+				   "<C> Name='실납입액' ID=r_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 color=@ucolor </C>"+
+				  "<C> Name='계좌번호' ID=deposit_no BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Align=Center EditStyle=Lookup   Data='ds_select8:select_1:select_2' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=120 color=@ucolor</C>"
+is_form[24] =""+
+			      "<C> Name='계약번호' ID=cont_num  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=110 suppress=1</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=2</C>"+
+				  "<C> Name='고객코드' ID=cust_code Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 suppress=3</C>"+ 
+				  "<C> Name='계약일자' ID=cont_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 suppress=4</C>"+ 
+				   "<C> Name='차수'  id=degree_code Align=Center  EditStyle=Lookup   Data='ds_select4:select_1:select_2' width=80  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>"+
+               "<C> Name='약정일자' ID=agree_date Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 </C>"+
+	            "<C> Name='약정금액' ID=rent_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 SumText=@sum SumColor=Black SumBgColor=Pink</C>"+
+	            "<C> Name='완납' ID=f_pay_yn  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center Align=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 	  		EditStyle=Combo Data='Y:완납,N:미납' edit=none</C>"+
+              "<C> Name='납부금액' ID=pay_tot_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 edit=none SumText=@sum SumColor=Black SumBgColor=Pink</C>"
+is_form[25] =""+
+			      "<C> Name='계약번호' ID=cont_num  Align=Center    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=110 suppress=1</C>"+
+				  "<C> Name='고객명' ID=cust_name Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 suppress=2</C>"+
+				  "<C> Name='고객코드' ID=cust_code Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 suppress=3</C>"+ 
+				  "<C> Name='계약일자' ID=cont_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 suppress=4</C>"+ 
+				   "<C> Name='차수'  id=degree_code Align=Center   width=80  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK suppress=5</C>"+
+               "<C> Name='약정일자' ID=agree_date Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=80 suppress=6</C>"+
+	            "<C> Name='약정금액' ID=rent_amt  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 SumText=@sum SumColor=Black SumBgColor=Pink suppress=7</C>"+
+	            "<C> Name='완납' ID=f_pay_yn  Align=Center HeadAlign=Center  HeadAlign=Center Align=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 	  		EditStyle=Combo Data='Y:완납,N:미납' edit=none suppress=8</C>"+
+              "<C> Name='납부금액' ID=pay_tot_amt  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 edit=none SumText=@sum SumColor=Black SumBgColor=Pink suppress=9</C>"	+
+				  "<C> Name='회수'     ID=degree_seq BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=30  </C>"+
+				   "<C> Name='납입일자' ID=receipt_date Edit=None Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=65 color=@ucolor  SubSumText={decode(curlevel,1,'소 계','합 계')}</C>"+
+				   "<C> Name='입금액' ID=cp_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80 Value={r_amt+delay_amt-discount_amt} color=@ucolor</C>"+
+				  "<C> Name='연체일수' ID=delay_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='연체료' ID=delay_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor</C>"+
+				  "<C> Name='할인일수' ID=discount_days BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=55 color=@ucolor</C>"+
+				  "<C> Name='할인료' ID=discount_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=70 color=@ucolor</C>"+
+				   "<C> Name='실납입액' ID=r_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 color=@ucolor </C>"+
+				  "<C> Name='계좌번호' ID=deposit_no BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} Align=Center EditStyle=Lookup   Data='ds_select8:select_1:select_2' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  width=120 color=@ucolor</C>"
+				  
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">				  
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{ var room
+   room = tb_main.ActiveIndex *10  + tb_1.ActiveIndex
+	
+	gd_1.Format = is_form[room];
+	
+	if ((room == 13)||(room == 23)||(room == 25)) {
+	   select_from();
+		select_to();
+      ds_1.DataId = is_ds_1_addr[room] + is_dept_code + "&arg_sell_code=" + is_sell_code	+"&arg_from="+is_from_date+"&arg_to="+is_to_date
+	}
+	else{
+		ds_1.DataId = is_ds_1_addr[room] + is_dept_code + "&arg_sell_code=" + is_sell_code
+	}
+	//alert(ds_1.dataid)
+	ds_1.SyncLoad = false
+	 document.all.LowerFrame.style.visibility="visible";
+	ds_1.reset()
+	
+   
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기(분양) 
+//---------------------------------------------------------------------------
+{
+	result = f_hdept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+	is_sell_code = top.frames['security'].gs_sell_code.value
+	is_sell_name = top.frames['security'].gs_sell_name.value
+
+	dept_name.value = is_dept_name
+	sell_name.value = is_sell_name
+
+	btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function dept_keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+//-------------------------------------------------------------------------------
+function select_from()                  //시작일 선택 
+//-------------------------------------------------------------------------------
+{
+   is_from_date = em_from_date.text.substr(0,4) + "." + em_from_date.text.substr(4,2)  + "." +  em_from_date.text.substr(6,2)
+}
+//-------------------------------------------------------------------------------
+function select_to()                  //종료일 선택 
+//--------------------------------------------------------------------------------
+{
+   is_to_date = em_to_date.text.substr(0,4) + "." + em_to_date.text.substr(4,2)  + "." +  em_to_date.text.substr(6,2)
+}
+//---------------------------------------------------------------------
+function tab_changed()
+//---------------------------------------------------------------------
+{ 
+   if (tb_main.ActiveIndex == 1){
+	   if (tb_1.ActiveIndex == 3){
+			div_period .style.visibility= "visible"
+		}
+		else{
+			div_period .style.visibility= "hidden"
+		}
+	}
+	else{
+		if ((tb_1.ActiveIndex == 3)||(tb_1.ActiveIndex == 5)){
+			div_period .style.visibility= "visible"
+		}
+		else{
+			div_period .style.visibility= "hidden"
+		}
+	}
+
+	 document.all.LowerFrame.style.visibility="visible";
+	setTimeout('btnquery_onclick()',1)
+
+}
+
+//---------------------------------------------------------------------
+function tab_changed_main(Index)
+//---------------------------------------------------------------------
+{  
+   if (Index == 1) {
+		tb_1.Format = '' +'<T> title=계약자</T>' +
+										  '<T> title=약정</T>' +
+										  '<T> title=입금</T>';
+		tb_1.ActiveIndex = 1;
+	}
+	else{
+		if (Index == 2) {
+			tb_1.Format = '' +'<T> title=계약자</T>' +
+											  '<T> title=약정(보증금)</T>' +
+											  '<T> title=입금(보증금)</T>' +
+											  '<T> title=약정(임대료)</T>' +
+											  '<T> title=입금(임대료)</T>';
+			tb_1.ActiveIndex = 1;
+		}
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function excel_down()                      // 
+//---------------------------------------------------------------------------
+{ var room, filename
+   room = tb_main.ActiveIndex *10  + tb_1.ActiveIndex
+	switch(room){
+		case 11:
+			filename = '분양계약자';
+			break;
+		case 12:
+			filename = '분양약정';
+			break;
+		case 13:
+			filename = '분양수입금';
+			break;
+		case 21:
+			filename = '임대계약자';
+			break;
+		case 22:
+			filename = '보증금약정';
+			break;
+		case 23:
+			filename = '보증금입금';
+			break;
+		case 24:
+			filename = '임대료약정';
+			break;
+		case 25:
+			filename = '임대료입금';
+			break;
+  }
+   
+  var sheet_name = filename+'('+is_dept_name+')';
+  var file_name = sheet_name+".xls";
+  gd_1.GridToExcel(sheet_name, file_name, 1)
+}
+//---------------------------------------------------------------------------
+function check_filename(filename)                      // 
+//---------------------------------------------------------------------------
+{
+	//filename.replace('\' , ''); 
+	alert(filename)
+	filename.replace("/", "a");
+	alert(filename)
+	filename.replace(':', '');
+	filename.replace('*', '');
+	filename.replace('?', '');
+	filename.replace('"', '');
+	filename.replace('<', '');
+	filename.replace('>', '');
+	filename.replace('|', '');
+	return filename;
+}
+//---------------------------------------------------------------------------
+function save_file()                      // 
+//---------------------------------------------------------------------------
+{	
+	var room
+	var filename
+	
+	room = tb_main.ActiveIndex *10  + tb_1.ActiveIndex
+
+	//filename = '['+is_dept_name+']'
+
+	//filename = check_filename(filename)
+
+	switch(room){
+		case 11:
+		   gd_1.ExportFileEx('분양계약자'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 12:
+			gd_1.ExportFileEx('분양약정'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 13:
+			gd_1.ExportFileEx('분양수입금'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 21:
+			gd_1.ExportFileEx('임대계약자'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 22:
+			gd_1.ExportFileEx('보증금약정'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 23:
+			gd_1.ExportFileEx('보증금입금'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 24:
+			gd_1.ExportFileEx('임대료약정'+'_'+is_dept_name,false, 0, false); 
+			break;
+		case 25:
+			gd_1.ExportFileEx('임대료입금'+'_'+is_dept_name,false, 0, false); 
+			break;
+  }
+
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  tb_1.ActiveIndex = 1
+  is_dept_code = top.frames['security'].gs_dept_code.value
+  is_dept_name = top.frames['security'].gs_dept_name.value
+  is_sell_code = top.frames['security'].gs_sell_code.value
+  is_sell_name = top.frames['security'].gs_sell_name.value
+  dept_name.value = is_dept_name
+  sell_name.value = is_sell_name
+
+  ll_cnt = f_select_q("select to_char(sysdate, 'yyyy.mm')||'.01' select_1, to_char(last_day(sysdate), 'yyyy.mm.dd') select_2  from dual ")
+  em_from_date.text = ds_select.NameValue(ds_select.RowPosition,'select_1')
+	em_to_date.text   = ds_select.NameValue(ds_select.RowPosition,'select_2')
+	is_from_date      = ds_select.NameValue(ds_select.RowPosition,'select_1')
+	is_to_date        = ds_select.NameValue(ds_select.RowPosition,'select_2')
+  //tab_changed_main(1)
+
+  
+  
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript event=OnSelChanged(Index) for=tb_1>
+  tab_changed()
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(Index) for=tb_main>
+  
+  tab_changed_main(Index)
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+  
+</SCRIPT>
+<script language="javascript"  for=ds_1 event=OnLoadStarted()>
+		document.all.LowerFrame.style.visibility="visible";
+		//gd_1.EmptyAreaColor  = 'pink'
+		gd_1.redraw = false
+		
+	</script>
+	<script language="javascript"  for=ds_1 event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+		//gd_1.EmptyAreaColor  = 'white'
+		gd_1.redraw = false
+	</script>
+
+	<script language=JavaScript for=ds_1 event=OnLoadProsess(rowcnt)>
+		alert("onLoadProcess");
+		alert(ii_border)
+		if (ii_boder == 2 ){
+			gd_1.BorderStyle = '3'
+			ii_border = 3
+		}
+		else{
+			gd_1.BorderStyle = '2'
+			ii_border = 2
+		}
+	</script>
+
+   
+	
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1
+    style=" LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+	 <param name="Cacheload"                            value=false>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_select
+        style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+        classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>        
+<comment id="__NSID__"><OBJECT id=ds_update 
+        style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+        classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<iframe id="LowerFrame" name="work" style="visibility:hidden; position:absolute; left:350px; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe> 
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+	<!--  <table class=main_table > -->
+	<table width="100%" height="100%" BORDER="0"  cellpadding="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<TR height="20px">
+			<TD class=td_green >
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td width="45px" class=font_green_bold>현장명</td>
+							<td width="166">
+								<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"   style="ime-mode:active"   style=" FONT-SIZE: 12px" style="ime-mode:active " size=25 onkeyDown="keyDown()"   >
+							</td>
+							<td width="50">
+								<input id="find_btn" type="button" value=" 검색" class="img_btnFind"   onclick=dept_code_find()
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  >
+							</td>
+							<td width="15px"><img src="../../../image/bullet3.gif"></td>
+							<td WIDTH='58px'    class=font_green_bold >분양구분</td>
+							 <td WIDTH='70px'>
+									<INPUT id=sell_name SIZE=15  style=" FONT-SIZE: 12px" READONLY DISABLED></td>
+							<td style="WIDTH: 330px; " >
+								<DIV id=div_period >
+										<table width="100%" height="100%"  BORDER="0"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+											<tr > 
+												<td width="15px"><img src="../../../image/bullet3.gif"></td>
+												 <td WIDTH='95px'   class=font_green_bold> 기간별입금조회</td>
+												 <td >
+													  <comment id="__NSID__"><OBJECT id=em_from_date 
+															  style="WIDTH: 80px";
+															  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															  <param name=Format value="####-##-##"> 
+															  <param name=Alignment      value=1>
+															  <param name=SelectAll       value=true>
+															  <param name=Numeric        value=false>
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<input id=img_fr type=button class="img_btnCalendar_S"
+														onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+														OnClick="var result = gn_Cal_Yyyymmdd(); if(!is_null(result)){ em_from_date.text = result.substr(0,8);} ; select_from()">
+												</td>
+												<td>
+													<comment id="__NSID__"><object id=em_middle classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+															  width=7px>
+															  <param name=Text    value="~">
+															  <param name=Numeric value=false>
+															  <param name=Border  value=false>
+													</object></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<comment id="__NSID__"><OBJECT id=em_to_date
+															  style="WIDTH: 80px"
+															  classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+															  <param name=Format value="####-##-##"> 
+															  <param name=Alignment      value=1>
+															  <param name=SelectAll       value=true>
+															  <param name=Numeric        value=false>
+													</OBJECT></comment> <script> __ws__(__NSID__);</script>
+												</td>
+												<td>
+													<input id=img_fr type=button class="img_btnCalendar_S"
+														onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+														OnClick="var result = gn_Cal_Yyyymmdd(); if(!is_null(result)){ em_to_date.text = result.substr(0,8);} ; select_to()">
+												</td>
+											 </tr>                 
+										</table>
+								</DIV>
+							</td>
+							<td width="*">&nbsp;</td>
+							<td width=200px>
+								<input id=bt_excel_down type="button" value="엑셀변환"  class="img_btn4_1"
+									onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=excel_down()>
+								<input id=bt_save_file type="button" value="파일저장"  class="img_btn4_1"
+									onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=save_file()>
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+		<TR>
+			<TD  height="20px" width="500">
+						<comment id="__NSID__"><OBJECT id=tb_main 
+							 style=" WIDTH: 100px; HEIGHT: 20px" 
+							 classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+						  <param name="BackColor"  value="#BBE0F4">
+						  <param name="TextColor"  value="BLACK">
+						  <PARAM NAME="Format" VALUE="
+							 <T> title=분양</T>
+							 <T> title=임대 </T>
+							 ">
+						 </OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</TD>
+		</TR>
+		<TR>
+			<TD height="20px">
+						<comment id="__NSID__"><OBJECT id=tb_1 
+							 style="WIDTH: 500px;HEIGHT: 20px" 
+							 classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+						  <param name="BackColor"  value="#BBE0F4">
+						  <param name="TextColor"  value="BLACK">
+						  <PARAM NAME="Format" VALUE="
+							  <T> title=계약자</T>
+							  <T> title=약정</T>
+							  <T> title=입금</T>
+							">
+						 </OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</td>
+		</TR>
+		<TR>
+			<TD  >
+					<comment id="__NSID__"><OBJECT id=gd_1 
+						style=" WIDTH: 100%; HEIGHT: 100%;" 
+						 classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+						<PARAM NAME="BorderStyle"  VALUE=1>
+						<PARAM NAME="DataID" VALUE="ds_1">
+						<param name="ColSizing"             value=true>
+						<param name=ViewSummary  value="1">
+					</OBJECT></comment> <script> __ws__(__NSID__);</script>
+			</TD>
+		</TR>
+	</TABLE>
+</div>
+</BODY></HTML>

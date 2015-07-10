@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : z_password_1h.html								 	-->
+<!-- 2. 유형(시나리오): 패스워드입력											-->
+<!-- 3. 기 능 정 의   : 패스워드입력     										-->
+<!-- 4. 변 경 이 력   :  김동우 작성											-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<title>사업자번호 입력</title>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_chk = '0'
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   var result;
+   result = window.dialogArguments;
+}
+//---------------------------------------------------------------------------
+function check_busino(vencod) 
+//---------------------------------------------------------------------------
+{
+     var sum = 0;
+     var getlist =new Array(10);
+     var chkvalue =new Array("1","3","7","1","3","7","1","3","5");
+
+     for(var i=0; i<10; i++) { getlist[i] = vencod.substring(i, i+1); }
+
+     for(var i=0; i<9; i++) { sum += getlist[i]*chkvalue[i]; }
+
+     sum = sum + parseInt((getlist[8]*5)/10);
+     sidliy = sum % 10;
+     sidchk = 0;
+     if(sidliy != 0) { sidchk = 10 - sidliy; }
+     else { sidchk = 0; }
+     if(sidchk != getlist[9]) { return false; }
+     return true;
+}
+
+//---------------------------------------------------------------------------
+function confirm_rtn()                      // 확인
+//---------------------------------------------------------------------------
+{
+	if( check_busino(tx_businessman_number.value)){
+	}
+	else {
+		alert('사업자번호가 잘못 입력되었습니다...')
+		return
+	}
+	is_chk = '1'
+	window.returnValue = tx_businessman_number.value + '@'
+	window.close();     
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+	if (is_chk == '1'){
+		window.returnValue = tx_businessman_number.value + '@'
+	}
+	else {
+		window.returnValue = ""
+	}
+	window.close()
+}
+</SCRIPT>
+
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+<DIV id=div_type 
+         style="LEFT: 0px; WIDTH: 400px; POSITION: absolute; TOP: 0px; HEIGHT:100px; BACKGROUND-COLOR: #FFFFFF">
+	<table width="100%"  height="100%" BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td width="100%"   BGCOLOR="#E7E8D8" style="COLOR: BLACK" colspan=20 > 
+				<div align="center">사업자번호를 입력하십시오('-'는 입력하지 마십시오)...</div></td>
+     </tr>
+		<tr BGCOLOR="white"> 
+			<td width="100%"   BGCOLOR="#E7E8D8" style="COLOR: BLACK" colspan=20 > 
+				<div align="center"></div></td>
+     </tr>
+			<td width="20%"   BGCOLOR="#E7E8D8" style="COLOR: BLACK" colspan=4 > 
+				<div align="right">사업자번호 : </div></td>
+			<td width="80%"   BGCOLOR="#E7E8D8" style="COLOR: BLACK" colspan=16 > 
+				 <INPUT style="FONT-SIZE:12px;" id=tx_businessman_number    size=30 ></td>			
+     </tr>
+			<td width="40%"  BGCOLOR="#E7E8D8"   colspan=8 > 
+				<div align="right"></div></td>
+			<td width="10%" BGCOLOR="#E7E8D8"    colspan=2 > 
+				<INPUT style="FONT-SIZE:12px;" id=bt_ok      type=button   value=확인  onclick=confirm_rtn()></td>
+			<td width="10%" BGCOLOR="#E7E8D8"    colspan=2 > 
+				<INPUT style="FONT-SIZE:12px;" id=bt_cancel  type=button   value=취소  onclick=window_onunload()></td>
+			<td width="40%"  BGCOLOR="#E7E8D8"  colspan=8 > 
+				<div align="right"></div></td>
+  </table>
+</div>     
+</BODY></HTML>                   

@@ -1,0 +1,160 @@
+<!-- saved from url=(0022)http://internet.e-mail -->
+<html>
+<head>
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+<meta http-equiv="content-type" content="text/html; charset=euc-kr">
+<title>사진업로드</title>
+
+<script language=javascript>
+	function MM_swapImgRestore() { //v3.0
+	  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+	}
+
+	function MM_preloadImages() { //v3.0
+	  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+		var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+		if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+	}
+
+	function MM_findObj(n, d) { //v4.0
+	  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+		d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+	  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+	  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+	  if(!x && document.getElementById) x=document.getElementById(n); return x;
+	}
+
+	function MM_swapImage() { //v3.0
+	  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+	   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	}
+
+	var req_st;
+	var req_url;
+	var up_gbn = "BEFORE";
+	
+	function on_Start(){
+		args = window.dialogArguments;
+		List = new Array();
+		List = args.split(";");
+
+		req_st=List[0];
+		req_url=List[1];
+	
+		tbds_1.DataID="./ImgSelect.jsp?empno="+req_st;
+		tbds_1.Reset();
+	}
+	
+	function search() {
+		if(tbds_1.CountRow == 0){
+			tbds_1.AddRow();
+		}
+		tbif_1.Open();
+		tbds_1.NameString(tbds_1.RowPosition, "PHOTO_URL")  = tbif_1.value;
+		tbds_1.NameString(tbds_1.RowPosition, "PHOTO_NAME") = tbif_1.value;
+		return;
+	}
+
+	function upload() {
+		tbtr_1.Parameters="empno="+req_st;
+		tbtr_1.Post();
+	}
+	
+	function onclose(){
+		if(up_gbn == "AFTER") {
+			window.returnValue = "./img/" + req_st + ".jpg" + ";:;" ;
+		} else {
+			window.returnValue = req_url + ";:;" ;
+		}
+		
+		window.close();
+	}
+</script>
+
+<!-- Event Script -->
+<script language="javascript"  for=tbtr_1 event=OnSuccess()>
+	alert(gs_CallMsg("M005", ""));
+	
+	up_gbn = "AFTER";
+	
+	onclose();
+</script>
+
+<script language="javascript"  for=tbtr_1 event=OnFail()>
+	alert(tbtr_1.ErrorMsg);
+</script>
+
+<script language=JavaScript for=tbds_1 event=OnLoadCompleted(row)>
+
+</script>
+
+<script language=JavaScript for=tbds_1 event=OnLoadError(row)>
+	for(i=0;i<tbds_1.SrvErrCount('Native');i++) {
+		    alert(tbds_1.SrvErrMsg('Native',i));
+		}
+</script>
+
+
+<!--DataSet Component-->
+</head>
+<body bgcolor="white" text="black" link="blue" vlink="purple" alink="red" onload="on_Start(); MM_preloadImages('../images/find_bu1_color.gif','../images/print_bu_color.gif','../images/clos_bu_color.gif');" leftmargin="5" topmargin="5" rightmargin="5" bottommargin="5" marginwidth="0" marginheight="0">
+<table width="361" border="1" cellspacing="0" cellpadding="0" height="150">
+  <tr>
+    <td bgcolor="D1D1D1" height="165"> 
+      <div align="center">
+        <table width="343" border="0" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF" height="150">
+          <tr> 
+            <td height="141"> <object id="tbds_1" classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+                <param name="SyncLoad"  value=true>
+              </object> 
+              <!--TR Component-->
+              <object id="tbtr_1" classid="clsid:78E24950-4295-43d8-9B1A-1F41CD7130E5">
+                <param name="ServerIP"  value="">
+                <param name="Action"	value="/sample40/insa/ImgTr.jsp">
+                <param name="KeyName"	value="Toinb_dataid4">
+                <param name="KeyValue"	value="JSP(I:input1=tbds_1)">
+              </object> 
+              <!--InputFile Component-->
+              <object id="tbif_1" classid="clsid:C722848E-C7EE-4dc6-947E-C2CD49BBA9DE" style="position:absolute; left:460px; top:32px; width:0px; height:0px;">
+                <param name="Text"	value="inputfile">
+              </object> 
+              <table width="331" border="0" cellspacing="0" cellpadding="0" align="center">
+                <tr> 
+                  <td colspan="2"><span style="font-size:10pt;"><b><img src="../images/body_bullet05.gif" width="11" height="11">찾기를 
+                    클릭하여 사진을 업로드하세요.</b></span></td>
+                </tr>
+                <tr> 
+                  <td height="51" width="229"> 
+                    <input type="text" id="imgPath" style="width=250" name="text">
+                  </td>
+                  <td height="51" width="102"> 
+                    <div align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image1','','../images/find_bu1_color.gif',1)"><img name="Image1" border="0" src="../images/find_bu.gif" width="61" height="20" onclick="search();"></a></div>
+                  </td>
+                </tr>
+                <tr> 
+                  <td width="229"> 
+                    <div align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image2','','../images/piup_bu_color.gif',1)"><img name="Image2" border="0" src="../images/piup_bu.gif" width="94" height="20" onclick="upload();"></a></div>
+                  </td>
+                  <td width="102"> 
+                    <div align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image3','','../images/clos_bu_color.gif',1)"><img name="Image3" border="0" src="../images/clos_bu.gif" width="61" height="20" onclick="onclose();"></a></div>
+                  </td>
+                </tr>
+              </table>
+              <!--Bind Component-->
+              <object id="tbbn_1" classid="clsid:4A35BB2C-B831-4199-A486-FEA332D085D9">
+                <param name="DataID"	value="tbds_1">
+                <param name="BindInfo"	value='
+        			<C>Col=PHOTO_URL,  Ctrl=imgPath,  Param=Value</C>
+        		'>
+              </object> 
+              
+            </td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

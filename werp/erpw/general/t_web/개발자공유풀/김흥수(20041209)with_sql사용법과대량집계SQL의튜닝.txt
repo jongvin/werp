@@ -1,0 +1,710 @@
+일반적으로 SQL을 사용할 때 복잡하고 여러 조건이 필요한 경우
+union을 사용하게 된다.
+union의 강점은 union의 집합적 연산이 알고리즘 상의 일종의 분할정복법의 역할을 해준다는 데 있다.
+분할 정복법이란 크고 어려운 문제를 작고 쉬운 여러 문제로 분할 한 다음 이 문제들을
+개별적으로 해결하고 그 해결 결과를 다시 합친다는 방식의 문제 해결법이다.
+union은 바로 이러한 성격을 가지고 있다.
+그런데 SQL에서 union을 사용할 경우 상당히 껄끄러운 경우가 있었다.
+그 것은 특정 중간 결과를 공유하면서 이 결과를 다른 조건에 따라 가공을 하고
+이를 다시 union은로 합쳐야 하는 경우 중간 결과가 여러번 평가되어 쿼리의 성능을 악화시킨다.
+이럴때 오라클 9i부터 제공되는 with 구문이 상당히 유리하다.
+with구문은
+
+with alias1 As
+(
+	select .....
+) ,
+alias2 As
+(
+	select .....
+)
+Select
+	....
+From	x,alias1
+where	......
+union
+Select
+	....
+From	x1,alias1
+union
+Select
+	....
+From	x,alias2
+where	......
+union
+Select
+	....
+From	x1,alias2
+
+
+이런 식이다 .
+잘만 쓰면 아주 막강한 SQL이 된다.
+실제로 사용해보면
+약 30분 이상 돌던 SQL이 단 몇초만에 끝났다.
+<<<<<<<<<<<실례>>>>>>>>>>>>>>>
+
+select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') from dual;
+With x As
+(
+	Select
+		c.ACC_CODE ,
+		Sum(c.DR_SUM) DR_SUM,
+		Sum(c.CR_SUM) CR_SUM
+	From	TIA_ACC_TRANS_DAILY_SUM c
+	Where	c.CONF_YMD Between '20040501' And '20040530'
+	Group By
+		c.ACC_CODE
+) ,
+y As
+(
+	Select
+		c.ACC_CODE ,
+		Sum(c.DR_SUM) DR_SUM,
+		Sum(c.CR_SUM) CR_SUM
+	From	TIA_ACC_TRANS_DAILY_SUM c
+	Where	c.CONF_YMD Like '200400%'
+	Group By
+		c.ACC_CODE
+) ,
+z As
+(
+	Select
+		c.ACC_CODE ,
+		Sum(c.DR_SUM) DR_SUM,
+		Sum(c.CR_SUM) CR_SUM
+	From	TIA_ACC_TRANS_DAILY_SUM c
+	Where	c.CONF_YMD Like '200300%'
+	Group By
+		c.ACC_CODE
+)
+Select * From (
+Select
+	x1.SHEET_CODE ,
+	'%' COMPANY_CODE,
+	'%' PROJ_CODE,
+	x1.ITEM_CODE,
+	Sum(
+		Decode(x1.POSITION,'L',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_SUM,0),
+				'C',Nvl(x1.CR_SUM,0),
+				'R',
+				Decode(x2.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_SUM,0) - Nvl(x1.CR_SUM,0),
+					'C',Nvl(x1.CR_SUM,0) - Nvl(x1.DR_SUM,0),
+					0)
+			)
+			,0)
+	) Curr_Left,
+	Sum(
+		Decode(x1.POSITION,'R',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_SUM,0),
+				'C',Nvl(x1.CR_SUM,0),
+				'R',
+				Decode(x2.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_SUM,0) - Nvl(x1.CR_SUM,0),
+					'C',Nvl(x1.CR_SUM,0) - Nvl(x1.DR_SUM,0),
+					0)
+			)
+			,0)
+	) CURR_RIGHT,
+	Sum(
+		Decode(x1.POSITION,'L',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_PAST,0),
+				'C',Nvl(x1.CR_PAST,0),
+				'R',
+				Decode(x2.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_PAST,0) - Nvl(x1.CR_PAST,0),
+					'C',Nvl(x1.CR_PAST,0) - Nvl(x1.DR_PAST,0),
+					0)
+			)
+			,0)
+	) PAST_LEFT,
+	Sum(
+		Decode(x1.POSITION,'R',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_PAST,0),
+				'C',Nvl(x1.CR_PAST,0),
+				'R',
+				Decode(x2.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_PAST,0) - Nvl(x1.CR_PAST,0),
+					'C',Nvl(x1.CR_PAST,0) - Nvl(x1.DR_PAST,0),
+					0)
+			)
+			,0)
+	) PAST_RIGHT
+From
+	(
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			c.DR_SUM DR_SUM,
+			c.CR_SUM CR_SUM,
+			c2.DR_SUM CR_PAST,
+			c2.CR_SUM DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				x c,
+				y c2
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'C'
+		And		b.ACC_CODE = c.ACC_CODE (+)
+		And		b.ACC_CODE = c2.ACC_CODE (+)
+		Union All
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			c.DR_SUM DR_SUM,
+			c.CR_SUM CR_SUM,
+			c2.DR_SUM CR_PAST,
+			c2.CR_SUM DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				y c,
+				z c2
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'P'
+		And		b.ACC_CODE = c.ACC_CODE (+)
+		And		b.ACC_CODE = c2.ACC_CODE (+)
+	) x1,
+	TIA_ACC_CODE x2
+Where	x1.ACC_CODE = x2.ACC_CODE
+Group By
+	x1.SHEET_CODE ,
+	x1.ITEM_CODE
+)
+Where	Not( curr_left = 0 And curr_right = 0 And past_left=0 And past_right=0)
+/
+select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') from dual;
+
+2004.12.07 16:07:14
+
+
+0030 % % 1000000000      10000          0          0          0
+0030 % % 1100000000 -5.705E+09          0          0          0
+0030 % % 1110000000      10000          0          0          0
+0030 % % 1110101000     -10000          0          0          0
+0030 % % 1110102000     -15000          0          0          0
+0030 % % 1110200000      10000          0          0          0
+0030 % % 1110201000       5000          0          0          0
+0030 % % 1110202000       5000          0          0          0
+0030 % % 1110300000      25000          0          0          0
+0030 % % 1110301000 7062910633          0          0          0
+0030 % % 1110303000 7002430281          0          0          0
+0030 % % 1110305000 -2.640E+09          0          0          0
+0030 % % 1110309000 -1.688E+09          0          0          0
+
+0030 % % 1110311000 3225693611          0          0          0
+0030 % % 1110399000 3559959496          0          0          0
+0030 % % 1110603000 -4.739E+09          0          0          0
+0030 % % 1111001000  345816502          0          0          0
+0030 % % 1111002000   19793350          0          0          0
+0030 % % 1111003000 -3.681E+09          0          0          0
+0030 % % 1111004000 4255877500          0          0          0
+0030 % % 1111099000 4637101972          0          0          0
+0030 % % 1111301000 2186084752          0          0          0
+0030 % % 1111302000 3771651906          0          0          0
+0030 % % 1111303000 2168169175          0          0          0
+0030 % % 1111399000 -4.339E+09          0          0          0
+0030 % % 1111501000 -2.190E+09          0          0          0
+
+0030 % % 1111599000 -5.798E+09          0          0          0
+0030 % % 1111807000 -1.952E+09          0          0          0
+0030 % % 1111808000 -6.778E+09          0          0          0
+0030 % % 1111899000  213902479          0          0          0
+0030 % % 1112101000 -786562906          0          0          0
+0030 % % 1112102000 3649873415          0          0          0
+0030 % % 1112103000 -2.425E+09          0          0          0
+0030 % % 1112104000 1550577665          0          0          0
+0030 % % 1112199000 -4.009E+09          0          0          0
+0030 % % 1112411000 2463683478          0          0          0
+0030 % % 1112413000    5930435          0          0          0
+0030 % % 1112415000  226003376          0          0          0
+0030 % % 1112417000 -4.512E+09          0          0          0
+
+0030 % % 1112499000  348483150          0          0          0
+0030 % % 1112505000 5012181833          0          0          0
+0030 % % 1112599000 2016847529          0          0          0
+0030 % % 1112601000  555098686          0          0          0
+0030 % % 1120501000 -1.349E+09          0          0          0
+0030 % % 1120503000 9118540856          0          0          0
+0030 % % 1120505000 2164589868          0          0          0
+0030 % % 1210201000 -467941447          0          0          0
+0030 % % 1210202000 -5.673E+09          0          0          0
+0030 % % 1210203000 -5.350E+09          0          0          0
+0030 % % 1210204000 -812337760          0          0          0
+0030 % % 1210205000 -3.718E+09          0          0          0
+0030 % % 1210206000 3509677152          0          0          0
+
+0030 % % 1210207000 -6.252E+09          0          0          0
+0030 % % 1210208000 -3.290E+09          0          0          0
+0030 % % 1210299000 4957075143          0          0          0
+0030 % % 1210301000 3651989749          0          0          0
+0030 % % 1210302000 -1.994E+09          0          0          0
+0030 % % 1210303000 -1.602E+09          0          0          0
+0030 % % 1210304000 3601180763          0          0          0
+0030 % % 1210399000 2594299237          0          0          0
+0030 % % 1210501000 6166615448          0          0          0
+0030 % % 1210502000 -5.462E+09          0          0          0
+0030 % % 1210801000 7113995077          0          0          0
+0030 % % 1210802000 -5.944E+09          0          0          0
+0030 % % 1210803000 4002013026          0          0          0
+
+0030 % % 1210804000 6066773654          0          0          0
+0030 % % 1210805000 1572311514          0          0          0
+0030 % % 1210899000 4899562350          0          0          0
+0030 % % 1210901000   -6863464          0          0          0
+0030 % % 1220100000 1.1279E+10          0          0          0
+0030 % % 1220300000 1249452620          0          0          0
+0030 % % 1220700000 -2.123E+09          0          0          0
+0030 % % 1221100000  606534709          0          0          0
+0030 % % 1221500000 2528474107          0          0          0
+0030 % % 1221900000 -4.236E+09          0          0          0
+0030 % % 1222300000 2303509874          0          0          0
+0030 % % 1222700000 3088632156          0          0          0
+0030 % % 1230100000 -3.452E+09          0          0          0
+
+0030 % % 1230300000 -2.133E+09          0          0          0
+0030 % % 1230900000 3719327831          0          0          0
+0030 % % 1231100000 -1.886E+09          0          0          0
+0030 % % 1231300000 -1.304E+09          0          0          0
+0030 % % 1999999999      10000          0          0          0
+0030 % % 2110211000          0 -8.524E+09          0          0
+0030 % % 2110401000          0  669395060          0          0
+0030 % % 2110501000          0 -109534885          0          0
+0030 % % 2110502000          0 -305190695          0          0
+0030 % % 2110503000          0 -832215601          0          0
+0030 % % 2110504000          0 1491946570          0          0
+0030 % % 2110599000          0 -2.226E+09          0          0
+0030 % % 2110601000          0 -621101833          0          0
+
+0030 % % 2110603000          0 8821603026          0          0
+0030 % % 2110605000          0 -1.234E+09          0          0
+0030 % % 2110699000 -582631263          0          0          0
+0030 % % 2110701000          0 -1.385E+09          0          0
+0030 % % 2110703000          0 5661879374          0          0
+0030 % % 2110705000          0 -4.476E+09          0          0
+0030 % % 2110799000          0 -5.064E+09          0          0
+0030 % % 2110813000          0 7518830730          0          0
+0030 % % 2110899000          0 -1.643E+09          0          0
+0030 % % 2110900000          0 6449861214          0          0
+0030 % % 2111001000          0 3435375945          0          0
+0030 % % 2111003000          0 2499658554          0          0
+0030 % % 2111099000          0 -3.854E+09          0          0
+
+0030 % % 2111301000          0 3278237728          0          0
+0030 % % 2111302000          0 -4.366E+09          0          0
+0030 % % 2111401000          0 3119878377          0          0
+0030 % % 2111405000          0 3539853863          0          0
+0030 % % 2111499000          0 -844682493          0          0
+0030 % % 2111501000          0 4598515513          0          0
+0030 % % 2111503000          0 5334826806          0          0
+0030 % % 2111505000          0 6627936111          0          0
+0030 % % 2111507000          0 -1.912E+09          0          0
+0030 % % 2111509000          0 -245701966          0          0
+0030 % % 2111599000          0 -5.155E+09          0          0
+0030 % % 2111701000          0 -409215287          0          0
+0030 % % 2111801000          0 -349491256          0          0
+
+0030 % % 2210101000          0 -4.076E+09          0          0
+0030 % % 2210102000          0 -1.834E+09          0          0
+0030 % % 2210501000          0 -5.636E+09          0          0
+0030 % % 2210503000          0 7101770949          0          0
+0030 % % 2210505000          0 4230907814          0          0
+0030 % % 2210507000          0 2051574071          0          0
+0030 % % 2210509000          0 4143909818          0          0
+0030 % % 2210511000          0 -2.470E+09          0          0
+0030 % % 2210599000          0 5752165746          0          0
+0030 % % 2210701000          0 -2.306E+09          0          0
+
+127 개의 행이 선택되었습니다.
+
+
+2004.12.07 16:07:17
+
+SQL> spool off
+
+
+******3초만에 끝났다......*************
+
+그런데 원래는
+
+select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') from dual;
+Select
+	x1.SHEET_CODE ,
+	'%' COMPANY_CODE,
+	'%' PROJ_CODE,
+	x1.ITEM_CODE,
+	Sum(
+		Decode(x1.POSITION,'L',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_SUM,0),
+				'C',Nvl(x1.CR_SUM,0),
+				'R',
+				Decode(x1.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_SUM,0) - Nvl(x1.CR_SUM,0),
+					'C',Nvl(x1.CR_SUM,0) - Nvl(x1.DR_SUM,0),
+					0)
+			)
+			,0)
+	) Curr_Left,
+	Sum(
+		Decode(x1.POSITION,'R',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_SUM,0),
+				'C',Nvl(x1.CR_SUM,0),
+				'R',
+				Decode(x1.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_SUM,0) - Nvl(x1.CR_SUM,0),
+					'C',Nvl(x1.CR_SUM,0) - Nvl(x1.DR_SUM,0),
+					0)
+			)
+			,0)
+	) CURR_RIGHT,
+	Sum(
+		Decode(x1.POSITION,'L',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_PAST,0),
+				'C',Nvl(x1.CR_PAST,0),
+				'R',
+				Decode(x1.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_PAST,0) - Nvl(x1.CR_PAST,0),
+					'C',Nvl(x1.CR_PAST,0) - Nvl(x1.DR_PAST,0),
+					0)
+			)
+			,0)
+	) PAST_LEFT,
+	Sum(
+		Decode(x1.POSITION,'R',
+			Decode(x1.CALC_CLS,'M',-1,1) * Decode(x1.REMAIN_CLS,
+				'D',Nvl(x1.DR_PAST,0),
+				'C',Nvl(x1.CR_PAST,0),
+				'R',
+				Decode(x1.ACC_REMAIN_POSITION,
+					'D',Nvl(x1.DR_PAST,0) - Nvl(x1.CR_PAST,0),
+					'C',Nvl(x1.CR_PAST,0) - Nvl(x1.DR_PAST,0),
+					0)
+			)
+			,0)
+	) PAST_RIGHT
+From
+	(
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION,
+			Sum(c.DR_SUM) DR_SUM,
+			Sum(c.CR_SUM) CR_SUM,
+			0 CR_PAST,
+			0 DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				TIA_ACC_TRANS_DAILY_SUM c,
+				TIA_ACC_CODE tc
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		b.ACC_CODE = tc.ACC_CODE
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'C'
+		And		b.ACC_CODE = c.ACC_CODE
+		And		c.CONF_YMD Between '20040501' And '20040530'
+		Group By
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION
+		Union All
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION,
+			0 DR_SUM,
+			0 CR_SUM,
+			Sum(c.DR_SUM) CR_PAST,
+			Sum(c.CR_SUM) DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				TIA_ACC_TRANS_DAILY_SUM c,
+				TIA_ACC_CODE tc
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		b.ACC_CODE = tc.ACC_CODE
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'C'
+		And		b.ACC_CODE = c.ACC_CODE
+		And		c.CONF_YMD Like SubStrb('20040501',1,4)||'00'||'%'
+		Group By
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION
+		Union All
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION,
+			Sum(c.DR_SUM) DR_SUM,
+			Sum(c.CR_SUM) CR_SUM,
+			0 CR_PAST,
+			0 DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				TIA_ACC_TRANS_DAILY_SUM c,
+				TIA_ACC_CODE tc
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		b.ACC_CODE = tc.ACC_CODE
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'P'
+		And		b.ACC_CODE = c.ACC_CODE
+		And		c.CONF_YMD Like SubStrb('20040501',1,4)||'00'||'%'
+		Group By
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION
+		Union All
+		Select
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION,
+			0 DR_SUM,
+			0 CR_SUM,
+			Sum(c.DR_SUM) CR_PAST,
+			Sum(c.CR_SUM) DR_PAST
+		From	TIA_SHEET_EXPR_HEAD a,
+				TIA_SHEET_EXPR_BODY b,
+				TIA_ACC_TRANS_DAILY_SUM c,
+				TIA_ACC_CODE tc
+		Where	a.SHEET_CODE = b.SHEET_CODE
+		And		a.ITEM_CODE = b.ITEM_CODE
+		And		a.SHEET_CODE = '0030'
+		And		b.ACC_CODE = tc.ACC_CODE
+		And		a.EXPR_SEQ1 = '0'
+		And		a.CURR_PAST_CLS = 'P'
+		And		b.ACC_CODE = c.ACC_CODE
+		And		c.CONF_YMD Like '200300'||'%'
+		Group By
+			b.SHEET_CODE ,
+			b.ITEM_CODE,
+			b.SEQ,
+			b.ACC_CODE ,
+			b.POSITION ,
+			b.CALC_CLS,
+			b.REMAIN_CLS,
+			tc.ACC_REMAIN_POSITION
+	) x1
+Group by
+	x1.SHEET_CODE ,
+	x1.ITEM_CODE
+/
+select to_char(sysdate,'yyyy.mm.dd hh24:mi:ss') from dual;
+
+
+SQL> ed k.sql
+
+SQL> @k.sql
+
+2004.12.07 16:11:26
+
+
+0030 % % 1000000000      10000          0          0          0
+0030 % % 1100000000 -5.705E+09          0          0          0
+0030 % % 1110000000      10000          0          0          0
+0030 % % 1110101000     -10000          0          0          0
+0030 % % 1110102000     -15000          0          0          0
+0030 % % 1110200000      10000          0          0          0
+0030 % % 1110201000       5000          0          0          0
+0030 % % 1110202000       5000          0          0          0
+0030 % % 1110300000      25000          0          0          0
+0030 % % 1110301000 7062910633          0          0          0
+0030 % % 1110303000 7002430281          0          0          0
+0030 % % 1110305000 -2.640E+09          0          0          0
+0030 % % 1110309000 -1.688E+09          0          0          0
+
+0030 % % 1110311000 3225693611          0          0          0
+0030 % % 1110399000 3559959496          0          0          0
+0030 % % 1110603000 -4.739E+09          0          0          0
+0030 % % 1111001000  345816502          0          0          0
+0030 % % 1111002000   19793350          0          0          0
+0030 % % 1111003000 -3.681E+09          0          0          0
+0030 % % 1111004000 4255877500          0          0          0
+0030 % % 1111099000 4637101972          0          0          0
+0030 % % 1111301000 2186084752          0          0          0
+0030 % % 1111302000 3771651906          0          0          0
+0030 % % 1111303000 2168169175          0          0          0
+0030 % % 1111399000 -4.339E+09          0          0          0
+0030 % % 1111501000 -2.190E+09          0          0          0
+
+0030 % % 1111599000 -5.798E+09          0          0          0
+0030 % % 1111807000 -1.952E+09          0          0          0
+0030 % % 1111808000 -6.778E+09          0          0          0
+0030 % % 1111899000  213902479          0          0          0
+0030 % % 1112101000 -786562906          0          0          0
+0030 % % 1112102000 3649873415          0          0          0
+0030 % % 1112103000 -2.425E+09          0          0          0
+0030 % % 1112104000 1550577665          0          0          0
+0030 % % 1112199000 -4.009E+09          0          0          0
+0030 % % 1112411000 2463683478          0          0          0
+0030 % % 1112413000    5930435          0          0          0
+0030 % % 1112415000  226003376          0          0          0
+0030 % % 1112417000 -4.512E+09          0          0          0
+
+0030 % % 1112499000  348483150          0          0          0
+0030 % % 1112505000 5012181833          0          0          0
+0030 % % 1112599000 2016847529          0          0          0
+0030 % % 1112601000  555098686          0          0          0
+0030 % % 1120501000 -1.349E+09          0          0          0
+0030 % % 1120503000 9118540856          0          0          0
+0030 % % 1120505000 2164589868          0          0          0
+0030 % % 1210201000 -467941447          0          0          0
+0030 % % 1210202000 -5.673E+09          0          0          0
+0030 % % 1210203000 -5.350E+09          0          0          0
+0030 % % 1210204000 -812337760          0          0          0
+0030 % % 1210205000 -3.718E+09          0          0          0
+0030 % % 1210206000 3509677152          0          0          0
+
+0030 % % 1210207000 -6.252E+09          0          0          0
+0030 % % 1210208000 -3.290E+09          0          0          0
+0030 % % 1210299000 4957075143          0          0          0
+0030 % % 1210301000 3651989749          0          0          0
+0030 % % 1210302000 -1.994E+09          0          0          0
+0030 % % 1210303000 -1.602E+09          0          0          0
+0030 % % 1210304000 3601180763          0          0          0
+0030 % % 1210399000 2594299237          0          0          0
+0030 % % 1210501000 6166615448          0          0          0
+0030 % % 1210502000 -5.462E+09          0          0          0
+0030 % % 1210801000 7113995077          0          0          0
+0030 % % 1210802000 -5.944E+09          0          0          0
+0030 % % 1210803000 4002013026          0          0          0
+
+0030 % % 1210804000 6066773654          0          0          0
+0030 % % 1210805000 1572311514          0          0          0
+0030 % % 1210899000 4899562350          0          0          0
+0030 % % 1210901000   -6863464          0          0          0
+0030 % % 1220100000 1.1279E+10          0          0          0
+0030 % % 1220300000 1249452620          0          0          0
+0030 % % 1220700000 -2.123E+09          0          0          0
+0030 % % 1221100000  606534709          0          0          0
+0030 % % 1221500000 2528474107          0          0          0
+0030 % % 1221900000 -4.236E+09          0          0          0
+0030 % % 1222300000 2303509874          0          0          0
+0030 % % 1222700000 3088632156          0          0          0
+0030 % % 1230100000 -3.452E+09          0          0          0
+
+0030 % % 1230300000 -2.133E+09          0          0          0
+0030 % % 1230900000 3719327831          0          0          0
+0030 % % 1231100000 -1.886E+09          0          0          0
+0030 % % 1231300000 -1.304E+09          0          0          0
+0030 % % 1999999999      10000          0          0          0
+0030 % % 2110211000          0 -8.524E+09          0          0
+0030 % % 2110401000          0  669395060          0          0
+0030 % % 2110501000          0 -109534885          0          0
+0030 % % 2110502000          0 -305190695          0          0
+0030 % % 2110503000          0 -832215601          0          0
+0030 % % 2110504000          0 1491946570          0          0
+0030 % % 2110599000          0 -2.226E+09          0          0
+0030 % % 2110601000          0 -621101833          0          0
+
+0030 % % 2110603000          0 8821603026          0          0
+0030 % % 2110605000          0 -1.234E+09          0          0
+0030 % % 2110699000 -582631263          0          0          0
+0030 % % 2110701000          0 -1.385E+09          0          0
+0030 % % 2110703000          0 5661879374          0          0
+0030 % % 2110705000          0 -4.476E+09          0          0
+0030 % % 2110799000          0 -5.064E+09          0          0
+0030 % % 2110813000          0 7518830730          0          0
+0030 % % 2110899000          0 -1.643E+09          0          0
+0030 % % 2110900000          0 6449861214          0          0
+0030 % % 2111001000          0 3435375945          0          0
+0030 % % 2111003000          0 2499658554          0          0
+0030 % % 2111099000          0 -3.854E+09          0          0
+
+0030 % % 2111301000          0 3278237728          0          0
+0030 % % 2111302000          0 -4.366E+09          0          0
+0030 % % 2111401000          0 3119878377          0          0
+0030 % % 2111405000          0 3539853863          0          0
+0030 % % 2111499000          0 -844682493          0          0
+0030 % % 2111501000          0 4598515513          0          0
+0030 % % 2111503000          0 5334826806          0          0
+0030 % % 2111505000          0 6627936111          0          0
+0030 % % 2111507000          0 -1.912E+09          0          0
+0030 % % 2111509000          0 -245701966          0          0
+0030 % % 2111599000          0 -5.155E+09          0          0
+0030 % % 2111701000          0 -409215287          0          0
+0030 % % 2111801000          0 -349491256          0          0
+
+0030 % % 2210101000          0 -4.076E+09          0          0
+0030 % % 2210102000          0 -1.834E+09          0          0
+0030 % % 2210501000          0 -5.636E+09          0          0
+0030 % % 2210503000          0 7101770949          0          0
+0030 % % 2210505000          0 4230907814          0          0
+0030 % % 2210507000          0 2051574071          0          0
+0030 % % 2210509000          0 4143909818          0          0
+0030 % % 2210511000          0 -2.470E+09          0          0
+0030 % % 2210599000          0 5752165746          0          0
+0030 % % 2210701000          0 -2.306E+09          0          0
+
+127 개의 행이 선택되었습니다.
+
+
+2004.12.07 16:20:48
+
+SQL> spool off
+
+
+******9분 22초가 걸렸다.....*************
+음.... 엄청난 차이가 있군....

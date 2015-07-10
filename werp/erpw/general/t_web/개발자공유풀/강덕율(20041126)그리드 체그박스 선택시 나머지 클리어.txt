@@ -1,0 +1,16 @@
+- 그리드에서 체크박스 타입의 컬럼 변경시 나머지 행들의 값은 클리어 하기 -
+
+// 해당 그리드의 데이터 셑에 OnColumnChanged 이벤트를 선언한다.
+function OnColumnChanged(dataset, row, colid)
+{
+	if (dataset == dsLovArgs && colid == "SEARCH") // 변경된 데이터 셑의 특정 컬럼여부
+	{
+		if (dataset.NameString(row, colid) == "T")
+		{
+			for (var i = 1; i <= dsLovArgs.CountRow; i++)
+			{
+				if (i != row) dataset.NameString(i, colid) = "F"; // 변경행을 제외한 나머지 행의 값을 클리어 한다.
+			}
+		}
+	}
+}

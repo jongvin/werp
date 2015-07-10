@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_labor_nation_code.html 								-->
+<!-- 2. 유형(시나리오): 국가코드 선택												-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   : 이준구 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<TITLE> 국가명 검색 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_confirm_check = 'no'
+var is_dept_code = ""
+var is_work_date = ""
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ 
+ ll_cnt = f_ds_select_q("ds_select",  
+ 				"  SELECT nation_code select_1, " +
+				"   nation_name_en select_2 , " +
+				"	 nation_name_kr select_3" +
+ 				"	 FROM l_nation_code  " +
+ 				"  WHERE nation_name_kr like '"+ tx_nation.value  +"%' " +
+				"  ORDER BY nation_code  ASC  " )
+
+
+ ds_select.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_select.NameValue(ds_select.RowPosition,'select_1') + '@'  +
+              ds_select.NameValue(ds_select.RowPosition,'select_3') + '@'   
+             
+
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_select.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+</HEAD>
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+    
+<!-- ======================================================================= -->
+<!--                     Body                       								  -->
+<!-- ======================================================================= -->	
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=window_onload()  onunload=window_onunload()  oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"  CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr class=td_green height="20">
+      <td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+      <td class=font_green_bold width="47">국가명</td>
+		<td>
+			<INPUT name=tx_nation 
+			    style="Z-INDEX: 100; FONT-SIZE: 12px"
+			    onkeyDown="keyDown()">		
+		</td>
+		<td>
+			<INPUT id=Button_query class="img_btn2_1" 
+			    onclick=btnquery_onclick() type=button value='조회'>		
+		</td>
+		<td>
+			<INPUT id=Button_confrim class="img_btn2_1" 
+			    onclick=Button_confirm_onclick() type=button value='확인'>    		
+		</td>
+		<td>
+			<INPUT id=Button_close class="img_btn2_1" 
+			    onclick=Button_close_onclick() type=button value='닫 기'>  		
+		</td>
+	</tr>
+	<tr>
+		<td colspan=6 width="100%" height="100%">
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="Z-INDEX: 105; WIDTH: 100% ; POSITION: relative;HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+				<PARAM NAME="AutoInsert" VALUE="0">
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				 <param name="MultiRowSelect"   value="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+			   <Param Name="SortView"     value="Left">
+			   <Param Name="Editable"     value=0>	
+				<PARAM NAME="DataID" VALUE="ds_select">
+				<PARAM NAME="Format" VALUE="
+				   <C> Name='국가코드' ID=select_1 sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+				   <C> Name='국가명(영문)' ID=select_2 sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=140 </C>
+				   <C> Name='국가명(한글)' ID=select_3 sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=140 </C>
+			
+				   ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>		
+</BODY></HTML>

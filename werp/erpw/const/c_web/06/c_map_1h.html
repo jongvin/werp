@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_map_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회											-->
+<!-- 3. 기 능 정 의   : 지도 검색     	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_yymmdd
+var is_ds_1_addr = gs_home + '/const/c_web/06/c_map_1q.jsp'         
+var is_ds_1_tot_addr = gs_home + '/const/c_web/06/c_map_tot_1q.jsp'    
+var is_sort      = " "    
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript> 
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  return 
+}
+//------------------------------------------------------------------------
+function bt_profit()                     // 현장별 손익현황  
+//------------------------------------------------------------------------
+{
+   if (ds_1.CountRow < 1) {
+      alert("선택한 현장이 없습니다")
+      return
+   }   
+   is_ea = '1000000'
+   il_screen_yymm = 1
+   makeCookie("@c_spec_const_wbs_amt@",ds_1.NameValue(ds_1.RowPosition,"dept_code")+ "@" + ds_1.NameValue(ds_1.RowPosition,"long_name") + "@" + il_screen_yymm + "@" +  is_ea)
+   window.showModalDialog("c_spec_const_wbs_amt_1h.html","","dialogWidth:1012px;dialogHeight:690px");
+}
+//------------------------------------------------------------------------
+function bt_tot_proj()                     // 조회  
+//------------------------------------------------------------------------
+{
+  ds_1.DataID=is_ds_1_tot_addr
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+}
+//------------------------------------------------------------------------
+function show_map(arg_map1,arg_map2,arg_map3)                     // 조회  
+//------------------------------------------------------------------------
+{
+  ds_1.DataID = is_ds_1_addr + '?arg_homeforeign_tag1=' + arg_map1 + 
+                                 '&arg_homeforeign_tag2=' + arg_map2 + 
+                                 '&arg_homeforeign_tag3=' + arg_map3  
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+ is_yymmdd = readCookie("@c_spec_const_parent_yymmdd@")
+ if ((is_yymmdd == "err") || (is_yymmdd == "") || (is_yymmdd.substr(0,1) == "_")) 
+    is_yymmdd = parent.frames['security'].gs_sysdate.value
+
+  makeCookie("@c_spec_const_parent_yymmdd@",is_yymmdd)
+  bt_tot_proj()
+//  show_map('11','23','31')
+  ccom_process_code.Index = 0;
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+if (row < 1 ) return
+bt_profit()
+</SCRIPT>
+<script language=JavaScript for=ccom_process_code event=onSelChange()>
+  gd_1.ReDraw = false
+  ds_1.Filter()
+  gd_1.ReDraw = true
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=onFilter(row)>
+      switch (ccom_process_code.CodeValue) {
+              case "01":
+                         if (ds_1.NameValue(row,"process_code") == '01' && ds_1.NameValue(row,"name") != "") return true
+                         else return false;
+                         break;
+              case "02":
+                         if (ds_1.NameValue(row,"process_code") == '02' && ds_1.NameValue(row,"name") != "") return true
+                         else return false;
+                         break;
+              case "03":
+                         if (ds_1.NameValue(row,"process_code") == '03' && ds_1.NameValue(row,"name") != "" ) return true
+                         else return false;
+                         break;
+              case "99":
+                         return true
+                         break;
+
+        }
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  if (row == 0) {
+  		if (is_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  is_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  }   
+</script>
+
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="margin: 0px;" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="23px">
+		<TD class=td_green colspan="2">
+			<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="56px" class=font_green_bold>진행구분</td>
+					<td width="100px">
+						<comment id="__NSID__"><OBJECT id=ccom_process_code width=80px 
+					      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+					      <param name=Data value="01^진행,02^준공,03^마감,99^전체">
+					   </OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*">
+						<input id=bt_tot type="button" value="손익현황" onclick=bt_profit() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+						<input id=bt_tot type="button" value="전체현장" onclick=bt_tot_proj() class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="*">					
+		<td width="70%">
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="WIDTH: 100%; HEIGHT: 100%;" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="0">
+				<PARAM NAME="AutoInsert" VALUE="0">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="AllShowEdit" VALUE="0">
+				<PARAM NAME="Editable" VALUE="0">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE="
+			     <C> Name='현 장 명 칭'  id=long_name  width=210  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='직위'  id=proj_pos  width=69  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='성  명'  id=proj_charge  width=74  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='공사시작일'  id=chg_const_start_date  width=80  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center </C>
+			     <C> Name='공사종료일'  id=chg_const_end_date  width=80  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center </C>
+			     <C> Name='지역명'  id=name  width=56  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='상태'  id=process_code EditStyle=Combo Data='01:진행,02:준공,03:마감' width=56  Cursor=Hand BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+		<td width="30%">
+			<DIV   style="Z-INDEX: 105; WIDTH: 100%; HEIGHT: 100%">
+			   <img src="../../../image/icon/map.gif" width="331" height="383" usemap="#kwd" border="0" name="Image1">
+			       <map name="kwd">
+			       <area shape="poly" //경기
+			             coords="108,32,101,37,95,37,89,53,83,55,76,64,94,74,100,71,108,92,104,99,113,114,139,117,149,110,165,96,165,74,155,67,152,48,137,32,123,30" 
+			             href="#" onClick="show_map('11','14','21')">
+			       <area shape="poly" //강원
+			             coords="142,27,154,38,159,52,159,66,171,73,171,85,168,99,183,95,197,98,210,106,227,106,248,109,260,100,237,60,227,48,215,24,140,25,142,28"
+			             href="#" onClick="show_map('22','','')">
+			       <area shape="poly" //울릉도
+			             coords="278,86,285,80,297,89,288,92" 
+			             href="#" onClick="show_map('30','','')">
+			       <area shape="poly" //충남
+			             coords="99,110,95,115,90,113,79,120,76,120,73,133,81,138,92,137,93,146,86,144,91,160,96,152,97,160,96,168,94,174,102,179,107,182,122,173,139,178,150,183,158,178,152,169,153,158,145,157,141,142,143,133,141,126,140,118,118,120,99,110,98,111" 
+			             href="#" onClick="show_map('24','16','')">
+			       <area shape="poly" //충북
+			             coords="215,107,213,112,208,116,208,125,191,125,179,131,178,137,172,139,174,159,174,162,180,167,181,175,177,179,170,184,159,178,153,166,146,156,142,143,146,130,140,124,140,118,152,111,166,98,170,101,186,97,215,106" 
+			             href="#" onClick="show_map('23','','')">
+			        <area shape="poly" //경북
+			             coords="261,103,264,108,263,121,266,134,262,179,269,179,274,183,271,206,263,206,255,200,247,209,242,208,233,212,223,208,214,208,209,202,187,189,174,186,185,171,182,164,177,161,174,141,181,138,186,128,208,126,210,117,215,111,215,106,241,108,260,103" 
+			             href="#" onClick="show_map('27','13','')">
+			        <area shape="poly" //전북
+			             coords="100,183,103,198,93,210,95,215,88,221,97,234,111,219,127,231,140,234,156,232,160,209,173,187,160,179,149,186,136,178,123,175,100,184" 
+			             href="#" onClick="show_map('25','','')">
+			        <area shape="poly" //전남
+			             coords="88,224,80,234,84,244,83,256,76,261,82,271,92,280,70,293,76,302,88,293,94,309,107,292,106,301,123,300,123,291,136,277,131,295,151,282,145,272,153,271,155,280,161,281,168,284,171,276,169,269,169,252,157,231,136,235,112,222,99,234,88,225" 
+			             href="#" onClick="show_map('26','15','')">
+			        <area shape="poly" //경남
+			             coords="271,206,265,217,265,224,241,254,235,250,208,250,213,257,223,254,228,263,214,271,188,264,182,275,171,274,169,253,158,232,162,218,161,210,173,187,212,207,231,213,246,210,256,202,270,207" 
+			             href="#" onClick="show_map('28','12','17')">
+			        <area shape="poly" //제주
+			             coords="71,348,90,337,115,336,121,349,108,363,76,364,68,357" 
+			             href="#" onClick="show_map('29','','')">
+			        </map>
+			</div>
+		</td>
+	</tr>
+</table></td>        
+</BODY>
+</HTML>

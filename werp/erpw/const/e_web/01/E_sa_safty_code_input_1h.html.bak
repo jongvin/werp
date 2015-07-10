@@ -1,0 +1,748 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : E_sa_safty_code_input_1h.html					-->
+<!-- 2. 유형(시나리오): 조회및 입력										-->
+<!-- 3. 기 능 정 의   : 안전관리 코드 등록								-->
+<!-- 4. 변 경 이 력   : 이준구 작성										-->
+<!-- 5. 관련프로그램  :													-->
+<!-- 6. 특 기 사 항   :													-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<!-- ======================================================================= -->
+<!--                      define                           -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+var il_nindex = 1
+
+var is_ds_1_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_1q.jsp?arg_class_tag='                        
+var is_ds_2_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_2q.jsp?arg_class_tag='                        
+var is_ds_3_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_2q.jsp?arg_class_tag='       
+var is_ds_4_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_3q.jsp?arg_class_tag='   
+var is_tr_1_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_1tr.jsp'
+var is_tr_2_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_1tr.jsp'
+var is_tr_3_addr = gs_home + '/const/e_web/01/E_sa_safty_code_input_1tr.jsp'
+
+var il_screen = 1
+var is_returnvalue=""
+var class_tag  = ''
+var is_sec
+</script>
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+
+	if ( il_nindex == 1 )
+    { 
+    	class_tag = '32,33,34,35' 
+    	ds_1.DataID = is_ds_1_addr + class_tag 
+		ds_1.SyncLoad=true
+		ds_1.Reset()
+    }
+	else if ( il_nindex == 2 )
+	{  
+		class_tag = '77,79'  
+		ds_5.DataID = is_ds_1_addr + class_tag 
+		ds_5.SyncLoad=true
+		ds_5.Reset()	
+	}	
+	
+	div_btnquery_onclick() 
+
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	if ( il_nindex == 1 ) 
+	{
+ 		if (ds_1.CountRow < 1 ) return
+	
+		ds_2.AddRow()   
+	
+		div_init_move1()
+    }
+    
+	if ( il_nindex == 2 ) 
+	{
+	 if ( il_screen  == 3 ) { 
+ 		if (ds_1.CountRow < 1 ) return
+			if ( f_code_chk() == false ) return
+  			ds_3.AddRow() 
+		div_init_move2() }
+	 if ( il_screen  == 4 ) { 
+ 		if (ds_3.CountRow < 1 ) return
+			if ( f_code_chk() == false ) return
+	   	ds_4.AddRow() 
+		div_init_move3() }
+	}   
+
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if ( il_nindex == 1 ) 
+	{
+		if (ds_1.CountRow < 1 ) return
+ 			if (ds_3.CountRow == 0)				 // 한건도 없을경우는  0 
+			{   
+				btnadd_onclick()   
+				return
+			}  
+			ds_2.InsertRow(ds_2.RowPosition)   
+		    div_init_move1()
+    }
+    
+	if ( il_nindex == 2 ) 
+	{
+	 if ( il_screen  == 3 ) { 
+ 		if (ds_1.CountRow < 1 )  return
+			if (ds_3.CountRow == 0)				 // 한건도 없을경우는  0 
+			{  
+				if ( f_code_chk() == false ) return
+				btnadd_onclick()   
+				return
+			}  
+			ds_3.InsertRow(ds_3.RowPosition)   
+		  div_init_move2()
+		}
+	 if ( il_screen  == 4 ) { 
+ 		if (ds_3.CountRow < 1 ) return
+			if (ds_4.CountRow == 0)				 // 한건도 없을경우는  0 
+			{
+				if ( f_code_chk() == false ) return
+				btnadd_onclick()   
+				return
+			}  
+			ds_4.InsertRow(ds_4.RowPosition)   
+		  div_init_move3()
+		}
+	}  
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+ 	if ( il_nindex == 1 ) 
+	{
+	  if (ds_2.CountRow < 1 ) return
+		if  (gd_2.MultiRowSelect)
+		  {                                   // multi row select 일 경우
+		     for (i=ds_2.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+		     {
+		        if (ds_2.RowMark(i) == 1)                              // 선택되어 있으며는 
+		               ds_2.DeleteRow(i)
+		     }   
+		     ds_2.MarkRows(ds_2.RowPosition,ds_2.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+		  }
+		  else
+		 	ds_2.DeleteRow(ds_2.RowPosition)  
+    }
+    
+	if ( il_nindex == 2 ) 
+	{
+		if ( il_screen  == 3 ){ 
+	     if ( ds_4.CountRow > 0 ) 
+	     {
+	        alert("하위 안전코드가 남아있습니다");
+	        return ;
+	     }
+	     
+		  if (ds_3.CountRow < 1 ) return
+			if  (gd_3.MultiRowSelect)
+			  {                                   // multi row select 일 경우
+			     for (i=ds_3.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+			     {
+			        if (ds_3.RowMark(i) == 1)                              // 선택되어 있으며는 
+			               ds_3.DeleteRow(i)
+			    }   
+			    ds_3.MarkRows(ds_3.RowPosition,ds_3.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+			  }
+			  else
+			 	ds_3.DeleteRow(ds_3.RowPosition)  
+		}	 	
+
+		if ( il_screen  == 4 ) 
+		{ 
+		   if (ds_4.CountRow < 1 ) return
+			if  (gd_4.MultiRowSelect)
+			  {                                   // multi row select 일 경우
+			     for (i=ds_4.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+			     {
+			        if (ds_4.RowMark(i) == 1)                              // 선택되어 있으며는 
+			            ds_4.DeleteRow(i)
+			    }   
+			    ds_4.MarkRows(ds_4.RowPosition,ds_4.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+			  }
+			  else
+			 	ds_4.DeleteRow(ds_4.RowPosition)  
+		 }  
+	}	 	
+ }
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	if ( il_screen  == 2 ){ ds_2.Undo(ds_2.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 3 ){ ds_3.Undo(ds_3.RowPosition) }                                  //해당 row만 취소한다.
+	if ( il_screen  == 4 ){ ds_4.Undo(ds_4.RowPosition) }                                  //해당 row만 취소한다.
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+var update_chk = 0
+
+  if ( ds_2.IsUpdated )	 	//변경된것이 있으며는 
+  { 
+     ll_dup = f_dup_chk("ds_2","safety_code")
+	 if (ll_dup > 0) {
+	 	 alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	    ds_2.RowPosition = ll_dup
+	    gd_2.SetColumn("safety_code");
+	    return false
+      }
+                                    
+		update_chk = 1 ; 
+  } 
+  
+  if ( ds_3.IsUpdated )	 	//변경된것이 있으며는 
+  { 
+      ll_dup = f_dup_chk("ds_3","safety_code")
+	  if (ll_dup > 0) {
+	 	 alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	     ds_3.RowPosition = ll_dup
+	     gd_3.SetColumn("safety_code");
+	     return false
+	   }     
+   
+		update_chk = 1 ; 
+  } 
+  
+  if ( ds_4.IsUpdated )	 	//변경된것이 있으며는 
+  {  
+       ll_dup = f_dup_chk("ds_4","tmp_code")
+	   if (ll_dup > 0) {
+	      alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	      ds_4.RowPosition = ll_dup
+	      gd_4.SetColumn("tmp_code");
+	   	  return false
+	   }	                                          
+  
+		update_chk = 1 ; 
+  } 
+
+	if ( 	update_chk == 1  )
+   {
+		if  (confirm("변경되었습니다 저장하시겠습니까?"))
+		{
+		  tr_1.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+		  tr_2.Post()           // 저장(window_onload()에서 tr_1.Action 이 연결되어있어야한다.) 
+		  
+			for ( i=0 ; i <= ds_4.CountRow; i++ )
+			{ ds_4.NameValue(ds_4.RowPosition,"safety_code") =  ds_3.NameValue(ds_3.RowPosition,"safety_code")  +  ds_4.NameValue(ds_4.RowPosition,"tmp_code") } 
+
+		  
+		  tr_3.Post()           // 저장(window_onload()에서 tr_3.Action 이 연결되어있어야한다.)    
+		}
+		else
+		{ 
+			div_btnquery_onclick()  
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+function div_btnquery_onclick()                    
+//------------------------------------------------------------------------
+{
+
+ if (ds_1.CountRow < 1) return
+ 
+ if ( il_nindex == 1 )
+ {
+	 ds_2.DataID = is_ds_2_addr + ds_1.NameValue(ds_1.RowPosition,"class_tag") 
+	 ds_2.SyncLoad=true
+	 ds_2.Reset()
+ }
+ 
+ if ( il_nindex == 2 )
+ {
+	 ds_3.DataID = is_ds_3_addr + ds_5.NameValue(ds_5.RowPosition,"class_tag") 
+	 ds_3.SyncLoad=true
+	 ds_3.Reset()
+	 
+	 if (ds_3.CountRow < 1) return
+	 ds_4.DataID = is_ds_4_addr + ( parseInt(ds_5.NameValue(ds_1.RowPosition,"class_num")) + 1 ) + "&arg_code=" + ds_3.NameValue(ds_3.RowPosition,"safety_code") 
+	 ds_4.SyncLoad=true
+	 ds_4.Reset()
+ }
+}
+
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	btnsave_onclick() 
+	
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+	
+	top.frames['main_ct'].window.close()     
+}
+
+//----------------------------------------------------------------------
+function div_init_move1()                         // initial move
+//----------------------------------------------------------------------
+{
+ ds_2.NameValue(ds_2.RowPosition,"class_tag") =  ds_1.NameValue(ds_1.RowPosition,"class_tag")
+ gd_2.SetColumn("safety_code")
+}
+
+//----------------------------------------------------------------------
+function div_init_move2()                         // initial move
+//----------------------------------------------------------------------
+{
+ ds_3.NameValue(ds_3.RowPosition,"class_tag") =  ds_5.NameValue(ds_1.RowPosition,"class_tag")
+ ds_4.clearData()
+ gd_3.SetColumn("safety_code")
+}
+//----------------------------------------------------------------------
+function div_init_move3()                         // initial move
+//----------------------------------------------------------------------
+{
+	ds_4.NameValue(ds_4.RowPosition,"class_tag") = '0' + ( parseInt(ds_5.NameValue(ds_1.RowPosition,"class_num")) + 1 )
+	ds_4.NameValue(ds_4.RowPosition,"safety_code") =  ds_3.NameValue(ds_3.RowPosition,"safety_code")  +  ds_4.NameValue(ds_4.RowPosition,"tmp_code") 
+	gd_4.SetColumn("tmp_code")
+}
+//----------------------------------------------------------------------
+function f_code_chk()                         // code_check
+//----------------------------------------------------------------------
+{
+		  
+   ll_dup = f_dup_chk("ds_3","safety_code")
+  	if (ll_dup > 0) {
+ 	alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+   ds_3.RowPosition = ll_dup
+   gd_3.SetColumn("safety_code");
+   return false }
+
+   ll_dup = f_dup_chk("ds_4","tmp_code")
+   if (ll_dup > 0) {
+   alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+   ds_4.RowPosition = ll_dup
+   gd_4.SetColumn("tmp_code");
+   return false }
+   
+//	if (( ds_4.CountRow > 0 ) && ( gd_3.GetColumn() == 'safety_code'))
+//	{  gd_3.Editable = false; }
+//  	else
+//	{  gd_3.Editable = true;  }
+		  
+}	   
+//------------------------------------------------------------------------
+function get_focus(focus) // gd가 포커스를 받을때 동작.
+//------------------------------------------------------------------------
+{
+	il_screen = focus
+	if (is_sec == 'r') return   // 조회권한일경우 
+	
+	switch ( il_screen )
+	{
+	case 1:
+		top.frames['main_title'].div_r.style.visibility="visible"
+		top.frames['main_title'].div_u.style.visibility="hidden"   
+      break;
+	case 2:
+	 	top.frames['main_title'].div_r.style.visibility="hidden"
+		top.frames['main_title'].div_u.style.visibility="visible"  
+	   break;
+	case 3:
+	   ll_dup = f_dup_chk("ds_4","tmp_code")
+	   if (ll_dup > 0) {
+	   alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	   ds_4.RowPosition = ll_dup
+	   gd_4.SetColumn("tmp_code");
+	   return false }
+	 	top.frames['main_title'].div_r.style.visibility="hidden"
+		top.frames['main_title'].div_u.style.visibility="visible"  
+	    break;
+	case 4:
+	   ll_dup = f_dup_chk("ds_3","safety_code")
+	  	if (ll_dup > 0) {
+	 	alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	   ds_3.RowPosition = ll_dup
+	   gd_3.SetColumn("safety_code");
+	   return false }
+btnsave_onclick()
+	 	top.frames['main_title'].div_r.style.visibility="hidden"
+		top.frames['main_title'].div_u.style.visibility="visible"  
+	   break;
+	case 5:
+btnsave_onclick()	
+		top.frames['main_title'].div_r.style.visibility="visible"
+		top.frames['main_title'].div_u.style.visibility="hidden"   
+      break;	   
+	}
+
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  
+    f_set_resize()
+
+    top.frames['main_title'].mouse_over()
+
+	tr_1.Action = is_tr_1_addr
+	tr_2.Action = is_tr_2_addr
+	tr_3.Action = is_tr_3_addr	
+	
+	is_sec = gf_initial_security()
+	is_temp = is_sec
+   if (is_sec != 'r') {
+     is_temp = 'u'
+   }	
+	if (is_sec == 'r') {
+	   button_1.style.visibility='hidden'
+	   button_3.style.visibility='hidden'
+	   button_4.style.visibility='hidden'
+	   button_5.style.visibility='hidden'
+	   button_6.style.visibility='hidden'
+	   button_7.style.visibility='hidden'
+	}
+
+	gd_2.ColumnProp('safety_code', 'EditLimit') = 2 
+	gd_3.ColumnProp('safety_code', 'EditLimit') = 2 
+	gd_4.ColumnProp('tmp_code', 'EditLimit') 	  = 2	
+
+	btnquery_onclick()
+
+}
+
+
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------
+function tab_changed()
+//---------------------------------------------------------------------
+{
+
+}
+//---------------------------------------------------------------------
+function move_search1()   //gd_1 조회시 하위단 조회
+//---------------------------------------------------------------------
+{
+//  if ( btnsave_onclick() == false )
+//  { return ; } 
+   div_btnquery_onclick() 
+}  
+//---------------------------------------------------------------------
+function move_search2()  //gd_3 조회시 하위단 조회
+//---------------------------------------------------------------------
+{
+ if ( il_nindex == 2 )
+ {
+	 if (ds_3.CountRow < 1) return
+	 ds_4.DataID = is_ds_4_addr + ( parseInt(ds_5.NameValue(ds_1.RowPosition,"class_num")) + 1 ) + "&arg_code=" + ds_3.NameValue(ds_3.RowPosition,"safety_code") 
+	 ds_4.SyncLoad=true 
+	 ds_4.Reset()
+ 
+	if (( ds_4.CountRow > 0 ) && ( gd_3.GetColumn() == 'safety_code'))
+	{  gd_3.Editable = false; }
+  	else
+	{  gd_3.Editable = true;  }
+ }
+
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1','gd_2','gd_5','gd_3','gd_4');
+	var xArr =new Array(false,true,false,false,true);
+	var yArr =new Array(true,true,true,true,true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event               							           -->
+<!-- ======================================================================= -->
+
+
+<SCRIPT language=JavaScript event=onclick(Row,Colid) for=gd_1>
+{
+	if ( ds_2.RowStatus(ds_2.RowPosition) != 0 )
+	{ return ; }    
+	move_search1()
+}  
+</SCRIPT>
+<SCRIPT language=JavaScript event=onclick(Row,Colid) for=gd_5>
+{
+	if ( ds_2.RowStatus(ds_2.RowPosition) != 0 )
+	{ return ; }    
+	move_search1()
+}  
+</SCRIPT>
+
+<script language=JavaScript event=onclick(Row,Colid) for=gd_3>
+{
+
+	if (ds_3.CountRow < 1) return
+	ds_4.DataID = is_ds_4_addr + ( parseInt(ds_5.NameValue(ds_1.RowPosition,"class_num")) + 1 ) + "&arg_code=" + ds_3.NameValue(ds_3.RowPosition,"safety_code") 
+	ds_4.SyncLoad=true
+	ds_4.Reset()	
+
+	if (( ds_4.CountRow > 0 ) && ( gd_3.GetColumn() == 'safety_code'))
+	{  gd_3.Editable = false;  }
+  	else
+	{  gd_3.Editable = true;   }
+		
+	if ( ds_3.RowStatus(ds_3.RowPosition) != 0 )
+	{  
+		return ;	
+	}
+	else 
+	{
+     ll_dup = f_dup_chk("ds_4","safety_code")
+	  if (ll_dup > 0) {
+  	  alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	  ds_4.RowPosition = ll_dup
+	  gd_4.SetColumn("tmp_code");
+	  return false }
+	}
+}  
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=onclick(Row,Colid) for=gd_4>
+{
+     ll_dup = f_dup_chk("ds_3","safety_code")
+	  if (ll_dup > 0) {
+  	  alert("잘못된 번호가 입력되었습니다.:  수정하십시요 ")
+	  ds_3.RowPosition = ll_dup
+	  gd_3.SetColumn("safety_code");
+	  return false }
+}  
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=onKeyPress(keycode)>
+{
+	if (keycode == 38 || keycode == 40 || keycode == 255) move_search1()
+} 
+</script>
+</SCRIPT>
+<script language=JavaScript for=gd_3 event=onKeyPress(keycode)>
+{
+//	alert(keycode);
+	if (keycode == 38 || keycode == 40 || keycode == 255 ) move_search2()
+} 
+</script>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code(ds_3) : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_4 event=OnLoadError()>
+  alert("Error Code(ds_4) : " + ds_4.ErrorCode + "\n" + "Error Message : " + ds_4.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_5 event=OnLoadError()>
+  alert("Error Code(ds_5) : " + ds_5.ErrorCode + "\n" + "Error Message : " + ds_5.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_2 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_2.ErrorCode + "\n" + "Error Message : " + tr_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_3 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_3.ErrorCode + "\n" + "Error Message : " + tr_3.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+  il_nindex = nIndex
+  btnquery_onclick()
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=CanSelChange(nIndex) for=tb_1>
+{
+  var ret
+  il_nindex = nIndex
+  ret = btnsave_onclick()
+  return ret
+} 
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<OBJECT id=ds_2 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<OBJECT id=ds_3 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+    
+<OBJECT id=ds_4 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_5 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>    
+    
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:E_sa_safty_code_input_1tr=ds_2)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_2
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:E_sa_safty_code_input_1tr=ds_3)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+<OBJECT id=tr_3 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:E_sa_safty_code_input_1tr=ds_4)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>		
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() onresize='f_set_resize()' oncontextmenu="return false" >
+<OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 5; WIDTH: 500px; POSITION: absolute; TOP: 4; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=안전관리비코드</T>
+    <T>divid=tab_page_2 title=안전평가코드</T>
+    ">
+</OBJECT>
+<DIV id=tab_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 100%; POSITION: absolute; TOP: 2px; HEIGHT: 95%;FONT-SIZE: 12px" >
+
+<OBJECT id=gd_1 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 0; WIDTH:226px; POSITION: absolute; TOP: 24; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE=" 
+		  <C> Name=구분코드 ID=parents_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=194 </C> 
+      ">
+</OBJECT>
+<OBJECT id=gd_2 onfocus="get_focus(2)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT:227; WIDTH:375px; POSITION: absolute; TOP: 24; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_2">
+    <param name=SortView  value="Left">
+	<PARAM NAME="Format" VALUE=" 
+	  <C> Name=안전코드 ID=safety_code Edit=Numeric sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=150 </C> 
+	  <C> Name=안전코드명 ID=child_name sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+     ">
+</OBJECT>
+</DIV> 
+
+<DIV id=tab_page_2 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 95%; POSITION: absolute; TOP: 2px; HEIGHT: 100%;FONT-SIZE: 12px" >
+
+<OBJECT id=gd_5 onfocus="get_focus(1)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT: 0; WIDTH:226px; POSITION: absolute; TOP: 24; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_5">
+	<PARAM NAME="Format" VALUE=" 
+		  <C> Name=구분코드 ID=parents_name   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=194 </C> 
+      ">
+</OBJECT>
+
+<OBJECT id=gd_3 onfocus="get_focus(3)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT:227; WIDTH:375px; POSITION: absolute; TOP: 24; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_3">
+    <param name=SortView  value="Left">
+	<PARAM NAME="Format" VALUE=" 
+	  <C> Name=항목코드 ID=safety_code sort=true Edit=Numeric BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=150 </C> 
+	  <C> Name=항목코드명 ID=child_name sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+     ">
+</OBJECT>
+
+<OBJECT id=gd_4 onfocus="get_focus(4)"
+    style="FONT-SIZE: 12px; Z-INDEX: 105; LEFT:603; WIDTH:375px; POSITION: absolute; TOP: 24; HEIGHT: 100%" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+    <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_4">
+    <param name=SortView  value="Left">
+	<PARAM NAME="Format" VALUE=" 
+	  <C> Name=안전코드 ID=tmp_code Edit=Numeric sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=150 </C> 
+	  <C> Name=안전코드명 ID=child_name sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=200 </C> 
+     ">
+</OBJECT>
+</DIV> 
+
+
+</BODY></HTML>

@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_mis_result_query_1h.html								-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 전사경영실적총괄표	  	  								-->
+<!-- 4. 변 경 이 력   : 장희선 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+var is_ds_1_addr = gs_home + '/const/g_web/01/g_mis_result_query_1q.jsp?arg_yymm='
+
+var is_focus_enter='N'
+var is_yymm
+var il_mm
+var is_plan_sum=""
+var is_result_sum=""
+var is_cur_plan
+var is_cur_result
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+	column_combi()	// 누계컬럼 조합
+	
+	gd_1.ColumnProp('plan_cum','Name')=il_mm + '월 누계계획'	
+	gd_1.ColumnProp('result_cum','Name')=il_mm + '월 누계실적'	
+	
+	ds_1.DataID = is_ds_1_addr + is_yymm + '&arg_plan_sum=' + is_plan_sum + '&arg_result_sum=' + is_result_sum + 
+	                                       '&arg_cur_plan=' + is_cur_plan + '&arg_cur_result=' + is_cur_result
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	no_cal_rtn()
+	
+	var i
+	if (tb_1.ActiveIndex == 2) {
+	   for (i=1;i<=ds_1.CountRow;i++) {
+	       if (ds_1.NameValue(i,'calc_yn') == 'F') 
+	           ds_1.DeleteRow(i)
+	   }
+	   gd_chart.Reset()
+	}
+	
+	ds_1.ResetStatus()
+	
+}
+//------------------------------------------------------------------------
+function column_combi()                     // 누계컬럼 조합
+//------------------------------------------------------------------------
+{	
+	// 누계 계획	
+	il_mm = parseInt(em_select_year.text.substr(5,2))	
+	is_plan_sum=""
+	for ( i=1; i<=il_mm; i++){
+		if (i > 1) is_plan_sum += '!'
+		is_plan_sum += 'a.plan_' + i
+		if (i == il_mm) {
+		   is_cur_plan = 'a.plan_' + i 
+		   is_cur_result = 'a.result_' + i 
+		}
+	}
+	// 실적 계획	
+	is_result_sum=""
+	for ( i=1; i<=il_mm; i++){
+		if (i > 1) is_result_sum += '!'
+		is_result_sum += 'a.result_' + i
+	}
+}
+//------------------------------------------------------------------------
+function no_cal_rtn()                     // 공사원가율은 12월이 경영계획이고 7월 7월누계실적은 7월 그자체이다.
+//------------------------------------------------------------------------
+{	
+   var i
+   for (i=1;i<=ds_1.CountRow; i++) {
+      if (ds_1.NameValue(i,'calc_yn') == 'F') {
+          ds_1.NameValue(i,'plan_sum') = ds_1.NameValue(i,'plan_12')
+          ds_1.NameValue(i,'plan_cum') = ds_1.NameValue(i,'cur_plan')
+          ds_1.NameValue(i,'result_cum') = ds_1.NameValue(i,'cur_result')
+      
+      }
+   }
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+	}     
+	top.frames['main_ct'].location.href(ls_arg)
+	top.frames['main_title'].div_r.style.visibility="hidden"             
+	top.frames['main_title'].div_u.style.visibility="hidden"             
+}
+//-------------------------------------------------------------------------------
+function select_year()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_yymm = em_select_year.text.substr(0,4) + '.01.01'
+   ds_1.ClearData()
+
+   btnquery_onclick()
+}   
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+	top.frames['main_title'].mouse_over()
+  	em_select_year.text = is_work_date.substr(0,7)
+  	select_year()
+}
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+	alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+	if (kcode == 13) {
+   	if (ds_1.RowPosition == ds_1.CountRow)  
+      	return true
+    	else     
+      	ds_1.RowPosition++
+	}
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_year event=onKillFocus()>
+   if (is_focus_enter == em_select_year.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_year.text
+	   select_year()
+	}	
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_year event=onKeyDown(kcode,scode)>
+   if (kcode == 13 ){ 
+	   is_focus_enter=em_select_year.text
+		select_year()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  select_year()
+ }             
+</SCRIPT>
+<script language=JavaScript for=tb_1 event=OnSelChanged(index)>
+   alert("aa")
+   var i=0
+ 	setTimeout("i=i+1",5)
+</script>
+
+
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 300px; WIDTH: 160px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">해당년월</div></td>
+          	 <td width="63%" >
+			       <OBJECT id=em_select_year style="WIDTH: 80px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="7">
+						    <PARAM NAME="Format" VALUE="YYYY.MM">
+							 <PARAM NAME="PromptChar" VALUE="">
+					       <param name=ClipMode       value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+					<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_year.text = result.substr(0,7);} ; select_year()" 
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+<OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 106; LEFT: 1px; WIDTH: 250px; POSITION: absolute; TOP: 5px; HEIGHT: 23px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title='표보기'</T>
+    <T>divid=tab_page_2 title='그래프-1'</T>"></OBJECT>
+<DIV id=tab_page_1 
+      style="Z-INDEX: 107; LEFT: 1px; WIDTH: 1009px; POSITION: absolute; TOP: 27px; HEIGHT: 95%">
+
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 14px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%; Font: Bold" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<param name="TitleHeight"  VALUE="60">
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+   <param name=RowHeight  value="55">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='내용' ID=desc1 align=center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=230 
+                </C>
+	  <C> Name='경영계획' ID=plan_sum  decao=1  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=120
+	  			  </C>
+	  <C> Name='누계계획' ID=plan_cum  decao=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=110
+	  			 </C>
+	  <C> Name='누계실적' ID=result_cum  decao=1 align=right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=110
+	  			 </C>
+	  <C> Name='년간대비; ;진척율(%)' align=center ID=year_progress  value={(result_cum/plan_sum)*100}  dec=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=135
+	  			</C>
+	  <C> Name='월별누계; ;달성도(%)' align=center ID=year_achieve  value={(result_cum/plan_cum)*100}  dec=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=135
+	  			</C>
+	  <C> Name='월별누계차이' ID=year_difference  value={result_cum-plan_cum} decao=1 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4 HeadColor=BLACK Width=120
+	  			 </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</DIV>
+<DIV id=tab_page_2 
+      style="Z-INDEX: 107; LEFT: 1px; WIDTH: 1009px; POSITION: absolute; TOP: 27px; HEIGHT: 95%">
+    <OBJECT classid="clsid:B5F6727A-DD38-11D2-973D-00104B15E56F" 
+	    id=gd_chart  style="Z-INDEX: 100; LEFT: 1; WIDTH: 1009px; POSITION: absolute; TOP: 1px; HEIGHT: 100% " >
+		<param name="Title"				value="경영실적총괄표">
+		<param name="XTitle"			value="">
+		<param name="XValueColumn"		value="desc1">
+		<param name="YValueColumns"		value="plan_sum:경영계획;plan_cum:누계계획;result_cum:누계실적">
+		<param name="YTitleAngle"		value="90">
+		<param name="ChartType"			value="3">
+		<param Name="View3D"			value="true">
+		<param name="ViewValue"      value="true">
+		<param name="LegendColumn"		value="">
+		<param name="LegendPosition"	value="2">
+		<param name="SeriesColor"		value="#99cccc,#0000ff,#ff0000">
+		<param name="BackColorStr"		value="#ffffff,#ffffff,#ffffff">
+		<param name="BarWidth"        value="30">
+		<param name="WallColor"			value="#ffffff">
+      <Param Name="ViewGrid"       VALUE="True">
+      <param name="BorderStyle"		value="0">
+      <param name="DataID"		value="ds_1">
+    </OBJECT>
+</DIV>      
+</BODY></HTML>

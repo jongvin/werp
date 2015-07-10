@@ -1,0 +1,500 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<link rel="stylesheet" href="../common/mainBody.css" type="text/css">
+<link rel="stylesheet" href="../common/common.css" type="text/css">
+<script src="../common/gongtong.js" language=javascript></script>
+<script src="../common/common.js" language=javascript></script>
+
+<script language=JavaScript>
+	
+	// page navigation 용------------------------------------------- 
+	var THeader="be10:STRING(10),be:STRING(10),A1:STRING(10),A2:STRING(10),A3:STRING(10),A4:STRING(10),A5:STRING(10),A6:STRING(10),A7:STRING(10),A8:STRING(10),A9:STRING(10),A10:STRING(10),af:STRING(10),af10:STRING(10)";
+	var total_Cnt;								//총 카운트
+	var cur_page = 1;								//현재 폐이지
+	var page_count;								//폐이지 카운트수
+	var ins_Cnt = 0;
+	// page navigation 용-------------------------------------------
+
+	var starttime = 0;
+	var endtime = 0;
+
+	var startsec ;
+	var endsec ;
+	
+	function fn_onload(){
+		
+		tb_DataSet.SetDataHeader(THeader);	
+		
+		window.status = "";
+		
+		gc_dataset_luxe.dataid = "analysis3_luxe.jsp";
+		gc_dataset_luxe.reset();
+	}
+
+	function fn_Search() {
+		Textbox_1.value = "";
+		Textbox_2.value = "";
+		Textbox_3.value = "";
+
+		var strRowCnt = document.Form1.Target1.options(document.Form1.Target1.selectedIndex).value;
+		if(strRowCnt == 0) {
+			alert("조회할 건수를 선택하세요.");
+		} else {
+			gc_dataset.dataid = "analysis3_select.jsp?strRowCnt=" + strRowCnt;
+			gc_dataset.reset();
+		}
+	}
+
+	function fn_Find(){
+		var row_index = gc_dataset.NameValueRow('COMPANYNAME', gc_luxe.ValueOfIndex("COMPANYNAME", gc_luxe.Index));
+		gc_grid.SetColumn('COMPANYNAME');
+		gc_dataset.RowPosition = row_index;
+	}
+
+	function on_navi_setting(rowcnt){
+		tb_DataSet.ClearData();
+		tb_DataSet.addrow();
+		ins_Cnt = parseInt(ins_Cnt) + 1;
+		
+		total_Cnt = parseInt(rowcnt);		
+
+		//total_Cnt 값이 400개 이상일경우에는 "[다음10개]" 표시가 나타남
+		//total_Cnt 값이 200개 이상일경우에는 "▶" 표시가 나타남
+		
+		page_count = parseInt(total_Cnt/15) + 1;
+		
+		if(page_count < 11){
+
+				for(i=0; i<10; i++){
+						var d_name = "A"+(i+1);				
+					if(page_count > i){
+						tb_DataSet.Namevalue(1,d_name)=parseInt(cur_page)+parseInt(i);
+					}else{
+						tb_Grid.ColumnProp(d_name,'Cursor')="";
+					}
+				}
+		}else{
+			var for_cnt = parseInt(page_count)-parseInt(cur_page)+parseInt(1);
+			
+			if(for_cnt < 10 ){
+
+				for(i=0; i<10; i++){
+						var d_name = "A"+(i+1);				
+					if(for_cnt > i){
+						tb_DataSet.Namevalue(1,d_name)=parseInt(cur_page)+parseInt(i);
+					}else{
+						tb_Grid.ColumnProp(d_name,'Cursor')="";
+					}
+				}
+
+			}else{
+
+				for(i=0; i<10; i++){
+					var d_name = "A"+(i+1);
+					tb_DataSet.Namevalue(1,d_name)=parseInt(cur_page)+parseInt(i);
+				}
+			
+			}
+
+			var nam_page = parseInt(tb_DataSet.Namevalue(1,"A10"))+1;//▶,[다음10개]용
+			
+			var be_page = parseInt(tb_DataSet.Namevalue(1,"A1"))-1;//◀,[이전10개]용
+
+			if(be_page > 0){
+				tb_DataSet.Namevalue(1,"be")="◀";
+				tb_DataSet.Namevalue(1,"be10")="[이전10개]";
+			}else{
+				tb_DataSet.Namevalue(1,"be")="";
+				tb_DataSet.Namevalue(1,"be10")="";
+			}
+		
+			if( page_count >= nam_page ){
+				tb_DataSet.Namevalue(1,"af")="▶";
+				tb_DataSet.Namevalue(1,"af10")="[다음10개]";
+			}else{
+				tb_DataSet.Namevalue(1,"af")="";
+				tb_DataSet.Namevalue(1,"af10")="";
+			}
+		}
+
+		if (tb_DataSet.Namevalue(1,"be")==""){
+			tb_Grid.ColumnProp('be','Cursor')="";
+		}else{
+			tb_Grid.ColumnProp('be','Cursor')="Hand";
+		}	
+
+		if (tb_DataSet.Namevalue(1,"be10")==""){
+			tb_Grid.ColumnProp('be10','Cursor')="";
+		}else{
+			tb_Grid.ColumnProp('be10','Cursor')="Hand";
+		}	
+
+		if (tb_DataSet.Namevalue(1,"af")==""){
+			tb_Grid.ColumnProp('af','Cursor')="";
+		}else{
+			tb_Grid.ColumnProp('af','Cursor')="Hand";
+		}	
+
+		if (tb_DataSet.Namevalue(1,"af10")==""){
+			tb_Grid.ColumnProp('af10','Cursor')="";
+		}else{
+			tb_Grid.ColumnProp('af10','Cursor')="Hand";
+		}	
+		
+		if (ins_Cnt == 1) {
+			tb_Grid.ColumnProp('A1','FontStyle')="Bold"
+			tb_Grid.ColumnProp('A1','color')="red"
+			tb_Grid.ColumnProp('A1','Cursor')=""
+			tb_Grid.SetColumn('A1');
+		}
+
+		for(i=0; i<10; i++){
+			if (tb_Grid.ColumnProp("A"+(i+1),'color')== "255") {
+				var move_page = tb_DataSet.Namevalue(1,"A"+(i+1));
+				cfCopyDataSet(gc_dataset, gc_navi_dataset, "copyHeader=yes,rowFrom=" +(move_page * 15 - 15+1)
+			                                                        +",rowCnt=15");
+				return;
+			}
+		}
+	}	
+
+	function btn_scroll_onclick() {
+		gc_grid.Dataid = "gc_dataset";
+		gc_grid.HiddenVScroll = false;
+		gc_grid.height = "400px";
+		gc_grid.ColumnProp('SEQNO','show') = "true";
+		div_page.style.visibility = "hidden";
+		
+	}
+	
+	function btn_page_onclick() {
+		gc_grid.Dataid = "gc_navi_dataset";
+		gc_grid.HiddenVScroll = true;
+		gc_grid.height = "340px";
+		gc_grid.ColumnProp('SEQNO','show') = "false";
+		div_page.style.visibility = "visible";
+	}
+	
+</script>
+
+
+<script language=JavaScript for=tb_Grid event=onClick(row,colid)>
+		if(tb_Grid.ColumnProp(colid,'Cursor')=="") return;
+
+		if(tb_DataSet.Namevalue(1,colid)=="▶"){
+			cur_page = eval(cur_page+1) ;								
+		}else if(tb_DataSet.Namevalue(1,colid)=="[다음10개]"){
+			cur_page = eval(cur_page+10) ;										
+		}else if(tb_DataSet.Namevalue(1,colid)=="◀"){
+			cur_page = eval(cur_page-1) ;										
+		}else if(tb_DataSet.Namevalue(1,colid)=="[이전10개]"){
+			if (cur_page > 10) {
+				cur_page = eval(cur_page-10);
+			} else {
+				cur_page = 1;
+			}
+		}else{
+				cur_page = cur_page ;	
+		}
+
+		for(i=0; i<10; i++){
+			var d_name = "A"+(i+1);
+			if(d_name == colid){
+				tb_Grid.ColumnProp(d_name,'FontStyle')="Bold"
+				tb_Grid.ColumnProp(d_name,'color')="red"
+				tb_Grid.ColumnProp(d_name,'Cursor')=""
+			}else{
+				tb_Grid.ColumnProp(d_name,'FontStyle')=""
+				tb_Grid.ColumnProp(d_name,'color')="Black"
+				tb_Grid.ColumnProp(d_name,'Cursor')="Hand"
+			}
+		}
+
+		if(tb_DataSet.Namevalue(1,colid)=="▶"){
+			tb_Grid.ColumnProp('A10','FontStyle')="Bold";
+			tb_Grid.ColumnProp('A10','color')="red";
+			tb_Grid.ColumnProp('A10','Cursor')="";
+			tb_Grid.SetColumn('A10');
+		}else if(tb_DataSet.Namevalue(1,colid)=="[다음10개]"){
+			tb_Grid.ColumnProp('A1','FontStyle')="Bold";
+			tb_Grid.ColumnProp('A1','color')="red";
+			tb_Grid.ColumnProp('A1','Cursor')="";
+			tb_Grid.SetColumn('A1');
+		}else if(tb_DataSet.Namevalue(1,colid)=="◀"){
+			tb_Grid.ColumnProp('A1','FontStyle')="Bold";
+			tb_Grid.ColumnProp('A1','color')="red";
+			tb_Grid.ColumnProp('A1','Cursor')="";
+			tb_Grid.SetColumn('A1');
+		}else if(tb_DataSet.Namevalue(1,colid)=="[이전10개]"){
+			tb_Grid.ColumnProp('A1','FontStyle')="Bold";
+			tb_Grid.ColumnProp('A1','color')="red";
+			tb_Grid.ColumnProp('A1','Cursor')="";
+			tb_Grid.SetColumn('A1');
+		}
+
+		on_navi_setting(gc_dataset.countrow);
+	
+</script>
+
+
+<script language=JavaScript for=gc_dataset event=OnLoadStarted()>
+	today = new Date();
+
+	starttime = Date.parse(today);
+	startsec = parseInt(today.getTime());
+
+	Textbox_1.value = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+	Textbox_2.value = "";
+	Textbox_3.value = "";
+</script>
+
+<script language=JavaScript for=gc_dataset event=OnLoadCompleted(rowcnt)>
+	today = new Date();
+	endtime = Date.parse(today);
+	endsec = parseInt(today.getTime());
+
+	Textbox_2.value = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+	Textbox_3.value = (endsec -startsec)/1000;
+	
+	cfCopyDataSet(gc_dataset, gc_navi_dataset, "copyHeader=yes,rowFrom=1,rowCnt=15");	
+	on_navi_setting(rowcnt);
+	
+</script>
+
+<object id=gc_dataset classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name="SyncLoad" 		 	value="false">
+</object>
+
+<object id=gc_navi_dataset classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+	<param name="SyncLoad" 		 	value="false">
+</object>
+
+<object id=tb_DataSet classid=CLSID:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB>
+</object>
+
+<object id=gc_dataset_luxe classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB">
+</object>
+<script language="JavaScript"><!--
+function na_restore_img_src(name, nsdoc)
+{
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img && img.altsrc) {
+    img.src    = img.altsrc;
+    img.altsrc = null;
+  } 
+}
+
+function na_preload_img()
+{ 
+  var img_list = na_preload_img.arguments;
+  if (document.preloadlist == null) 
+    document.preloadlist = new Array();
+  var top = document.preloadlist.length;
+  for (var i=0; i < img_list.length-1; i++) {
+    document.preloadlist[top+i] = new Image;
+    document.preloadlist[top+i].src = img_list[i+1];
+  } 
+}
+
+function na_change_img_src(name, nsdoc, rpath, preload)
+{ 
+  var img = eval((navigator.appName.indexOf('Netscape', 0) != -1) ? nsdoc+'.'+name : 'document.all.'+name);
+  if (name == '')
+    return;
+  if (img) {
+    img.altsrc = img.src;
+    img.src    = rpath;
+  } 
+}
+
+// --></script></head>
+
+
+<body  topmargin="0" marginheight="0" leftmargin="0" marginwidth="0" background="../images/down_bg.gif" onload="fn_onload();na_preload_img(false, '../images/direct_bu_color.gif', '../images/excel_bu_color.gif', '../images/search_bu_color.gif');">
+<table width="917" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <tr>
+    <td valign="top">
+      <table width="824"cellspacing="1" cellpadding="0" bgcolor="#AAAAAA" border="0" height="100%" align="right">
+        <tr> 
+        <td height="100%" bgcolor="#FFFFFF"  valign="top">
+			<table width="800" cellspacing="0" bordercolordark="white" bordercolorlight="black" cellpadding="0">
+				<tr>
+					<td width="10" height="25">&nbsp;</td>
+					<td width="395" height="25">
+						<table cellpadding="0" cellspacing="0" width="378">
+							<tr>
+								<td width="20"><img namo_npi=":EmbededNPI001" src="../images/pgm12_htm_smartbutton1.gif" border="0"></td>
+								<td width="358" valign="bottom"><font size="2"><b>대량 데이터 조회</b></font></td>
+							</tr>
+						</table>
+					</td>
+					<td width="260" height="25">
+						<p align="right">&nbsp;</p>
+					</td>
+					<td width="135" height="25">
+						<p align="right">
+							<a href="#" OnMouseOut="na_restore_img_src('image1', 'document')" OnMouseOver="na_change_img_src('image1', 'document', '../images/direct_bu_color.gif', true)"><img src="../images/direct_bu.gif" width="61" height="20" border="0" name="image1" onclick="fn_Search()"></a><a href="#" OnMouseOut="na_restore_img_src('image2', 'document')" OnMouseOver="na_change_img_src('image2', 'document', '../images/excel_bu_color.gif', true)"><img src="../images/excel_bu.gif" width="61" height="20" border="0" name="image2" onclick="ln_Excel(gc_grid,'대량 데이터 조회')"></a>			</p>
+					</td>
+				</tr>
+				<tr>
+					<td width="10" height="495">&nbsp;</td>
+					<td width="790" height="495" colspan="3" valign="top">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tr>
+								<td width="790" height="30">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81" height="25">
+												<font size="2">&nbsp;&nbsp;Start Time</font>
+											</td>
+											<td width="130" height="25">
+												<p>
+													<INPUT id=Textbox_1 size="12">
+												</p>
+											</td>
+											<td width="75" height="25">
+												 <font size="2">End Time</font>
+											</td>
+											<td width="130" height="25">
+												<INPUT id=Textbox_2 size="12">
+											</td>
+											<td width="78" height="25">
+												<p><font size="2">Total Time</font></p>
+											</td>
+											<td width="200" height="25">
+												<INPUT id=Textbox_3 size="12"> seconds
+											</td>
+											<td width="160" height="25">&nbsp;</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="30">
+									<table cellpadding="0" cellspacing="0" width="774" align="center">
+										<tr>
+											<td width="81">
+												<font size="2">&nbsp;&nbsp;I</font><font size="2">tem Choice</font></td>
+											<td width="130">
+												<object classid="clsid:D8BCC087-4710-427d-B2E4-A4B93B6EA197" width="187" height="163"
+													style="font-size:9pt" class="glcstyle" id="gc_luxe">
+													<param name=ComboDataID		value=gc_dataset_luxe>
+													<param name=SearchColumn	value=COMPANYNAME>
+													<param name=Sort			value=True>
+													<param name=ListExprFormat	value="COMPANYNAME^0^150">
+													<param name=EditExprFormat	value="%;COMPANYNAME">
+													<param name=ComboStyle		value=2>
+												</object>
+											</td>
+											<td width="563">
+												<a href="#" OnMouseOut="na_restore_img_src('image3', 'document')" OnMouseOver="na_change_img_src('image3', 'document', '../images/search_bu_color.gif', true)"><img src="../images/search_bu.gif" width="61" height="20" border="0" name="image3" onclick="fn_Find()"></a>								</td>
+											  <td width="250">
+												<font size="2">&nbsp;&nbsp;</font><font size="2">조회할 데이터건수</font></td>
+												<FORM NAME="Form1" ACTION="">
+												<td>
+												<SELECT NAME="Target1" language="JavaScript">
+													<OPTION SELECTED VALUE="100">100건</option>
+													<OPTION VALUE="500">500건</option>
+													<OPTION VALUE="1000">1000건</option>
+													<OPTION VALUE="2000">2000건</option>
+													<OPTION VALUE="5000">5000건</option>
+													<OPTION VALUE="10000">10000건</option>
+													<OPTION VALUE="20000">20000건</option>
+													<OPTION VALUE="30000">30000건</option>
+													<OPTION VALUE="50000">50000건</option>
+													</SELECT>
+												</td>
+												</form>
+										</tr>
+									</table>
+
+								</td>
+							</tr>
+							<tr>
+								<td align="right">
+									<input id=btn_scroll type=button value=scroll onclick="btn_scroll_onclick();">
+									<input id=btn_page type=button value=page  onclick="btn_page_onclick();">
+								</td>
+							</tr>
+							<tr>
+								<td height="10">
+								</td>
+							</tr>
+							<tr>
+								<td width="790" height="360" valign="top"><p>
+									<object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" width="100%" height="400"
+										style="font-size:9pt" id="gc_grid">
+										<param name="DataID"        	value="gc_dataset">
+										<param name="HeadBorder"	value="4">
+										<param name="BorderStyle"	value="1">
+										<param name="LineColor"	value="#FFFFFF">
+										<param name="HeadLineColor"	value="#FFFFFF">
+										<param name="colsizing"	value="true">
+										<param name="IndWidth"		value=0>
+										<param name="HiddenVScroll"     value="false">                 
+										<param name="Format"        	value="
+											<F>ID=SEQNO			width=55 	name=번호		align=center value={currow} HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor=#F5F0B0 show=true</F>
+											<C>ID=CUSTOMERID	width=65 	name=고객 ID		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=COMPANYNAME	width=130 	name=회사이름	align=left sort=true HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=CONTACTNAME	width=95 	name=대표자명	align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=CONTACTTITLE	width=95	name=직함		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=CITY			width=100	name=도시명		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=REGION		width=75	name=지역		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=COUNTRY		width=95	name=국가		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=FAX			width=100	name=FAX		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+											<C>ID=REGION1		width=75	name=지역1		align=center HeadBgColor=#908F8B HeadColor=#FFFFFF BgColor={decode(currow-(currow/2)*2,0,'#FFFFCE',1,'#FFFFFF')}</C>
+										">
+									</object> 
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<td align=center height=30>
+									<div id=div_page style="visibility:hidden">
+									<object id=tb_Grid classid=CLSID:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B height=23 width=470 style="font-size:9pt;">
+										<param name="DataID"		value=tb_DataSet>
+										<param name="Editable"  	value=true>
+										<param name="ViewHeader"    value=false>
+										<param name="BorderStyle"   value=0>
+										<param name="IndWidth"		value=0>
+										<param name="LineColor"     value=white>
+										<param name="HiddenVScroll"     value="true">                 
+										<param name="HiddenHScroll"     value="true">                 
+										<param name="Format"		value='
+											<C>ID=be10		name="[이전15개]"	width=65	align=Center edit=none</C>
+											<C>ID=be		name="◀"			width=28	align=Center edit=none</C>
+											<C>ID=A1		name="01"			width=28	align=Center edit=none</C>
+											<C>ID=A2		name="02"			width=28	align=Center edit=none</C>
+											<C>ID=A3		name="03"			width=28	align=Center edit=none</C>
+											<C>ID=A4		name="04"			width=28	align=Center edit=none</C>
+											<C>ID=A5		name="05"			width=28	align=Center edit=none</C>
+											<C>ID=A6		name="06"			width=28	align=Center edit=none</C>
+											<C>ID=A7		name="07"			width=28	align=Center edit=none</C>
+											<C>ID=A8		name="08"			width=28	align=Center edit=none</C>
+											<C>ID=A9		name="09"			width=28	align=Center edit=none</C>
+											<C>ID=A10		name="10"			width=28	align=Center edit=none</C>
+											<C>ID=af		name="▶"			width=28	align=Center edit=none</C>
+											<C>ID=af10		name="[다음15개]"	width=65	align=Center edit=none</C>
+										'>
+									</object>
+									</div>
+								</td>
+							</tr>
+							
+						</table>
+					</td>
+				</tr>
+			</table>
+
+		</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_spec_cost_detail_1h.html 								-->
+<!-- 2. 유형(시나리오): 투입원가 세부내역 보기  														-->
+<!-- 3. 기 능 정 의   : 투입원가 세부내역 보기 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var il_spec_no_seq=0
+var is_ds_1_addr = 'c_spec_cost_detail_1q.jsp?arg_dept_code='  //각 내역  당월 보여주기 
+var is_ds_tot_addr = 'c_spec_cost_detail_tot_1q.jsp?arg_dept_code='  //각 내역  누계 
+//-----------------------------------------------------------------------트리및 집계구조와 내용  
+var is_yymmdd
+var is_dept_code = ""
+var is_spec_unq_num
+var is_title
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+// ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_date=" + is_yymmdd + "&arg_spec_unq_num=" + is_spec_unq_num
+
+ ds_1.SyncLoad=true
+ ds_1.reset()
+
+}
+ 
+
+//---------------------------------------------------------------------------
+function bt_const_parent()                        //닫기  
+//---------------------------------------------------------------------------
+{
+ window.close();  
+}  
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+   is_title = is_title.substr(0,20)
+   gd_1.GridToExcel(is_title,'c:\aa.xls',0)
+}
+//-------------------------------------------------------------------------------
+function select_totyymm_onchange()                  //당월 , 누계 select change
+//--------------------------------------------------------------------------------
+{
+  if (select_totyymm.value == '1') 
+     ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_date=" + is_yymmdd + "&arg_spec_unq_num=" + is_spec_unq_num
+  else
+     ds_1.DataID = is_ds_tot_addr + is_dept_code + "&arg_date=" + is_yymmdd + "&arg_spec_unq_num=" + is_spec_unq_num
+  btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ array = result.split("@");
+ is_dept_code = array[0]                  // 0: 부서 코드  
+ Textbox_dept_name.value = array[1] + '  [ ' +  array[4]  + ' ]'     // 1: 부서 명칭 
+ is_yymmdd = array[2]                     // 2: 년월 
+ is_spec_unq_num = array[3]               // 3: spec unq num(내역 번호)
+ is_title = array[4]                     //  4: 내역명칭 
+ if (array.length == 6) 
+    select_totyymm.value = array[5]
+ else
+    select_totyymm.value = 1
+      
+ em_select_yymm.Text= is_yymmdd
+ select_totyymm_onchange()
+
+//     <C> Name='구분'  id=tag  width=64  EditStyle=Combo  Data='M:자재비,L:노무비,E:장비비,S:외주비,F:경비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+ 
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  oncontextmenu="return false" >
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+	
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <Param Name="SubsumExpr" VALUE="100:tag"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<LABEL id=Label_1 
+        style="LEFT: 10px; POSITION: absolute; TOP: 11px">년월:</LABEL>
+
+<comment id="__NSID__"><OBJECT id=em_select_yymm 
+       style="Z-INDEX: 100; LEFT: 45px; WIDTH: 57px; POSITION: absolute; TOP: 9px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Text" VALUE="____-__">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="6">
+	    <PARAM NAME="Format" VALUE="0000-00">
+       <PARAM NAME=ReadOnly VALUE=true> 
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<INPUT id=Textbox_dept_name
+      style="Z-INDEX:100; COLOR: #ff0080;  BORDER-RIGHT: 0px; BORDER-TOP: 0px;BORDER-LEFT: 0px; BORDER-BOTTOM: 0px; LEFT: 150px; WIDTH: 550px; POSITION: absolute; TOP: 8px; HEIGHT: 25px" size=32 >
+<DIV id=gd_1_button 
+      style="Z-INDEX: 107; LEFT: 630px; WIDTH: 150px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+     <SELECT id=select_totyymm 
+             style="Z-INDEX: 100; LEFT: 10px; WIDTH: 59px; POSITION: absolute; TOP: 0px" 
+             onchange="select_totyymm_onchange()" >
+           <OPTION value=1 selected>당월</OPTION> 
+           <OPTION value=2>누계</OPTION>
+      </SELECT> 
+		<input id=bt_excel_gd_parent_query type="button" value="엑셀" 
+		          style="Z-INDEX: 100; LEFT: 75px; WIDTH: 35px; POSITION: absolute; TOP: 0px color:#2E4A4A; font-size:13px; CURSOR: hand;
+		           background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+		            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+		            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+		           "  onclick=excel_down()>
+</DIV>
+
+<input type="button_query1" value=" 닫 기" 
+          style="color:#2E4A4A; font-size:13px; CURSOR: hand; 
+           background-color:#E9F5F5; border:1 #A1A9A9 solid; LEFT: 770px; POSITION: absolute; WIDTH: 40px; TOP: 7px;  height:17px"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=bt_const_parent()>
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px;TOP: 30px;  WIDTH: 1000px; HEIGHT: 600px; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+   <PARAM NAME="ColSelect"             value="-1">
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='구분'  id='{decode(curlevel,100,\' 소  계\',tag)}'  width=64   BgColor={decode(curlevel,100,'Pink',(decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')))}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='명    칭'  id=name  width=303  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+        SumText='합     계' SumColor=Black SumBgColor=Pink</C>
+     <C> Name='규격'  id=ssize  width=206  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='단위'  id=unit  width=83  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='투입일자'  id=work_date  width=70 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='금 액'  id=pay_amt  width=140  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+                                    SumText=@sum          SumColor=Black SumBgColor=Pink</C> 
+     ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+        
+</BODY>
+</HTML>
+

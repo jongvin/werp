@@ -1,0 +1,2738 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************				-->
+<!-- 1. 프로그램 id   : y_chg_budget_child_1h.html (tree sample)					-->
+<!-- 2. 유형(시나리오): 조회및 입력															-->
+<!-- 3. 기 능 정 의   : 변경 실행 내역 													-->
+<!-- 4. 변 경 이 력   :  박두현 작성														-->
+<!-- 5. 관련프로그램  :																			-->
+<!-- 6. 특 기 사 항   :	확정버튼 추가 : 2004.01.26  이양헌							-->
+<!--                  	 . 실행승인없이 변경자료를 y_budget_detail 에 복사		-->
+<!--                  	 . 도급보기, 실행보기에 금액 조회되게 수정				-->
+<!-- *********************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_update = ""       //승인이 되었을경우 수정못함. open event에서 셋팅함.
+var is_dept_code=""               //부서 코드 
+var il_chg_no_seq=0               //변경 차수의 내부 순번
+var is_dept_name=""               //부서 명 
+var is_user = top.frames['security'].user_id.value          // user-id
+var is_user_name = top.frames['security'].gs_name.value     // user-name
+var is_outside_class="N"                    //실행등록 구분자 (본실행/실행외)
+var is_html=""                    //되돌아갈 html주소 
+var iw_dept_code = ""             //현장내역복사시의 선택한현장
+var iw_dept_name = ""             //현장내역복사시의 선택한현장 명칭.
+var is_tree_copy_check = 'no'     //타현장의 공종구조를 복사할때 
+                                  //event="OnColumnChanged(row, colid)" for=ds_tree_1> 이 이벤트중 하위 내역을 체크
+                                  // 하지 않기 위해서....
+var ls_child_copy_check = 'no'    // 타현장 복사시 내역이 복사할것이 있는지 check 있으면 yes
+var   old_dept_code = new Array()
+var   old_chg_no_seq = new Array()
+var   old_spec_no_seq = new Array()
+var   new_dept_code = new Array()
+var   new_chg_no_seq = new Array()
+var   new_spec_no_seq = new Array()
+
+var is_pyo_chk   //표준내역사용여부
+var is_detail_code='N' // 표준내역코드를 popup에서 찾았을경우 columnchanged event에서는 로직을 타지않기위해서
+var gs_home = parent.frames['security'].gs_home.value
+var is_ds_1_addr = gs_home + '/const/y_web/01/y_chg_budget_child_1q.jsp?arg_dept_code='
+var is_tr_1_addr = gs_home + '/const/y_web/01/y_chg_budget_child_1tr.jsp'
+//-----------------------------------------------------------------------표준내역 집계구조 
+var is_ds_parent_query_addr = gs_home + '/const/y_web/01/y_chg_budget_parent_query_1q.jsp?arg_dept_code='   //트리의 집계를 를 보여주기위한 보조파일
+var is_ds_tree_1_addr = gs_home + '/const/y_web/01/y_chg_budget_parent_1q.jsp?arg_dept_code='       //트리를 보여주기위한 보조파일
+var is_ds_tree_2_addr = gs_home + '/const/y_web/01/y_chg_budget_parent_1q.jsp?arg_dept_code='       //트리에 data를 입력하는파일
+var is_tr_tree_1_addr = gs_home +  '/const/y_web/01/y_chg_budget_parent_1tr.jsp'
+var is_ds_seq_addr = gs_home + '/const/y_web/00/y_spec_unq_no_1q.jsp'                 // seq_no구하기 
+
+var is_format_no                //현장관리비 입력시 도급필드만 입력가능하게하기 위해 gd_1의 현재 포멧 순번을 가짐
+var is_wbs_code                 //현장관리비 공종코드를 체크하여 입력및 수정 방지하기위해 사용.
+var il_bef_row                  //삽입시 이전 row 번호
+var il_no_seq                   //삽입시 seq no
+var il_nindex = 1               //tab이 변경 될때 마다 tab의 번호 (tb_1의 select changed event에서 셋팅함)
+var il_screen_zindex = 1           // tab이 1인이면서 집계구조 1인경우  집계구조 금액만 조회할경우는 1이고
+                                //                 내역을 입력할수 있는경우는   2이다. 
+                                //tree_1_OnSelChanged()            tree_1의 select changed event에서 셋팅함 
+                                
+var is_format_1               //전체 도급및 실행을 보는 보는 그리드
+var is_format_2               // 도급만 보는 그리드
+var is_format_3               //실행만 보는 그리드 
+var is_tree_only
+
+is_format_1 = "<FC> Name='순번' ID=no_seq   color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=50 sort=true</FC> " + 
+					"<FC> Name='내역코드' ID=detail_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </FC>" +
+	           "<FC> Name='명  칭' ID=name color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=170 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink sort=true</FC>" +
+	           "<C> Name='규  격' ID=ssize color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=155 </C>" +
+	           "<C> Name='단위' ID=unit color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+				  "<G> Name='실         행' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=qty color=@ucoltex BgColor=@ucolor_1 HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13 gte_columntype='number:3:true' </C>" +
+	           "     <C> Name=단가 ID=price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Edit=None  Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=amt color=@ucoltex  Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "  <X> Name='  실         행 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=mat_price color=@ucoltex color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=mat_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +  
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G> " + 
+	           "   <G> Name='외주비' show=false BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=sub_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=sub_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 EditLimit=13</C>" +
+	           "     <C> Name=금액 ID=exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink EditLimit=13</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           
+	           "<G> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=cnt_qty color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=단가 ID=cnt_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_amt color=@ucoltex Edit=None  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "<X> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_mat_amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum      SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "  <C> Name='비   고' ID=remark color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=150 </C>" + 
+				  "  <C> Name=자재코드 ID=mat_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </C>" +
+	           "  <C> Name='자원구분' ID=res_class color=@ucoltex EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>" + 
+	           "  <C> Name='내부코드' ID=spec_unq_num show=false color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>"
+                               
+is_format_2 = "<FC> Name='순번' ID=no_seq color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=50 sort=true</FC> " + 
+	           "<FC> Name='내역코드' ID=detail_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </FC>" +
+	           "<FC> Name='명  칭' ID=name color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=200 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink sort=true</FC>" +
+	           "<C> Name='규  격' ID=ssize color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=120 </C>" +
+	           "<C> Name='단위' ID=unit color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+	           "<X> Name='도         급' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=cnt_qty color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  columntype='number:3:true'</C>" +
+	           "   <G> Name='합  계' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_amt color=@ucoltex Edit=None  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='재 료 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_mat_amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='노 무 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                        SumText=@sum      SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='경 비' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=cnt_exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "  <C> Name='비   고' ID=remark color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=150 </C>" + 
+				  "  <C> Name=자재코드 ID=mat_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </C>" +
+	           "  <C> Name='자원구분' ID=res_class color=@ucoltex EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>"
+                               
+is_format_3 = "<FC> Name='순번' ID=no_seq color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=50 sort=true</FC> " + 
+					"<FC> Name='내역코드' ID=detail_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </FC>" +
+	           "<FC> Name='명    칭' ID=name color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=200 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink sort=true</FC>" +
+	           "<FC> Name='규  격' ID=ssize color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=120 </FC>" +
+	           "<C> Name='단 위' ID=unit color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 </C>" +
+	           "<X> Name='  실         행' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=qty color=@ucoltex BgColor=@ucolor_1 HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  columntype='number:3:true'</C>" +
+	           "   <G> Name='  합  계 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Edit=None  Width=80 </C>" +
+	           "     <C> Name=금액 ID=amt  color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>  " +
+	           "   <G> Name='  재  료 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=mat_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=mat_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +  
+	           "   <G> Name='  노 무 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=lab_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=lab_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  외주비 ' show=false  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=sub_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=sub_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90" +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "   <G> Name='  경 비 ' BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=exp_price color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>" +
+	           "     <C> Name=금액 ID=exp_amt color=@ucoltex Edit=None BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=90 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "  <C> Name='비   고' ID=remark color=@ucoltex BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=150 </C>" + 
+				  "  <C> Name=자재코드 ID=mat_code color=@ucoltex EditStyle=Popup BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73 </C>" +
+	           "  <C> Name='자원구분' ID=res_class color=@ucoltex EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor=@ucolor HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>"
+                               
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">                                
+                                
+//---------------------------------------------------------------
+function insert_init()                  //추가기 초기값 set
+//---------------------------------------------------------------
+{
+ ds_1.NameValue(ds_1.RowPosition,"dept_code") = ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code")
+ ds_1.NameValue(ds_1.RowPosition,"chg_no_seq")=ds_tree_2.NameValue(ds_tree_2.RowPosition,"chg_no_seq")
+ ds_1.NameValue(ds_1.RowPosition,"spec_no_seq")=ds_tree_2.NameValue(ds_tree_2.RowPosition,"spec_no_seq")
+ ds_1.NameValue(ds_1.RowPosition,"no_seq") = il_no_seq 
+ ds_1.NameValue(ds_1.RowPosition,"res_class") = "U" 
+ ds_1.NameValue(ds_1.RowPosition,"approve_yn") = "N" 
+ ds_1.NameValue(ds_1.RowPosition,"outside_yn") = "N"
+ 
+ ds_seq.SyncLoad=true;             // seq no 구하기
+ ds_seq.reset()
+ ds_1.NameValue(ds_1.RowPosition,"spec_unq_num") = ds_seq.NameValue(1,"nextval")
+}
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  if (il_nindex == 2){
+    tree_btnquery_onclick()
+    return
+  } 
+ds_1.DataID = is_ds_1_addr + ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code") + 
+              "&arg_chg_no_seq="  +  ds_tree_2.NameValue(ds_tree_2.RowPosition,"chg_no_seq") + 
+              "&arg_spec_no_seq="  +  ds_tree_2.NameValue(ds_tree_2.RowPosition,"spec_no_seq")  
+           
+ds_1.SyncLoad=true
+ds_1.reset()
+f_hyunjang_exp()             //현장관리비 일경우 필드 수정여부 체크 
+}
+//-----------------------------------------------------------------
+function f_hyunjang_exp() 
+//----------------------------------------------------------------
+{
+  //if (is_update == '4' || is_update == '7') return // 승인이 되었을경우 return 
+  if (is_update != '1' ) return // 승인이 되었을경우 return 
+  if (is_wbs_code.substr(0,1) == 'Z') {
+     gd_1.Editable = '0'
+     if (is_format_no == '3')  return
+     else {
+         gd_1.Editable = '-1'
+         gd_1.ColumnProp("name","EDIT") = "NONE"
+         gd_1.ColumnProp("ssize","EDIT") = "NONE"
+         gd_1.ColumnProp("unit","EDIT") = "NONE"
+         gd_1.ColumnProp("qty","EDIT") = "NONE"
+         gd_1.ColumnProp("mat_price","EDIT") = "NONE"
+         gd_1.ColumnProp("lab_price","EDIT") = "NONE"
+         gd_1.ColumnProp("equ_price","EDIT") = "NONE"
+         gd_1.ColumnProp("exp_price","EDIT") = "NONE"
+         gd_1.ColumnProp("sub_price","EDIT") = "NONE"
+     }
+  }   
+  else {     
+     gd_1.Editable = '-1'
+  }     
+}
+//-----------------------------------------------------------------
+function btnadd_onclick()                 //추가
+//-----------------------------------------------------------------
+{ 
+  var ll_return
+  ll_return = btnadd_onclick_common()
+  if (is_pyo_chk == 'Y' && ll_return == true) {}
+  //   detail_code_find(ds_1.RowPosition,'','P')
+}
+//-----------------------------------------------------------------
+function btnadd_onclick_common()                 //추가
+//-----------------------------------------------------------------
+{
+
+  if (il_nindex == 2){                          // tab 2 이면 집계구조 (tree) 입력화면이다.
+    tree_btnadd_onclick()
+    return
+  } 
+
+  if (is_wbs_code.substr(0,1) == 'Z') {
+      alert("현장관리비는 입력할수 없습니다")
+      return false
+  }    
+
+  if  (il_screen_zindex == 1) {               // 집계구조 금액 조회 화면 
+      alert("공종별 금액 조회화면이므로 추가 할수없슴니다")
+      return false
+  }      
+
+  ds_1.AddRow()
+  if  (ds_1.CountRow == 1)
+      il_no_seq = 0
+  else 
+      il_no_seq = ds_1.NameValue(ds_1.RowPosition - 1,"no_seq")   
+      
+ il_no_seq = il_no_seq + 100  
+  insert_init()
+  return true
+}
+//--------------------------------------------------------------------
+function btninsert_onclick()             // 삽입
+//--------------------------------------------------------------------
+{
+  var ll_return
+  ll_return  = btninsert_onclick_common()
+  if (is_pyo_chk == 'Y' && ll_return == true) {}
+   //  detail_code_find(ds_1.RowPosition,'','P')
+}
+//--------------------------------------------------------------------
+function btninsert_onclick_common()             // 삽입
+//--------------------------------------------------------------------
+{
+
+  if (il_nindex == 2){                           // tab 2 이면 집계구조 (tree) 입력화면이다.
+    tree_btninsert_onclick()
+    return
+  } 
+
+  if  (il_screen_zindex == 1) {               // 집계구조 금액  조회 화면 
+      alert("공종별 금액 조회화면이므로 삽입 할수없슴니다")
+      return false
+  }      
+  if (is_wbs_code.substr(0,1) == 'Z') {
+      alert("현장관리비는 삽입할수 없습니다")
+      return false
+  }    
+
+
+ if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+   btnadd_onclick()
+   return false
+ }  
+ 
+ ll_to_no_seq = ds_1.NameValue(ds_1.RowPosition,"no_seq") 
+ 
+ ds_1.InsertRow(ds_1.RowPosition)
+ if  (ds_1.RowPosition == 1)                 //삽입버튼을 누른후에 처음으로 row가 갔을경우
+     ll_from_no_seq = 0 
+ else 
+     ll_from_no_seq = ds_1.NameValue(ds_1.RowPosition - 1,"no_seq")
+
+ ll_incre = (ll_to_no_seq - ll_from_no_seq) / 2
+ ll_incre = parseInt(ll_incre)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+// if (ll_incre == 0)                           //더이상 순번을 자동으로 메겨줄수 없슴
+//    alert("순번을 수정하여 입력하십시요")
+ ll_incre = ll_from_no_seq + ll_incre
+ il_no_seq = ll_incre
+ 
+
+ insert_init() 
+ return true
+ 
+}
+//---------------------------------------------------------------------------
+function btndelete_onclick()             //삭제
+//----------------------------------------------------------------------------
+{
+  if (is_wbs_code.substr(0,1) == 'Z') {
+      alert("현장관리비는 삭제할수 없습니다")
+      return
+  }    
+
+  if (il_nindex == 2){                         // tab 2 이면 집계구조 (tree) 입력화면이다.
+    tree_btndelete_onclick()
+    return
+  } 
+  if  (il_screen_zindex == 1) {               // 집계구조 금액  조회 화면 
+      alert("공종별 금액 조회화면이므로 삭제 할수없습니다")
+      return
+  }     
+  
+  //---승인이 된 자료일경우 자료 삭제을 할수 없습니다.
+  for (i=1; i<=ds_1.CountRow; i++) {
+      if  (ds_1.RowMark(i) == 1) {
+          if  (ds_1.NameValue(i,"approve_yn") == 'Y') {
+              alert("순번="+ ds_1.NameValue(i,"no_seq") + "  이미 승인이된 자료이므로 삭제할수 없습니다")
+              ds_1.RowPosition = i
+              return
+          }
+      }
+  }    
+//ds_1.DeleteMarked()
+  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+    for (i=ds_1.CountRow ;i >0 ;i--)
+     {
+        if (ds_1.RowMark(i) == 1){
+               ds_1.DeleteRow(i)
+         }      
+    }   
+     ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+  }   
+  else { 
+     ds_1.DeleteRow(ds_1.RowPosition)   
+  }
+ }
+//-----------------------------------------------------------------
+function btnsave_onclick()               // 저장
+//------------------------------------------------------------------
+{
+  if (il_nindex == 2){                         // tab 2 이면 집계구조 (tree) 입력화면이다.
+    tree_btnsave_onclick()
+    return
+  } 
+
+  if  (il_screen_zindex == 1) {               // 집계구조 금액 조회 화면 
+      return
+  }      
+  var i
+  if (is_pyo_chk == 'Y') {
+      for (i=1;i<=ds_1.CountRow;i++) {
+          if (ds_1.NameValue(i,'detail_code') == '') {
+             alert("반드시 표준내역코드가 입력되어야 합니다")
+             ds_1.RowPosition = i
+             gd_1.Focus()
+             gd_1.SetColumn("detail_code")
+             return false
+          }
+     }
+  }
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?")){
+        f_seq_recall()  //  spec unq num을 다시 구함.(혹시 0가 있을경우에 대비해서)  
+        tr_1.Post()
+        sp_call()
+    }    
+  }      
+}
+//-----------------------------------------------------------------
+function f_seq_recall()               //spec unq num을 다시 구함.(혹시 0가 있을경우에 대비해서) 
+//------------------------------------------------------------------
+{ 
+  var i 
+  for (i=1;i<=ds_1.CountRow;i++) {
+    if (ds_1.SysStatus(i) == 1) {  // insert
+       if (ds_1.NameValue(i,'spec_unq_num') == 0) {   // spec unq num을 다시 구함. 
+            ds_seq.SyncLoad=true;                     // seq no 구하기
+            ds_seq.reset()
+            ds_1.NameValue(i,"spec_unq_num") = ds_seq.NameValue(1,"nextval")
+       }
+    }
+ }           
+}
+//-----------------------------------------------------------------
+function sp_call()               //sp call(상위금액 집계) 
+//------------------------------------------------------------------
+{
+        ls_dept_code = ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code")
+        ll_chg_no_seq = ds_tree_2.NameValue(ds_tree_2.RowPosition,"chg_no_seq")
+        ll_spec_no_seq = ds_tree_2.NameValue(ds_tree_2.RowPosition,"spec_no_seq")
+        ds_update.DataID = 'y_chg_budget_child_procedure.jsp?arg_dept_code=' + ls_dept_code + '&arg_chg_no_seq=' + ll_chg_no_seq +
+                           '&arg_spec_no_seq=' + ll_spec_no_seq + '&arg_user=' + is_user
+        ds_update.SyncLoad = true
+        ds_update.reset()
+}
+//-----------------------------------------------------------------
+function btncancel_onclick()               //취소 
+//------------------------------------------------------------------
+{
+  if (il_nindex == 2){                        // tab 2 이면 집계구조 (tree) 입력화면이다.
+    tree_btncancel_onclick()
+    return
+  } 
+
+  if  (il_screen_zindex == 1) {               // 집계구조 금액 조회 화면 
+      alert("공종별 금액 조회화면이므로 추가 할수없슴니다")
+      return
+  }      
+
+  ds_1.Undo(ds_1.RowPosition)
+}
+ 
+//--------------------------------------------------------------- 
+function btnexit_onclick(ls_arg)           //종료
+//---------------------------------------------------------------
+{
+  if (il_nindex == 2){
+    tree_btnexit_onclick()
+    return
+  } 
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+parent.frames['main_ct'].location.href(ls_arg)
+parent.frames['main_title'].div_r.style.visibility="hidden"             
+parent.frames['main_title'].div_u.style.visibility="hidden"             
+
+// parent.frames['main_ct'].window.close()     
+}
+//------------------------------------------------------------------------------
+function gd_1_bt_copy()                 //실행 내역 복사 
+//------------------------------------------------------------------------------
+{
+  ds_1copy.ClearData()
+  for (i=1 ; i <= ds_1.CountRow ;i++){
+        if (ds_1.RowMark(i) == 1){
+           ds_1copy.AddRow()
+           for (j=1;j<=ds_1.CountColumn;j++)
+                ds_1copy.ColumnValue(ds_1copy.RowPosition,j)=ds_1.ColumnValue(i,j)
+        }        
+  }
+} 
+//------------------------------------------------------------------------------
+function gd_1_bt_paste()               //실행 내역 붙여넣기
+//------------------------------------------------------------------------------
+{
+ gd_1.ReDraw = false
+ sa_position = ds_1.RowPosition
+ if ((ds_1.RowPosition == ds_1.CountRow) || (ds_1.CountRow == 0))
+	      copy_add()
+     else
+         copy_insert()
+ gd_1.ReDraw = true
+// ds_1.RowPosition = sa_position    // 복사하기 이전위치로 가기       
+ gd_1.Focus();
+ gd_1.SetColumn("no_seq");
+
+}
+//------------------------------------------------------------------------------
+function gd_1_bt_excel()               //엑셀  붙여넣기
+//------------------------------------------------------------------------------
+{
+  var arg_auto_insert = 'N'   //자동 삽입 
+  var ls_col_type = new Array() 
+   // 엑셀자료를 복사한후 GRID에 붙여넣기 하였을경우에 엑셀의 자료를 GRID에 복사및 추가 한다
+   // arg_ds      : dataset명칭            예) 'ds_1'
+   // arg_gd      : 그리드 명칭            예) 'gd_1'
+   // arg_row     : current row            예)  ds_1.RowPosition
+   // arg_tot_row : 총 건수                예)  ds_1.CountRow
+   // arg_col_type: 컬럼 id와 정보(배열명) 예)  'name','S','cnt_qty','N'      type: S는 스트링   N: NUMERIC 필드 H:는 옮기지않음
+   // arg_auto_insert: 복사할 row가 많으면 자동 addrow         예) 'Y': 자동 ADDROW   'N': ADDROW하지않음
+	//alert(is_format_no)
+  if (is_format_no == 1 || is_format_no == 3) {
+     ls_col_type = ['no_seq','N','detail_code','S','name','S','ssize','S','unit','S','qty','N','price','H','amt','H','mat_price','N',
+                    'mat_amt','H','lab_price','N','lab_amt','H','sub_price','N','sub_amt','H','exp_price','N',
+                    'exp_amt','H','cnt_qty','N','cnt_price','H','cnt_amt','H','cnt_mat_price','N','cnt_mat_amt','H',
+                    'cnt_lab_price','N','cnt_lab_amt','H','cnt_exp_price','N','cnt_exp_amt','H','res_class','S','remark','S']
+  }               
+  if (is_format_no == 2) {
+     ls_col_type = ['no_seq','N','detail_code','S','name','S','ssize','S','unit','S','cnt_qty','N','cnt_price','H',
+                    'cnt_amt','H','cnt_mat_price','N','cnt_mat_amt','H','cnt_lab_price','N','cnt_lab_amt','H',
+                    'cnt_exp_price','N','cnt_exp_amt','H','res_class','S','remark','S']
+  }               
+  ll_a = gf_excel_copy_row_col('ds_1','gd_1',ds_1.RowPosition,ds_1.CountRow,ls_col_type,arg_auto_insert)     
+  if (ll_a == 'err') { 
+     alert('화면의 시작 셀을 정확히 클릭하십시요')
+     return
+  }
+
+} 
+//-----------------------------------------------------------------
+function gd_1_re_seq()                 // 순번 재부여
+//-----------------------------------------------------------------
+{
+ i = 0             
+ var il_no_seq = 0
+ for (i=1; i <=ds_1.CountRow ;i++){
+        il_no_seq = il_no_seq + 100   
+        ds_1.NameValue(i,'no_seq') = il_no_seq
+ }   
+}
+//-----------------------------------------------------------------
+function copy_add()                 // 실행내역 붙여넣기시 추가
+//-----------------------------------------------------------------
+{
+ i = 0                             // 인스턴스 variable를 만듬으로 copy_move function에서 사용할수있슴.
+ for (i=1; i <=ds_1copy.CountRow ;i++){
+        ds_1.AddRow()
+        if  (ds_1.CountRow == 1)
+            il_no_seq = 0
+        else  
+            il_no_seq = ds_1.NameValue(ds_1.RowPosition - 1,"no_seq")   
+        il_no_seq = il_no_seq + 100   
+        copy_move()    
+ }   
+}
+
+//-----------------------------------------------------------------
+function copy_insert()                 //실행내역 붙여넣기기 삽입
+//-----------------------------------------------------------------
+{
+ i = 0     
+ ll_to_no_seq = ds_1.NameValue(ds_1.RowPosition,"no_seq")                         // 인스턴스 variable를 만듬으로 copy_move function에서 사용할수있슴.
+ if (ds_1.RowPosition > 1) 
+     ll_from_no_seq = ds_1.NameValue(ds_1.RowPosition - 1,"no_seq")
+ else
+     ll_from_no_seq = 0
+ ll_incre = (ll_to_no_seq - ll_from_no_seq) / ( ds_1copy.CountRow + 1)  
+ ll_incre = parseInt(ll_incre)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+  
+           
+ for (i=ds_1copy.CountRow; i > 0 ;i--){
+        ds_1.InsertRow(ds_1.RowPosition)
+
+        il_no_seq = ll_to_no_seq - ll_incre
+        copy_move()
+        ll_to_no_seq = il_no_seq 
+        sa_position++
+ }   
+}
+//----------------------------------------------------------------
+function copy_move()                  // 붙여 넣기시 공통 복사 move루틴  
+//-----------------------------------------------------------------
+{
+   for (j=1;j<=ds_1.CountColumn;j++)              //  ds_1copy의 것을 ds_1으로 복사한다.
+       ds_1.ColumnValue(ds_1.RowPosition,j)=ds_1copy.ColumnValue(i,j)
+   
+   insert_init()            // 윗 for문장으로 일단 ds_1copy의것을 ds_1으로 move한후 이루틴으로 key를 현재의 
+                            // tree레벨에 맞게 key부분을 다시 move한다.
+//    ds_1.NameValue(ds_1.RowPosition,"res_class") = ds_1copy.NameValue(i,"res_class") 
+
+}
+
+
+//---------------------------------------------------------------------
+function gd_1_stand_paste()               //표준내역 붙여 넣기
+//---------------------------------------------------------------------
+{
+var param;
+	parm = gs_home	
+	
+	is_returnvalue = window.showModalDialog("../99/y_stand_detail_copy_1h.html" ,parm,"dialogWidth:"+1000+"px; dialogHeight:"+700+"px");
+	
+	if (is_returnvalue == "") 
+	{
+
+	}	
+	else
+	{   gd_1.ReDraw = false
+
+	   sa_position = ds_1.RowPosition
+	  if ((ds_1.RowPosition == ds_1.CountRow) || (ds_1.CountRow == 0))
+	      stand_copy_add()
+     else
+         stand_copy_insert()
+      gd_1.ReDraw = true
+ 
+//     ds_1.RowPosition = sa_position       // 복사하기 이전위치로 가기
+     gd_1.Focus();
+  	  gd_1.SetColumn("no_seq");
+   
+
+	}
+
+}
+
+//----------------------------------------------------------------
+function stand_copy_add()                  // 표준자료 복사시 추가 할떄.....
+//-----------------------------------------------------------------
+{
+   ls_tempvalue = new Array();
+	ls_tempvalue=is_returnvalue.split("@");
+
+   tot_cnt = ls_tempvalue.length - 2  // 넘오어는 배열중 마지막에 @이 붙어 있으므로 하나 뻄 
+                                      // 그리고배열은 0부터 시작하니깐 하나더 뻄
+      for (j=0; j < tot_cnt ; j=j+12){    //  11개씩 짝이므로 (1 row당 11column)
+         btnadd_onclick_common()
+         k = j                            // 추가시는 배열이 처음부터 col순으로 move
+         stand_insert_init()
+   }
+}
+//----------------------------------------------------------------
+function stand_copy_insert()                  // 표준자료 복사시 삽입 할떄.....
+//-----------------------------------------------------------------
+{
+   var tot_row
+	ls_tempvalue = new Array();
+	ls_tempvalue=is_returnvalue.split("@");
+   tot_cnt = ls_tempvalue.length - 2  // 넘오어는 배열중 마지막에 @이 붙어 있으므로 하나 뻄
+   tot_row = (tot_cnt + 1) / 12       // 총배열의 item수는 +1 array는 0부터 시작됨으로 
+   tot_row = parseInt(tot_row)
+   ll_to_no_seq = ds_1.NameValue(ds_1.RowPosition,"no_seq")                         // 인스턴스 variable를 만듬으로 copy_move function에서 사용할수있슴.
+   if (ds_1.RowPosition > 1) 
+       ll_from_no_seq = ds_1.NameValue(ds_1.RowPosition - 1,"no_seq")
+   else
+       ll_from_no_seq = 0
+   ll_incre = (ll_to_no_seq - ll_from_no_seq) / (tot_row + 1)  
+   ll_incre = parseInt(ll_incre,10)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+
+   for (j=tot_cnt; j > 0 ; j=j-12){    //  삽입으므로 뒤에서 부터 삽입한다.(1row당 11column
+      stand_insert_paste() 
+      k = j - 11         // 삽입시는   배열이 뒤에서부터 앞으로 col순으로 move
+      stand_insert_init()
+      sa_position++
+   }
+}
+//-------------------------------------------------------------------
+function  stand_insert_init()              //표준자료 복사시 공통적으로 옮겨주는 루틴
+//---------------------------------------------------------------------
+{
+      ds_1.NameValue(ds_1.RowPosition,"detail_code") = ls_tempvalue[k]
+      ds_1.NameValue(ds_1.RowPosition,"res_class") = ls_tempvalue[k+1]
+      ds_1.NameValue(ds_1.RowPosition,"mat_code") = ls_tempvalue[k+2]
+      ds_1.NameValue(ds_1.RowPosition,"name") = ls_tempvalue[k+3]
+      ds_1.NameValue(ds_1.RowPosition,"ssize") = ls_tempvalue[k+4]
+      ds_1.NameValue(ds_1.RowPosition,"unit") = ls_tempvalue[k+5]
+      ds_1.NameValue(ds_1.RowPosition,"mat_price") = ls_tempvalue[k+6]
+      ds_1.NameValue(ds_1.RowPosition,"lab_price") = ls_tempvalue[k+7]
+      ds_1.NameValue(ds_1.RowPosition,"exp_price") = ls_tempvalue[k+8]
+      ds_1.NameValue(ds_1.RowPosition,"equ_price") = ls_tempvalue[k+9]
+      ds_1.NameValue(ds_1.RowPosition,"sub_price") = ls_tempvalue[k+10]
+      ds_1.NameValue(ds_1.RowPosition,"qty") = ls_tempvalue[k+11]
+
+}
+//---------------------------------------------------------------------------
+function stand_insert_paste()             //표준내역을 붙혀넣기시 삽입할경우
+//----------------------------------------------------------------------------
+{
+ ds_1.InsertRow(ds_1.RowPosition)
+ il_no_seq = ll_to_no_seq - ll_incre
+ insert_init() 
+ ll_to_no_seq = il_no_seq 
+
+ }
+//------------------------------------------------------------------------------
+function gd_1_bt_dept_paste()               //현장 복사 (내역만 복사) 
+//------------------------------------------------------------------------------
+{
+   var ll_res
+	if (iw_dept_code == "") {     //현장을 한번도 선택하지 않았을 경우에 
+       if (dept_search() == false) return   //현장을 선택하지 않았슴
+    }
+  else {                        //현장을 한번이라도 선택을 하였으면 
+       ll_res = confirm("현장명: " + iw_dept_name + "  " + "이현장으로 계속 복사하시겠습니까?") 
+       if  (ll_res == false) { 
+           if (dept_search() == false) return   //현장을 선택하지 않았슴
+        }
+   }
+
+  	var ls_result;
+   ls_result = window.showModalDialog("y_budget_dept_copy_1h.html",iw_dept_code,"dialogWidth:1020px;dialogHeight:700px");
+	
+   if(ls_result == "") return;
+	
+   ds_1copy.ClearData()
+   ds_1copy.ImportData(ls_result)
+   var ii
+   for (ii=1;ii<=ds_1copy.CountRow;ii++) {
+       ds_1copy.NameValue(ii,'approve_yn') = 'N'
+       ds_1copy.NameValue(ii,'outside_yn') = 'N'
+   }
+   gd_1_bt_paste()
+
+
+}
+//------------------------------------------------------------------------------
+function dept_search()               //현장 복사시 현장 선택  
+//------------------------------------------------------------------------------
+{
+   var result;
+   var array = new Array();
+	var is_dept_search_addr = gs_home + '/comm_search/z_dept_find_1h.html'
+	result = window.showModalDialog(is_dept_search_addr,gs_home + "@" + "","dialogWidth:500px;dialogHeight:500px");
+	if(result == "")  {
+	  return false
+   }
+	array = result.split("@");
+	iw_dept_code = array[0]  // 현장 코드 
+   iw_dept_name = array[4]  // 현장 명칭 
+   return true
+}
+//------------------------------------------------------------------------------
+function gd_1_bt_dept_tree_paste()               //현장 복사 (공종구조및내역 복사) 
+//------------------------------------------------------------------------------
+{ 
+   var ll_res
+	if (iw_dept_code == "") {     //현장을 한번도 선택하지 않았을 경우에 
+       if (dept_search() == false) return   //현장을 선택하지 않았슴
+    }
+  else {                        //현장을 한번이라도 선택을 하였으면 
+       ll_res = confirm("현장명: " + iw_dept_name + "  " + "이현장으로 계속 복사하시겠습니까?") 
+       if  (ll_res == false) { 
+           if (dept_search() == false) return   //현장을 선택하지 않았슴
+        }
+   }
+
+  	var ls_result;
+   
+   if  (confirm("구조와 내역을 함께복사(확인) \n구조만 복사를 원하시면(취소)")){
+        ls_child_copy_check = 'yes'
+     }
+   else 
+        ls_child_copy_check = 'no'
+		  
+   ls_result = window.showModalDialog("y_budget_dept_tree_copy_1h.html",iw_dept_code,"dialogWidth:1020px;dialogHeight:700px");
+	if(ls_result == "") return;
+
+
+   ds_tree_1copy.ClearData()
+   ds_tree_1copy.ImportData(ls_result)
+
+   var ll_level_copy,ll_level_cur,ll_level_cal
+   ll_level_copy = ds_tree_1copy.NameValue(1,"llevel")
+
+   if  (ds_tree_1.CountRow == 0)    //현재의 공종이 한건도 없을경우
+       ll_level_cur = 1
+   else if (ds_tree_1.CountRow == 1)  // 현재의 공종이 한건만 존재할경우
+            ll_level_cur = 2 
+   else if ((ds_tree_1.RowPosition == 1) || (ds_tree_1.RowPosition == 2)) 
+                 ll_level_cur = 2 
+   else if (ds_tree_1.RowPosition == ds_tree_1.CountRow) //마지막 로우일경우  
+                 ll_level_cur = ds_tree_1.NameValue(ds_tree_1.RowPosition,"llevel")
+   else                 
+        ll_level_cur = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"llevel")
+   ll_level_cal = ll_level_cur - ll_level_copy          //현재의 레벨 - 복사해온 구조 레벨 (레벨계산하기위해서)
+   var i,j
+
+   gd_tree_1.ReDraw = false
+
+// tree구조 화면의 복사시 껌벅거림을 방지하기위해서 ----------------------
+   tree_1.DataID = ""
+//----------------------------------------------------------------------
+   sa_position = ds_tree_1.RowPosition
+   ds_tree_2.RowPosition = ds_tree_1.RowPosition 
+
+// 순번 자동 구하기 
+   var ll_to_no_seq,ll_from_no_seq,ll_incre,tot_row
+   tot_row = ds_tree_1copy.CountRow
+   ll_to_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition,"no_seq")
+
+   if (ds_tree_1.RowPosition > 1) 
+       ll_from_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"no_seq")
+   else
+       ll_from_no_seq = 0
+   ll_incre = (ll_to_no_seq - ll_from_no_seq) / (tot_row + 1)  
+   ll_incre = parseInt(ll_incre,10)    // ll_incre를 소수점이하를 짤라냄.
+   ll_init = ll_from_no_seq + ll_incre 
+
+   if (ds_tree_2.CountRow <=1) {
+      ll_init = 200
+      ll_incre = 100
+   }
+   if (ds_tree_2.CountRow == ds_tree_2.RowPosition) {
+      ll_init = ds_tree_2.NameValue(ds_tree_2.RowPosition,"no_seq") + 100
+      ll_incre = 100
+   }
+
+// 마지막로우일경우는 뒤로 추가하기위해서 
+   if ((ds_tree_1.RowPosition == ds_tree_1.CountRow) || (ds_tree_1.CountRow == 0)) {
+	      ds_tree_1.AddRow()
+	      ds_tree_2.AddRow()
+   }
+   else {
+         ds_tree_1.InsertRow(ds_tree_1.RowPosition)
+         ds_tree_2.InsertRow(ds_tree_2.RowPosition)
+   }
+
+   //복사 시작 
+
+   old_dept_code = new Array()
+   old_chg_no_seq = new Array()
+   old_spec_no_seq = new Array()
+   new_dept_code = new Array()
+   new_chg_no_seq = new Array()
+   new_spec_no_seq = new Array()
+   var k
+   k=0
+   is_tree_copy_check = 'yes'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+   for (i=1; i<=ds_tree_1copy.CountRow; i++) {
+       for (j=1;j<=ds_tree_1copy.CountColumn;j++) {  
+            ds_tree_1.ColumnValue(ds_tree_1.RowPosition,j)=ds_tree_1copy.ColumnValue(i,j)
+       }
+       parent_insert_init()
+       if (ds_tree_1copy.NameValue(i,"invest_class") == "Y") {     //하위내역을 복사해야 한다.
+           old_dept_code[k] = ds_tree_1copy.NameValue(i,"dept_code")
+           old_chg_no_seq[k] = ds_tree_1copy.NameValue(i,"chg_no_seq")
+           old_spec_no_seq[k] = ds_tree_1copy.NameValue(i,"spec_no_seq")
+           new_dept_code[k] = ds_tree_1.NameValue(ds_tree_1.RowPosition,"dept_code")
+           new_chg_no_seq[k] = ds_tree_1.NameValue(ds_tree_1.RowPosition,"chg_no_seq")
+           new_spec_no_seq[k] = ds_tree_1.NameValue(ds_tree_1.RowPosition,"spec_no_seq")
+           k++
+       } 
+       ds_tree_1.NameValue(ds_tree_1.RowPosition,"direct_class") = ds_tree_1copy.NameValue(i,"direct_class")
+       ds_tree_1.NameValue(ds_tree_1.RowPosition,"division") = ds_tree_1copy.NameValue(i,"division")
+       ds_tree_1.NameValue(ds_tree_1.RowPosition,"no_seq") = ll_init
+       ds_tree_1.NameValue(ds_tree_1.RowPosition,"llevel") = ds_tree_1copy.NameValue(i,"llevel") + ll_level_cal
+       ll_init = ll_init + ll_incre 
+       if (i != ds_tree_1copy.CountRow) {
+         ds_tree_1.InsertRow(ds_tree_1.RowPosition + 1)
+         ds_tree_2.InsertRow(ds_tree_2.RowPosition)         // +1 하지 않는이유는 ds_tree_1에서 +1한후 삽입하면 pos재 셋팅되기떄문
+       }
+   }
+   is_tree_copy_check = 'no'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+
+     // 꺼져있는 tree구조를 다시 보여주기위함.---------------------------------------
+     ds_tree_2.ClearData()
+     tree_1.ClearAll()
+     var ls_temp 
+     ls_temp = ds_tree_1.ExportData(1,ds_tree_1.CountRow,true)
+     tree_1.DataID = "ds_tree_2"
+     ds_tree_2.ImportData(ls_temp)
+     ds_tree_2.RowPosition = ds_tree_2.CountRow                     // 포지젼을 이동함으로써 트리를 펼친다.
+     ds_tree_2.RowPosition = ds_tree_1.RowPosition
+    //----------------------------------------------------------------------------
+     gd_tree_1.ReDraw = true
+     gd_tree_1.Focus();
+  	  gd_tree_1.SetColumn("llevel");
+
+      tree_btnsave_onclick()
+      //전체 계산 
+      ll_chg_no_seq = ds_tree_2.NameValue(1,"chg_no_seq")
+		ds_spcall.DataID = gs_home + '/const/y_web/01/y_budget_tot_cmpt_procedure.jsp?arg_dept_code=' + 
+			is_dept_code + '&arg_no=' + ll_chg_no_seq  
+		ds_spcall.SyncLoad = true
+		ds_spcall.reset()
+
+}
+//-----------------------------------------------------------------------
+function wbs_master_paste()               //마스터 공종 복사 하기
+//-----------------------------------------------------------------------
+{
+ var param;
+ var temp
+ 
+    is_tree_copy_check = 'yes'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+
+   temp = ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_code")
+   if (temp.substr(0,1) == 'Z') {
+      alert("현장관리비의 표준공종은 변경될수 없습니다")
+      return
+   }   
+	parm = gs_home	
+	is_returnvalue = window.showModalDialog("../99/y_wbs_parent_copy_multi_1h.html" ,parm,"dialogWidth:"+600+"px; dialogHeight:"+600+"px");
+	if (is_returnvalue == "") return
+	
+   gd_tree_1.ReDraw = false
+   tree_1.DataID = ''
+  
+   sa_position = ds_tree_1.RowPosition
+   if ((ds_tree_1.RowPosition == ds_tree_1.CountRow) || (ds_tree_1.CountRow == 0))
+      wbs_copy_add()
+   else
+        wbs_copy_insert()
+        
+   gd_tree_1.ReDraw = true
+   tree_1.DataID = 'ds_tree_2'
+   ds_tree_2.ClearData()
+   var ls_ds_tree_1
+   ls_ds_tree_1= ds_tree_1.ExportData(1,9999,true)
+   ds_tree_2.ImportData(ls_ds_tree_1)
+   ds_tree_1.RowPosition = sa_position
+   ds_tree_2.RowPosition = sa_position
+
+     is_tree_copy_check = 'no'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+
+//   ds_tree_1.RowPosition = sa_position       // 복사하기 이전위치로 가기
+   gd_tree_1.Focus();
+   gd_tree_1.SetColumn("no_seq");
+   ds_tree_1.ClearAllMark();
+ 
+}
+//-----------------------------------------------------------------------
+function wbs_paste()               //표준 공종 복사 하기
+//-----------------------------------------------------------------------
+{
+ var param;
+ var temp
+   temp = ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_code")
+   if (temp.substr(0,1) == 'Z') {
+      alert("현장관리비의 표준공종은 변경될수 없습니다")
+      return
+   }   
+	parm = gs_home	
+	
+	is_returnvalue = window.showModalDialog("../99/y_wbs_code_copy_multi_1h.html" ,parm,"dialogWidth:"+600+"px; dialogHeight:"+600+"px");
+	if (is_returnvalue == "") return
+	
+   gd_tree_1.ReDraw = false
+   tree_1.DataID = ''
+   sa_position = ds_tree_1.RowPosition
+   if ((ds_tree_1.RowPosition == ds_tree_1.CountRow) || (ds_tree_1.CountRow == 0))
+      wbs_copy_add()
+   else
+        wbs_copy_insert()
+        
+   gd_tree_1.ReDraw = true
+   tree_1.DataID = 'ds_tree_2'
+   ds_tree_2.ClearData()
+   var ls_ds_tree_1
+   ls_ds_tree_1= ds_tree_1.ExportData(1,9999,true)
+   ds_tree_2.ImportData(ls_ds_tree_1)
+   ds_tree_1.RowPosition = sa_position
+   ds_tree_2.RowPosition = sa_position
+//   ds_tree_1.RowPosition = sa_position       // 복사하기 이전위치로 가기
+   gd_tree_1.Focus();
+   gd_tree_1.SetColumn("no_seq");
+   ds_tree_1.ClearAllMark();
+
+ 
+}
+
+//----------------------------------------------------------------
+function wbs_copy_add()                  // 표준자료 복사시 추가 할떄.....
+//-----------------------------------------------------------------
+{
+   ls_tempvalue = new Array();
+	ls_tempvalue=is_returnvalue.split("@");
+   is_tree_copy_check = 'yes'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+
+   tot_cnt = ls_tempvalue.length - 2  // 넘오어는 배열중 마지막에 @이 붙어 있으므로 하나 뻄 
+                                      // 그리고배열은 0부터 시작하니깐 하나더 뻄
+      for (j=0; j < tot_cnt ; j=j+5){    //  5개씩 짝이므로 (1 row당 11column)
+         tree_btnadd_onclick()
+         k = j                            // 추가시는 배열이 처음부터 col순으로 move
+         wbs_insert_init()
+   }
+   is_tree_copy_check = 'no'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+}
+//-------------------------------------------------------------------
+function  wbs_insert_init()              //표준공종복사시 기본사항.
+//---------------------------------------------------------------------
+{
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"llevel") = ls_tempvalue[k]
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_code") = ls_tempvalue[k+1]
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"name") = ls_tempvalue[k+2]
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_name") = ls_tempvalue[k+2]
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"division") = ls_tempvalue[k+3]
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"direct_class") = ls_tempvalue[k+4]
+}
+//----------------------------------------------------------------
+function wbs_copy_insert()                  // 표준공종 복사시 삽입 할떄.....
+//-----------------------------------------------------------------
+{
+   var tot_row
+   is_tree_copy_check = 'yes'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+	ls_tempvalue = new Array();
+	ls_tempvalue=is_returnvalue.split("@");
+   tot_cnt = ls_tempvalue.length - 2  // 넘오어는 배열중 마지막에 @이 붙어 있으므로 하나 뻄
+   tot_row = (tot_cnt + 1) / 5      // 총배열의 item수는 +1 array는 0부터 시작됨으로 
+   tot_row = parseInt(tot_row)
+   ll_to_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition,"no_seq")                         // 인스턴스 variable를 만듬으로 copy_move function에서 사용할수있슴.
+   if (ds_tree_1.RowPosition > 1) 
+       ll_from_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"no_seq")
+   else
+       ll_from_no_seq = 0
+   ll_incre = (ll_to_no_seq - ll_from_no_seq) / (tot_row + 1)  
+   ll_incre = parseInt(ll_incre,10)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+   for (j=tot_cnt; j > 0 ; j=j-5){    //  삽입으므로 뒤에서 부터 삽입한다.(1row당 11column
+      tree_btninsert_onclick() 
+      k = j - 4         // 삽입시는   배열이 뒤에서부터 앞으로 col순으로 move
+      wbs_insert_init()
+      sa_position++
+   }
+  var i,ll_no_seq
+  if ((ds_tree_1.RowPosition - 1) == 0) 
+     ll_no_seq = 0
+  else
+     ll_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,'no_seq')
+  for (i=ds_tree_1.RowPosition;i<=ds_tree_1.CountRow;i++) {
+     ll_no_seq = ll_no_seq + 10
+     ds_tree_1.NameValue(i,'no_seq') = ll_no_seq
+  }   
+   is_tree_copy_check = 'no'   //하위 체크 하지 않기위해서 event="OnColumnChanged(row, colid)" for=ds_tree_1
+}
+
+//----------------------------------------------------------------
+function gd_1_bt_cnt()                   //화면 보기에서 도급만 보기 
+//----------------------------------------------------------------
+{  //alert('a')
+   gd_1.format = is_format_2             //도급만 보기
+   is_format_no = '2'
+   f_hyunjang_exp()
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function gd_1_bt_sil()                   //화면 보기에서 실행만 보기 
+//----------------------------------------------------------------
+{
+   gd_1.format = is_format_3             //실행만 보기 보기
+   is_format_no = '3'
+   f_hyunjang_exp()
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function gd_1_bt_tot()                   //화면 보기에서 전체 보기 
+//----------------------------------------------------------------
+{
+   gd_1.format = is_format_1             //전체 보기 
+   is_format_no = '1'
+   f_hyunjang_exp()
+//   btnsave_onclick()
+//   btnquery_onclick()
+}
+
+//----------------------------------------------------------------
+function gd_1_cmp_select()                   //단가를 비교하기위해서 현장을 선택 
+//----------------------------------------------------------------
+{
+   var ls_detail_code
+   var ls_division
+   ls_detail_code = ds_1.NameValue(ds_1.RowPosition,'detail_code')
+   ls_division = ds_tree_2.NameValue(ds_tree_2.RowPosition,'division')
+   result = window.showModalDialog("y_cmp_dept_code_1h.html",gs_home+ '@' + is_dept_code + '@' + ls_detail_code + '@' + ls_division,
+                  "dialogWidth:330px;dialogHeight:450px");
+   ll_cnt = f_ds_select_q("ds_cmp_dept","select dept_code select_1 , cmp_dept_code select_2 from y_cmp_dept_code where dept_code = '" + is_dept_code + "' order by no_seq") // 아파트 상가
+
+}
+//----------------------------------------------------------------
+function gd_1_cmp()                    // 단가 비교분석 
+//----------------------------------------------------------------
+{
+  var ls_data
+  if (ds_cmp_dept.CountRow < 1)  {
+     alert("먼저 비교현장을 등록하십시요")
+     return
+  }   
+  ls_data = is_dept_code + '@'
+  ls_data = ls_data + ds_tree_1.NameValue(ds_tree_2.RowPosition,'division') + '@'
+  ls_data = ls_data + ds_1.NameValue(ds_1.RowPosition,'detail_code') + '@'
+  if (ds_1.NameValue(ds_1.RowPosition,'detail_code') == '9999') {
+      alert('내역코드가 9999인경우는 비교하지않습니다')
+      return
+   }
+
+  var i
+  var ls_dept_detail = ""
+  var ls_dept_mat = ""
+  var ls_dept  
+  
+  for (i=1;i<=ds_cmp_dept.CountRow; i++) {
+     ls_dept =  ds_cmp_dept.NameValue(i,'select_2')    //비교할 부서코드
+     if (i == 1) {
+        ls_dept_detail = "    (b.dept_code = '" + ls_dept + "'  and  " + 
+                         "     b.chg_no_seq = (select max(chg_no_seq) " +
+                         "         from y_chg_degree where dept_code = '" + ls_dept  + "') ) "
+        ls_dept_mat =    "  (a.dept_code = '" + ls_dept + "'  and " +       
+                         "     a.mtrcode = '" + ds_1.NameValue(ds_1.RowPosition,'mat_code') + "' )"  
+     }
+     else {
+        ls_dept_detail = ls_dept_detail +  " or   (b.dept_code = '" + ls_dept + "'  and  " + 
+                                           "       b.chg_no_seq = (select max(chg_no_seq) " +
+                                           "         from y_chg_degree where dept_code = '" + ls_dept  + "') ) "
+        ls_dept_mat = ls_dept_mat +    " or  (a.dept_code = '" + ls_dept + "'  and " +       
+                                       "      a.mtrcode = '" + ds_1.NameValue(ds_1.RowPosition,'mat_code') + "' )"  
+     }                                  
+  }  
+  ls_data = ls_data  +  ls_dept_detail + '@' + ls_dept_mat + '@' + ds_1.NameValue(ds_1.RowPosition,'name') + '@' + 
+                       ds_1.NameValue(ds_1.RowPosition,'ssize') + '@' + 
+                       ds_1.NameValue(ds_1.RowPosition,'unit') 
+   result = window.showModalDialog("y_cmp_dept_1h.html",ls_data,"dialogWidth:920px;dialogHeight:500px");
+ var array = new Array();
+ array = result.split("@");
+ if (result != "") {
+    ds_1.NameValue(ds_1.RowPosition,'sub_price') = array[1]
+    ds_1.NameValue(ds_1.RowPosition,'mat_price') = array[2]
+ }   
+
+}
+//---------------------------------------------------------------------------아래는 실행내역 구조 등록하는 루틴들 
+//----------------------------------------------------------------------
+function parent_insert_init()          // parent key 입력시 셋팅 
+//----------------------------------------------------------------------
+{
+
+    
+ ds_tree_1.NameValue(ds_tree_1.RowPosition,"dept_code") = is_dept_code
+ ds_tree_1.NameValue(ds_tree_1.RowPosition,"chg_no_seq") = il_chg_no_seq
+ ds_tree_1.NameValue(ds_tree_1.RowPosition,"no_seq") = il_no_seq
+ ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code") = is_dept_code
+ ds_tree_2.NameValue(ds_tree_2.RowPosition,"chg_no_seq") = il_chg_no_seq
+ ds_tree_2.NameValue(ds_tree_2.RowPosition,"no_seq") = il_no_seq 
+ if (ds_tree_1.RowPosition > 1) {
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"direct_class") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"direct_class")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"direct_class") = ds_tree_2.NameValue(ds_tree_2.RowPosition - 1,"direct_class")
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"division") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"division")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"division") = ds_tree_2.NameValue(ds_tree_2.RowPosition - 1,"division")
+ }    
+ ds_seq.SyncLoad=true;             // seq no 구하기
+ ds_seq.reset()
+ ds_tree_1.NameValue(ds_tree_1.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+ ds_tree_2.NameValue(ds_tree_2.RowPosition,"spec_no_seq") = ds_seq.NameValue(1,"nextval")
+ if (is_tree_copy_check == 'yes')   return // 표준공종이나 마스터 공종시 복사할때는 레벨을 계산하지않는다.
+ if (ds_tree_1.RowPosition > 1) {
+   if (ds_tree_1.RowPosition == 2) { 
+	   ds_tree_1.NameValue(ds_tree_1.RowPosition,"llevel") =  2
+	   ds_tree_2.NameValue(ds_tree_2.RowPosition,"llevel") =  2
+      }
+   else {
+      ds_tree_1.NameValue(ds_tree_1.RowPosition,"llevel") =  ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"llevel") 
+      ds_tree_2.NameValue(ds_tree_2.RowPosition,"llevel") =  ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"llevel") 
+   }
+ }
+ gd_tree_1.Focus()
+ gd_tree_1.SetColumn("llevel")
+}
+//---------------------------------------------------------------
+function tree_btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_tree_1.DataID = is_ds_tree_1_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  il_chg_no_seq
+ds_tree_2.DataID = is_ds_tree_2_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  il_chg_no_seq
+
+ds_tree_1.SyncLoad=true
+ds_tree_2.SyncLoad=true
+ds_tree_1.reset()
+ds_tree_2.reset()  
+ 	if (ds_tree_1.CountRow < 1) {
+	   tree_1.ClearAll()
+	}
+
+
+}
+//-----------------------------------------------------------------
+function tree_btnadd_onclick()                 //추가
+//-----------------------------------------------------------------
+{
+  ds_tree_1.AddRow()
+  ds_tree_2.AddRow()
+  if  (ds_tree_1.CountRow == 1){
+      il_no_seq = 0
+      ds_tree_1.NameValue(1,"llevel") = "1"
+      ds_tree_2.NameValue(1,"llevel") = "1"
+		ds_tree_1.NameValue(1,"name") = is_dept_name
+      ds_tree_2.NameValue(1,"name") = is_dept_name
+  }    
+  else 
+      il_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"no_seq")   
+      
+ il_no_seq = il_no_seq + 100       
+ ds_tree_2.RowPosition = ds_tree_1.RowPosition
+ parent_insert_init()
+
+ if (ds_tree_1.RowPosition > 1) {
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_code") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_code")
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_name") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_name")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"wbs_code") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_code")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"wbs_name") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_name")
+ }    
+
+
+}
+//--------------------------------------------------------------------
+function tree_btninsert_onclick()             // 삽입
+//--------------------------------------------------------------------
+{
+ if (ds_tree_1.RowPosition == 0){     //한건도 없을경우는  0 
+   tree_btnadd_onclick()
+   return
+ }  
+  
+ ll_to_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition,"no_seq") 
+ 
+ ds_tree_2.RowPosition = ds_tree_1.RowPosition
+ ds_tree_1.InsertRow(ds_tree_1.RowPosition)
+ ds_tree_2.InsertRow(ds_tree_2.RowPosition)
+ if  (ds_tree_1.RowPosition == 1)                 //삽입버튼을 누른후에 처음으로 row가 갔을경우
+     ll_from_no_seq = 0 
+ else 
+     ll_from_no_seq = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"no_seq")
+
+ ll_incre = (ll_to_no_seq - ll_from_no_seq) / 2
+ ll_incre = parseInt(ll_incre)    // ll_incre를 문자인것차럼하여 소수점이하를 짤라냄.
+// if (ll_incre == 0)                           //더이상 순번을 자동으로 메겨줄수 없슴
+//    alert("순번을 수정하여 입력하십시요")
+ ll_incre = ll_from_no_seq + ll_incre
+ il_no_seq = ll_incre
+ ds_tree_2.RowPosition = ds_tree_1.RowPosition
+ parent_insert_init()
+ 
+ if (ds_tree_1.RowPosition > 1) {
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_code") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_code")
+    ds_tree_1.NameValue(ds_tree_1.RowPosition,"wbs_name") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_name")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"wbs_code") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_code")
+    ds_tree_2.NameValue(ds_tree_2.RowPosition,"wbs_name") = ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"wbs_name")
+ }    
+
+}
+
+//--------------------------------------------------------------------------
+function tree_btndelete_onclick()             //삭제
+//---------------------------------------------------------------------------
+{   
+ for (i=ds_tree_1.CountRow ;i >0 ;i--) {
+     if (ds_tree_1.RowMark(i) == 1){
+        if  ((ds_tree_2.CountRow == i) ||
+             (ds_tree_2.NameValue(i ,"llevel") >= ds_tree_2.NameValue(i + 1,"llevel"))){
+             aa = "select count(spec_unq_num)  select_1  from y_chg_budget_detail " + 
+                  " where dept_code = '" + is_dept_code + "' and " +
+                  " chg_no_seq = " + il_chg_no_seq + " and " + 
+                  " spec_no_seq = " + ds_tree_1.NameValue(i,"spec_no_seq")
+              ll_cnt = f_select1_q(aa)
+              ll_cnt = ds_select1.NameValue(1,"select_1")
+              if (parseInt(ll_cnt,10) > 0) {
+                 alert("하위 내역이 존재하므로 삭제 할 수 없습니다")
+                 ds_tree_1.RowPosition = i
+                 ds_tree_2.RowPosition = i
+                  return 
+               }               
+         }
+         else {
+           if (ds_tree_2.SysStatus(i) == 0){  // 이미 저장된경우에 한해서만 
+               alert("하위 공종이 있어서 삭제할수 없습니다")
+                 ds_tree_1.RowPosition = i
+                 ds_tree_2.RowPosition = i
+              return
+           }
+        }
+     }
+  }   
+    if  (gd_tree_1.MultiRowSelect) {               // multi row select 일 경우
+        for (i=ds_tree_1.CountRow ;i >0 ;i--) {
+            if (ds_tree_1.RowMark(i) == 1) {
+               ds_tree_1.DeleteRow(i)
+               ds_tree_2.DeleteRow(i)
+            }      
+        }   
+        ds_tree_1.MarkRows(ds_tree_1.RowPosition,ds_tree_1.RowPosition)  //삭제작업완료후 MARK
+        ds_tree_2.MarkRows(ds_tree_2.RowPosition,ds_tree_2.RowPosition)
+  }
+  else {
+  	   ds_tree_2.RowPosition = ds_tree_1.RowPosition      // ds_tree_1을 삭제하면 rowchaned에서 번호가 -1됨으로 미리 보관
+     ds_tree_1.DeleteRow(ds_tree_1.RowPosition)
+     ds_tree_2.DeleteRow(ds_tree_2.RowPosition)
+  }   
+  
+}
+//-----------------------------------------------------------------
+function tree_btnsave_onclick()               // 저장
+//------------------------------------------------------------------
+{
+    if (ds_tree_1.IsUpdated){
+       if  (confirm("변경되었습니다 저장하시겠습니까?")){}
+       else {
+           return false
+       }    
+    }
+    else   
+          return    true
+  sa_position = ds_tree_2.RowPosition
+                                                  
+  ds_tree_1.SortExpr = "+no_seq" 
+  ds_tree_1.Sort();
+  ds_tree_2.SortExpr = "+no_seq" 
+  ds_tree_2.Sort();
+  ls_first_level = 0
+//  if  ((ds_2.CountRow == ds_2.RowPosition) ||
+//       (ds_2.NameValue(ds_2.RowPosition ,"llevel") >= ds_2.NameValue(ds_2.RowPosition + 1,"llevel"))){}
+//  else {
+//      alert("최종 공종이 아닙니다. 최종공종을 선택하십시요")
+//      return       
+//  }
+
+	 var ll_dup
+	 ll_dup = f_dup_chk("ds_tree_1","no_seq")
+	 if (ll_dup > 0) {
+	     alert("순번이 중복되었습니다: 순번을 수정하십시요 ")
+	     ds_tree_1.RowPosition = ll_dup
+     	  gd_tree_1.SetColumn("no_seq");
+	     return
+	 }
+
+
+
+
+   var i
+   for (i=1;i<=ds_tree_1.CountRow;i++) {
+     if (i==1) continue
+     
+     
+     if (ds_tree_1.NameValue(i,'division') != '') {
+        for (j=i;j<=ds_tree_1.CountRow;j++) {
+          if (ds_tree_1.NameValue(i,'llevel') <  ds_tree_1.NameValue(j + 1,"llevel")) {
+                ds_tree_2.NameValue(j+1,"division") = ds_tree_2.NameValue(i ,'division')
+                ds_tree_1.NameValue(j+1,"division") = ds_tree_1.NameValue(i ,'division')
+         }
+         else 
+             break 
+       }
+       i = j 
+    }
+  }            
+   for (i=1;i<=ds_tree_1.CountRow;i++) {
+     if (i==1) continue
+     if (ds_tree_1.NameValue(i,'direct_class') != '') {
+        for (j=i;j<=ds_tree_1.CountRow;j++) {
+          if (ds_tree_1.NameValue(i,'llevel') <  ds_tree_1.NameValue(j + 1,"llevel")) {
+                ds_tree_2.NameValue(j+1,"direct_class") = ds_tree_2.NameValue(i ,'direct_class')
+                ds_tree_1.NameValue(j+1,"direct_class") = ds_tree_1.NameValue(i ,'direct_class')
+         }
+         else 
+             break 
+       }
+       i = j 
+    }
+  }            
+
+   var ll,ll_level_bef,ll_level_cur
+  var ls_division,ll_l
+  var ll_sum_code = [0,0,0,0,0,0,0,0,0,0]
+  for (i=1;i<=ds_tree_1.CountRow;i++){
+     if (i != 1) {
+        ll = i - 1
+        ll_level_cur = ds_tree_1.NameValue(i,'llevel')
+        ll_level_bef = ds_tree_1.NameValue(ll,'llevel')
+        if (ll_level_cur > ll_level_bef) {
+           if (ll_level_cur != (ll_level_bef + 1)) {
+              alert('레벨은 반드시 전레벨보다 1 커야 합니다')
+              ds_tree_1.RowPosition = i
+              ds_tree_2.RowPosition = i
+              return
+           } 
+        }
+     }   
+      if  ((ds_tree_1.CountRow == i) ||
+          (ds_tree_1.NameValue(i ,"llevel") >= ds_tree_1.NameValue(i + 1,"llevel"))){
+            ds_tree_1.NameValue(i,"invest_class") = 'Y'   //최하위에 구조에 'Y'를 붙여줌.         
+      }
+      else
+            ds_tree_1.NameValue(i,"invest_class") = 'N'   //최하위에 구조에 'Y'를 붙여줌.         
+      if (ds_tree_1.NameValue(i,"llevel") == 1) 
+          ls_first_level = ls_first_level + 1
+      if (ds_tree_1.NameValue(i,"llevel") == 0) {
+         alert("레벨을 반드시 입력하여야 합니다")
+         ds_tree_1.RowPosition = i
+         ds_tree_2.RowPosition = i
+         return 
+      }    
+      if  ((ds_tree_1.CountRow == i) ||
+          (ds_tree_1.NameValue(i ,"llevel") >= ds_tree_1.NameValue(i + 1,"llevel"))){
+          if  (ds_tree_1.NameValue(i,"wbs_code") == "") {
+               if (i != 1)  {      // 1번째는 check안함.  
+                  alert("표준 공종 코드가  반드시 연결되어야 합니다.")
+                  ds_tree_1.RowPosition = i
+                  ds_tree_2.RowPosition = i
+                  return
+               }   
+          }
+          if  (ds_tree_1.NameValue(i,"division") == "") {
+               if (i != 1) {      // 1번째는 check안함.  
+                  alert("집계분류가 반드시 연결되어야 합니다.")
+                  ds_tree_1.RowPosition = i
+                  ds_tree_2.RowPosition = i
+                  return
+               }   
+          }
+      }
+      ll_level = parseInt(ds_tree_1.NameValue(i,"llevel"))
+      ll_sum_code[ll_level  - 1] = ll_sum_code[ll_level - 1] + 1      //첨자는 0부터 시작하므로 현레벨넘버에서 -1한다.
+
+      for (j=ll_level;j < ll_sum_code.length; j++)
+          ll_sum_code[j] = 0
+      ls_sum_code = ""   
+      
+      for(k=0; k < ll_level; k++) {     
+          if  (ll_sum_code[k] > 9) 
+              ls_sum_code = ls_sum_code + ll_sum_code[k]
+          else    
+              ls_sum_code = ls_sum_code + "0" + ll_sum_code[k]
+      }        
+      ds_tree_1.NameValue(i,"sum_code") = ls_sum_code 
+      ds_tree_2.NameValue(i,"sum_code") = ls_sum_code
+      if  (ls_sum_code.length == 2) {
+          ds_tree_2.NameValue(i,"parent_sum_code") = "00" 
+          ds_tree_1.NameValue(i,"parent_sum_code") = "00"
+      }     
+      else {
+          ds_tree_2.NameValue(i,"parent_sum_code") = ls_sum_code.substr(0,ls_sum_code.length - 2) 
+          ds_tree_1.NameValue(i,"parent_sum_code") = ls_sum_code.substr(0,ls_sum_code.length - 2)
+      }     
+
+   }
+
+    
+ if (ls_first_level == 1) {}
+ else {
+     alert("레벨 1이 반드시 하나만 존재 하여야 합니다")
+     return
+     }
+        
+ tr_tree_1.Post()
+                                              //아래 로직은 저장한후 그전의 트리구조를 보여주기위해 
+ if (ds_tree_1.CountRow == sa_position)      // position을 옮긴후 다시 원위치해줌....(그렇게해야 tree가 펼쳐짐)
+    ds_tree_1.RowPosition = sa_position - 1
+ else
+    ds_tree_1.RowPosition = sa_position + 1
+ ds_tree_1.RowPosition = sa_position 
+ ds_tree_2.RowPosition = ds_tree_1.RowPosition
+ return true
+
+}
+//-----------------------------------------------------------------
+function tree_btncancel_onclick()               //취소 
+//------------------------------------------------------------------
+{
+  ds_tree_1.Undo(ds_tree_1.RowPosition)
+  ds_tree_2.Undo(ds_tree_1.RowPosition)
+}
+ 
+//--------------------------------------------------------------- 
+function tree_btnexit_onclick()           //종료
+//---------------------------------------------------------------
+{
+
+	  if (ds_tree_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+}
+//-------------------------------------------------------------------------------
+function   tree_1_OnSelChanged()        // tree_1이 select changed event 발생 
+//-------------------------------------------------------------------------------
+{
+  is_wbs_code = ds_tree_2.NameValue(ds_tree_2.RowPosition,"wbs_code")
+  if (il_nindex == 1) {                    // il_nindex는 tab번호 
+       if  ((ds_tree_2.CountRow == ds_tree_2.RowPosition) ||
+       (ds_tree_2.NameValue(ds_tree_2.RowPosition ,"llevel") >= ds_tree_2.NameValue(ds_tree_2.RowPosition + 1,"llevel"))){
+         //gd_1.style.zIndex=200
+         //gd_parent_query.style.zIndex=100                               
+			gd_1.style.height='100%'
+			gd_parent_query.style.height='0%'
+			gd_1.focus()
+         il_screen_zindex=2                    //내역 입력화면 
+         gd_1_button.style.visibility="visible"
+         btnquery_onclick()
+     }   
+     else {                     //parent 집계 금액 읽어 오기 (레벨별로 읽어옴)
+         ls_dept_code =  ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code")
+         ls_chg_no_seq = ds_tree_2.NameValue(ds_tree_2.RowPosition,"chg_no_seq")
+         ls_parent_sum_code = ds_tree_2.NameValue(ds_tree_2.RowPosition,"sum_code")
+         ds_parent_query.DataID = is_ds_parent_query_addr + ls_dept_code + 
+                                   "&arg_chg_no_seq=" + ls_chg_no_seq   +
+                                   "&arg_parent_sum_code=" + ls_parent_sum_code 
+         ds_parent_query.SyncLoad = true
+         ds_parent_query.reset() 
+		  //gd_1.style.zIndex=100
+		  //gd_parent_query.style.zIndex=200    
+		  gd_1.style.height='0%'
+		  gd_parent_query.style.height='100%'
+		  gd_parent_query.focus()
+		  gd_1_button.style.visibility="hidden"
+		  il_screen_zindex=1                //집계구조의 금액 조회화면  
+			
+     }   
+  }     
+  
+}
+
+//-------------------------------------------------------------------------------
+function tab_changed()                  // tab changed 
+//-------------------------------------------------------------------------------
+{
+	switch (il_nindex)
+   {
+    case 1: tree_1_OnSelChanged()
+            gd_tree_1_button.style.visibility="hidden"
+            bt_excel1.style.visibility="visible"
+            break;   
+            //tree_btnquery_onclick()  
+    case 2: //div_button.style.visibility="visible"
+	        //alert('show')
+           gd_1_button.style.visibility="hidden"
+           gd_tree_1_button.style.visibility="visible"
+			  bt_excel1.style.visibility="hidden"
+            break;
+
+   }
+}
+//----------------------------------------------------------------
+function rd_screen_onclick()                //화면 축소 및 확대 (tree구조 를 적게 혹은 크게 보여줌)
+//----------------------------------------------------------------
+{
+   if  (tb_1.style.left == "226px") {
+       tb_1.style.left = "40px"
+       tab_page_1.style.left = "40px"
+       tab_page_2.style.left = "40px"
+
+       //tab_page_1.style.width = "972px"
+       //tab_page_2.style.width = "972px"
+
+       //gd_parent_query.style.width = "972px"
+       //gd_1.style.width = "972px"
+       //gd_tree_1.style.width = "972px"
+   
+       tree_1.style.width= "40px"
+   }
+   else {
+       tb_1.style.left = "226px"
+       tab_page_1.style.left = "224px"
+       tab_page_2.style.left = "224px"
+
+       //tab_page_1.style.width = "788px"
+       //tab_page_2.style.width = "788px"
+
+       //gd_parent_query.style.width = "788px"
+       //gd_1.style.width = "788px"
+       //gd_tree_1.style.width = "788px"
+   
+       tree_1.style.width= "220px"
+   }
+	f_set_resize()
+}
+//----------------------------------------------------------------
+function close_rtn()                      //화면 닫기 
+//----------------------------------------------------------------
+ {
+   makeCookie("@y_budget_dept_copy@","")   //현장복사시의 y_budget_dept_copy의 내역위치정보를 지움. 
+ if (is_html == "y_approve_process_1h.html")
+    top.frames['main_ct'].location.href(is_html +"?"+'r')
+ else 
+    top.frames['main_ct'].location.href(is_html +"?"+top.frames['security'].gs_param.value)
+}
+//----------------------------------------------------------------
+function budget_fix()                      //실행예산 확정 
+//----------------------------------------------------------------
+{
+   var ls_cmd
+
+    if (ds_tree_1.IsUpdated || ds_1.IsUpdated){
+       alert("먼저 저장을 하십시요")
+       return
+    }
+
+   if  (is_update == '4') {    //승인이 되었음
+		  alert("확인: 실행예산 승인이 완료된 자료는 확정 할 수 없습니다.")
+		  return
+	}		  
+
+ 	btnsave_onclick()   // 수정자료가 있으면 저장을 먼저 한다.
+   
+	if  (confirm("실행변경 확정을 하시겠습니까?")) {
+	        ds_spcall.DataID = 'y_approve_procedure.jsp?arg_app_fix=F' + 
+                                                       '&arg_dept_code=' + is_dept_code + 
+                                                       '&arg_chg_no=' + il_chg_no_seq + 
+                                                       '&arg_user=' + is_user  + 
+                                                       '&arg_user_name=' + is_user_name 
+	        ds_spcall.SyncLoad = true
+	        ds_spcall.reset()
+	        
+			  ls_cmd = "UPDATE y_chg_budget_detail  " +   
+			                 "  SET approve_yn = 'Y'  " + 
+			                 "  where  dept_code  = '" + is_dept_code + "'  and "   + 
+			                 "         chg_no_seq = " + il_chg_no_seq + " and  "   + 
+					           "         approve_yn <> 'Y'      "   
+			  f_update_sql(ls_cmd)
+           btnquery_onclick()
+			  alert("확인: 정상적으로 처리 되었습니다")
+	        
+	}
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+	var temp_1
+	temp_1 = ds_tree_2.NameValue(ds_tree_2.RowPosition,"name")
+	
+	if (gd_1.style.height == '0%') {
+		gd_parent_query.GridToExcel(temp_1,temp_1,1)  
+		
+	}
+	else{
+		gd_1.GridToExcel(temp_1,temp_1,1)  
+	}
+	
+
+	/*
+	ds_excel_tot.DataID='y_chg_budget_tot_out_excel_1q.jsp?arg_dept_code=' + is_dept_code + 
+						  	  '&arg_chg_no_seq=' + il_chg_no_seq + '&arg_parent_sum_code=' + ds_tree_2.NameValue(ds_tree_2.RowPosition,'sum_code')
+	//alert(ds_excel_tot.DataID)
+	ds_excel_tot.SyncLoad=true
+	ds_excel_tot.Reset()
+
+   if  (! confirm("작업이 끝날때까지 기다려주세요")) return
+   else
+		
+      gd_excel_tot.GridToExcel(temp_1,temp_1,1)  
+
+//		gd_excel_tot.RunExcelSheet(temp_1)  
+
+  ds_excel_tot.ClearData()           
+//if (gd_1_button.style.visibility=="hidden") 
+//   gd_parent_query.RunExcelSheet(temp_1)
+//else
+//   gd_1.RunExcelSheet(temp_1)
+   */
+}
+//----------------------------------------------------------------
+function f_name_key()                      //명칭 규격 단위 key를 하나로 조합 
+//----------------------------------------------------------------
+{
+  var ls_name,ls_size
+  ls_name = ds_1.NameValue(ds_1.RowPosition,'name')
+  ls_name = ls_name.replace(/@/g,'')
+  ls_size = ds_1.NameValue(ds_1.RowPosition,'ssize')
+  ls_size = ls_size.replace(/@/g,'')
+  ds_1.NameValue(ds_1.RowPosition,'name') = ls_name
+  ds_1.NameValue(ds_1.RowPosition,'ssize') = ls_size
+var name_ii
+var temp_1 = ""
+var temp_2 = ds_1.NameValue(ds_1.RowPosition,"name") 
+    for (name_ii=0;name_ii < temp_2.length; name_ii ++) {
+        if (temp_2.substr(name_ii,1) != " ") {
+            temp_1 = temp_1 + temp_2.substr(name_ii,1) 
+        }
+    }
+var temp_2 = ds_1.NameValue(ds_1.RowPosition,"ssize") 
+    for (name_ii=0;name_ii< temp_2.length; name_ii ++) {
+        if (temp_2.substr(name_ii,1) != " ") {
+            temp_1 = temp_1 + temp_2.substr(name_ii,1) 
+        }
+    }
+var temp_2 = ds_1.NameValue(ds_1.RowPosition,"unit") 
+    for (name_ii=0;name_ii< temp_2.length; name_ii ++) {
+        if (temp_2.substr(name_ii,1) != " ") {
+            temp_1 = temp_1 + temp_2.substr(name_ii,1) 
+        }
+    }
+ ds_1.NameValue(ds_1.RowPosition,"name_key") = temp_1
+}
+//-----------------------------------------------------------------------
+function f_tot_calculate()               //전체 재계산 
+//-----------------------------------------------------------------------
+{ 
+
+//        gf_mail_to('박두현','0113878587','박두현','0113878587','테스트') 
+      var i,ll_seq
+      ll_seq = 0
+      for (i=1; i<=ds_tree_1.CountRow;i++) {
+         ll_seq = ll_seq + 100 
+         ds_tree_1.NameValue(i,'no_seq') = ll_seq
+      }    
+      tree_btnsave_onclick()
+      ll_chg_no_seq = ds_tree_2.NameValue(1,"chg_no_seq")
+		ds_spcall.DataID = gs_home + '/const/y_web/01/y_budget_tot_cmpt_procedure.jsp?arg_dept_code=' + 
+		is_dept_code + '&arg_no=' + ll_chg_no_seq  
+		ds_spcall.SyncLoad = true
+		ds_spcall.reset()
+     alert("완료하였습니다")
+ 
+}
+//-----------------------------------------------------------------------
+function detail_code_find(row,data,tag)               //표준내역 찾기
+//-----------------------------------------------------------------------
+{
+	        result = window.showModalDialog(gs_home + "/const/y_web/00/y_stand_detail_find_1h.html?sessionkey=1234",data+"@code","dialogWidth:720px;dialogHeight:500px;dialogtop:1px; dialogleft:1px");
+	        if(result == "") return false;
+	        array = result.split("@");
+	        if (tag == 'P') {
+	           if (ds_1.NameValue(row,'detail_code') == ds_1.OrgNameValue(row,'detail_code'))
+	              is_detail_code = 'N'   // oncolumnchanged
+	           else
+	              is_detail_code = 'Y'   // oncolumnchanged event를 타지 말것
+	        }
+	        ds_1.NameString(row,"detail_code") = array[0];   // 코드 
+           ds_1.NameString(row,"res_class") = array[4];   // 자원구분 
+           ds_1.NameString(row,"mat_code") = array[5];   // 자재코드  
+//	        reg = confirm("명칭/규격/단위를 표준내역형식으로 대체하시겠습니까?") 
+           if (ds_1.NameValue(row,'name') == '') {
+	           ds_1.NameString(row,"name") = array[1];   // 명칭 
+	           ds_1.NameString(row,"ssize") = array[2];   // 규격 
+	           ds_1.NameString(row,"unit") = array[3];   // 단위 
+	        }   
+	        ds_1.NameValue(row,'stand_name') = array[1];
+	        ds_1.NameValue(row,'stand_ssize') = array[2];
+	        ds_1.NameValue(row,'stand_unit') = array[3];
+	        
+	        ds_1.NameValue(row,'stand_name') = array[1];
+	        ds_1.NameValue(row,'stand_ssize') = array[2];
+	        ds_1.NameValue(row,'stand_unit') = array[3];
+           gd_1.Focus()
+           gd_1.SetColumn("qty")
+	        return true
+
+}
+//-----------------------------------------------------------------------
+function special_name_update()               //현재의 현장코드를 기준으로 명칭/규격/단위를 표준내역코드에 UPDATE함.
+//-----------------------------------------------------------------------
+{  
+   var ls_sql
+   ls_sql = " " + 
+      " UPDATE y_chg_budget_detail a set                  " +  
+      "       (a.name,                                    " + 
+      "        a.ssize,                                   " + 
+      "        a.unit,                                    " + 
+      "        a.name_key) =                              " + 
+      "        (select b.name,                            " + 
+      "              b.ssize,                             " + 
+      "              b.unit,                              " + 
+      "              b.name_key                           " + 
+      "          from y_stand_detail b                    " + 
+      "         where a.detail_code = b.detail_code)      " + 
+      "    where a.dept_code = '" + is_dept_code + "'     " + 
+      "      and a.chg_no_seq = " + il_chg_no_seq  + "    " + 
+      "      and EXISTS (select b.name,                   " + 
+      "              b.ssize,                             " + 
+      "              b.unit,                              " + 
+      "              b.name_key                           " + 
+      "          from y_stand_detail b                    " + 
+      "         where a.detail_code = b.detail_code)     " 
+  f_update_sql(ls_sql)
+  btnquery_onclick()
+  alert('정상적으로 처리하였습니다')
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('tab_page_1', 'tab_page_2','gd_excel_tot' );
+	var xArr =new Array(true, true,true);
+	var yArr =new Array(true, true,true);
+
+	f_reSize(objArr, xArr, yArr);
+} 
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{  
+  if (f_reject_window()) return 
+  f_set_resize()
+   top.frames['main_title'].mouse_over()
+//   top.frames['main_title'].rd_mnosee_onclick()               //메뉴를 안보이게
+   gd_1_button.style.visibility="hidden"                    //실행 내역 입력시 써브 메뉴 
+   gd_tree_1_button.style.visibility="hidden"               //표준공종 연결 써브 메뉴 
+
+   
+	var result="";
+	var array = new Array();
+   result = ""
+   result = readCookie("@y_chg_budget_detail@")
+   if (result == "err") {
+      alert("차수 정보가 올바르지 않아서 실행할수 없습니다")
+      return
+   }   
+	else {   
+	   array = result.split("@");
+      is_dept_code = array[0]
+      is_dept_name = array[1]
+      il_chg_no_seq = parseInt(array[2])
+      il_chg_degree = parseInt(array[3])
+      is_update = array[4]    // 승인 구분
+      is_html = array[5]
+
+    }
+  
+  if (top.frames['security'].gs_param.value == 'r' || top.frames['security'].gs_param.value == 's'){ //조회권한일경우
+      is_update = '4'
+  } 
+  //if  (is_update == '4' ) {    //승인이 되었슴
+  //if  (is_update == '4' || is_update == '7' ) {    //승인이 되었슴
+  if  (is_update != '1' ) {    //승인이 되었슴
+        gd_1.Editable = false
+        gd_tree_1.Editable = false
+        bt_copy.style.visibility="hidden"
+        bt_paste.style.visibility="hidden"
+        bt_stand_copy.style.visibility="hidden"
+        bt_stand_conn.style.visibility="hidden"
+        bt_stand_conn_mast.style.visibility="hidden"
+        bt_dept_paste.style.visibility="hidden"
+        bt_dept_tree_paste.style.visibility="hidden"  
+        bt_excel_paset.style.visibility="hidden"
+        bt_re_seq.style.visibility="hidden"
+  }    
+  
+   gd_1.format = is_format_1             //전체 보기 
+	is_format_no = '1'
+       
+   top.frames['main_title'].title_name.value = " " + "내역 등록 : "  + is_dept_name + " (" + il_chg_degree + " 차수)"              
+   ds_seq.DataID = is_ds_seq_addr                       // SEQ NO 의 DATAID
+   ll_cnt = f_select_q("select etc_code select_1, child_name select_2  from z_code_etc_child where class_tag = '003' order by etc_code")
+   //표준내역 사용여부 체크 
+   ll_cnt = f_ds_select_q("ds_select2","select process_tag select_1 from z_process_setting where setcode = '010'")
+   is_pyo_chk = ds_select2.NameValue(1,"select_1")
+   ll_cnt = f_ds_select_q("ds_division","select division select_1 , division_name select_2 from y_code_division order by division") // 아파트 상가
+   ds_division.Addrow()
+   ll_cnt = f_ds_select_q("ds_cmp_dept","select dept_code select_1 , cmp_dept_code select_2 from y_cmp_dept_code where dept_code = '" + is_dept_code + "' order by no_seq") // 아파트 상가
+
+   tr_1.Action = is_tr_1_addr
+   tr_tree_1.Action =  is_tr_tree_1_addr
+   
+	tree_btnquery_onclick()
+
+    if  (ds_tree_1.CountRow < 1) {
+        tb_1.ActiveIndex = 2
+        tree_btnadd_onclick()
+        tree_btnsave_onclick()
+        gd_tree_1_button.style.visibility="visible"
+    }
+    else {
+        tb_1.ActiveIndex = 1
+    }    
+    //------------------------복사하기위한 temp dataset이다 그냥 읽어서 헤더 포멧만 가져오기 위함이다.
+    ds_1copy.DataID = is_ds_1_addr + ds_tree_2.NameValue(ds_tree_2.RowPosition,"dept_code") + 
+              "&arg_chg_no_seq="  +  "0"
+              "&arg_spec_no_seq="  + "0"
+    ds_1copy.reset()                   
+
+   ds_tree_1copy.DataID = is_ds_tree_1_addr + " " + "&arg_chg_no_seq="  +  "0"     //구조 복사하기위해서 해더정보를 읽어옴
+   ds_tree_1copy.reset()                   
+    
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<script language=JavaScript for=gd_1 event=OnDataError(row,colid)>
+  alert(colid)
+</script>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+/*if (kcode == 40) {
+  if (gd_1.Editable) {
+     gd_1.Editable = true
+     gd_1.AllShowEdit = true 
+  }   
+} */
+if (kcode == 13 ) {
+    if (ds_1.RowPosition == ds_1.CountRow)  {
+        btnadd_onclick_common()
+        if (is_pyo_chk == 'Y')  {}
+        //   detail_code_find(ds_1.RowPosition,"",'P')
+    }    
+    else{    
+        ds_1.RowPosition++
+    }    
+}
+</SCRIPT>
+<script language="javascript" for=gd_1 event=OnPopup(row,colid,data)>
+	var result;
+	var array = new Array();
+   var ls_data
+   if  (colid == "mat_code") { 
+           if (data == "") 
+               ls_data = ds_1.NameValue(row,"name")
+           else
+               ls_data = data
+   
+	        result = window.showModalDialog(gs_home + "/const/m_web/00/m_code_material_find_1h.html",ls_data,"dialogWidth:560px;dialogHeight:500px");
+	        if(result == "") return;
+	        array = result.split("@");
+	        ds_1.NameString(row,"mat_code") = array[0];   // 코드  
+//	        reg = confirm("명칭/규격/단위를 자재형식으로 대체하시겠습니까?") 
+//	        if (reg == true) {
+//	           ds_1.NameString(row,"name") = array[1];   // 명칭 
+//	           ds_1.NameString(row,"ssize") = array[2];   // 규격 
+//	           ds_1.NameString(row,"unit") = array[3];   // 단위 
+//	        }   
+	        return
+   }
+   if  (colid == "name") {
+	        result = window.showModalDialog(gs_home + "/const/y_web/00/y_stand_detail_find_1h.html",data+"@name","dialogWidth:720px;dialogHeight:500px;dialogtop:1px; dialogleft:1px");
+	        if(result == "") return;
+			  //alert(result)
+	        array = result.split("@");
+	        ds_1.NameString(row,"detail_code") = array[0];   // 코드 
+           ds_1.NameString(row,"res_class") = array[4];   // 자원구분 
+           ds_1.NameString(row,"mat_code") = array[5];   // 자재코드  
+	        if (ds_1.NameValue(row,"name") == '') {
+              ds_1.NameString(row,"name") = array[1];   // 명칭 
+              ds_1.NameString(row,"ssize") = array[2];   // 규격 
+              ds_1.NameString(row,"unit") = array[3];   // 단위 
+           }   
+           ds_1.NameString(row,"res_class") = array[4];   // 자원구분 
+           ds_1.NameString(row,"mat_code") = array[5];   // 자재코드  
+	        return
+   }
+   var ll_return
+   if  (colid == "detail_code") { 
+       ll_return = detail_code_find(row,data,'P')
+   }
+</script>
+
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+ if(eventid == "ucoltex") {
+	if (ds_1.NameValue(row,'approve_yn') == 'N') 
+       return "darkcyan"
+	if (ds_1.NameValue(row,'approve_yn') == 'Y') 
+       return "black"
+	if (ds_1.NameValue(row,'approve_yn') == 'F') 
+       return "blue"
+   
+	return 'crimson'
+
+ }
+ if(eventid == "ucolor") {
+     if ((row % 2) == 0)
+         return "#F4F2D8"
+     else
+         return "ffffff"
+   
+ }
+ if(eventid == "ucolor_1") {
+   if (ds_1.NameValue(row,'qty') == 0) {
+       return "#FF99CC"
+   }
+   else { 
+     if ((row % 2) == 0)
+         return "#F4F2D8"
+     else
+         return "ffffff"
+   }
+ }
+</script>
+<script language=JavaScript for=gd_tree_1 event=OnUserColor(row,eventid)>
+ if(eventid == "ucolor_1") {
+   if (ds_tree_1.NameValue(row,'invest_class') == 'Y' && ds_tree_1.NameValue(row,'cnt') == 0)
+       return "pink";
+   else { 
+     if ((row % 2) == 0)
+         return "#F4F2D8"
+     else
+         return "ffffff"
+   }
+ }
+</script>
+
+
+<script language=JavaScript for=gd_1 event=CanColumnPosChange(row,colid)>
+var ls_temp,ll_return
+if (colid == "detail_code") { 
+   if (is_detail_code == 'Y') {    // popup에서 data를 찾았음을 의미함
+      is_detail_code = 'N'
+      return true
+   }
+   else {
+       if (ds_1.SysStatus(row) == 1) {}
+       else
+          if (ds_1.NameValue(row,colid) == ds_1.OrgNameValue(row,colid)) return true
+       ls_temp = ds_1.NameValue(row,colid)
+       if (is_pyo_chk == 'N' && ls_temp == '')
+          if (ls_temp == '') return true
+       if (ls_temp.substr(ls_temp.length - 4,4) == '9999')
+          return true
+       else {
+
+          if (ls_temp.length != 0) {
+              ll_cnt = f_ds_select_q("ds_detail_code","select detail_code select_1,name select_2, ssize select_3, unit select_4 " + 
+                                         "  from y_stand_detail where detail_code = '" + ls_temp + "'")
+              if (ll_cnt == 0) {
+                 ll_return = detail_code_find(row,ls_temp,'C')   
+                 if (ll_return != true) {
+                    if (is_pyo_chk == 'Y') return false   //표준내역을 반드시 사용한다.
+                    else  return true
+                 }
+              }
+              else { 
+	             //  ds_1.NameString(row,"name") = ds_detail_code.NameString(1,"select_2")  // 명칭 
+	             //  ds_1.NameString(row,"ssize") = ds_detail_code.NameString(1,"select_3")   // 규격 
+	             //  ds_1.NameString(row,"unit") = ds_detail_code.NameString(1,"select_4")    // 단위 
+	               return true
+	           }
+	        }   
+	        else return true       
+       }  
+   } 
+}
+else 
+   return true
+
+</script>
+<SCRIPT language=JavaScript  event=OnColumnChanged(row,colid) for=ds_1>
+
+if ( colid == 'no_seq') {
+	return
+}
+
+//ds_1.namevalue(row, 'approve_yn') = 'N' 
+
+if (colid == "cnt_qty") {
+	//f_multiply(ds_1.NameValue(row,"exe_qty"),ds_1.NameValue(row,"exe_price"))
+
+   ds_1.NameValue(row,"cnt_mat_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),ds_1.NameValue(row,"cnt_mat_price"))
+   ds_1.NameValue(row,"cnt_lab_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),ds_1.NameValue(row,"cnt_lab_price"))
+   ds_1.NameValue(row,"cnt_exp_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"),ds_1.NameValue(row,"cnt_exp_price"))
+} 
+if (colid == "cnt_mat_price") {
+   ds_1.NameValue(row,"cnt_mat_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_mat_price"))
+}                                      
+if (colid == "cnt_lab_price") {
+   ds_1.NameValue(row,"cnt_lab_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_lab_price"))
+}                                      
+if (colid == "cnt_exp_price") {
+   ds_1.NameValue(row,"cnt_exp_amt") = f_multiply(ds_1.NameValue(row,"cnt_qty"), ds_1.NameValue(row,"cnt_exp_price"))
+}                                      
+if ((colid =="cnt_qty") || (colid == "cnt_mat_price") || (colid == "cnt_lab_price") || (colid == "cnt_exp_price")){
+   ds_1.NameValue(row,"cnt_amt") = ds_1.NameValue(row,"cnt_mat_amt")  + ds_1.NameValue(row,"cnt_lab_amt") +
+                                      ds_1.NameValue(row,"cnt_exp_amt") 
+   ds_1.NameValue(row,"cnt_price") = ds_1.NameValue(row,"cnt_mat_price") +  ds_1.NameValue(row,"cnt_lab_price") +
+                                      ds_1.NameValue(row,"cnt_exp_price")                                    
+}                                      
+// 실행의 수량이나 단가가 변경 되었을경우 처리
+if (colid == "qty") {
+   ds_1.NameValue(row,"mat_amt") = f_multiply(ds_1.NameValue(row,"qty"),ds_1.NameValue(row,"mat_price"))
+   ds_1.NameValue(row,"lab_amt") = f_multiply(ds_1.NameValue(row,"qty"),ds_1.NameValue(row,"lab_price"))
+   ds_1.NameValue(row,"exp_amt") = f_multiply(ds_1.NameValue(row,"qty"),ds_1.NameValue(row,"exp_price"))
+   ds_1.NameValue(row,"equ_amt") = f_multiply(ds_1.NameValue(row,"qty"),ds_1.NameValue(row,"equ_price"))
+   ds_1.NameValue(row,"sub_amt") = f_multiply(ds_1.NameValue(row,"qty"),ds_1.NameValue(row,"sub_price"))
+} 
+if (colid == "mat_price") {
+   ds_1.NameValue(row,"mat_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"mat_price"))
+}                                      
+if (colid == "lab_price") {
+   ds_1.NameValue(row,"lab_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"lab_price"))
+}                                      
+if (colid == "exp_price") {
+   ds_1.NameValue(row,"exp_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"exp_price"))
+}                                      
+if (colid == "equ_price") {
+   ds_1.NameValue(row,"equ_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"equ_price"))
+}                                      
+if (colid == "sub_price") {
+   ds_1.NameValue(row,"sub_amt") = f_multiply(ds_1.NameValue(row,"qty"), ds_1.NameValue(row,"sub_price"))
+}                                      
+if ((colid =="qty") || (colid == "mat_price") || (colid == "lab_price") || (colid == "exp_price") ||
+    (colid =="equ_price") || (colid == "sub_price")) {
+   ds_1.NameValue(row,"amt") = ds_1.NameValue(row,"mat_amt")  + ds_1.NameValue(row,"lab_amt") + 
+                                  ds_1.NameValue(row,"exp_amt")  + ds_1.NameValue(row,"equ_amt") +
+                                  ds_1.NameValue(row,"sub_amt")
+   ds_1.NameValue(row,"price")  = ds_1.NameValue(row,"mat_price") +  ds_1.NameValue(row,"lab_price") + 
+                                  ds_1.NameValue(row,"exp_price") +   ds_1.NameValue(row,"equ_price") + 
+                                  ds_1.NameValue(row,"sub_price")                           
+}                                  
+
+if ((colid == 'name') || (colid == 'ssize') || (colid == 'unit'))
+    f_name_key()
+    
+</SCRIPT>
+
+<!-- <SCRIPT language=JavaScript  event=OnColumnChanged(row,colid) for=ds_1>
+
+if ( colid == 'no_seq') {
+	return
+}
+
+//ds_1.namevalue(row, 'approve_yn') = 'N' 
+
+if (colid == "cnt_qty") {
+   ds_1.NameValue(row,"cnt_mat_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cnt_mat_price"))
+   ds_1.NameValue(row,"cnt_lab_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cnt_lab_price"))
+   ds_1.NameValue(row,"cnt_exp_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") * ds_1.NameValue(row,"cnt_exp_price"))
+} 
+if (colid == "cnt_mat_price") {
+   ds_1.NameValue(row,"cnt_mat_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") *  ds_1.NameValue(row,"cnt_mat_price"))
+}                                      
+if (colid == "cnt_lab_price") {
+   ds_1.NameValue(row,"cnt_lab_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") *  ds_1.NameValue(row,"cnt_lab_price"))
+}                                      
+if (colid == "cnt_exp_price") {
+   ds_1.NameValue(row,"cnt_exp_amt") = Math.floor(ds_1.NameValue(row,"cnt_qty") *  ds_1.NameValue(row,"cnt_exp_price"))
+}                                      
+if ((colid =="cnt_qty") || (colid == "cnt_mat_price") || (colid == "cnt_lab_price") || (colid == "cnt_exp_price")){
+   ds_1.NameValue(row,"cnt_amt") = ds_1.NameValue(row,"cnt_mat_amt")  + ds_1.NameValue(row,"cnt_lab_amt") +
+                                      ds_1.NameValue(row,"cnt_exp_amt") 
+   ds_1.NameValue(row,"cnt_price") = ds_1.NameValue(row,"cnt_mat_price") +  ds_1.NameValue(row,"cnt_lab_price") +
+                                      ds_1.NameValue(row,"cnt_exp_price")                                    
+}                                      
+// 실행의 수량이나 단가가 변경 되었을경우 처리
+if (colid == "qty") {
+   ds_1.NameValue(row,"mat_amt") = Math.floor(ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"mat_price"))
+   ds_1.NameValue(row,"lab_amt") = Math.floor(ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"lab_price"))
+   ds_1.NameValue(row,"exp_amt") = Math.floor(ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"exp_price"))
+   ds_1.NameValue(row,"equ_amt") = Math.floor(ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"equ_price"))
+   ds_1.NameValue(row,"sub_amt") = Math.floor(ds_1.NameValue(row,"qty") * ds_1.NameValue(row,"sub_price"))
+} 
+if (colid == "mat_price") {
+   ds_1.NameValue(row,"mat_amt") = Math.floor(ds_1.NameValue(row,"qty") *  ds_1.NameValue(row,"mat_price"))
+}                                      
+if (colid == "lab_price") {
+   ds_1.NameValue(row,"lab_amt") = Math.floor(ds_1.NameValue(row,"qty") *  ds_1.NameValue(row,"lab_price"))
+}                                      
+if (colid == "exp_price") {
+   ds_1.NameValue(row,"exp_amt") = Math.floor(ds_1.NameValue(row,"qty") *  ds_1.NameValue(row,"exp_price"))
+}                                      
+if (colid == "equ_price") {
+   ds_1.NameValue(row,"equ_amt") = Math.floor(ds_1.NameValue(row,"qty") *  ds_1.NameValue(row,"equ_price"))
+}                                      
+if (colid == "sub_price") {
+   ds_1.NameValue(row,"sub_amt") = Math.floor(ds_1.NameValue(row,"qty") *  ds_1.NameValue(row,"sub_price"))
+}                                      
+if ((colid =="qty") || (colid == "mat_price") || (colid == "lab_price") || (colid == "exp_price") ||
+    (colid =="equ_price") || (colid == "sub_price")) {
+   ds_1.NameValue(row,"amt") = ds_1.NameValue(row,"mat_amt")  + ds_1.NameValue(row,"lab_amt") + 
+                                  ds_1.NameValue(row,"exp_amt")  + ds_1.NameValue(row,"equ_amt") +
+                                  ds_1.NameValue(row,"sub_amt")
+   ds_1.NameValue(row,"price")  = ds_1.NameValue(row,"mat_price") +  ds_1.NameValue(row,"lab_price") + 
+                                  ds_1.NameValue(row,"exp_price") +   ds_1.NameValue(row,"equ_price") + 
+                                  ds_1.NameValue(row,"sub_price")                           
+}                                  
+
+if ((colid == 'name') || (colid == 'ssize') || (colid == 'unit'))
+    f_name_key()
+    
+</SCRIPT> -->
+<script language=JavaScript for=tree_1 event=OnSelChanged()>
+   tree_1_OnSelChanged()
+      
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnDblClick() for=tree_1>
+ds_tree_1.RowPosition = ds_tree_2.RowPosition
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnClick() for=tree_1>
+ds_tree_1.RowPosition = ds_tree_2.RowPosition
+ ds_tree_1.ClearAllMark();
+</SCRIPT>
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+if (row < 1)  return
+ if (ds_1.NameValue(row,'approve_yn') == 'Y') {
+    gd_1.ColumnProp('detail_code', 'Edit')= 'None'
+    gd_1.ColumnProp('name', 'Edit')= 'None'
+//    gd_1.ColumnProp('ssize', 'Edit')= 'None'
+    gd_1.ColumnProp('unit', 'Edit')= 'None'
+ }
+ else {
+    gd_1.ColumnProp('detail_code', 'Edit')= ''
+    gd_1.ColumnProp('name', 'Edit')= ''
+    gd_1.ColumnProp('ssize', 'Edit')= ''
+    gd_1.ColumnProp('unit', 'Edit')= ''
+ }
+    
+</SCRIPT>
+<script language="javascript" for=gd_tree_1 event=OnPopup(row,colid,data)>
+	var result;
+	var array = new Array();
+   var ls_data
+   if  (colid == "wbs_name") { 
+	        result = window.showModalDialog(gs_home + "/const/y_web/99/y_wbs_code_copy_1h.html",data,"dialogWidth:300px;dialogHeight:600px");
+	        if(result == "") return;
+	        array = result.split("@");
+	        ds_tree_1.NameString(row,"wbs_code") = array[0];   // 코드 
+           ds_tree_1.NameString(row,"wbs_name") = array[1];   // 명칭 
+	        return
+   }
+</script>
+
+<script language=JavaScript for=gd_tree_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_tree_1.RowPosition == ds_tree_1.CountRow)  
+        tree_btnadd_onclick()
+    else{    
+        ds_tree_1.RowPosition++
+        ds_tree_2.RowPosition++
+    }    
+}
+</SCRIPT>
+
+<SCRIPT language=JavaScript event="OnColumnChanged(row, colid)" for=ds_tree_1>
+ds_tree_2.NameValue(row,colid) = ds_tree_1.NameValue(row,colid)
+if (is_tree_copy_check == 'yes') return      //타현장의 공종구조 복사시 아래의 로직을 수행하지 않는다.
+
+if  (row > 1) 
+    if  (colid == 'llevel') 
+	    if (ds_tree_1.NameValue(row - 1,"llevel")  < ds_tree_1.NameValue(row,"llevel")) {
+	       aa = "select count(spec_unq_num)  select_1  from y_chg_budget_detail " + 
+	            " where dept_code = '" + is_dept_code + "' and " +
+	            " chg_no_seq = " + il_chg_no_seq + " and " + 
+	            " spec_no_seq = " + ds_tree_1.NameValue(ds_tree_1.RowPosition - 1,"spec_no_seq")
+	        ll_cnt = f_select1_q(aa)
+	        ll_cnt = ds_select1.NameValue(1,"select_1")
+	        if (parseInt(ll_cnt,10) > 0) {
+              alert("윗레벨에 하위 내역이 존재하므로 하위공종을 추가할수 없습니다")
+              ds_tree_1.NameValue(row,colid) = ds_tree_1.NameValue(row -1 ,colid)
+           }               
+	    }   
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_tree_1>
+if (row < 1)  return
+is_wbs_code = ds_tree_1.NameValue(row,"wbs_code")
+
+ds_tree_2.RowPosition = ds_tree_1.RowPosition
+ if (is_update == '4') // 승인이면
+    return
+
+  if (is_wbs_code.substr(0,1) == 'Z') 
+     gd_tree_1.Editable = '0'
+  else
+     gd_tree_1.Editable = '-1'
+
+
+
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_tree_2 event=CanRowPosChange(row)>
+  if ((il_nindex == 1) && (il_screen_zindex == 2))    //  내역 tab이고 내역을 입력할수있는화면일경우  
+     btnsave_onclick()   //  tree가변경되면 ds_tree_2로 check할것.
+ return true     
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript event=CanSelChange(nIndex) for=tb_1>
+{
+  var ib_ret
+  il_nindex = nIndex
+  if  (il_nindex == 1) {
+      ib_ret = btnsave_onclick()
+      if (is_pyo_chk == 'Y')
+         if (ib_ret == false)
+            return false
+ }    
+  else {
+      lb_ret = tree_btnsave_onclick()
+      return lb_ret
+  }    
+} 
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  il_nindex = nIndex
+  tab_changed()
+ }             
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_parent_query event=OnDblClick(row,colid)>
+ll_no_seq = ds_parent_query.NameValue(row,"no_seq")
+ll_row = ds_tree_1.NameValueRow("no_seq",ll_no_seq)    //찾기 
+ds_tree_2.RowPosition = ll_row
+//tree_1_OnSelChanged()
+
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=gd_parent_query event=OnRButtonDown(row,colid,xpos,ypos)>
+
+
+lw_sum_code = ds_parent_query.NameValue(row,"sum_code")
+if  (lw_sum_code.length >= 6) {
+     lw_sum_code = lw_sum_code.substr(0,lw_sum_code.length - 4)
+     ds_tree_2.RowPosition = ds_tree_1.NameValueRow("sum_code",lw_sum_code)
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=gd_1 event=OnRButtonDown(row,colid,xpos,ypos)>
+if (ds_1.IsUpdated){
+	return
+}
+lw_spec_no_seq = ds_1.NameValue(row,"spec_no_seq")
+ll_row = ds_tree_1.NameValueRow("spec_no_seq",lw_spec_no_seq)
+lw_sum_code = ds_tree_1.NameValue(ll_row,"sum_code")
+if  (lw_sum_code.length >= 4)  {
+     lw_sum_code = lw_sum_code.substr(0,lw_sum_code.length - 2)
+     ds_tree_2.RowPosition = ds_tree_1.NameValueRow("sum_code",lw_sum_code)
+}
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code(ds_select) : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_tree_1 event=OnLoadError()>
+  alert("Error Code(ds_tree_1) : " + ds_tree_1.ErrorCode + "\n" + "Error Message : " + ds_tree_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_detail_code event=OnLoadError()>
+  alert("Error Code(ds_detail_code) : " + ds_detail_code.ErrorCode + "\n" + "Error Message : " + ds_detail_code.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<SCRIPT language=JavaScript for=tr_tree_1 event=OnSuccess()>
+  var i
+  for (i=0; i < old_dept_code.length ; i++) {
+      if (ls_child_copy_check == 'yes') {
+          ds_update.DataID = 'y_dept_budget_copy_procedure.jsp?arg_from_dept_code=' + old_dept_code[i] + 
+                                                               '&arg_from_chg_no_seq=' + old_chg_no_seq[i] +
+                                                               '&arg_from_spec_no_seq=' + old_spec_no_seq[i] +
+                                                               '&arg_to_dept_code=' + new_dept_code[i] +
+                                                               '&arg_to_chg_no_seq=' + new_chg_no_seq[i] +
+                                                               '&arg_to_spec_no_seq=' + new_spec_no_seq[i] 
+        ds_update.SyncLoad = true
+        ds_update.reset()
+      }
+  }
+  ls_child_copy_check = 'no'
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_tree_1 event=OnFail()>
+  alert("Error Code(tr_tree_1) : " + tr_tree_1.ErrorCode + "\n" + "Error Message : " + tr_tree_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_seq event=OnLoadError()>
+  alert("Error Code(ds_seq) : " + ds_seq.ErrorCode + "\n" + "Error Message : " + ds_seq.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_parent_query  event=OnLoadError()>
+  alert("Error Code(ds_parent_query) : " + ds_parent_query.ErrorCode + "\n" + "Error Message : " + ds_parent_query.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_division 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_detail_code 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_cmp_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_tree_1copy 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_tree_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_tree_2 
+    style="Z-INDEX: 103; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+   </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_tree_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_chg_budget_parent_1tr=ds_tree_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	
+ <comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+      
+ <comment id="__NSID__"><Object id=ds_select1
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+ <comment id="__NSID__"><Object id=ds_select2
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+    
+<comment id="__NSID__"><OBJECT id=ds_1copy 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_parent_query 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <Param Name="SubsumExpr" VALUE="100:direct_class"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_excel_tot
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_chg_budget_child_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0;" onload=setTimeout('window_onload()',100) onresize='f_set_resize()' oncontextmenu="return false">
+<div class=main_div>
+	<table width="100%"  height="40px"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+		<TR >
+			<TD class=td_green>
+					<table border= "0" cellpadding="0" cellspacing="0" class=main_table>
+						<tr>
+							
+							<td width="*">&nbsp;</td>
+							<td width="1px">
+							
+							</td>
+						</tr>
+					</table>
+			</TD>
+		</TR>
+	</table>
+
+
+
+<input type="radio" 
+       style="Z-INDEX: 100; LEFT: 5px; WIDTH: 20px; POSITION: absolute; TOP: 7px; HEIGHT: 20px" 
+       value="1" defaultChecked="true" onclick="rd_screen_onclick()">
+<LABEL id=Label_1 
+       style="LEFT: 26px; WIDTH: 72px; POSITION: absolute; TOP: 12px; HEIGHT: 19px">화면조정 
+</LABEL>       
+<DIV   style="Z-INDEX: 105; right: 5px; WIDTH: 170px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<input id=bt_excel_gd_parent_query type="button" value="확정"  class="img_btn2_1"
+          style="visibility:hidden;"   
+            onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+           onclick=budget_fix()>
+<input id=bt_excel1 type="button" value="엑셀"  class="img_btn2_1"
+           onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+           onclick=excel_down()>
+<input type="button" value="닫기"  class="img_btnClose"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"
+           onclick=close_rtn()>
+</div>           
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 5px; WIDTH: 220px; POSITION: absolute; TOP: 30px; HEIGHT: 500px"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_tree_2">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=1>
+	<PARAM NAME="TextColumn" VALUE="name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+	<PARAM NAME="LevelColumn" VALUE="llevel">
+	<PARAM NAME="Enable" VALUE="-1">
+	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<div id=tab_stand_1>
+  <table width="100%"  height="100%"  BORDER="0"  align="center"   CELLSPACING="0" 
+          style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 5px; WIDTH: 220px; POSITION: absolute; TOP:531px; HEIGHT:1.2%"  >
+     <tr BGCOLOR="white"  > 
+         <td> 
+             <INPUT id=tx_name    size=30 readonly ondblclick="tx_name.select()" onfocus="tx_name.select()" ></td>
+	  </tr>
+     <tr BGCOLOR="white"  > 
+         <td > 
+             <INPUT id=tx_ssize    size=30 readonly ondblclick="tx_ssize.select()" onfocus="tx_ssize.select()"></td>
+	  </tr>
+     <tr BGCOLOR="white"  > 
+         <td > 
+             <INPUT id=tx_unit   size=30 readonly ondblclick="tx_unit.select()" onfocus="tx_unit.select()"></td>
+	  </tr>
+  </table>
+</div>	  
+  <DIV id=gd_tree_1_button 
+      style="Z-INDEX: 105; LEFT: 450px; WIDTH: 490px; POSITION: absolute; TOP: 7px; HEIGHT: 20px;visibility:hidden">
+     <input id=bt_stand_conn type="button" value="표준공종복사"  class="img_btn6_1"
+            onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=wbs_paste()>
+     <input id=bt_stand_conn_mast type="button" value="마스터공종복사"  class="img_btn7_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=wbs_master_paste()>
+     <input id=bt_dept_tree_paste type="button" value="현장복사"  class="img_btn4_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_dept_tree_paste()>
+     <input id=bt_tot_calculate_1 type="button" value="재집계"  class="img_btn3_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=f_tot_calculate()>
+
+  </DIV>
+  <DIV id=gd_1_button 
+      style="Z-INDEX: 107; right: 200px; WIDTH: 370px; POSITION: absolute; TOP: 5px; HEIGHT: 20px;visibility:hidden">
+     <input type="button" value="도급"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_cnt()>
+		<input type="button" value="실행"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_sil()  >
+			 
+     <input type="button" value="전체"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_tot()>
+     <input type="button" value="비교현장"  class="img_btn4_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_cmp_select()>
+     <input type="button" value="비교"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_cmp()>
+		&nbsp;&nbsp;&nbsp;
+     <input id=bt_copy type="button" value="복사"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_copy()>
+     <input id=bt_paste type="button" value="붙여넣기"  class="img_btn4_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_paste()>
+     <input id=bt_stand_copy type="button" value="표준내역"  class="img_btn4_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_stand_paste()>
+     <input id=bt_dept_paste type="button" value="현장복사"  class="img_btn4_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_dept_paste()>
+     <input id=bt_excel_paset type="button" value="엑붙"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_bt_excel()>
+     <input id=bt_re_seq type="button" value="순번"  class="img_btn2_1"
+          onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=gd_1_re_seq()>
+  </div>
+<comment id="__NSID__"><OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 106; LEFT: 226px; WIDTH: 169px; POSITION: absolute; TOP: 20px; HEIGHT: 25px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title='내역 등록'</T>
+    <T>divid=tab_page_2 title='공종 구조등록'</T>"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+  <DIV id=tab_page_1 
+      style="Z-INDEX: 107; LEFT: 224px; WIDTH: 788px; POSITION: absolute; TOP: 40px; HEIGHT: 95%">
+     <comment id="__NSID__"><OBJECT id=gd_parent_query 
+         style="Z-INDEX: 111; WIDTH: 100%; HEIGHT: 100%" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="0">
+        <PARAM NAME="BorderStyle"  VALUE=1>
+	     <PARAM NAME="Editable" VALUE="0">
+        <param name="MultiRowSelect"   value="0">
+	     <param name="ViewSummary"    value=1>
+	     <PARAM NAME="ColSizing" VALUE="-1">
+		  <PARAM NAME="DataID" VALUE="ds_parent_query">
+		  <param name=AutoResizing value=true> 
+	     <PARAM NAME="Format" VALUE="
+	        <FC> Name='명    칭' ID='{decode(curlevel,100,\' 소   계\',name)}' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=200  
+                SumColor=Black SumBgColor=Pink SumText='합  계'  </FC>
+	        <G> Name='  실         행 '  HeadAlign=Center HeadBgColor=#DEE09E
+	           <C> Name=재료금액 ID=mat_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=노무금액 ID=lab_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=외주금액 show=false  ID=sub_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=경비금액 ID=exp_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=총합계  ID=amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	         </G>
+	        <G> Name='  도         급 '  HeadAlign=Center HeadBgColor=#DEE09E 
+	           <C> Name=재료금액 ID=cnt_mat_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=노무금액 ID=cnt_lab_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=경비금액 ID=cnt_exp_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	           <C> Name=총합계  ID=cnt_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#DEE09E Width=90 
+	           	                                        SumText=@sum          SumColor=Black SumBgColor=Pink</C>
+	        </G>   
+	        ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+     <comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110;  WIDTH: 100%;  HEIGHT: 100%" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=1>
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <param name="ViewSummary"    value=1>
+	     <param name="DragDropEnable" value=1>
+	     <PARAM NAME="DataID" VALUE="ds_1">
+		  <param name=SortView value="right">
+		  <param name=AutoResizing value=true> 
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</DIV>	
+  <DIV id=tab_page_2 
+           style="Z-INDEX: 300; LEFT: 224px; WIDTH: 788px; POSITION: absolute; TOP: 40px; ">
+     <comment id="__NSID__"><OBJECT id=gd_tree_1 
+         style="Z-INDEX: 310; WIDTH: 100%; HEIGHT: 100%" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=1>
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+	     <PARAM NAME="DataID" VALUE="ds_tree_1">
+		  <param name=AutoResizing value=true> 
+	     <PARAM NAME="Format" VALUE="
+	        <FC> Name='1' ID=tree_1 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='1','■','')} Width=11</FC>	   
+	        <FC> Name='2' ID=tree_2 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='2','■','')}  Width=11</FC>	   
+	        <FC> Name='3' ID=tree_3 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='3','■','')}  Width=11</FC>	   
+	        <FC> Name='4' ID=tree_4 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='4','■','')}  Width=11</FC>	   
+	        <FC> Name='5' ID=tree_5 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='5','■','')}  Width=11</FC>	   
+	        <FC> Name='6' ID=tree_6 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='6','■','')}  Width=11</FC>	   
+	        <FC> Name='7' ID=tree_7 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='7','■','')}  Width=11</FC>	   
+	        <FC> Name='8' ID=tree_8 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='8','■','')}  Width=11</FC>	   
+	        <FC> Name='9' ID=tree_9 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='9','■','')}  Width=11</FC>	   
+	        <FC> Name='*' ID=tree_10 Color=red Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Value={if(llevel='10','■','')}  Width=11</FC>	   
+	        <C> Name='직/간' ID=direct_class EditStyle=Combo Data='1:직접비,2:간접비,3:기타'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=60 </C>
+	        <C> Name=순번 ID=no_seq BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=60 </C>
+	        <C> Name=레벨 ID=llevel BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=30 </C>&#13;&#10;&#9; 
+	        <C> Name='명   칭' ID=name BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=220 </C>
+	        <C> Name='집계분류' ID=division EditStyle=Lookup Data='ds_division:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 </C>
+	        <C> Name='표준공종명' ID=wbs_name EditStyle=Popup BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=130 </C>
+	        <C> Name='내역건수' ID=cnt  BgColor=@ucolor_1 HeadAlign=Center EDIT=None HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=60 </C>
+	        ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	</DIV>	
+<comment id="__NSID__"><OBJECT id=gd_excel_tot
+    style="POSITION: absolute; LEFT: 2px;TOP: 5px;  WIDTH: 1010px; HEIGHT: 645px; Z-INDEX: 102;FONT-SIZE: 12px ;visibility:hidden" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_excel_tot">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='공 종 명'  id=parent_name  width=234    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='No Seq'  id=no_seq  width=130 value={number(right(string(no_seq),6))} align=right   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='내역코드'  id=detail_code  width=107    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='명  칭'  id=name  width=306  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='규  격'  id=ssize  width=246    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='단위'  id=unit  width=66    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='수량'  id=qty  width=130  dec=3 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK gte_columntype='number:3:true' </C>
+     <C> Name='단가'  id=price  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='금액'  id=amt  width=130   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='자재단가'  id=mat_price  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='자재금액'  id=mat_amt  width=130   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='노무단가'  id=lab_price  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='노무금액'  id=lab_amt  width=130   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='외주단가'  show=false id=sub_price  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='외주금액'  show=false id=sub_amt  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='경비단가'  id=exp_price  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='경비금액'  id=exp_amt  width=130    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='자재코드'  id=mat_code  width=111    HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+
+
+</div>
+
+
+<comment id="__NSID__"><OBJECT id=Bind_1 
+    style="Z-INDEX: 107; LEFT: 241px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+	   <C>Col=stand_name               Ctrl=tx_name       Param=value Enable=enable</C>
+	   <C>Col=stand_ssize              Ctrl=tx_ssize                Param=value Enable=enable</C>
+	   <C>Col=stand_unit               Ctrl=tx_unit                  Param=value Enable=enable</C>
+          "></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+</BODY></HTML>

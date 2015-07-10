@@ -1,0 +1,749 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : v_tech_proposal_report_1h.html						-->
+<!-- 2. 유형(시나리오): 조회및 입력													-->
+<!-- 3. 기 능 정 의   : 기술제안활동제안서			               		-->
+<!-- 4. 변 경 이 력   : 이준구 작성													-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<title>기술제안활동제안서</title>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var gs_user_id = top.frames['security'].user_id.value
+var gs_empno = top.frames['security'].empno.value
+var is_ds_1_addr = ""
+var is_tr_1_addr = ""
+var is_dept_code = ""
+var is_dept_name = ""
+var is_year = ""
+var is_seq_num = ""
+var is_returnvalue=""
+var home
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript>
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+   if (( is_dept_code.replace(/\' '/gi, "") == '' ) || (is_year.replace(/\' '/gi, "")=='') || isNaN(is_seq_num.replace(/\' '/gi, "")) )
+
+   {
+		alert("자료가 없습니다.")
+		history.back(-1); 
+		return ;
+   } 
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_year=" + is_year+'.01.01' + "&arg_seq_num=" + is_seq_num
+ 	ds_1.SyncLoad=true
+ 	ds_1.Reset()
+
+   if ( ds_1.CountRow < 1 )
+   {
+		alert("자료가 없습니다.")
+		close1();
+   }
+
+   IFrame_upload.btnquery_onclick(f_get_parent_key())
+}
+
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+
+  if  (gd_1.MultiRowSelect)
+  {                                   // multi row select 일 경우
+     for (i=ds_1.CountRow ;i >0 ;i--)                          // 로우의 제일끝에서부터 앞으로 루핑
+     {
+        if (ds_1.RowMark(i) == 1)                              // 선택되어 있으며는 
+               ds_1.DeleteRow(i)
+    }   
+    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)           // 삭제작업완료후 MARK(멀티로우 때문에 한번 마킹해준다)
+  }
+  else
+ 	ds_1.DeleteRow(ds_1.RowPosition)  
+
+ }
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+    ds_1.Undo(ds_1.RowPosition)                                     //해당 row만 취소한다.
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+    
+  if (ds_1.IsUpdated )											 //변경된것이 있으며는 
+	
+  {                                          
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+    {
+    	 if(f_check_date(em_proposal_make_date.text) == false )
+    	 {
+				alert("유효하지 않은 날짜가 입력되었습니다.\n수정하십시요 ") ;
+				return false;
+    	 }
+    	 
+    
+        tr_1.Post()        
+        
+		  IFrame_upload.btnsave_onclick()								// 업로드 저장
+		  
+		  return true ;
+                                  
+    }
+	return false;  
+  }
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+
+	var result;
+	var array = new Array();
+
+	result = readCookie("@v_tech_proposal@")
+   if (result == "err") {
+      alert("정보가 올바르지않아 실행할 수 없습니다.")
+      return
+   } 
+   else
+   {
+      array = result.split("@");
+		gs_home = array[0]
+		is_dept_code = array[1]
+		is_year= array[2]
+		is_seq_num = array[3]
+	} 
+   is_ds_1_addr = gs_home + '/const/v_web/08/v_tech_proposal_report_1q.jsp?arg_dept_code='                      
+   is_tr_1_addr = gs_home + '/const/v_web/08/v_tech_proposal_plan_2tr.jsp'
+
+   tr_1.Action = is_tr_1_addr
+   	
+	btnquery_onclick()
+	
+	calc() ;
+	
+	if (parseInt(ds_1.NameValue(1,'status')) > 1)
+	{
+		tx_team_chief.disabled =true	
+	   tx_team_name.disabled =true	
+	   em_improve_name.enable =false
+	   em_before_mat_amt.enable =false
+	   em_before_labor_amt.enable =false
+	   em_before_equip_amt.enable =false
+	   em_before_etc_amt.enable =false
+	   em_after_mat_amt.enable =false
+	   em_after_labor_amt.enable =false
+	   em_after_equip_amt.enable =false
+	   em_after_etc_amt.enable =false
+	   
+	   ta_before_map.disabled =true
+	   ta_after_map.disabled =true
+	   ta_improve_merit.disabled =true
+	   ta_improve_weak.disabled =true
+	   ta_improve_alert.disabled =true
+	   
+	   ta_charge_opinion.disabled =true
+	   ta_part_opinion.disabled =true
+	   
+	   em_proposal_make_date.enable =false
+	   
+	   cal.style.display = 'none'
+	   button_offer.style.display = 'none'
+
+
+	}
+	
+}
+
+
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr=new Array('gd_1','gd_2');
+	var xArr =new Array(false, true);
+	var yArr =new Array(true,true);
+
+	f_reSize(objArr, xArr, yArr);
+}  
+//---------------------------------------------------------------------------
+function calc()  
+//---------------------------------------------------------------------------
+{
+	em_save_mat_amt.text   = em_before_mat_amt.text   -  em_after_mat_amt.text
+	em_save_labor_amt.text = em_before_labor_amt.text -  em_after_labor_amt.text
+	em_save_equip_amt.text = em_before_equip_amt.text -  em_after_equip_amt.text
+	em_save_etc_amt.text   = em_before_etc_amt.text   -  em_after_etc_amt.text
+	em_rate_mat_amt.text   = Math.round(em_save_mat_amt.text     /  em_before_mat_amt.text * 10000 ) / 100
+	em_rate_labor_amt.text = Math.round(em_save_labor_amt.text   /  em_before_labor_amt.text * 10000 ) / 100
+	em_rate_equip_amt.text = Math.round(em_save_equip_amt.text   /  em_before_equip_amt.text * 10000 ) / 100
+	em_rate_etc_amt.text   = Math.round(em_save_etc_amt.text     /  em_before_etc_amt.text * 10000 )/ 100
+	em_before_sum_amt.text = parseInt(em_before_mat_amt.text)  + parseInt(em_before_labor_amt.text)  + parseInt(em_before_equip_amt.text) + parseInt(em_before_etc_amt.text)  
+	em_after_sum_amt.text  = parseInt(em_after_mat_amt.text)   + parseInt(em_after_labor_amt.text)   + parseInt(em_after_equip_amt.text)  + parseInt(em_after_etc_amt.text)  
+	em_save_sum_amt.text   = parseInt(em_save_mat_amt.text)    + parseInt(em_save_labor_amt.text)    + parseInt(em_save_equip_amt.text)   + parseInt(em_save_etc_amt.text)  
+	em_rate_sum_amt.text   = Math.round(( parseInt(em_save_sum_amt.text)  / parseInt(em_before_sum_amt.text)    ) * 10000 ) / 100   
+}
+//---------------------------------------------------------------------------
+function offer() //  제출
+//---------------------------------------------------------------------------
+{
+	ds_1.NameValue( 1, 'status') = 2
+//	ds_1.NameValue( 1, 'PROPOSAL_MAKE_DATE') = f_sysdate()
+	if ( btnsave_onclick() == true ) 
+	   close1();
+	
+	ds_1.Undo(ds_1.RowPosition) 
+
+}
+//------------------------------------------------------------------------
+function f_get_parent_key()                     // IFrame_upload에서 호출하는 함수 parent_key 를 return   ....이펑션을 추가하고 job_code, dir_name, title, parent_key 세팅.....
+//------------------------------------------------------------------------
+{
+
+   IFrame_upload.is_job_code = 'V';							//업무 코드
+   IFrame_upload.is_dir_name = 'TECH_PIC';						//저장될폴더지정
+
+	IFrame_upload.is_title = 'PIC';								//화면제목
+	var ls_parent_key = ds_1.NameValue(ds_1.RowPosition,"dept_code") + ds_1.NameValue(ds_1.RowPosition, "year") + ds_1.NameValue(ds_1.RowPosition, "quarter_year")
+							+ ds_1.NameValue(ds_1.RowPosition,"seq_num") 
+
+	
+	return ls_parent_key;
+
+}
+//----------------------------------------------------------------
+function close1()                      //화면 닫기 
+//----------------------------------------------------------------
+{
+	if (ds_1.IsUpdated) 
+	{
+		if (confirm("변경된 내용이 있습니다: 창을 닫으시겠습니까?"))
+		{
+			history.back(-1); 	
+		   return ;	
+	   }
+
+	}
+	
+			history.back(-1);
+			return ;			
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code(tr_1) : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+
+<script language=JavaScript for=ds_1 event=OnRowPosChanged(row)>
+</script>
+
+
+<script language=JavaScript for=em_before_mat_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+ 
+<script language=JavaScript for=em_before_labor_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_before_equip_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_before_etc_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_after_mat_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_after_labor_amt  event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_after_equip_amt  event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+<script language=JavaScript for=em_after_etc_amt event=onKeyUp(kcode,scode)>
+	calc()
+</script>
+
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+    
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F >
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:v_tech_proposal_plan_2tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false">
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0">
+	<tr height="20px">
+		<td class=td_green >
+			<table  border="0" width="100%" height="100%" cellspacing="0" >
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="80" class=font_green_bold >현장명</td>
+					<td width="230"><input type="text" id='tx_long_name' name="dept"  style=" width : 200px ; font-size :12px"  disabled></td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="80" class=font_green_bold>공종</td>
+					<td width="230"><input type="text" id=tx_wbs_name  style=" width : 200px ; font-size :12px"  disabled></td>
+					<td width="15"> </td>
+					<td width="80"> </td>
+					<td width="230">
+					<input type="button" id=button_offer value="제출" onclick="offer()" align="absmiddle"  class="img_btn2_1" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					<input type="button" id=button_s_person value="닫기" onclick="close1()" align="absmiddle"  class="img_btn2_1" onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>	
+					<td>　</td>				
+				</tr>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td class=font_green_bold>팀장</td>
+					<td><input type="text" id="tx_team_chief" style=" width : 200px ; font-size :12px"  ></td>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td class=font_green_bold>팀명</td>
+					<td><input type="text" id='tx_team_name'  style=" width : 200px ; font-size :12px" ></td>
+					<td width="15px">　</td>
+					<td class=font_green_bold width="80">　</td>
+					<td> </td>	
+				</tr>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td class=font_green_bold>개선안명</td>			
+					<td colspan=4 >
+						<comment id="__NSID__"><object id=em_improve_name classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+							height=20 width=530 style="font-size:12px;background-color:white ">
+						<param name=Text		value="">
+						<param name=Alignment	value=0>
+						<param name=Border		value=true>
+						<param name=ClipMode	value=true>
+						<param name=Numeric		value=false>
+						<param name=GeneralEdit		value=true>						
+						</object></comment> <script> __ws__(__NSID__);</script>	
+					</td>	
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td class=font_green_bold width="80">작성일</td>
+					<td>
+						<comment id="__NSID__"><OBJECT id=em_proposal_make_date  align="absmiddle"
+					       style="Z-INDEX: 101;WIDTH: 100px; background-color:white " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+							<param name=Format value="YYYY-MM-DD">
+							<param name=ReadOnlyBackColor  value=silver>
+							<param name=Alignment      value=1>
+							<param name=Numeric value=false>
+							<param name=PromptChar   value="_">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					<input id=cal type="button" class="img_btnCalendar_S" align="absmiddle"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_proposal_make_date.text = result.substr(0,8);} ; " >
+					</td>	
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td height="5"></td>
+	</tr>
+	<tr height="110" >
+		<td>
+			<table border="1" width="100%" cellpadding="0" cellspacing="0"  style="FONT-SIZE: 12px">
+			   <tr bgcolor="#BBE0F4"  align="center" width="*">
+			   	<td width="30" rowspan="2" class=font_green_bold> 	약<br><br><br>도</td>
+			   	<td width="480" class=font_green_bold>개선전</td>
+			   	<td width="480" class=font_green_bold>개선후</td>
+			   </tr>
+				<tr height="170">
+					<td  ><textarea id="ta_before_map" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+					<td  ><textarea id="ta_after_map" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td height="5"></td>
+	</tr>
+	<tr>
+		<td>
+			<table border="0" width="100%" cellpadding="0" cellspacing="0"  style="FONT-SIZE: 12px">
+				<tr>
+					<td>
+						<table border="1" width="100%" cellpadding="0" cellspacing="0"  style="FONT-SIZE: 12px">
+							<tr  bgcolor="#BBE0F4" align="center" height="20">
+								<td  width="200" >구&nbsp;&nbsp;&nbsp;분</td>
+								<td  width="200">재&nbsp;료&nbsp;비</td>
+								<td  width="200">노&nbsp;무&nbsp;비</td>
+								<td  width="200">장&nbsp;비&nbsp;비</td>
+								<td  width="200">기&nbsp;&nbsp;&nbsp;타</td>
+								<td  width="200">합&nbsp;&nbsp;&nbsp;계</td>																								
+							</tr>
+							<tr height="20">
+								<td align="center" >A. 개선전 원가</td>
+								<td>
+									<comment id="__NSID__"><object id=em_before_mat_amt  classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20  style="font-size:12px;background-color:white;width:100% " >
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_before_labor_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_before_equip_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>								
+								<td>
+									<comment id="__NSID__"><object id=em_before_etc_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_before_sum_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% "> 
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+							</tr>
+							<tr height="20">
+								<td align="center">B. 개선후 원가</td>
+								<td>
+									<comment id="__NSID__"><object id=em_after_mat_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_after_labor_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_after_equip_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>								
+								<td>
+									<comment id="__NSID__"><object id=em_after_etc_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=NumericRange	value="0~+:0">
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_after_sum_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>																							
+							</tr>
+							<tr height="20">
+								<td align="center">C. 절감액(A-B)</td>
+								<td>
+									<comment id="__NSID__"><object id=em_save_mat_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_save_labor_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_save_equip_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>								
+								<td>
+									<comment id="__NSID__"><object id=em_save_etc_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_save_sum_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>																								
+							</tr>
+							<tr height="20">
+								<td align="center">D.절감율 (C/A * 100 %) </td>
+								<td>
+									<comment id="__NSID__"><object id=em_rate_mat_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_rate_labor_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_rate_equip_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>								
+								<td>
+									<comment id="__NSID__"><object id=em_rate_etc_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>
+								<td>
+									<comment id="__NSID__"><object id=em_rate_sum_amt classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+										height=20 style="font-size:12px;background-color:white;width:100% ">
+									<param name=Text		value="">
+									<param name=Alignment	value=2>
+									<param name=Border		value=true>
+									<param name=ClipMode	value=true>
+									<param name=Numeric		value=true>
+									<param name=Enable   value=false>
+									</object></comment> <script> __ws__(__NSID__);</script></td>																								
+							</tr>															
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td height="5"></td>
+				</tr>
+				<tr>
+					<td>
+						<table border="1" width="100%"  height="110" cellpadding="0" cellspacing="0"  style="FONT-SIZE: 12px">
+							<tr bgcolor="#BBE0F4" align="center" width="*">
+						   	<td width="30" rowspan="2" class=font_green_bold> 	개<br>선<br>안<br>특<br>징</td>
+						   	<td width="330" class=font_green_bold>장점</td>
+						   	<td width="330" class=font_green_bold>단점</td>
+						   	<td width="330" class=font_green_bold>시공시 주의사항</td>
+						   </tr>
+							<tr width="*" height="120">
+								<td><textarea id="ta_improve_merit" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+								<td><textarea id="ta_improve_weak" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+								<td><textarea id="ta_improve_alert" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>			
+	</tr>
+	<tr>
+		<td height="5"></td>
+	</tr>
+	<tr>
+		<td>
+			<table border="1" width="100%" cellpadding="0" cellspacing="0"  style="FONT-SIZE: 12px">
+				<tr bgcolor="#BBE0F4">
+			   	<td width="33%" class=font_green_bold>현장소장의견</td>
+			   	<td width="33%" class=font_green_bold>주관부서의견</td>
+			   	<td width="33%" class=font_green_bold>화일첨부</td>
+
+			   </tr>
+				<tr width="*" height="120">
+					<td><textarea id="ta_charge_opinion" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+					<td><textarea id="ta_part_opinion" maxLength='2000'  onkeyup="LimitTextLength(this)" cols="5" rows="5" style="font-size:12px;width : 100% ; height:100%" ></textarea>  </TD>
+					<td>
+					<!-- 화일 저장 시작-->		
+					<IFRAME ID=IFrame_upload FRAMEBORDER=1 SCROLLING=NO SRC="../../../comm_function/file_upload/file_upload.html" 
+					 style="WIDTH: 100%;  HEIGHT: 100%"></IFRAME>
+					<!-- 화일 저장 끝  -->
+					</td>	
+				</tr>
+			</table>
+		</td>
+	</tr>	
+</table></div>
+<comment id="__NSID__"><OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+     	<C>Col=long_name Ctrl=tx_long_name  Param=value Enable=false</C>
+    	<C>Col=wbs_name Ctrl=tx_wbs_name Param=value  Enable=false</C>
+    	<C>Col=team_name  Ctrl=tx_team_name  Param=value  Enable=enable</C>
+    	<C>Col=team_chief Ctrl=tx_team_chief Param=value  Enable=enable</C>
+    	<C>Col=improve_name  Ctrl=em_improve_name  Param=text Enable=enable</C>
+   	
+    	<C>Col=before_mat_amt  Ctrl=em_before_mat_amt Param=text Enable=enable</C>    	
+    	<C>Col=before_labor_amt  Ctrl=em_before_labor_amt Param=text Enable=enable</C>    	
+    	<C>Col=before_equip_amt  Ctrl=em_before_equip_amt Param=text Enable=enable</C>    	
+    	<C>Col=before_etc_amt  Ctrl=em_before_etc_amt Param=text Enable=enable</C>    	
+    	<C>Col=after_mat_amt  Ctrl=em_after_mat_amt Param=text Enable=enable</C>    	
+    	<C>Col=after_labor_amt  Ctrl=em_after_labor_amt Param=text Enable=enable</C>    	
+    	<C>Col=after_equip_amt  Ctrl=em_after_equip_amt Param=text Enable=enable</C>    	
+    	<C>Col=after_etc_amt  Ctrl=em_after_etc_amt Param=text Enable=enable</C>      	
+
+    	<C>Col=before_map  Ctrl=ta_before_map Param=value Enable=enable</C>      	
+    	<C>Col=after_map  Ctrl=ta_after_map Param=value Enable=enable</C>      	
+    	<C>Col=improve_merit  Ctrl=ta_improve_merit Param=value Enable=enable</C>      	
+    	<C>Col=improve_weak  Ctrl=ta_improve_weak Param=value Enable=enable</C>      	
+    	<C>Col=improve_alert  Ctrl=ta_improve_alert Param=value Enable=enable</C>      	
+
+    	<C>Col=charge_opinion  Ctrl=ta_charge_opinion Param=value Enable=enable</C>      	
+    	<C>Col=part_opinion  Ctrl=ta_part_opinion Param=value Enable=enable</C>    
+    	    	    	    	    	    	    	
+    	<C>Col=proposal_make_date  Ctrl=em_proposal_make_date  Param=text Enable=enable</C>    	    	    	    	    	
+    	">   	   	    	
+</OBJECT></comment> <script> __ws__(__NSID__);</script> 
+</BODY></HTML>

@@ -1,0 +1,450 @@
+1. SQL 기본 편
+ 1-1. 기본에 앞서서
+ 기본에 앞서서 먼저 알아야 할 것이 있다.
+ 지금부터 논의될 것은 ORACLE에 한정된 내용이다.
+ 또한 룰 기반 최적화기는 다루지 않을 것이다. 그 이유는 쓰지 말아야 할 유산이니까.
+ 물론 필요에 따라 룰기반의 약점을 다룰 때는 들여다 볼 것이고...
+ 
+ 기본 편에서 다룰 내용은 정말 우리가 당연히 알아야 할 그런 것들이다.
+ 그러나 너무 당연해서 그냥 넘어가곤 하던 것들....
+ 
+ 1-2. 데이타 유형이 미치는 영향들...
+ 여기서는 데이타의 유형이 성능에 미치는 영향을 먼저 다루도록 해보자.
+ 
+ 1-2-1. 숫자유형 과 문자열.
+ 먼저 이런 생각을 해보자. 키값으로 사용할 데이타 타입은 어떤 것이 좋을까?
+ 숫자형? 문자열형? 어느게 더 빠르지? PL-SQL에서 비교는 어떤게 더 성능에 좋지?
+ 데이타 유형의 선택에 있어서 또한 고려해야 할 점은 어떤 것이 있지?
+ 
+ 자 먼저 테이블을 만들자
+ create table number_table
+ (
+    id number
+ );
+ alter table number_table add constraint pk_number_table primary key (id);
+ 
+ create table string_table
+ (
+    id varchar2(38)
+ );
+ alter table string_table add constraint pk_string_table primary key (id);
+ 
+ insert into number_table(id) select object_id from all_objects;
+ 
+ 32898 개의 행이 만들어졌습니다.
+ 
+ insert into string_table(id) select to_char(object_id) from all_objects;
+ 
+ SQL> select max(object_id) from all_objects;
+
+  MAX(OBJECT_ID)
+  --------------
+           37821
+           
+ 그러면 테스트 용 sp들을 만들어 보자.
+
+create or replace procedure sp_number_test
+is
+	ret_value			number_table.id%type;
+	ls_key				string_table.id%type;
+begin
+	for j in 1..100 loop
+		for i in 1..37821 loop
+			ls_key := to_char(i);
+			begin
+				select
+					id
+				into
+					ret_value
+				from	number_table
+				where	id = i;
+			exception when no_data_found then
+				null;
+			end;
+		end loop;
+	end loop;
+end;
+/
+create or replace procedure sp_string_test
+is
+	ret_value			string_table.id%type;
+	ls_key				string_table.id%type;
+begin
+	for j in 1..100 loop
+		for i in 1..37821 loop
+			ls_key := to_char(i);
+			begin
+				select
+					id
+				into
+					ret_value
+				from	string_table
+				where	id = ls_key;
+			exception when no_data_found then
+				null;
+			end;
+		end loop;
+	end loop;
+end;
+/
+
+테스트 하기
+
+spool a.txt
+select current_timestamp from dual;
+exec sp_number_test;
+select current_timestamp from dual;
+exec sp_string_test;
+select current_timestamp from dual;
+spool off
+ed a.txt
+
+
+결과
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:20:33.796000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:22:42.781000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:24:54.656000 +09:00                                                 
+
+
+
+  결과를 해석해보자
+  먼저 number 타입일 경우 약 2분 9초 정도 걸렸다. varchar2(38)은 약 2분 12초 정도 걸렸다.
+  총 루프 횟수는 3782100 회 약 3백 70만 번의 select 가 약 3초의 차이를 보여주었다.
+  물론 varchar2의 경우 38자리지만 실제로 사용된 자릿수는 5자리 뿐이니까..이럴 수도 있다.
+  그럼 10자리로 만들고 해보자
+  
+  update string_table 
+  set id = id || id
+  /
+  update number_table 
+  set id = to_number(to_char(id) || to_char(id))
+  /
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:32:51.687000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:36:05.859000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:39:22.250000 +09:00                                                 
+
+  결과를 해석해보자
+  먼저 number 타입일 경우 약 3분 14초 정도 걸렸다. varchar2(38)은 약 3분 17초 정도 걸렸다.
+  비교할 대상 컬럼의 자릿수가 늘어났으니 어느정도 느려지는 건 당연하고...
+  어쨋든 두 데이타 타입 사이에 뚜렸한 차이가 발견되지 않는다.
+  3백만번 비교에 겨우 3초면 과연 이것을 차이가 난다고 받아들여야 할 것인가?
+  3분 14초면 194초 이고 varchar2(38)이며 최고 자릿수가 10자리인 경우 3/194(약 1.5% 약 하루에 37분) 만큼 느리다
+  게다가 건수 대비로 따져보면 OLTP 상황에서는 차이가 안난다고 봐야 맞을 것 같다...
+  (이 테스트는 PC에서 이루어졌다 만약 성능좋은 서버에서 실행된다면 건수대비 비율은 더 작아질 것이다.)
+  대용량의 batch작업에서라면 하루당 약 37분(40분이라고 보자) 정도 느리다.
+  그러나 대용량 작업에서 위와같은 식의 코딩을 하는 것 자체가 올바른 방법이 아니니까....
+  
+  
+  그렇다면 만약 varchar2(5) 인 경우는 어떨까?
+  
+  해보자
+  
+ drop table string_table;
+  
+ create table string_table
+ (
+    id varchar2(5)
+ );
+ alter table string_table add constraint pk_string_table primary key (id);
+ insert into string_table(id) select to_char(object_id) from all_objects;
+ 
+ drop table number_table;
+ insert into number_table(id) select object_id from all_objects;
+ 
+ alter procedure sp_number_test compile;
+ alter procedure sp_string_test compile;
+ 
+  자 이제 다시 테스트 해보자
+  
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:52:54.062000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:55:05.484000 +09:00                                                 
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP                                                               
+---------------------------------------------------------------------------     
+05/03/14 01:57:23.343000 +09:00                                                 
+
+  결과를 해석해보자
+  먼저 number 타입일 경우 약 2분 11초 정도 걸렸다. varchar2(5)은 약 2분 18초 정도 걸렸다.
+  오히려 더 차이가 늘어났다. 그러나 number 타입도 역시 더 느려졌다.
+  아마도 다른 무언가 이유가 있을 것이라는 추측이 가능하고...
+  결국 자릿수는 큰 영향을 못 준다. 데이타 자체의 길이가 정의된 자릿수 보다 더 중요하다는 결론.
+  
+  그럼 왜 숫자가 큰 차이를 보이지 못 할까?
+  일반적인 생각으로는 숫자가 더 훨씬 빠른데....
+  c나 c++로 코딩해보면 문자열 비교 연산이 얼마나 비싼 연산인지 알 수 있다.
+  그러나 오라클에서는 별 차이가 없다?
+  
+  아마도 그 이유는 크게 두가지 일 것인데.
+  1. 오라클의 숫자 타입은 BCD에 가까운 방식으로 저장된다.
+     좀더 정확히 말한다면 OCI 가이드 같은데를 읽어보면 100 을 기수로 하는 21자리의 숫자 형으로 기억된다.
+     1byte가 정확히 100단위 수를 기억한다 즉 1byte에 두자리 숫자를 기억한다는 뜻이고 이 말은
+     문자열에 비해 빨라야 2배라는 말이다. 게다가 순수 비교 연산 이외에 더 많은 공통 연산 부분이
+     있을테니 결국 그러한 공통 연산 부분에 비해 비교 연산 자체는 별반 차이가 없다는 뜻이 되고
+     
+  2. 밑에서 보여주겠지만 pk_number_table과 pk_string_table 두 인덱스의 크기 등의 정보가 별반 차이가 없어서
+     인덱스를 통한 접근에서 성능상의 차이가 많지 않다는 점이다.
+     실예)
+     spool a.txt
+     analyze index pk_number_table validate structure;
+     select * from index_stats;
+     analyze index pk_string_table validate structure;
+     select * from index_stats;
+     spool off
+     ed a.txt
+     결과
+
+	--숫자테이블의 경우
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_NUMBER_TABLE                                                    32900         91      483247       8000         90          1         939       8032           0               0         32900                 1      736032     484186         66            1                    3          0            0              0                0
+	
+	--문자열 테이블의 경우(varchar2(38))
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_STRING_TABLE                                                    32900         92      515539       8000         91          1         967       8032           0               0         32900                 1      744032     516506         70            1                    3          0            0              0                0
+	
+	--문자열 테이블의 경우(varchar2(5))
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_STRING_TABLE                                                    32900         92      515539       8000         91          1         967       8032           0               0         32900                 1      744032     516506         70            1                    3          0            0              0                0
+
+     보면 알 수 있듯이 LF_ROWS_LEN,BR_ROWS,BR_ROWS_LEN,BTREE_SPACE,USED_SPACE,PCT_USED 등에서 근소한 차이가
+     있다. 그리고 이러한 차이가 문자열과 숫자의 비교행위 그 자체보다 더 성능에 영향을 미친다고 볼 수 있다.
+     (잠정적으로 가장 영향력이 있다고 볼 수 있는 항목은 BR_ROWS_LEN 이다.)
+     
+		구분		숫자	문자열	비율		비율 보수
+		LF_ROWS_LEN	483247	515539	0.937362644	0.062637356
+		BR_ROWS		90		91		0.989010989	0.010989011
+		BR_ROWS_LEN	939		967		0.971044467	0.028955533
+		BTREE_SPACE	736032	744032	0.989247774	0.010752226
+		USED_SPACE	484186	516506	0.937425703	0.062574297
+		PCT_USED	66		70		0.942857143	0.057142857
+		시간		129		132		0.977272727	0.022727273
+
+     위의 예에서 재미있는 부분은 varchar2(5) 든 varchar2(38)이든 인덱스의 분석 결과는 실제 데이타의 저장 형태에 따른다는 점이다.
+  
+  자 그럼 한가지 질문 더 number(5)와는 어떤 차이가 있을까?
+ drop table string_table;
+ drop table number_table;
+  
+ create table string_table
+ (
+    id varchar2(5)
+ );
+ create table number_table
+ (
+    id number(5)
+ );
+ alter table string_table add constraint pk_string_table primary key (id);
+ alter table number_table add constraint pk_number_table primary key (id);
+ insert into string_table(id) select to_char(object_id) from all_objects;
+ insert into number_table(id) select object_id from all_objects;
+ 
+ alter procedure sp_number_test compile;
+ alter procedure sp_string_test compile;
+
+ 프로시져 실행 결과
+
+CURRENT_TIMESTAMP
+---------------------------------------------------------------------------
+05/03/14 09:16:03.203000 +09:00
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP
+---------------------------------------------------------------------------
+05/03/14 09:18:17.062000 +09:00
+
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+
+CURRENT_TIMESTAMP
+---------------------------------------------------------------------------
+05/03/14 09:20:41.500000 +09:00
+
+  결과 해석
+  숫자 테이블의 경우 2분 14초 문자열 테이블의 경우 2분 24초
+  이 것도 별반 차이 없구요....
+  인덱스를 분석해보면
+  
+	--number(5) 인 경우
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_NUMBER_TABLE                                                    32900         91      483247       8000         90          1         939       8032           0               0         32900                 1      736032     484186         66            1                    3          0            0              0                0
+	
+	--number인 경우
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_NUMBER_TABLE                                                    32900         91      483247       8000         90          1         939       8032           0               0         32900                 1      736032     484186         66            1                    3          0            0              0                0
+
+	
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_STRING_TABLE                                                    32900         92      515539       8000         91          1         967       8032           0               0         32900                 1      744032     516506         70            1                    3          0            0              0                0
+	
+    number인 경우와 number(5)인 경우가 차이가 없다.
+    그러면 데이타에 차이를 만들어서 인덱스를 분석해 보면
+    
+    먼저 10자리로 만들고 한번 분석해보자
+    alter table number_table modify id number(10);
+    
+
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_NUMBER_TABLE                                                    32900         91      483247       8000         90          1         939       8032           0               0         32900                 1      736032     484186         66            1                    3          0            0              0                0
+    
+    인덱스에 차이가 안보이고
+    
+    데이타를 변경하고 해보자
+    
+    drop table number_table;
+    create table number_table
+    (
+       id number(10)
+    );
+    alter table number_table add constraint pk_number_table primary key (id);
+    
+    insert into number_table(id) select to_number(to_char(object_id)||to_char(object_id)) from all_objects where rownum <= 32900;
+    
+	commit;
+	
+    drop table string_table;
+    create table string_table
+    (
+       id varchar2(10)
+    );
+    alter table string_table add constraint pk_string_table primary key (id);
+    
+    insert into string_table(id) select to_char(object_id)||to_char(object_id) from all_objects where rownum <= 32900;
+    
+	commit;
+
+
+	인덱스가 분석되었습니다.
+
+
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2         96 PK_NUMBER_TABLE                                                    32900         91      483247       8000         90          1         938       8032           0               0         32900                 1      736032     484185         66            1                    3          0            0              0                0
+	
+	
+	인덱스가 분석되었습니다.
+	
+	
+	    HEIGHT     BLOCKS NAME                           PARTITION_NAME                    LF_ROWS    LF_BLKS LF_ROWS_LEN LF_BLK_LEN    BR_ROWS    BR_BLKS BR_ROWS_LEN BR_BLK_LEN DEL_LF_ROWS DEL_LF_ROWS_LEN DISTINCT_KEYS MOST_REPEATED_KEY BTREE_SPACE USED_SPACE   PCT_USED ROWS_PER_KEY BLKS_GETS_PER_ACCESS   PRE_ROWS PRE_ROWS_LEN OPT_CMPR_COUNT OPT_CMPR_PCTSAVE
+	---------- ---------- ------------------------------ ------------------------------ ---------- ---------- ----------- ---------- ---------- ---------- ----------- ---------- ----------- --------------- ------------- ----------------- ----------- ---------- ---------- ------------ -------------------- ---------- ------------ -------------- ----------------
+	         2        256 PK_STRING_TABLE                                                    32900        129      669178       8000        128          1        1356       8032           0               0         32900                 1     1040032     670534         65            1                    3          0            0              0                0
+	
+
+    음... 흥미있는 결과가 나왔다.
+    숫자의 경우는 블럭 길이는 변화가 없고 차지하는 데이타의 비율은 증가했다.
+    문자열의 경우는 블럭 자체가 증가 했다.
+    즉 잠정적으로 숫자는 자릿수에 상관없이 저장 이미지는 동일한 크기를 차지하고 문자열(varchar2)은
+    저장 이미지 자체가 가변길이로 저장된다.
+    결국 숫자가 10자리 정도이상으로 커지기 전에는 실제의 읽기 횟수도 큰 차이가 없고
+    설사 있어도 인덱스의 높이가 데이타 량 자체의 증가에 따라 선형적으로 증가하지 않고(log)
+    결국 인덱스를 통한 참조에는 varchar2나 number가 큰 차이가 없으며
+    숫자의 경우 number(5) 든 그냥 number든 물리적 이미지의 차이는 없고 데이타 자체의 크기에
+    의존적이므로 number(5)를 쓰나 varchar2(5)를 쓰나 성능상의 차이는 별반 없다는 말이 된다.
+    
+    여기서 잠깐.
+    즉 잠정적인 결론은 키를 선택함에 있어서 사용자에게 보여주지 않고 숨겨진 number 컬럼의
+    sequence를 써서 개발하는 패턴의 경우 만약 의미상의 키컬럼(흔히 말하는 코드)이 필요하다면
+    (어차피 그런 컬럼에 유니크 인덱스를 걸어야 한다.) 숨겨진 키컬럼과 sequence를 사용하여
+    기본키를 삼고 의미상의 코드를 후보키로 unique를 걸어서 사용한다는 설계 전략이 성능상의
+    필요성 때문에 그렇게 해야 한다고 말하기는 어렵다. 오히려 추가적 인덱스로 인한 DML 성능의
+    약간의 저하(정말 약간이라고 생각한다. 특히나 OLTP 시스템에서 이정도 차이는 차이도 아니다.
+    혹자는 index는 DML 성능에 악영향을 주니 사용하지 말라 할 수도 있지만 인덱스의 사용은
+    어플리케이션의 사용방법에 의존적이어야 한다고 생각한다. DML 성능 저하를 이유로 index의 
+    사용을 제한하는 것은 음... 별로 달갑지 않다.특히나 대부분의 프로그램이 조회 후 삽입,갱신,삭제
+    라는 정책을 취하기에 시스템의 응답속도는 DML의 시간을 희생해서라도 쿼리의 속도를 올리는 편이
+    나은 경우가 훨씬 더 많다.)
+    물론 역으로 이러한 전략이 성능상으로 큰 무리가 없기에 시스템의 유연한 설계를 위하여 사용되어야
+    한다고 말한다면 이 역시 부정할 수 없다는 뜻이다.
+    또한 어쨋든 number가 상대적으로 대부분의 경우 varchar2보다는 빠르다는 것도 사실이다(약간이라도)
+    그러므로 내릴 수 있는 결론은
+    
+    1. 의미적으로 구분이 가능한 코드성 테이블(중복에 대한 검사가 의미적으로 가능한 테이블들)은
+       굳이 number의 자동 키 생성에 의한 키를 기본키로 사용할 필요는 없다는 것이다.
+       
+    2. 반대로 의미적으로 구분이 불가능한 테이블들(예를 들어 거래 테이블 - 거래 테이블의 경우 해당 거래의
+       유일성을 시템적으로 검증하기가 거의 불가능하다. 대부분 실세계와의 검증만이 유일한 검증이 되곤 한다.)
+       시간선 상에서 증가 성향을 갖는 테이블 들. 이런 테이블에는 숫자의 자동생성 컬럼이 기본 키로 가장
+       유력한 후보가 될 수 있다.
+       
+    3. 물론 2의 경우에도 특정 정보가 키로서 상속될 경우 조회에 성능향상을 가져올 수 있는 경우나(예를 들어
+       거래 기본정보의 날짜가 키에 포함되어 거래 세부내역에 상속되고 실제의 조회는 거래 세부내역만으로
+       이루어지는 경우가 많다든가 하는 경우) 논리적인 의미상 특적 컬럼의 변경이 타시스템에 영향을 미쳐
+       별도의 작업을 유발시켜야 하는 경우처럼 외부키 제약 조건을 통해 키컬럼의 변경 자체를 승인하지 않고자
+       전략적 견지에서 키에 포함시키는 경우등의 논리적 설계의 필요상 필요하다면 굳이 자동 숫자 채번을
+       가져가지 않아도 될 것이다.

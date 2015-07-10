@@ -1,0 +1,392 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : e_sa_co_eval_hq_monthly_pop_1h.html				-->
+<!-- 2. 유형(시나리오): 조회및 입력											   -->
+<!-- 3. 기 능 정 의   : 협력업체 안전평가 팝업(현장)            	   -->
+<!-- 4. 변 경 이 력   : 이준구 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<title>월별 안전점검평가</title>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home
+
+var is_ds_1_addr 
+var is_tr_1_addr
+
+var dept = ""
+var ym = ""
+var approve_class
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr	
+	ds_1.SyncLoad = true
+	ds_1.Reset()
+
+	check_sum("select_type")    
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 ds_1.AddRow()
+	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if (ds_1.CountRow < 1) {
+		btnadd_onclick()
+		return
+	}
+	
+	 ds_1.InsertRow(ds_1.RowPosition)
+	 init_move()
+}
+
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+	ds_1.NameValue(ds_1.RowPosition,"dept_code") = dept 
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{	
+	if ( approve_class > 1 ) { return }
+	
+	if ( chk_checker() ==false ) return
+	
+	ds_1.NameValue(ds_1.RowPosition, "yymm") = ds_1.NameValue(ds_1.RowPosition, "yymm")	
+	
+   if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+	       	tr_1.Post()
+	   }
+ 	} 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	if (ds_1.IsUpdated) {
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+	       {  //저장 routine
+	       }   
+ 
+	}     
+	
+}
+//----------------------------------------------------------------------------
+function check_sum(colid)                 //  
+//-----------------------------------------------------------------------------
+{
+	i = 1
+	sum0 = 0
+	sum1 = 0 
+	sum2 = 0
+	sum_st = ds_st_sum.NameValue(1,"select_1")
+	sum_ho = ds_ho_sum.NameValue(1,"select_1")	
+	
+	if ( colid == "select_type") {
+		for( i=1 ;i <= ds_1.CountRow ;i++ )
+		 {
+			if (( ds_1.NameValue(i, "select_type") == 'T')  && ( ds_1.NameValue(i, "part_code") ==  '01' ) )
+ 
+			sum0 = sum0 + ds_1.NameValue(i, "ol_point")
+		 }
+		for( i=1 ;i <= ds_1.CountRow ;i++ )
+		{
+			if (( ds_1.NameValue(i, "select_type") == 'T') && ( ds_1.NameValue(i, "part_code") ==  '02' ) )
+			sum1 = sum1 + ds_1.NameValue(i, "ol_point")  
+		}
+	}	
+	
+	tx_st_sum.value = sum0	+ " / " + sum_st
+	tx_ho_sum.value = sum1	+ " / " + sum_ho
+	tx_sum.value =  sum0  + " / " + (parseInt(sum_st) + parseInt(sum_ho) )
+}	
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 
+
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	array = result.split("@");
+	
+	gs_home = array[0]
+	dept = array[1]
+	ym = array[3] 
+	tx_long_name.value = array[2]
+	var sYYMM = array[3]
+	tx_yymm.value =   sYYMM.substring(0,4) + '-' + sYYMM.substring(4,6) + '-' + sYYMM.substring(6,8) ;
+
+	orderNum = array[4]
+	approve_class = array[5]
+	tx_sbc_name.value = array[6]
+	tx_sbcr_name.value = array[7]
+
+	is_ds_1_addr = gs_home + '/const/e_web/04/E_sa_co_eval_monthly_pop_1q.jsp?arg_dept_code=' + dept + '&arg_yymm=' + ym + '&arg_order_number=' + orderNum
+	
+	is_tr_1_addr = gs_home + '/const/e_web/04/E_sa_co_eval_monthly_pop_1tr.jsp'
+	
+	ll_cnt = f_ds_select_q("ds_st_sum","select nvl(sum(a.or_point),0) select_1 from e_comp_opinion_list a, e_comp_opinion_detail b where a.dept_code='" + dept + "' and a.yymm='" + ym + "' and a.item_code=b.item_code and a.seq=b.seq and a.dept_code=b.dept_code and a.yymm=b.yymm and b.d_seq = '1' and a.part_code = 1 and a.part_code = b.part_code and a.order_number = b.order_number and a.order_number = '"+ orderNum +"'  ")
+
+	ll_cnt = f_ds_select_q("ds_ho_sum","select nvl(sum(a.or_point),0) select_1 from e_comp_opinion_list a, e_comp_opinion_detail b where a.dept_code='" + dept + "' and a.yymm='" + ym + "' and a.item_code=b.item_code and a.seq=b.seq and a.dept_code=b.dept_code and a.yymm=b.yymm and b.d_seq = '1' and a.part_code = 2 and a.part_code = b.part_code and a.order_number = b.order_number and a.order_number = '"+ orderNum +"'  ")
+
+  		
+	tr_1.Action = is_tr_1_addr
+	
+	if ( approve_class > 1 ) { 
+		gd_1.ColumnProp("select_type","Edit") = 'none' 
+		gd_1.ColumnProp("remark","Edit") = 'none' 
+		button_search.disabled = true  
+		button_save.disabled = true  
+	}
+	else { 
+		gd_1.ColumnProp("select_type","Edit") = '' 
+		gd_1.ColumnProp("remark","Edit") = ''  
+		button_search.disabled = false  
+		button_save.disabled = false  
+	}
+	
+	btnquery_onclick()
+	
+	
+}
+//---------------------------------------------------------------------------
+function	chk_checker()                      
+//---------------------------------------------------------------------------
+{
+ var tmp  , chk_t = 'F' , str = '' , tmp_str
+ 
+ 		tmp = ds_1.NameValue(1, "seq") + ds_1.NameValue(1, "item_code")  // tmp = 초기화
+ 			
+		for (i=1 ;i <= ds_1.CountRow  + 1 ;i++ )
+		{  
+			if (tmp != ( ds_1.NameValue(i, "seq") + ds_1.NameValue(i, "item_code") ) && (chk_t == 'F')  )
+			{	
+				str = str + ' ' + tmp_str
+
+			}
+	
+			if (tmp != (ds_1.NameValue(i, "seq") + ds_1.NameValue(i, "item_code")))
+				chk_t = 'F' 
+				
+			if ( ds_1.NameValue(i, "select_type")  == 'T'  )
+			{
+				chk_t = 'T'
+			}
+			
+			tmp = ds_1.NameValue(i, "seq") + ds_1.NameValue(i, "item_code")	
+			tmp_str = ds_1.NameValue(i, "or_item")
+ 
+		}
+		
+		if ( str.length != 0 ) 
+		{
+		   if  (confirm('\"' + str +' \" \n 의 점수체크를 하지 않으셨습니다. \n 계속진행하시겠습니까? ')) {	}
+			else		
+			{return false ; }
+		}
+
+
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code1 : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</SCRIPT>
+
+<script language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	check_sum(colid)    
+</script>
+<SCRIPT language="javascript"  for=gd_1 event=OnClick(Row,Colid)>
+	var check = 1
+	var i = 1
+	
+	if ( approve_class != 1 ) { return }
+	
+	if ( Colid == "select_type") {
+		for (i=1 ;i <= ds_1.CountRow ; i++ ) {
+			if ( (ds_1.NameValue(i, "item_code") == ds_1.NameValue(Row, "item_code")) && (ds_1.NameValue(i, "seq") == ds_1.NameValue(Row, "seq")) ) {
+				if(i == Row) {
+					if( ds_1.NameValue(i, "select_type") == 'T' && check == 2 )
+						ds_1.NameValue(i, "select_type") = 'F'
+					else {
+						ds_1.NameValue(i, "select_type") == 'T'
+						check = 2
+					}
+				}
+				else
+					ds_1.NameValue(i, "select_type") = 'F'
+			}
+		}
+	}
+
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_st_sum 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_ho_sum 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:e_sa_eval_monthly_pop_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>	
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=setTimeout('window_onload()',1)  oncontextmenu="return false" scroll="no">
+<div class=main_div>
+<table border="0" width="100%" height="100%" cellspacing="0">
+	<tr height="20px">
+		<td class=td_green>
+			<table border="0" cellspacing="0" cellpadding="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle"></td>
+					<td width="28px">현장</td>
+					<td width="135px">
+			    		<input id="tx_long_name" type="text" size="18" style="border: 1 solid" disabled="true">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle"></td>
+					<td width="41px">계약명</td>
+					<td width="135px" >
+						<input id="tx_sbc_name" type="text" size="18" style="border: 1 solid" disabled="true">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle"></td>
+					<td width="41px">업체명</td>
+					<td width="135px">
+						<input id="tx_sbcr_name" type="text" size="18" style="border: 1 solid" disabled="true">
+					</td>
+					<td width="15px"><img src="../../../image/bullet3.gif" align="absmiddle"></td>
+					<td width="55px"> 
+		            <div align="center">평가년월</div></td>
+		         <td width="100px">
+						<input id="tx_yymm" type="text" size="13" style="border: 1 solid" disabled="true">
+					</td>
+					<td width="*" align="right">
+						<input id=button_search type="button" value="조회" onclick=btnquery_onclick() class=img_btn2_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+						<input id=button_save type="button" value="저장" onclick=btnsave_onclick() class=img_btn2_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+						<input id=button_close type="button" value="닫기" onclick=javascript:self.close() class=img_btnClose onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">&nbsp;&nbsp;    
+					</td>
+	         </tr>                 
+	      </table>
+	   </td>
+	</tr>
+	<tr height="20px">
+		<td>
+			<table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px" bgcolor="#F4F2D8">
+				<tr>
+					<td width="70" align="center"> 현장평가</td>
+					<td width="130" align="center">
+						<input id="tx_st_sum" type="text" style="border: 1 solid #F4F2D8; Background-Color:#F4F2D8" size="10" disabled="true">
+					</td>
+					<td width="70" align="center">본사평가</td>
+					<td width="130" align="center">
+						<input id="tx_ho_sum" type="text" style="border: 1 solid #F4F2D8; Background-Color:#F4F2D8" size="10" disabled="true">
+					</td>
+					<td width="70" align="center">총&nbsp;점</td>
+					<td width="321" align="center">
+						<input id="tx_sum" type="text" style="border: 1 solid #F4F2D8; Background-Color:#F4F2D8" size="10" disabled="true">
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr height="*">
+		<td>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+			    style="POSITION: absolute; width: 100%; height: 100%;" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AutoInsert" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+			   <PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE="true">
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<param name="UsingOneClick" value="1">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE="
+			     <C> Name='구분'  id=part_name Edit='none' width=100  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=4 </C>
+			     <C> Name='항목'  id=item_name Edit='none' width=100  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=3 </C>
+			     <C> Name='순번'  id=seq  width=40 Edit='none' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=2 Align='center' </C>
+			     <C> Name='평가항목'  id=or_item Edit='none' width=210  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=1 </C>
+			     <C> Name='배점'  id=or_point Edit='none' width=55  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center' Suppress=1 </C>
+			     <C> Name='내용'  id=contents Edit='none' width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='평가배점'  id=ol_point Edit='none' width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Align='center' </C>
+			     <C> Name='선택' id=select_type width=56 EditStyle='CheckBox' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     <C> Name='비고'  id=remark  width=100 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+			     ">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+		</td>
+	</tr>
+</table>
+</DIV>
+</BODY></HTML>

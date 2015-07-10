@@ -1,0 +1,1 @@
+Create Sequence SQ_T_DVD_RAT_HIST_SEQ;

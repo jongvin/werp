@@ -1,0 +1,56 @@
+--1.Select Page에 setScale로 표현해준다!!
+
+		if (strAct.equals("MAIN"))
+		{
+			String	strADT_FDATE = CITCommon.toKOR(request.getParameter("ADT_FDATE"));
+			String	strADT_TDATE = CITCommon.toKOR(request.getParameter("ADT_TDATE"));
+			String	strAS_OFF_DAY_TG = CITCommon.toKOR(request.getParameter("AS_OFF_DAY_TG"));
+			
+			strSql  = "select  \n";
+			strSql  += "	SF_DateToString(a.BASE_DT) BASE_DT , \n";
+			strSql  += "	SF_DayName(a.BASE_DT) BASE_DAY , \n";
+			strSql  += "	to_char(a.CRTUSERNO) CRTUSERNO , \n";
+			strSql  += "	a.CRTDATE , \n";
+			strSql  += "	to_char(a.MODUSERNO) MODUSERNO , \n";
+			strSql  += "	a.MODDATE , \n";
+			strSql  += "	Decode(a.OFF_DAY_TG,'1','T','F') OFF_DAY_TG , \n";
+			strSql  += "	Nvl(a.BASE_MAN_DAY,0.0) BASE_MAN_DAY , \n";
+			strSql  += "	a.OFF_DAY_NAME \n";
+			strSql  += "from TCC_DAY_TABLE a \n";
+			strSql  += "where a.BASE_DT between  ?  and  ?  \n";
+			strSql  += "  and a.OFF_DAY_TG like  ?  \n";
+			strSql  += "order by a.BASE_DT ";
+			
+			lrArgData.addColumn("ADT_FDATE",CITData.DATE);
+			lrArgData.addColumn("ADT_TDATE",CITData.DATE);
+			lrArgData.addColumn("AS_OFF_DAY_TG",CITData.VARCHAR2);
+			lrArgData.addRow();
+			lrArgData.setValue("ADT_FDATE",strADT_FDATE);
+			lrArgData.setValue("ADT_TDATE",strADT_TDATE);
+			lrArgData.setValue("AS_OFF_DAY_TG",strAS_OFF_DAY_TG);
+			try
+			{
+				lrReturnData = CITDatabase.selectQuery(strSql, lrArgData);
+				
+				lrReturnData.setKey("BASE_DT",true);
+				lrReturnData.setScale("BASE_MAN_DAY",2);  // 소숫점 이하 자리수를 설정
+
+				CITDebug.PrintMessages(CITXml.CITData2XML_CR(lrReturnData));
+				lrDataset = CITCommon.toGauceDataSet(lrReturnData);
+				GauceInfo.response.enableFirstRow(lrDataset);
+				lrDataset.flush();
+			}
+			catch (Exception ex)
+			{
+				if (GauceInfo != null)
+				{
+					GauceInfo.response.writeException("USER", "900001","MAIN Select 오류-> "+ ex.getMessage());
+				}
+				else
+				{
+					throw new Exception("USER-900001:MAIN Select 오류 -> " + ex.getMessage());
+				}
+			}
+		}
+
+

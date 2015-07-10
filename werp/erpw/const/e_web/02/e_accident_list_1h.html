@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : e_accident_list_1h.html									-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 		      												-->
+<!-- 4. 변 경 이 력   : 황보은영 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+
+var is_ds_1_addr = gs_home + '/const/e_web/02/e_accident_list_1q.jsp?arg_start_date='
+
+var ls_date = ""
+var ls_dept = ""
+</SCRIPT>
+
+
+<!-- ======================================================================= -->
+<!--                                 Function                                -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (em_start_date.text == "" || em_end_date.text == "") {
+		alert("접수일 기간을 입력해주세요")
+		em_start_date.focus()
+		return
+	}
+	if (em_start_date.text == "        " || em_end_date.text == "        ") {
+		alert("접수일 기간을 입력해주세요")
+		em_start_date.focus()
+		return
+	}
+	if (em_start_date.text.length != 8 || em_end_date.text.length != 8 ) {
+		alert("접수일이 올바르지 않습니다")
+		return
+	}
+	if (em_start_date.text > em_end_date.text ) {
+		alert("접수일 기간이 올바르지 않습니다")
+		em_end_date.focus()
+		return
+	}
+	
+	ds_1.DataID = is_ds_1_addr + em_start_date.text + "&arg_end_date=" + em_end_date.text  + "&arg_code=" + code.value + '&arg_name=' + ccom_search.codevalue 
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//-----------------------------------------------------------------------
+function excel_down()                      
+//------------------------------------------------------------------------
+{
+	gd_1.GridToExcel('재해현황조회','c:\aa.xls',0)
+}
+//------------------------------------------------------------------------
+function date_return(value)                     
+//------------------------------------------------------------------------
+{
+	var result = gn_Cal_Yyyymmdd(); 
+	if(!is_null(result))
+	{ 
+		tmp = eval ( value + '.text =  result.substr(0,8) ' );
+	} 
+}
+//---------------------------------------------------------------------------
+function f_set_resize()
+//---------------------------------------------------------------------------
+{
+	var objArr = new Array('gd_1');
+	var xArr   = new Array(true);
+	var yArr   = new Array(true);
+
+	f_reSize(objArr, xArr, yArr);
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return 	
+	top.frames['main_title'].mouse_over()
+//	f_set_resize()
+	
+	ls_temp = top.frames['security'].gs_sysdate.value  // 시스템 년월 선언.
+  	
+	em_start_date.text = ls_temp.substr(0,4) + ls_temp.substr(5,2) + "01"
+	em_end_date.text = ls_temp.substr(0,4) + ls_temp.substr(5,2) + ls_temp.substr(8,2)
+	em_start_date.focus()
+	
+	ccom_search.style.display = 'none'
+	
+	btnquery_onclick()
+}
+//---------------------------------------------------------------------------
+function search()
+//---------------------------------------------------------------------------
+{
+	var ls_sql = "" , ls_sql_middle ;
+	
+   ls_sql_middle = " from e_disaster_report a,e_disaster_report_detail b "+ 															
+				  		 " where a.dept_code = b.dept_code(+) and " +								
+				 		 " a.seq = b.seq and "+														 
+				 		 " to_char(a.accident_date,'yyyymmdd') between '"+em_start_date.text+"' and '"+em_end_date.text +"'  " 
+							
+	arg = code.value 					
+		switch(arg)
+		{
+			case 'a.dept_code' : 
+				ls_sql = " select distinct nvl((select proj_charge from z_code_dept where dept_code=a.dept_code),'') select_1 ,  nvl((select proj_charge from z_code_dept where dept_code=a.dept_code),'') select_2  "+
+				           ls_sql_middle +
+				           " and nvl((select proj_charge from z_code_dept where dept_code=a.dept_code),'') is not null "
+							  " group by a.dept_code ,a.dept_code " 
+			   ll_dup = f_ds_select_q("ds_select",ls_sql  )			 
+   			ccom_search.style.display = 'block'			    
+			break;
+			case 'b.sbcr_name' : 
+				ls_sql= " select distinct nvl(b.sbcr_name,'') select_1 , b.sbcr_name select_2 "+
+				           ls_sql_middle +
+							  " group by b.sbcr_name ,a.dept_code   " 
+	   		ll_dup = f_ds_select_q("ds_select",ls_sql  )	
+  			 	ccom_search.style.display = 'block'	   								  
+			break;
+			case 'a.disaster_code' : 
+				ls_sql= " select distinct (select child_name from e_safety_code_child  where class_tag = 32 and safety_code=a.disaster_code) select_1 , a.disaster_code select_2"+
+				           ls_sql_middle +
+							  " group by a.disaster_code ,a.dept_code  " 				
+	   		ll_dup = f_ds_select_q("ds_select",ls_sql  )	
+  			 	ccom_search.style.display = 'block'	   								  
+			break;
+			case 'b.injure_part_code' : 
+				ls_sql= " select distinct (select child_name from e_safety_code_child where class_tag = 35 and safety_code=b.injure_part_code) select_1 , b.injure_part_code select_2 " +
+				           ls_sql_middle +
+							  " group by b.injure_part_code ,a.dept_code  " 					
+	   		ll_dup = f_ds_select_q("ds_select",ls_sql  )	
+  			 	ccom_search.style.display = 'block'	   								  
+			break;
+			case 'b.injure_code' : 
+				ls_sql= " select distinct (select child_name from e_safety_code_child where class_tag = 34 and safety_code=b.injure_code) select_1 , b.injure_code select_2 " +
+				           ls_sql_middle +
+							  " group by b.injure_code ,a.dept_code " 		
+	   		ll_dup = f_ds_select_q("ds_select",ls_sql  )
+  			 	ccom_search.style.display = 'block'	   								  
+			break;
+			case 'result_type' : 
+				ls_sql= " select distinct nvl(decode(b.result_type,'01','공상','02','산재','03','사망','04','기타'),'') select_1 , b.result_type select_2 " +
+				           ls_sql_middle +
+							  " group by b.result_type ,a.dept_code " 		
+	   		ll_dup = f_ds_select_q("ds_select",ls_sql  )	
+  			 	ccom_search.style.display = 'block'	   								  
+			break;
+			case '@' : 
+ 				ccom_search.style.display = 'none'				
+			break;
+			default:
+				if ( code.value  == '@' )
+	 				ccom_search.style.display = 'none'
+	 			else
+	 				ccom_search.style.display = 'block'
+			break;
+				
+		}
+		
+	
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                                   Event                                 -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select .ErrorCode + "\n" + "Error Message : " + ds_select .ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+	alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=em_start_date event=OnKeyUp(kcode,scode)>
+	search();
+</script>
+
+<script language=JavaScript for=em_end_date event=OnKeyUp(kcode,scode)>
+	search();
+</script>
+<!-- ======================================================================= -->
+<!--                                 Component                               -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 12px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 12px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                                   Body                                  -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0;"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<div class=main_div>
+<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; ">
+	<tr height="24">
+		<td height="23" class="td_green">
+			<table BORDER="0" CELLSPACING="0" class=main_table>
+	         <tr>
+					<td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+               <td class="font_green_bold" width="43px"> 접수일</td>
+               <td width="85px" align="right">
+					  <comment id="__NSID__"><OBJECT id=em_start_date style="WIDTH: 80px; HEIGHT: 20px; FONT-SIZE:12px; background-color:white ;"  size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle" >
+					  <param name=Format value="YYYY-MM-DD">
+	              <param name=ReadOnlyBackColor  value=silver>
+	              <param name=Alignment      value=1>
+	              <param name=Numeric value=false>
+					  <param name=PromptChar   value="_">
+				     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+				   </td>
+					<td width="22px">
+						<input type="button" id=img_fr OnClick="date_return('em_start_date');search();" class=img_btnCalendar_S>
+					</td>
+			   	<td align="center" width="10px"> ~ </td>
+				   <td width="85px">
+						<comment id="__NSID__"><OBJECT id=em_end_date style="WIDTH: 80px; HEIGHT: 20px; FONT-SIZE:12px ; background-color:white ;"  size=12 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT align="absmiddle" >
+							<param name=Format value="YYYY-MM-DD">
+			            <param name=ReadOnlyBackColor  value=silver>
+			            <param name=Alignment      value=1>
+			            <param name=Numeric value=false>
+							<param name=PromptChar   value="_">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="22px">
+						<input type="button" id=img_fr OnClick="date_return('em_end_date');search();" class=img_btnCalendar_S>
+					</td>
+					<td width="60"></td>
+					<td width="15"><img src="../../../image/bullet3.gif" align="absmiddle" ></td>
+               <td class="font_green_bold" width="43px"> 조회</td>					
+					<td width="100">
+						<select size="1" name="code" onchange="search()"  style="font-size:12px;width:100; height:18" >
+							<option value="@">전체</option>
+							<option value="a.dept_code">소장명</option>
+							<option value="b.sbcr_name">업체명</option>
+							<option value="a.disaster_code">재해형태</option>
+							<option value="b.injure_part_code">상해부위</option>
+							<option value="b.injure_code">상해종류</option>
+							<option value="result_type">처리결과</option>
+						</select><td width="100">						
+  						<comment id="__NSID__"><object id=ccom_search
+							classid=CLSID:FD4C6571-DD20-11D2-973D-00104B15E56F
+		               height=150 width=100 VIEWASTEXT>
+							<PARAM NAME="Alignment" VALUE="1">
+							<param name=ComboDataID         value=ds_select>
+		               <param name=CodeCColumn        value=select_2>
+		               <param name=DataCColumn         value=select_1>
+		               <param name=ReadOnlyBackColor     value="#F2F2F2">
+		               <param name=Auto     value=true>
+							<param name=Enable   value=true>
+						</object></comment><script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*" align="right">
+ 						<input type="button" value="엑셀내리기" onclick=excel_down() class=img_btn5_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>
+		      </tr>          
+		   </table>
+		</td>
+	</tr>
+<!--	<tr>
+		<td height="24">
+			<table>
+				<tr>
+					<td width="15"><img src="../../../image/bullet1.gif" align="absmiddle" >
+               <td class="font_green_bold" width="200">유형별현황</td>
+				</tr>
+			</table>
+		</td>
+	</tr> -->
+   <tr>
+   	<td>
+			<comment id="__NSID__"><OBJECT id=gd_1
+			    style="FONT-SIZE: 12px; Z-INDEX: 100; WIDTH:100%; POSITION: relative;  HEIGHT: 100%" 
+			    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AutoInsert"     VALUE="-1">
+			   <PARAM NAME="BorderStyle"    VALUE=1>
+				<PARAM NAME="AllShowEdit"    VALUE="-1">
+				<PARAM NAME="SortView"       VALUE="Left">
+				<PARAM NAME="Editable"       VALUE="false">
+				<PARAM NAME="UsingOneClick"  VALUE="1">
+				<PARAM NAME="DragDropEnable" VALUE="true">
+				<PARAM NAME="ColSizing"      VALUE="-1">
+				<PARAM NAME="DataID"         VALUE="ds_1">
+				<PARAM NAME="Format"         VALUE="
+			     <C> NAME='현장명' id='long_name' width=150 sort=true HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=3</C>
+			     <C> NAME='소장명' id='proj_charge' width=55  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=3 </C>
+			     <C> NAME='사고일시' id='accident_date' width=95  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center Suppress=2 </C>
+				  <C> NAME='재해형태' id='disaster'  sort=true  width=60 HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=1 </C>
+				  <C> NAME='사고내용' id='dr_accident' width=170  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Suppress=1 </C>
+				  <G>	NAME='재해인적사항' HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+					  <C> NAME='성명' id='name' width=55  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+					  <C> NAME='주민등록번호' id='civil_register_number' width=95 Mask='XXXXXX-XXXXXXX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center </C>
+					  <C> NAME='도급업체' id='sbcr_name' width=100  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+					  <C> NAME='상해부위' id='injure_part_name' width=65  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+					  <C> NAME='상해종류' id='injure_name' width=65  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  </C>
+					  <C> NAME='처리결과' id='result_type' value={decode(result_type,'01','공상','02','산재','03','사망' ,'04',기타)} width=65  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK align=center  </C>
+				  </G>
+				  ">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script>   	
+   	
+      </td>
+   </tr>
+</table>
+</div>      
+</BODY>
+</HTML>	

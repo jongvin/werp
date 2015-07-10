@@ -1,0 +1,955 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : c_progress_cross_1h.html								-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 보할공정                         	-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<TITLE></TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var is_dept_code,is_dept_name,il_chg_no_seq
+var is_ds_1_addr =  "c_progress_cross_1q.jsp?arg_dept_code="        
+var is_ds_2_addr =  "c_progress_cross_csv.csv"
+var is_ds_graph_addr =  "c_progress_cross_graph_csv.csv"
+var is_filter='1'           // 1:계획  2:계획+실적 
+var il_nindex = 1
+var il_seq=0
+var arr_title = new Array(); 
+var arr_plan_per = new Array()
+var arr_real_per = new Array()
+var il_totcnt = 0 ,is_tag=""
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+    ds_1.DataID = is_ds_1_addr + is_dept_code + 
+                  '&arg_chg_no_seq=' + il_chg_no_seq
+    ds_1.SyncLoad=true
+    ds_1.Reset()
+    
+    ds_2.DataID = is_ds_2_addr    // cross tab 보조 파일 (옆으로그리는 막대그래프용)
+    ds_2.SyncLoad=true
+    ds_2.Reset()
+    ds_2.ClearData()
+    il_seq=0
+    ds_2_create()              // ds_2를 cross_tag형식으로 만듬 
+    ds_1.UseFilter=true
+    is_filter="1"
+    ds_1.Filter()
+	 setTimeout('tb_1.activeindex=1')
+
+
+}
+//----------------------------------------------------------------------------
+function ds_2_create()                     // cross -tab 강제로 만들기(유저컬러때문에 만듬)
+//---------------------------------------------------------------------------- 
+{
+  var i,j=0,ll_row,ll_search_row
+  var k=-1;   // year data(실행)
+  var l=-1;   // year data(투입)
+  il_seq = 0
+  var ls_data
+  var ll_com 
+  ccom_yymm.ClearData()
+  for (i=1;i<=ds_1.CountRow;i++) {
+      ll_com = ds_1.NameValue(i,'seq') + ds_1.NameValue(i,'tag')
+      if (ll_com != (il_seq + is_tag)) {
+         il_seq = ds_1.NameValue(i,'seq')
+         is_tag = ds_1.NameValue(i,'tag')
+         if (j > 0) il_totcnt = j         //옆으로의 건수 
+         j=0
+         ds_2.Addrow()
+         ll_row = ds_2.RowPosition
+         ds_2.NameValue(ll_row,'tag') = ds_1.NameValue(i,'tag')
+         ds_2.NameValue(ll_row,'seq') = ds_1.NameValue(i,'seq')
+         ds_2.NameValue(ll_row,'name') = ds_1.NameValue(i,'name')
+         ds_2.NameValue(ll_row,'plan_amt') = ds_1.NameValue(i,'plan_amt')
+         ds_2.NameValue(ll_row,'plan_per') = ds_1.NameValue(i,'plan_per')
+      }
+      j = j + 1
+      ds_2.NameValue(ll_row,'p' + j) = ds_1.NameValue(i,'plan_mm_per')
+      if (ll_row == 1)    //타이틀 보관 
+         arr_title[j] = ds_1.NameValue(i,'year')
+      // 누계 data  보관   // 막대 그래프용 
+      if (ds_1.NameValue(i,'seq') == 9999) { // 누계 
+         if (ds_1.NameValue(i,'tag') == "1") {  // 실행 
+            k = k + 1
+            arr_plan_per [k] = ds_1.NameValue(i,'plan_mm_per')
+            ls_data = ds_1.NameValue(i,'year')
+            ccom_yymm.AddData(k,ls_data);
+            ds_scurve_graph.Addrow()
+            ds_scurve_graph.NameValue(ds_scurve_graph.RowPosition,'yearmm') = ls_data
+            ds_scurve_graph.NameValue(ds_scurve_graph.RowPosition,'plan_per') =arr_plan_per [k]
+         }
+         else {    // 실행 
+            l = l + 1
+            arr_real_per[l] = ds_1.NameValue(i,'plan_mm_per')   //실행 data도 plan_mm_per에 있슴 
+            ls_data = ds_1.NameValue(i,'year')
+            ll_search_row = ds_scurve_graph.NameValueRow('yearmm',ls_data)
+            ds_scurve_graph.NameValue(ll_search_row,'yearmm') = ls_data
+            ds_scurve_graph.NameValue(ll_search_row,'real_per') =arr_real_per [l]
+         }      
+      }
+    
+
+         
+  }    
+  ds_2.ResetStatus()
+  gd_3_format()
+
+}
+//----------------------------------------------------------------------------
+function gd_3_format()                     // 공정표 그리기 
+//---------------------------------------------------------------------------- 
+{
+
+  var i
+  for (i=il_totcnt + 1;i<=60;i++) {
+     gd_3.ColumnProp('p'+i, 'Show')=false
+     gd_6.ColumnProp('p'+i, 'Show')=false
+  }
+  var ls_year,ls_year_aft,j
+  j=0
+  ls_year = ''
+  for (i=1;i<=il_totcnt;i++) {
+     gd_3.ColumnProp('p'+i, 'NAME')=arr_title[i]
+     gd_6.ColumnProp('p'+i, 'NAME')=arr_title[i]
+      ls_year_aft = arr_title[i]                       
+      ls_year_aft = ls_year_aft.substr(0,4)
+      if (ls_year != ls_year_aft) {
+         j=j+1
+         ls_year = ls_year_aft
+      }
+      if ((j % 2) == 1) {
+         gd_3.ColumnProp('p'  + i , 'HeadBgColor') = '#FFFF99'
+         gd_6.ColumnProp('p'  + i , 'HeadBgColor') = '#FFFF99'
+      }   
+      else {
+         gd_3.ColumnProp('p'  + i , 'HeadBgColor') =  '#FFCCFF'
+         gd_6.ColumnProp('p'  + i , 'HeadBgColor') =  '#FFCCFF'
+      }   
+  }
+
+}
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_2.RowPosition)
+}
+//---------------------------------------------------------------------
+function tab_changed_settime()    // tab이 변경되었을경우 혹 늦게 화면이 뜨는것을 방지하기위하여.
+//---------------------------------------------------------------------
+{
+       gd_1.DataID=''
+       gd_2.DataID=''
+       tb_chart.DataID=''
+	    gd_3.DataID=''
+       gd_4.DataID=''
+       gd_4.ReDraw=false
+       gd_5.DataID=''
+       gd_5.ReDraw=false
+       tb_chart1.DataID=''
+       tb_chart3.DataID=''
+	    gd_6.DataID = ''
+   tb_chart.style.visibility='hidden'
+   tb_chart1.style.visibility='hidden'
+   tb_chart2.style.visibility='hidden'
+   tb_chart3.style.visibility='hidden'
+   if (il_nindex == 1) {
+       gd_1.ReDraw=false
+       is_filter = '1'
+       ds_1.Filter()
+       gd_1.DataID='rds_1'
+       gd_cross_format()
+       gd_1.ReDraw=true
+		 
+   }    
+   if (il_nindex == 2) {
+       gd_2.ReDraw=false
+       is_filter = '1'
+       ds_1.Filter()
+       gd_2.DataID='rds_2'
+       gd_cross_format()
+       gd_2.ReDraw=true
+		 
+   }    
+   if (il_nindex == 3) {
+       gd_3.ReDraw=false
+       is_filter = '1'
+       ds_2.Filter()
+       gd_3.DataID='ds_2'
+       tb_chart.style.visibility='visible'
+       tb_chart.DataID='ds_graph'
+       tb_chart.Reset()
+       gd_3.ReDraw=true
+		 
+   }    
+   if (il_nindex == 4) {
+       is_filter = '2'
+       ds_1.SortExpr = "+seq+tag+year" 
+       ds_1.Sort()
+       ds_1.Filter()
+       gd_4.DataID='rds_4'
+       gd_cross_format()
+       gd_4.ReDraw=true
+		 
+   }    
+   if (il_nindex == 5) {
+       is_filter = '2'
+       ds_1.SortExpr = "+seq+tag+year" 
+       ds_1.Sort()
+       ds_1.Filter()
+       gd_5.DataID='rds_5'
+       gd_cross_format()
+       gd_5.ReDraw=true
+		 
+   }    
+   if (il_nindex == 6) {
+       gd_6.ReDraw=false
+       is_filter = '2'
+       ds_2.SortExpr = "+seq+tag+year" 
+       ds_2.Sort()
+       ds_2.Filter()
+       tb_chart1.style.visibility='visible'
+       tb_chart1.DataID='ds_graph'
+       tb_chart1.Reset()
+		 gd_6.DataID= 'ds_2'
+       gd_6.ReDraw=true
+		 
+   }    
+   if (il_nindex == 7) {
+       tb_chart3.style.visibility='visible'
+       tb_chart3.Dataid='ds_scurve_graph'
+       tb_chart3.Reset()
+       tb_chart2.style.visibility='visible'
+       tb_chart2.DataID='ds_graph'
+       tb_chart2.Reset()
+   }    
+}
+//----------------------------------------------------------------
+function gd_cross_format()         // gd_1  타이틀 변결
+//----------------------------------------------------------------
+{
+  var ls_year,ls_year_aft,i,j,ls_sum_year
+  j=0
+  ls_year = ''
+
+  for (i=1;i<=200;i++) {
+      eval("ls_year_aft = rds_" + tb_1.ActiveIndex + ".NameValue(1,'xkeyname_" +  i + "') ")
+      if (ls_year_aft == null) break
+      ls_year_aft = ls_year_aft.substr(0,4)
+      if (ls_year != ls_year_aft) {
+         j=j+1
+         ls_year = ls_year_aft
+      }
+        if ((j % 2) == 1) {
+           if (tb_1.ActiveIndex == 1 || tb_1.ActiveIndex == 4) 
+              eval("gd_" + tb_1.ActiveIndex + ".ColumnProp('plan_mm_per_"  + i + "', 'HeadBgColor') = '#FFFF99'")
+           else
+              eval("gd_" + tb_1.ActiveIndex + ".ColumnProp('plan_mm_amt_"  + i + "', 'HeadBgColor') = '#FFFF99'")
+        }   
+        else {
+           if (tb_1.ActiveIndex == 1 || tb_1.ActiveIndex == 4) 
+              eval("gd_" + tb_1.ActiveIndex + ".ColumnProp('plan_mm_per_"  + i + "', 'HeadBgColor') = '#FFCCFF'")
+           else
+              eval("gd_" + tb_1.ActiveIndex + ".ColumnProp('plan_mm_amt_"  + i + "', 'HeadBgColor') = '#FFCCFF'")
+        }   
+   }      
+}
+
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별) 
+//----------------------------------------------------------------
+{
+  if (il_nindex == 1)
+   gd_1.GridToExcel('계획율','c:\aa.xls',0) 
+  if (il_nindex == 2)
+   gd_2.GridToExcel('계획금액','c:\aa.xls',0) 
+  if (il_nindex == 3)
+   gd_3.GridToExcel('계획그래프','c:\aa.xls',0) 
+  if (il_nindex == 4)
+   gd_4.GridToExcel('계획_투입율','c:\aa.xls',0) 
+  if (il_nindex == 5)
+   gd_5.GridToExcel('계획_투입금액','c:\aa.xls',0) 
+  if (il_nindex == 6)
+   gd_6.GridToExcel('계획_투입그래프','c:\aa.xls',0) 
+ 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ if(result == "")
+    return
+ array = result.split("@");
+ is_dept_code  = array[0]            // 0: 부서코드 
+ is_dept_name  = array[1]            // 1: 부서명칭
+ il_chg_no_seq = array[2]            // 2: 차수 정보 
+// dept_name.value  = array[1]         // 2: 부서명
+   setTimeout('btnquery_onclick()',1)
+//   document.title=is_dept_name + "(" + il_chg_no_seq + ")"
+    ds_graph.DataID = is_ds_graph_addr    // 막대그래프 세로(계획/실적)
+    ds_graph.SyncLoad=true
+    ds_graph.Reset()
+    ds_graph.ClearData()
+    
+    ds_scurve_graph.DataID = is_ds_graph_addr    // scurve 그래프 
+    ds_scurve_graph.SyncLoad=true
+    ds_scurve_graph.Reset()
+    ds_scurve_graph.ClearData()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code(ds_2) : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_graph event=OnLoadError()>
+  alert("Error Code(ds_graph) : " + ds_graph.ErrorCode + "\n" + "Error Message : " + ds_graph.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=tb_chart event=OnError()>
+  tb_chart.DataID='ds_graph'
+  alert("Error Code : " + tb_chart.ErrorCode + "\n" +
+                           "Error Message : " + tb_chart.ErrorMsg + "\n");
+</script>
+<script language=JavaScript for=tb_chart1 event=OnError()>
+  alert('계획대비 실적 막대그래프 에러')
+  alert("Error Code : " + tb_chart1.ErrorCode + "\n" +
+                           "Error Message : " + tb_chart1.ErrorMsg + "\n");
+</script>
+<script language=JavaScript for=tb_chart3 event=OnError()>
+  alert("Error Code : " + tb_chart3.ErrorCode + "\n" +
+                           "Error Message : " + tb_chart3.ErrorMsg + "\n");
+</script>
+
+
+<script language=JavaScript for=gd_1 event=OnUserColor(row,eventid)>
+  if (rds_1.NameValue(row,'seq') == 9998) {
+     return "#FFFF99"
+  }   
+  
+  if (rds_1.NameValue(row,'seq') == 9999)
+     return "#FF99FF"
+     
+  if ((row % 2) == 0) 
+     return '#F4F2D8'
+  else
+     return '#ffffff'     
+</script>
+<script language=JavaScript for=gd_2 event=OnUserColor(row,eventid)>
+  if (rds_2.NameValue(row,'seq') == 9998) {
+     return "#FFFF99"
+  }   
+  
+  if (rds_2.NameValue(row,'seq') == 9999)
+     return "#FF99FF"
+     
+  if ((row % 2) == 0) 
+     return '#F4F2D8'
+  else
+     return '#ffffff'     
+</script>
+
+<script language=JavaScript for=gd_3 event=OnUserColor(row,eventid)>
+  if (eventid == 'color1') {
+     if (ds_2.NameValue(row,'seq') == 9998) 
+         return "#FFFF99"
+     if (ds_2.NameValue(row,'seq') == 9999)
+        return "#FF99FF"
+     if ((row % 2) == 0) 
+        return '#F4F2D8'
+     else
+        return '#ffffff'    
+  }
+  
+  if (row >= ds_2.CountRow - 2) return "white"
+
+  
+  var ls_temp
+  ls_temp = eventid
+  ls_temp = ls_temp.substr(1,10)
+
+  if (ds_2.NameValue(row,'p' + ls_temp) == "")
+     return "white"
+  else
+     return "#99FFFF"   
+
+</script>
+<script language=JavaScript for=gd_4 event=OnUserColor(row,eventid)>
+  if (rds_4.NameValue(row,'seq') == 9998) {
+     return "#FFFF99"
+  }   
+  
+  if (rds_4.NameValue(row,'seq') == 9999)
+     return "#FF99FF"
+     
+  if ((row % 2) == 0) 
+     return '#F4F2D8'
+  else
+     return '#ffffff'     
+</script>
+<script language=JavaScript for=gd_5 event=OnUserColor(row,eventid)>
+  if (rds_5.NameValue(row,'seq') == 9998) {
+     return "#FFFF99"
+  }   
+  
+  if (rds_5.NameValue(row,'seq') == 9999)
+     return "#FF99FF"
+     
+  if ((row % 2) == 0) 
+     return '#F4F2D8'
+  else
+     return '#ffffff'     
+</script>
+
+<script language=JavaScript for=gd_6 event=OnUserColor(row,eventid)>
+  if (eventid == 'color1') {
+     if (ds_2.NameValue(row,'seq') == 9998) 
+         return "#FFFF99"
+     if (ds_2.NameValue(row,'seq') == 9999)
+        return "#FF99FF"
+     if ((row % 2) == 0) 
+        return '#F4F2D8'
+     else
+        return '#ffffff'    
+  }
+  if (row >= ds_2.CountRow - 4) return "white"
+  var ls_temp
+  ls_temp = eventid
+  ls_temp = ls_temp.substr(1,10)
+ 
+  if ((row % 2) == 0) { //실적    
+     if (ds_2.NameValue(row,'p' + ls_temp) == "")
+        return "white"
+     else
+        return "#FFCCFF"   
+  }
+  else {
+     if (ds_2.NameValue(row,'p' + ls_temp) == "")
+        return "white"
+     else
+        return "#99FFFF"   
+  }
+</script>
+
+<script language=JavaScript for=ds_1 event=onFilter(row)>
+     switch (is_filter) {
+              case "1":
+                    if (ds_1.NameValue(row,"tag") == "1") return true
+                    else return false;
+                    break;
+              case "2":
+                    return true 
+                    break;
+    }
+ </script>
+<script language=JavaScript for=ds_2 event=onFilter(row)>
+     switch (is_filter) {
+              case "1":
+                    if (ds_2.NameValue(row,"tag") == "1") return true
+                    else return false;
+                    break;
+              case "2":
+                    return true 
+                    break;
+    }
+ </script>
+
+<SCRIPT language=JavaScript event=OnSelChanged(nIndex) for=tb_1>
+{
+  il_nindex = nIndex
+  //tab_changed_settime()
+  setTimeout('tab_changed_settime()', 1)
+ }             
+</SCRIPT>
+<script language=JavaScript for=ccom_yymm event=onCloseUp()>
+  var i
+  i = ccom_yymm.Index
+  ds_graph.ClearData()
+  ds_graph.AddRow()
+  ds_graph.NameValue(1,'yearmm') = ccom_yymm.DataValue
+  ds_graph.NameValue(1,'plan_per') =  arr_plan_per[i]
+  ds_graph.NameValue(1,'real_per') =  arr_real_per[i]
+  var ll_temp
+  if (ds_graph.NameValue(1,'plan_per') != 0) {
+     ll_temp = ds_graph.NameValue(1,'real_per') / ds_graph.NameValue(1,'plan_per') * 100
+     em_plan_real_per.text = ll_temp
+  }   
+  else {
+     em_plan_real_per.text = 0
+  }
+  tb_chart.Reset()
+  tb_chart1.Reset()
+  tb_chart2.Reset()
+  
+</script>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+    <param name=UseFilter       value=true>
+  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_graph 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_scurve_graph 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value=ds_1>
+      <param name=GroupExpr    value="seq:name:plan_amt:plan_per,year,plan_mm_per">
+</object></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><object id=rds_2 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value=ds_1>
+      <param name=GroupExpr    value="seq:name:plan_amt:plan_per,year,plan_mm_amt">
+</object></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object id=rds_4 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value=ds_1>
+      <param name=GroupExpr    value="seq:name:plan_amt:plan_per:tag,year,plan_mm_per">
+</object></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><object id=rds_5 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID           value=ds_1>
+      <param name=GroupExpr    value="seq:name:plan_amt:plan_per:tag,year,plan_mm_amt">
+</object></comment> <script> __ws__(__NSID__);</script>
+<input id=bt_close type="button" value="엑셀" 
+          style="color:#2E4A4A; font-size:13px;WIDTH:30px; CURSOR: hand; LEFT:755px; Top:7px;height:17px;
+           background-color:#E9F5F5; border:1 #A1A9A9 solid;   POSITION: absolute;"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=excel_down()>
+
+<DIV id=div_yymm
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 790px; WIDTH: 120px; POSITION: absolute; TOP: 2px; HEIGHT: 20px" >
+               <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+                  <tr BGCOLOR="white" > 
+                        <td width="40%"   BGCOLOR="#CA7944" style="COLOR: BLACK"  > 
+                             <div align="right">년월</div></td>
+                       <td width="60%"> 
+         	              <comment id="__NSID__"><OBJECT id=ccom_yymm  width=70px 
+         	                      classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+         	                 <param name=Data     value="1^yyyy.mm"     
+                             <param name=Index    value=0></OBJECT></comment> <script> __ws__(__NSID__);</script>
+                       </td>
+                 </tr>
+               </table>
+</div>        
+<DIV id=div_plan_real_per
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 910px; WIDTH: 100px; POSITION: absolute; TOP: 2px; HEIGHT: 20px" >
+               <table width="100%"   BORDER="1"  align="center"   CELLSPACING="0" CELLPADDING="0" style="FONT-SIZE: 12px">
+                  <tr BGCOLOR="white" > 
+                        <td width="40%"   BGCOLOR="#CA7944" style="COLOR: BLACK"  > 
+                             <div align="right">실적율</div></td>
+                       <td width="60%"> 
+                          <comment id="__NSID__"><object id=em_plan_real_per classid=CLSID:E6876E99-7C28-43AD-9088-315DC302C05F
+                                         width=55px>
+                                <param name=Alignment           value=2>
+                                <param name=Visible             value=true>
+                                <param name=Numeric             value=true>
+                                <param name=ReadOnly            value=true>
+                                 <param name=MaxDecimalPlace   value=2>
+                                <param name=ReadOnlyForeColor   value='#000000'>
+                                <param name=ReadOnlyBackColor   value='#FFFFFF'>
+
+                       </object></comment> <script> __ws__(__NSID__);</script>
+
+                 </tr>
+               </table>
+</div>        
+
+
+<comment id="__NSID__"><OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 1px; WIDTH: 750px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=보할(계획율)</T>
+    <T>divid=tab_page_2 title=보할(계획금액)</T>
+    <T>divid=tab_page_3 title=보할(계획표)</T>
+    <T>divid=tab_page_4 title='보할(계획/실적율)'</T>
+    <T>divid=tab_page_5 title='보할(계획/실적금액)'</T>
+    <T>divid=tab_page_6 title='보할(계획/실적표)'</T>
+    <T>divid=tab_page_7 title='Scurve'</T>
+    ">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+   <DIV id=tab_page_1 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_1 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="-1">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="-1">
+	      <PARAM NAME="Editable" VALUE="-1">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name  Width=120 BgColor=@color1  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <R>   
+                     <C>ID=plan_mm_per_$$  name=$xkeyname_$$ Edit='Numeric' width=50 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              </R>   
+           ">
+	      <!-- <PARAM NAME="DataID" VALUE="rds_1"> --></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_2 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_2 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name  Width=120 BgColor=@color1  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <R>   
+                     <C>ID=plan_mm_amt_$$  name=$xkeyname_$$ width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              </R>   
+           ">
+      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+  </DIV>	
+	    <DIV id=tab_page_3 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_3 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 920px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+         <param name="ColSelect"   value=true>
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name  Width=120 BgColor=@color1   HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <C>ID=p1  width=50   Bgcolor=@p1 HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p2  width=50   Bgcolor=@p2 HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p3  width=50   Bgcolor=@p3    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p4  width=50   Bgcolor=@p4               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p5  width=50   Bgcolor=@p5               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p6  width=50   Bgcolor=@p6               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p7  width=50   Bgcolor=@p7               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p8  width=50   Bgcolor=@p8               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p9  width=50   Bgcolor=@p9               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p10 width=50   Bgcolor=@p10              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p11  width=50  Bgcolor=@p11               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p12  width=50  Bgcolor=@p12               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p13  width=50  Bgcolor=@p13               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p14  width=50  Bgcolor=@p14               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p15  width=50  Bgcolor=@p15               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p16  width=50  Bgcolor=@p16               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p17  width=50  Bgcolor=@p17               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p18  width=50  Bgcolor=@p18               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p19  width=50  Bgcolor=@p19               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p20 width=50   Bgcolor=@p20              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p21  width=50  Bgcolor=@p21               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p22  width=50  Bgcolor=@p22               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p23  width=50  Bgcolor=@p23               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p24  width=50  Bgcolor=@p24               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p25  width=50  Bgcolor=@p25               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p26  width=50  Bgcolor=@p26               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p27  width=50  Bgcolor=@p27               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p28  width=50  Bgcolor=@p28               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p29  width=50  Bgcolor=@p29               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p30 width=50   Bgcolor=@p30              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p31  width=50  Bgcolor=@p31                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p32  width=50  Bgcolor=@p32                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p33  width=50  Bgcolor=@p33                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p34  width=50  Bgcolor=@p34                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p35  width=50  Bgcolor=@p35                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p36  width=50  Bgcolor=@p36                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p37  width=50  Bgcolor=@p37                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p38  width=50  Bgcolor=@p38                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p39  width=50  Bgcolor=@p39                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p40 width=50   Bgcolor=@p40               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p41  width=50  Bgcolor=@p41               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p42  width=50  Bgcolor=@p42               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p43  width=50  Bgcolor=@p43                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p44  width=50  Bgcolor=@p44                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p45  width=50  Bgcolor=@p45                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p46  width=50  Bgcolor=@p46                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p47  width=50  Bgcolor=@p47                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p48  width=50  Bgcolor=@p48                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p49  width=50  Bgcolor=@p49                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p50 width=50   Bgcolor=@p50               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p51  width=50  Bgcolor=@p51                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p52  width=50  Bgcolor=@p52                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p53  width=50  Bgcolor=@p53                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p54  width=50  Bgcolor=@p54                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p55  width=50  Bgcolor=@p55                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p56  width=50  Bgcolor=@p56                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p57  width=50  Bgcolor=@p57                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p58  width=50  Bgcolor=@p58                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p59  width=50  Bgcolor=@p59                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p60 width=50   Bgcolor=@p60               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+           ">
+	      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+    <comment id="__NSID__"><OBJECT classid="clsid:B5F6727A-DD38-11D2-973D-00104B15E56F" 
+	    id=tb_chart  style="visibility:hidden; Z-INDEX: 104; LEFT: 921px; WIDTH: 89px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" >
+		<param name="Title"				value="계획/실적">
+		<param name="XTitle"			value="년도">
+		<param name="XValueColumn"		value="yearmm">
+		<param name="YValueColumns"		value="plan_per:계획;real_per:실적">
+      <param name="MaxValue"         value="100">
+		<param name="YTitleAngle"		value="90">
+		<param name="ChartType"			value="3">
+		<param Name="View3D"			value="true">
+		<param name="ViewValue"      value="true">
+		<param name="LegendColumn"		value="">
+		<param name="LegendPosition"	value="2">
+		<param name="SeriesColor"		value="#0000ff,#ff0000">
+		<param name="BackColorStr"		value="#ffffff,#ffffff">
+		<param name="BarWidth"        value="20">
+		<param name="WallColor"			value="#ffffff">
+		<param name="ItemPerPage"		value="2">
+      <Param Name="ViewGrid"       VALUE="True">
+      <param name="BorderStyle"		value="0">
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	      
+</div>
+   <DIV id=tab_page_4 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_4 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name value={if(tag='2','   ',name)} Width=120 BgColor=@color1  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+	           <FC> Name='구분' ID=tag Width=50 EditStyle=Combo Data='1:계획,2:실적' Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <R>   
+                     <C>ID=plan_mm_per_$$  name=$xkeyname_$$ width=50 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              </R>   
+           ">
+	      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+   <DIV id=tab_page_5 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_5 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 1010px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name value={if(tag='2','   ',name)} Width=120 BgColor=@color1  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+	           <FC> Name='구분' ID=tag Width=50 EditStyle=Combo Data='1:계획,2:실적' Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <R>   
+                     <C>ID=plan_mm_amt_$$  name=$xkeyname_$$ width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              </R>   
+           ">
+	      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+	 </DIV>	
+	    <DIV id=tab_page_6 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 25px; HEIGHT: 95%;FONT-SIZE: 12px" >
+      <comment id="__NSID__"><OBJECT id=gd_6 
+          style="Z-INDEX: 104; LEFT: 1px; WIDTH: 900px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" 
+          classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	      <PARAM NAME="MultiRowSelect" VALUE="0">
+	      <PARAM NAME="AutoInsert" VALUE="0">
+          <PARAM NAME="BorderStyle"  VALUE=4>
+	      <PARAM NAME="AllShowEdit" VALUE="0">
+	      <PARAM NAME="Editable" VALUE="0">
+         <param name="ColSelect"   value=true>
+	      <PARAM NAME="ColSizing" VALUE="-1">
+	      <PARAM NAME="Format" VALUE=" 
+              <FC> Name='공종' ID=name value={if(tag='2','   ',name)} Width=120 BgColor=@color1  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     </FC>  
+	           <FC> Name='금액' ID=plan_amt  Width=90 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>      
+	           <FC> Name='보할(%)' ID=plan_per Width=50 Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+	           <FC> Name='구분' ID=tag Width=50 EditStyle=Combo Data='1:계획,2:실적' Align=Right BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>  
+              <C>ID=p1  width=50   Bgcolor=@p1 HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p2  width=50   Bgcolor=@p2 HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p3  width=50   Bgcolor=@p3    HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p4  width=50   Bgcolor=@p4               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p5  width=50   Bgcolor=@p5               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p6  width=50   Bgcolor=@p6               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p7  width=50   Bgcolor=@p7               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p8  width=50   Bgcolor=@p8               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p9  width=50   Bgcolor=@p9               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p10 width=50   Bgcolor=@p10              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p11  width=50  Bgcolor=@p11               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p12  width=50  Bgcolor=@p12               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p13  width=50  Bgcolor=@p13               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p14  width=50  Bgcolor=@p14               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p15  width=50  Bgcolor=@p15               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p16  width=50  Bgcolor=@p16               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p17  width=50  Bgcolor=@p17               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p18  width=50  Bgcolor=@p18               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p19  width=50  Bgcolor=@p19               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p20 width=50   Bgcolor=@p20              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p21  width=50  Bgcolor=@p21               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p22  width=50  Bgcolor=@p22               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p23  width=50  Bgcolor=@p23               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p24  width=50  Bgcolor=@p24               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p25  width=50  Bgcolor=@p25               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p26  width=50  Bgcolor=@p26               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p27  width=50  Bgcolor=@p27               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p28  width=50  Bgcolor=@p28               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p29  width=50  Bgcolor=@p29               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p30 width=50   Bgcolor=@p30              HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p31  width=50  Bgcolor=@p31                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p32  width=50  Bgcolor=@p32                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p33  width=50  Bgcolor=@p33                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p34  width=50  Bgcolor=@p34                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p35  width=50  Bgcolor=@p35                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p36  width=50  Bgcolor=@p36                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p37  width=50  Bgcolor=@p37                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p38  width=50  Bgcolor=@p38                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p39  width=50  Bgcolor=@p39                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p40 width=50   Bgcolor=@p40               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p41  width=50  Bgcolor=@p41               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p42  width=50  Bgcolor=@p42               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p43  width=50  Bgcolor=@p43                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p44  width=50  Bgcolor=@p44                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p45  width=50  Bgcolor=@p45                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p46  width=50  Bgcolor=@p46                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p47  width=50  Bgcolor=@p47                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p48  width=50  Bgcolor=@p48                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p49  width=50  Bgcolor=@p49                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p50 width=50   Bgcolor=@p50               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p51  width=50  Bgcolor=@p51                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p52  width=50  Bgcolor=@p52                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p53  width=50  Bgcolor=@p53                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p54  width=50  Bgcolor=@p54                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p55  width=50  Bgcolor=@p55                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p56  width=50  Bgcolor=@p56                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p57  width=50  Bgcolor=@p57                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p58  width=50  Bgcolor=@p58                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p59  width=50  Bgcolor=@p59                HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+              <C>ID=p60 width=50   Bgcolor=@p60               HeadBgColor=#BBE0F4  HeadColor=BLACK </C>             
+           ">
+	      </OBJECT></comment> <script> __ws__(__NSID__);</script>
+    <comment id="__NSID__"><OBJECT classid="clsid:B5F6727A-DD38-11D2-973D-00104B15E56F" 
+	    id=tb_chart1  style="visibility:hidden;Z-INDEX: 104; LEFT: 901px; WIDTH: 100px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" >
+		<param name="Title"				value="계획/실적">
+		<param name="XTitle"			value="년도">
+		<param name="XValueColumn"		value="yearmm">
+		<param name="YValueColumns"		value="plan_per:계획;real_per:실적">
+      <param name="MaxValue"         value="100">
+		<param name="YTitleAngle"		value="90">
+		<param name="ChartType"			value="3">
+		<param Name="View3D"			value="true">
+		<param name="ViewValue"      value="true">
+		<param name="LegendColumn"		value="">
+		<param name="LegendPosition"	value="2">
+		<param name="SeriesColor"		value="#0000ff,#ff0000">
+		<param name="BackColorStr"		value="#ffffff,#ffffff">
+		<param name="BarWidth"        value="20">
+		<param name="WallColor"			value="#ffffff">
+		<param name="ItemPerPage"		value="2">
+      <Param Name="ViewGrid"       VALUE="True">
+      <param name="BorderStyle"		value="1">
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</div>
+   <DIV id=tab_page_7 
+         style="Z-INDEX: 110; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 30px; HEIGHT: 95%;FONT-SIZE: 12px" >
+    <comment id="__NSID__"><OBJECT classid="clsid:B5F6727A-DD38-11D2-973D-00104B15E56F" 
+	    id=tb_chart3  style="visibility:hidden;Z-INDEX: 104; LEFT: 1px; WIDTH: 900px; POSITION: absolute; TOP:1px; HEIGHT: 100%"  >
+		<param name="Title"				value="계획/실적">
+		<param name="XTitle"			value="년도">
+		<param name="XValueColumn"		value="yearmm">
+		<param name="YValueColumns"		value="plan_per:계획:0;real_per:실적:0">
+      <param name="MaxValue"         value="100">
+		<param name="YTitleAngle"		value="90">
+		<param name="ChartType"			value="3">
+		<param name="LegendColumn"		value="">
+		<param name="ViewValue"       value="false">
+      <param name="LineWidth"       value="4">
+		<param name="LegendPosition"	value="2">
+		<param name="SeriesColor"		value="#0000ff,#ff0000">
+		<param name="BackColorStr"		value="#ffffff,#ffffff">
+		 <param name="MarkFontColor"   value="#990000,#990099,#00ffff,#990000,#ff0000">
+		 <param name="MarkBkColor"     value="#FFFFFF,#FFF000,#ff0000,#aaaa00,#00ffff">
+		 <param name="BorderStyle"     value="2">
+		<param name="WallColor"			value="#ffffff">
+		<param name="ItemPerPage"		value="60">
+      <Param Name="ViewGrid"       VALUE="True">
+      <param name="BorderStyle"		value="1">
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+    <comment id="__NSID__"><OBJECT classid="clsid:B5F6727A-DD38-11D2-973D-00104B15E56F" 
+	    id=tb_chart2  style="visibility:hidden;Z-INDEX: 104; LEFT: 901px; WIDTH: 100px; POSITION: absolute; TOP: 1px; HEIGHT: 100%" >
+		<param name="Title"				value="계획/실적">
+		<param name="XTitle"			value="년도">
+		<param name="XValueColumn"		value="yearmm">
+		<param name="YValueColumns"		value="plan_per:계획;real_per:실적">
+      <param name="MaxValue"         value="100">
+		<param name="YTitleAngle"		value="90">
+		<param name="ChartType"			value="3">
+		<param Name="View3D"			value="true">
+		<param name="ViewValue"      value="true">
+		<param name="LegendColumn"		value="">
+		<param name="LegendPosition"	value="2">
+		<param name="SeriesColor"		value="#0000ff,#ff0000">
+		<param name="BackColorStr"		value="#ffffff,#ffffff">
+		<param name="BarWidth"        value="20">
+		<param name="WallColor"			value="#ffffff">
+		<param name="ItemPerPage"		value="2">
+      <Param Name="ViewGrid"       VALUE="True">
+      <param name="BorderStyle"		value="1">
+    </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</DIV>	
+
+
+</BODY></HTML>

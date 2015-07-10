@@ -1,0 +1,103 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ks_c_5601-1987">
+<title>GAUCE Component Sample</title>
+<script language="javascript">
+var alid_sort = "+";
+
+	function On_Load()
+	{
+		Grid_Format("G");
+	}
+
+	function General_Type()
+	{
+		Grid_Format("G");
+	}
+	
+	function Function_Type()
+	{
+		Grid_Format("F");
+	}
+
+	function Grid_Format(flag)
+	{
+		var suppress_value1 = "";
+		var suppress_value2 = "";
+
+		if(flag == "F"){
+			ds_grid.SubsumExpr ="deptnm";
+			gauce_grid.ViewSummary = "1";
+			suppress_value1 = "1";
+			suppress_value2 = "2";
+		}else if(flag == "G"){
+			ds_grid.SubsumExpr ="";
+			gauce_grid.ViewSummary = "0";
+		}
+
+		gauce_grid.format = ''+
+		'<F> id={currow}, name=SEQ,width=40,headbgcolor="#2D2478",bgcolor="#2D2478",sumbgcolor="#2D2478",headcolor="#F0F8FF", color="#F0F8FF"</F>'+
+		'<F> id=deptnm, name=부서명,width=220, suppress='+ suppress_value1 +',headbgcolor="#2D2478",bgcolor="#C0E0FF",SubSumText="소계",SubBgColor="ffffff",sumtext="합계",sumbgcolor="#E2C8E4",sumcolor="#800000",headcolor="#F0F8FF"</F>'+
+		'<C> id=year, name=년도,width=92,suppress='+ suppress_value2 +',headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",SubBgColor="ffffff",sumbgcolor="#E2C8E4",headcolor="#F0F8FF"</C>'+
+		'<G> name=금액,headbgcolor="#2D2478",headcolor="#F0F8FF"'+
+		'<C> id=amt1, name=금액1,width=115,headbgcolor="#2D2478",bgcolor="#E8E6FF",color="#0000FF",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C>'+
+		'<C> id=amt2, name=금액2,width=115,headbgcolor="#2D2478",bgcolor="#FFE8E8",color="#FF0000",SubBgColor="ffffff",sumbgcolor="#E2C8E4",sumtext=@sum,sumcolor="#800000",headcolor="#F0F8FF"</C></G>';
+
+		ds_grid.DataID = "grid.jsp?Option=SL&PGM=S";
+		ds_grid.Reset();
+	}
+</script>
+
+
+<!-- Data Sort -->
+<script language=JavaScript for=gauce_grid event=onClick(row,colid)>
+	if (row == 0) {
+		ds_grid.SortExpr = alid_sort + colid;
+		ds_grid.Sort();
+		if(alid_sort == "+") { alid_sort = "-"; }
+		else { alid_sort = "+"; }
+	}
+</script>
+
+
+<!-- Component 선언부 -->
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<br>
+<img src="../image/text_bar/grid_select_bar.gif" border=0>
+
+
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_grid"></object>
+<table cellpadding="0" cellspacing="0" width="600">
+    <tr>
+        <td width="150" bgcolor="#FFFFFF" align="center" height="50">
+               
+            <p align="left"><input type="radio" name="rdo" value="G" checked onClick="General_Type();">&nbsp;&nbsp;<font size="2">General</font></p>
+        </td>
+        <td width="450" bgcolor="#FFFFFF" align="center" height="50">
+               
+            <p align="left"><input type="radio" name="rdo" value="G" onClick="Function_Type();"><font size="2"> Use 
+            Function (Suppress, SunSum, Sum)</font></p>
+        </td>
+    </tr>
+    <tr>
+        <td width="600" bgcolor="#99CCFF" align="center" colspan="2">
+            <p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" id="gauce_grid" width="600" height="450" style="font-family:굴림; font-size:10pt;">
+				<param name="DataID" value="ds_grid">
+				<param name="LineColor"	value="#ffffff">
+				<param name="HeadLineColor"	value="#ffffff">
+	            <param name="BorderStyle" value="1">
+	            <param name="HeadBorder" value="4">
+	            <param name="TitleHeight" value="20">
+	            <param name="ColSizing" value="true">
+	            <param name="FontSize" value="0">
+				<param name="IndWidth" value="0">
+            </object></p>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

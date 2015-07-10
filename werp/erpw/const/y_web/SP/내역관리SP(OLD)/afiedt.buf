@@ -1,0 +1,126 @@
+/* ========================================================================= */
+/* 시스템 : HICM(실행관리)                                                   */
+/* 함수명 : tg_r_contract_register_update(실행내역입력)                       */
+/* 기  능 : 실행내역수정시 도급실행연계테이블의 항목수정                     */
+/* ===========================[ 변   경   이   력 ]========================= */
+/*      작 성 자    소     속             작 성 일      비         고        */
+/*   ------------  -------------------  ------------  ---------------------- */
+/*   1. 김동우                           2000.12.19       최초작성           */
+/* ========================================================================= */
+CREATE or REPLACE	TRIGGER tg_r_contract_register_update
+	BEFORE INSERT OR UPDATE ON r_contract_register
+		FOR EACH ROW
+DECLARE
+   c_owner  VARCHAR2(50);
+   c_tag1   VARCHAR2(3);
+   c_tag2   VARCHAR2(3);
+   c_tag3   VARCHAR2(3);
+   c_tag4   VARCHAR2(3);
+   c_tag5   VARCHAR2(3);
+   c_tag6   VARCHAR2(3);
+   c_tag7   VARCHAR2(3);
+   c_name1  VARCHAR2(20);
+   c_name2  VARCHAR2(20);
+   c_name3  VARCHAR2(20);
+   c_name4  VARCHAR2(20);
+   c_name5  VARCHAR2(20);
+   c_name6  VARCHAR2(20);
+   c_name7  VARCHAR2(20);
+   c_temp   VARCHAR2(500);
+   C_CNT    NUMBER(20,5);
+	errnum   CHAR(6):= '-20999';
+BEGIN
+    UPDATE g_code_proj
+       SET proj_name = :new.const_name,
+           proj_name_abbreviation = :new.const_shortname,
+           parent_proj_code = :new.deptcode
+     WHERE proj_code = :new.proj_code;
+    SELECT order_name
+      INTO c_owner
+      FROM r_code_order
+     WHERE order_no = :new.order_no;
+    c_tag1 := :new.region_code;
+    c_tag2 := :new.order_class; 
+    c_tag3 := :new.receive_type;
+    c_tag4 := :new.order_tag;
+    c_tag5 := :new.pq_tag;
+    c_tag6 := :new.consttype_code;
+    c_tag7 := :new.constkind_tag;
+    IF c_tag1 is not null THEN
+       select name
+         into c_name1
+         from y_region_code
+        where region_code = c_tag1;
+    END IF;
+    IF c_tag2 is not null THEN
+       select class_name
+         into c_name2
+         from r_code_class
+        where class_code = c_tag2;
+    END IF;
+    IF c_tag3 is not null THEN
+       select class_name
+         into c_name3
+         from r_code_class
+        where class_code = c_tag3;
+    END IF;
+    IF c_tag4 is not null THEN
+       select class_name
+         into c_name4
+         from r_code_class
+        where class_code = c_tag4;
+    END IF;
+    IF c_tag5 is not null THEN
+       select class_name
+         into c_name5
+         from r_code_class
+        where class_code = c_tag5;
+    END IF;
+    IF c_tag6 is not null THEN
+       select name
+         into c_name6
+         from y_consttype_code
+        where consttype_code = c_tag6;
+    END IF;
+    IF c_tag7 is not null THEN
+       select class_name
+         into c_name7
+         from r_code_class
+        where class_code = c_tag7;
+    END IF;
+   c_temp := c_name1 || '/' || c_name2 || '/' || c_name3 || '/' || c_name4 || '/' || c_name5 || '/'|| c_name6 || '/'|| c_name7;
+    UPDATE g_code_proj_detail
+       SET proj_name          = :new.const_name,       
+           proj_addr1         = :new.position,
+           proj_addr2         = :new.position2,
+           proj_tel           = :new.field_tel,
+           contract_date      = :new.cont_date,
+           work_date          = :new.up_date,
+           owner              = c_owner,
+           designer           = :new.designer,
+           supervisor         = :new.administer,
+           start_date         = :new.start_date,
+           end_date           = :new.completion_date,
+           chg_end_date       = :new.completion_date,
+           cnt_amt1           = :new.change_sum_amt,
+           main_charge        = :new.charger,
+           chg_contract_date1 = :new.cont_date,
+           chg_contract_date2 = :new.cont_date,
+           real_end_date      = :new.completion_date,
+           constkind_tag      = :new.constkind_tag,
+           const_class        = c_temp,
+           receive_code       = substr(:new.receive_tag,3,1)
+     WHERE proj_code = :new.proj_code
+       AND degree    = 1;
+    SELECT COUNT(*)
+      INTO C_CNT
+      FROM a_code_dept
+     WHERE deptcode = :new.proj_code;
+    IF C_CNT > 0 THEN
+	   UPDATE a_code_dept
+         SET startdate = :new.start_date,       
+             enddate   = :new.completion_date
+	    WHERE deptcode = :new.proj_code;
+    END IF;
+END tg_r_contract_register_update ;
+/

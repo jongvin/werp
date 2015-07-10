@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************				-->
+<!-- 1. 프로그램 id   : y_input_col_tag_1h.html					-->
+<!-- 2. 유형(시나리오): 조회및 수정															-->
+<!-- 3. 기 능 정 의   : 내역조회 및 비목구분/분개내역 항목입력 -->
+<!-- 4. 변 경 이 력   :  임종빈 작성														-->
+<!-- 5. 관련프로그램  :																			-->
+<!-- 6. 특 기 사 항   :	-->
+<!-- *********************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE>집행공종별 조회 </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var is_ds_1_addr = 'y_budget_child_pop_1q.jsp?arg_dept_code='
+var is_dept_code 
+var is_chg_no_seq 
+
+var is_format_1 = "<C> Name='공종명' ID=spec_name edit=none  color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=180 sort=true SubBgColor=silver SubSumText='' suppress=1</C> " + 
+"<FC> Name='순번' ID=no_seq edit=none  color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=50 sort=true SubBgColor=silver SubSumText=''</FC> " + 
+				"<FC> Name='구분' ID=col_tag color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#b0c4de  HeadColor=BLACK    Width=50  EditStyle=Combo  Lookup  Data='M:재료,L:노무,X:경비,S:외주' align=center sort=true SubBgColor=silver SubSumText=''</FC>" +	
+				"<FC> Name='집행공종' ID=cat_text color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#b0c4de  HeadColor=BLACK    Width=100 sort=true SubBgColor=silver SubSumText=''</FC>" +	
+	           "<FC> Name='내역코드' ID=detail_code edit=none show=false color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=73  SubBgColor=silver SubSumText=''</FC>" +
+	           "<FC> Name='명  칭' ID=name edit=none color=black  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=170 " + 
+	           "              SumText='합     계' SumColor=Black SumBgColor=Pink SubBgColor=silver SubSumText={decode(curlevel,1,'소 계','합 계')}</FC>" +
+	           "<C> Name='규  격' ID=ssize edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=155  SubBgColor=silver SubSumText=''</C>" +
+	           "<C> Name='단위' ID=unit edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=40 SubBgColor=silver SubSumText=''</C>" +
+	           "<G> Name='  실         행' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=qty edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 SubBgColor=silver SubSumText=''</C>" +
+	           "     <C> Name=단가 ID=price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Edit=None  Width=80 SubBgColor=silver SubSumText=''</C>" +
+	           "     <C> Name=금액 ID=amt edit=none color=black  Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK     Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver </C>" +
+	           "   </G>  " +
+	           "  <X> Name='  실         행 ' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=mat_price edit=none color=black color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=mat_amt color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>" +  
+	           "   <G> Name='노 무 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=lab_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=lab_amt edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G> " + 
+	           "   <G> Name='  외주비 ' show=false BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=sub_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=sub_amt edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" +
+	           "	                                        SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>" +
+	           "   <G> Name='경 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=exp_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=exp_amt edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                         SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "  <C> Name=자재코드 ID=mat_code edit=none color=black EditStyle=Popup BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=70  SubBgColor=silver</C>" +
+	           "<G> Name='  도         급 ' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=수량 ID=cnt_qty edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=단가 ID=cnt_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Edit=None  Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=cnt_amt edit=none color=black Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>  " +
+	           "<X> Name='  도         급 ' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "   <G> Name='재 료 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_mat_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=cnt_mat_amt  edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "     	                                        SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>  " +
+	           "   <G> Name='노 무 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_lab_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=cnt_lab_amt edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85 " +
+	           "	                                        SumText=@sum      SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G> " + 
+	           "   <G> Name='경 비' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK   " +
+	           "     <C> Name=단가 ID=cnt_exp_price edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80  SubBgColor=silver</C>" +
+	           "     <C> Name=금액 ID=cnt_exp_amt edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK      Width=85" + 
+	           "	                                             SumText=@sum          SumColor=Black SumBgColor=Pink SubBgColor=silver</C>" +
+	           "   </G>" +
+	           "  </X> " +  
+	           "  <C> Name='비   고' ID=remark edit=none color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=150  SubBgColor=silver</C>" + 
+	           "  <C> Name='자원구분' ID=res_class edit=none  show=false color=black EditStyle=Lookup Data='ds_select:select_1:select_2'  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60  SubBgColor=silver</C>" + 
+	           "  <C> Name='내부코드' ID=spec_unq_num show=false edit=none color=black Edit=None BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60  SubBgColor=silver</C>"
+
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">                                
+                            
+//---------------------------------------------------------------
+function show_subsum()               
+//---------------------------------------------------------------
+{	if ( chk_subsum.checked){
+      
+		ds_1.SubsumExpr  = '1:spec_name'
+	}
+	else{
+		ds_1.SubsumExpr  = ''
+	}
+	
+	//ds_1.ResetSubsum();
+	setTimeout('btnquery_onclick()',1)
+	gd_1.focus()
+
+}
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{	
+	var ls_cat_text = ds_select.namevalue(ds_select.rowposition, 'cat_text')
+	if ( ls_cat_text == '') {
+	    ls_cat_text = 'empty'
+	}
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code + 
+              "&arg_chg_no_seq="  +  is_chg_no_seq +
+              "&arg_cat_text="  +  ls_cat_text
+	
+	
+   //alert(ds_1.dataid)
+	gd_1.redraw = false;
+   ds_1.SyncLoad=true
+   ds_1.Reset()
+	gd_1.redraw = true;
+}
+//---------------------------------------------------------------------------
+function excel_down()                      // 
+//---------------------------------------------------------------------------
+{ var  filename
+   filename = ds_select.namevalue(ds_select.rowposition, 'cat_text')
+  var sheet_name = filename//+'('+is_dept_name+')';
+  file_name = sheet_name+".xls";
+  gd_1.GridToExcel(sheet_name, file_name, 1)
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{  gd_1.format = is_format_1
+	
+	 result = window.dialogArguments;
+    if (result == "") return 
+	 //alert(result)
+    //array = result.split("@");
+	 
+    is_dept_code =  result         // 부서코드 
+	 is_chg_no_seq = 	0//array[1]
+	 //is_spec_no_seq = array[2]
+
+    ds_select.dataid = "y_budget_child_pop_sel_1q.jsp?arg_dept_code="+is_dept_code
+	 ds_select.syncload=true
+	 ds_select.reset()
+	 //ds_select.insertrow(1);
+	 //ds_select.namevalue(1, 'cat_text') = '[전체]'
+     //alert(ds_select.dataid)
+
+	  //alert( ds_select.countrow())
+
+	 setTimeout('btnquery_onclick()',1)
+    gd_1.focus()
+}
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=ds_1 event=onFilter(row)>
+      if (ds_1.namevalue(row, 'cat_text')  == ds_select.namevalue(ds_select.rowposition, 'cat_text')) {
+			return true;
+		}
+		else{
+			if ( ds_select.namevalue(ds_select.rowposition, 'cat_text') == ' [전체]') {
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+</script>
+
+<script language=JavaScript for=ds_select event=OnRowPosChanged(row)>
+		if ( ds_select.namevalue(row, 'cat_text') == '') {
+			gd_1.ColumnProp('cat_text', 'Show') = true;
+		}
+		else{
+			gd_1.ColumnProp('cat_text', 'Show') =false;
+		}
+
+		
+
+		/*
+		ds_1.Filter();
+
+		ds_1.SortExpr = "+cat_text +col_tag +no_seq ";
+
+      ds_1.Sort();
+*/
+
+
+</script>
+
+<script language=JavaScript for=ccombo1 event=OnCloseUp()>
+	setTimeout('btnquery_onclick()',1)
+		gd_1.focus()
+
+</script>
+
+
+
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+	
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_select 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+       </OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin:0 " onload=setTimeout('window_onload()',1)  oncontextmenu="return false">
+<table width="100%"  height="100%"  BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+	<TR height="23px">
+		<TD>&nbsp;&nbsp;집행공종
+					<comment id="__NSID__"><object id=ccombo1 classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F height=300 width=250  style=" position:relative; top:5px; FONT-SIZE: 12px; font-weight:bold">
+						<param name=ComboDataID  value=ds_select>
+						<param name=CodeCColumn        value=cat_text>
+						<param name=DataCColumn         value=cat_text>
+					</object></comment> <script> __ws__(__NSID__);</script>
+				<input id=chk_subsum type='checkbox' unchecked style="position:relative; left:50px;" onclick="show_subsum()"  >
+				<input type='text' value='소계' readonly style="position:relative; left:45px;border :none" size=10 >
+				<input id=bt_excel_down type="button" value="엑셀"  class="img_btn2_1"
+							  style="position:relative; left:400px;"
+										onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"  onclick=excel_down()>
+				<input type="button" value="닫기" 
+								style="position:relative; left:400px;" class="img_btnClose"
+								onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;" onclick="window.close()">
+		</TD>
+	</TR>
+	<TR>
+		<TD><comment id="__NSID__"><OBJECT id=gd_1 
+						style="Z-INDEX: 110;  WIDTH: 100%;  HEIGHT: 100%" 
+						classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					  <PARAM NAME="AutoInsert" VALUE="-1">
+					  <PARAM NAME="AllShowEdit" VALUE="-1">
+					  <PARAM NAME="Editable" VALUE=false>
+					  <PARAM NAME="BorderStyle"  VALUE=1>
+					  <param name="MultiRowSelect"   value="-1">
+					  <PARAM NAME="ColSizing" VALUE="-1">
+					  <param name="ViewSummary"    value=1>
+					  <param name="DragDropEnable" value=1>
+					  <PARAM NAME="DataID" VALUE="ds_1">
+					  <PARAM NAME="SuppressOption" value=1>
+					  </OBJECT></comment> <script> __ws__(__NSID__);</script>
+					  <!-- <comment id="__NSID__"><OBJECT id=gd_2
+						style="Z-INDEX: 110;  WIDTH: 100%;  HEIGHT: 100%" 
+						classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					  <PARAM NAME="AutoInsert" VALUE="-1">
+					  <PARAM NAME="AllShowEdit" VALUE="-1">
+					  <PARAM NAME="Editable" VALUE=false>
+					  <PARAM NAME="BorderStyle"  VALUE=4>
+					  <param name="MultiRowSelect"   value="-1">
+					  <PARAM NAME="ColSizing" VALUE="-1">
+					  <param name="ViewSummary"    value=false>
+					  <param name="DragDropEnable" value=1>
+					  <PARAM NAME="DataID" VALUE="ds_select">
+					  <PARAM NAME="format" VALUE="<C> Name=aa ID=cat_text color=black BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center  HeadBgColor=#BBE0F4  HeadColor=BLACK    Width=80 </C>">
+					  </OBJECT></comment> <script> __ws__(__NSID__);</script> -->
+		</TD>
+	</TR>
+</TABLE>
+     
+
+</BODY></HTML>

@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : E_sa_eval_year_opinion_sheet_1h.html			-->
+<!-- 2. 유형(시나리오): 보고서													-->
+<!-- 3. 기 능 정 의   : 년별 안전 점검 평가표         	            -->
+<!-- 4. 변 경 이 력   : 이준구 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_work_date = top.frames['security'].gs_sysdate.value
+
+
+var is_date1, is_date2, is_date3, is_date4, is_date5,
+	 is_date6, is_date7, is_date8, is_date9, is_date10, is_date11, is_date12
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+
+//------------------------------------------------------------------------
+function btnquery_prt_onclick()                     // 미리보기
+//------------------------------------------------------------------------
+{
+   var arg_temp
+   arg_temp ="const_rpt/e_web/03r/"      // 보고서 디렉토리
+   if ( dd_hy.value == '1' ) { report = 'E_sa_eval_year_opinion_sheet'  }
+   if ( dd_hy.value == '2' ) { report = 'E_sa_eval_year_opinion_sheet2'  }
+      
+   arg_temp = arg_temp + report   // 보고서명
+   
+   arg_temp = arg_temp + "&RptParams=" + is_dept_code 
+   arg_temp = arg_temp + "&RptParams=" + em_start_date.text.substr(0,4) 
+   arg_temp = arg_temp + "&RptParams=" + dept_name.value
+
+   f_crystal_report(arg_temp)   //보고서 호출
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	if (f_reject_window()) return
+	top.frames['main_title'].mouse_over()
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	
+	em_start_date.text = is_work_date.substr(0,7)
+
+}
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code1 : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code1 : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>    
+<script language=JavaScript for=ccom_comp_name event=onSelChange()>
+	ds_2.DataID = is_ds_2_addr + is_dept_code + "&arg_sbcr_code=" + ccom_comp_name.CodeValue
+	ds_2.SyncLoad=true
+	ds_2.Reset()
+</script>
+  	
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_sysdate style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px"
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><Object id=ds_date style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+	classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+ 
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) oncontextmenu="return false">   
+<DIV id=print_condition style="Z-INDEX: 107; LEFT: 307px; WIDTH: 316px; POSITION: absolute; TOP: 100px; HEIGHT: 13px">
+	<table width="95%" height="65%"  BORDER="5"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+		</tr>
+		<tr BGCOLOR="white">
+			<td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+				<div align="right">현장명</div></td>
+			<td >
+				<INPUT id=dept_name  ondblclick="dept_name.select()" onfocus="dept_name.select()"  style="ime-mode:active" style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+				<input type="button" value="검색" onclick=dept_code_find() class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+		</tr>
+		<tr BGCOLOR="white">
+			<td width="23%" BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+			<div align="right">년도</div></td>
+			<td>
+				<comment id="__NSID__"><OBJECT id=em_start_date style=" WIDTH: 80px;" 
+				classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+				<PARAM NAME="Alignment" VALUE="1">
+				<PARAM NAME="IsComma" VALUE="0">
+				<PARAM NAME="MaxLength" VALUE="4">
+				<PARAM NAME="Format" VALUE="YYYY">
+				<param name=ClipMode VALUE=false>
+				<PARAM NAME="Numeric" VALUE="0">
+				<PARAM NAME="SelectAll" VALUE="-1">
+				</OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+		</tr>
+		<tr>   
+			<td width="23%" BGCOLOR="#BBE0F4" style="COLOR: BLACK">
+			<div align="right">분류</div></td>
+			<td>
+				<select name="dd_hy" style=" WIDTH: 80px;font-size:12px" >
+					<option value="1">상반기</option>
+					<option value="2">하반기</option>
+				</select>
+			</td>
+		</table>
+</DIV>
+</BODY>
+</HTML>

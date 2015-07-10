@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : s_sbcr_search_1h.html (tree sample)								-->
+<!-- 2. 유형(시나리오): 조회 															-->
+<!-- 3. 기 능 정 의   : 협력업체   찾기 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE> 협력업체  찾기  </TITLE>
+<SCRIPT language=JavaScript>
+var is_ds_1_addr="s_sbcr_search_1q.jsp"
+var is_ds_2_addr = 's_sbcr_search_detail_1q.jsp?arg_sbcr_code='                     //발주 목록별 견적업체들 
+var is_ds_3_addr = 's_sbcr_search_detail_2q.jsp?arg_sbcr_code='                     //발주 목록별 견적업체들 
+var is_confirm_check = 'no',is_wbs_code=''
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID =  is_ds_1_addr + "?arg_sbcr_name=" + Textbox_1.value + "&arg_sbcr_code=" + Textbox_1.value + "&arg_wbs_code=" + is_wbs_code
+	ds_1.SyncLoad=true
+	ds_1.reset()
+}
+//---------------------------------------------------------------
+function div_btnquery_onclick()               //하위조회 
+//---------------------------------------------------------------
+{
+	if ( ds_1.RowPosition < 1) {
+		ds_2.ClearData()
+		ds_3.ClearData()
+		return
+	}
+	ds_2.DataID =  is_ds_2_addr + ds_1.NameValue(ds_1.RowPosition,"sbcr_code")
+	ds_2.SyncLoad=true
+	ds_2.reset()
+	
+	ds_3.DataID =  is_ds_3_addr + ds_1.NameValue(ds_1.RowPosition,"sbcr_code")
+	ds_3.SyncLoad=true
+	ds_3.reset()
+}
+//---------------------------------------------------------------
+function total_rtn()               //전체업체조회 
+//---------------------------------------------------------------
+{
+	is_wbs_code =''
+	btnquery_onclick()
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return="",ll_cnt=0,i
+  
+	for (i=1;i<=ds_1.CountRow;i++) {
+		if (ds_1.NameValue(i,'temp_chk') == 'T') {
+			ls_return = ls_return + ds_1.NameValue(i,"sbcr_code") + '@' + ds_1.NameValue(i,'profession_wbs_code') + '@' +
+			ds_1.NameValue(i,"sbcr_name") + '@'
+			ll_cnt++
+		}
+	}
+  
+	ls_return = ll_cnt + '@' + ls_return
+	window.returnValue = ls_return
+	window.close();
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ array = result.split("@");
+ Textbox_1.value = array[0]          // 0: 찾고자하는 값.
+ is_wbs_code = array[1]
+
+tb_1.ActiveIndex = 1
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+if (colid == "temp_chk") {
+	if (ds_1.NameValue(row,colid) == 'T')
+		ds_1.NameValue(row,colid) = 'F'
+	else
+		ds_1.NameValue(row,colid) = 'T'    
+}
+</SCRIPT>
+<SCRIPT language=JavaScript event=OnRowPosChanged(row) for=ds_1>
+	div_btnquery_onclick()
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_2 event=OnLoadError()>
+  alert("Error Code : " + ds_2.ErrorCode + "\n" + "Error Message : " + ds_2.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_3 event=OnLoadError()>
+  alert("Error Code : " + ds_3.ErrorCode + "\n" + "Error Message : " + ds_3.ErrorMsg + "\n");
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+//	Button_confirm_onclick()
+</SCRIPT>
+
+
+<OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_2 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+<OBJECT id=ds_3 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT>
+
+<LABEL id=Label_1  
+    style="WIDTH: 75px; POSITION: absolute; top:11px; HEIGHT: 25px">&nbsp;&nbsp;검색조건:
+</LABEL><INPUT style="FONT-SIZE:12px;" id=Textbox_1  ondblclick="Textbox_1.select()" onfocus="Textbox_1.select()"  style="ime-mode:active"
+    style="Z-INDEX: 100; FONT-SIZE: 12px; LEFT: 60px; POSITION: absolute; TOP: 8px"
+    onkeyDown="keyDown()">
+<INPUT  type=button style="LEFT: 210px; POSITION: absolute; TOP: 7px;" class="img_btnFind"  value=검색 onclick=btnquery_onclick() onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+<input type="button" value="전체업체조회" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 400px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=total_rtn()>
+<input type="button" value="확인" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 565px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_confirm_onclick()>
+<input type="button" value="닫 기" 
+	style="color:#2E4A4A; font-size:13px; CURSOR: hand;  LEFT: 610px; POSITION: absolute; TOP: 7px;
+	background-color:#E9F5F5; border:1 #A1A9A9 solid;  height:17px"   
+	onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	"  onclick=Button_close_onclick()>
+<OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 780px; POSITION: absolute; TOP: 35px; HEIGHT: 320px" 
+    HEIGHT: 650px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="Format" VALUE='
+     <C>  Name="선택" ID=temp_chk EditStyle=CheckBox HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=40 </C>
+	  <C> Name=" 업체코드" ID=sbcr_code Edit=None  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 </C>
+	  <C> Name=" 업   체  명" ID=sbcr_name Edit=None   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180 </C>
+	  <C> Name="등록구분"  ID=register_chk Edit=None   EditStyle=Combo Data="1:정규등록,2:예비등록,3:미등록,4:등록취소,5:기타등록,6:[자재]정규,7:[자재]미등록,8:지역등록,9:임시" 
+	  										HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=60 </C>
+	  <C> Name="대표자명" ID=rep_name1 Edit=None   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="전화번호" ID=tel_number1 Edit=None   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=100 </C>
+	  <C> Name="전문공종명" ID=profession_wbs_name Edit=None   HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=210 </C>
+	  '>
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+<OBJECT id=tb_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 200; LEFT: 10px; WIDTH: 780px; POSITION: absolute; TOP: 358px; HEIGHT: 20px" 
+    classid=clsid:ED382953-E907-11D3-B694-006097AD7252 VIEWASTEXT>
+  <param name="BackColor"  value="#BBE0F4">
+  <param name="TextColor"  value="BLACK">
+  <PARAM NAME="Format" VALUE="
+    <T>divid=tab_page_1 title=당사시공실적</T>
+    <T>divid=tab_page_2 title=공사수행평가</T>
+    ">
+</OBJECT>
+
+<DIV id=tab_page_1
+         style="LEFT: 10px; WIDTH: 780px; POSITION: absolute; TOP: 378px; HEIGHT: 150px; BACKGROUND-COLOR: #FFFFFF">
+<OBJECT id=gd_2 
+    style="Z-INDEX: 105; LEFT: 0px; WIDTH: 780px; POSITION: absolute; TOP: 0px; HEIGHT: 98%" 
+    HEIGHT: 650px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_2">
+	<PARAM NAME="Format" VALUE='
+	  <C> Name="현장명" ID=long_name  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+	  <C> Name="계약명" ID=sbc_name  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+	  <C> Name="계약일자" ID=sbc_dt Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=90 </C>
+	  <C> Name="공사기간" ID=temp_term Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=150 </C>
+	  <C> Name="계약금액" ID=sbc_amt HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=95 </C>
+	  '>
+</OBJECT>
+</DIV>
+<DIV id=tab_page_2
+         style="LEFT: 10px; WIDTH: 780px; POSITION: absolute; TOP: 378px; HEIGHT: 150px; BACKGROUND-COLOR: #FFFFFF">
+<OBJECT id=gd_3 
+    style="Z-INDEX: 105; LEFT: 0px; WIDTH: 780px; POSITION: absolute; TOP: 0px; HEIGHT: 98%" 
+    HEIGHT: 650px" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+	 <param name="MultiRowSelect"   value="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="DataID" VALUE="ds_3">
+	<PARAM NAME="Format" VALUE='
+	  <C> Name="년도" ID=evl_year  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=55 </C>
+	  <C> Name="공종명" ID=profession_wbs_name  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+	  <C> Name="상반기" ID=b_score Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="하반기" ID=a_score Align=Center  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="준공" ID=c_score HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="평균" ID=eva_score HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="가감점" ID=add_score_tot HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  <C> Name="총점" ID=tot_score HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=80 </C>
+	  '>
+</OBJECT>
+</DIV>
+
+</BODY></HTML>

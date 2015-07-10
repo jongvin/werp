@@ -1,0 +1,759 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : d_initial_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회및 입력											-->
+<!-- 3. 기 능 정 의   : 최초 결재자 정보     	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<title>전표 결재선 지정</title>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+//-------------------------------------------------------------------------------------//
+//   결재정보 가져가기
+//   1. d_process_complete()  // 반드시 call해야함                                     //
+//   2. if (d_initial_1h.gd_approval_id_last == '') 일경우는 에러처리로 결재하면안됨.  //
+//   d_initial_1h.gd_approval_id                                                       //
+//   d_initial_1h.gd_id_last                                                           //
+//   d_initial_1h.gd_id_1                                                              //
+//   이하 등등                                                                         //
+//-------------------------------------------------------------------------------------//
+var is_dept_code 
+var is_dept_name 
+
+var gs_home 
+var gs_empno
+var gs_user_id
+var is_authority_user_find_addr
+
+var is_ds_search_addr  
+var is_ds_1_addr
+var is_tr_1_addr
+var is_ds_unq_addr
+var il_unq_num
+var is_confirm_check = 'no'
+var is_comp_code 
+var gd_date 
+var gd_approval_id
+
+var gd_approval_num
+var gd_approval_name
+var gd_source
+var gd_complete_flag = '1'
+var gd_current_approval_id
+var gd_approval_id_last
+var gd_creation_date
+var gd_created_by
+var gd_created_dept_code
+var gd_created_dept_name
+var gd_last_update_date
+var gd_last_updated_by
+var gd_last_update_login
+var gd_batch_date
+
+var gd_approval_id_1
+var gd_approval_jik_1
+var gd_approval_name_1
+var gd_approval_date_1
+var gd_approval_status_1
+var gd_approval_id_2
+var gd_approval_jik_2
+var gd_approval_name_2
+var gd_approval_date_2
+var gd_approval_status_2
+var gd_approval_id_3
+var gd_approval_jik_3
+var gd_approval_name_3
+var gd_approval_date_3
+var gd_approval_status_3
+var gd_approval_id_4
+var gd_approval_jik_4
+var gd_approval_name_4
+var gd_approval_date_4
+var gd_approval_status_4
+var gd_approval_id_5
+var gd_approval_jik_5
+var gd_approval_name_5
+var gd_approval_date_5
+var gd_approval_status_5
+var gd_approval_id_6
+var gd_approval_jik_6
+var gd_approval_name_6
+var gd_approval_date_6
+var gd_approval_status_6
+var gd_approval_id_7
+var gd_approval_jik_7
+var gd_approval_name_7
+var gd_approval_date_7
+var gd_approval_status_7
+var gd_approval_id_8
+var gd_approval_jik_8
+var gd_approval_name_8
+var gd_approval_date_8
+var gd_approval_status_8
+var gd_approval_id_9
+var gd_approval_jik_9
+var gd_approval_name_9
+var gd_approval_date_9
+var gd_approval_status_9
+var gd_approval_id_10
+var gd_approval_jik_10
+var gd_approval_name_10
+var gd_approval_date_10
+var gd_approval_status_10
+var gd_approval_id_11
+var gd_approval_jik_11
+var gd_approval_name_11
+var gd_approval_date_11
+var gd_approval_status_11
+
+
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+  ds_1.DataID = is_ds_1_addr + gs_user_id + '&arg_approval_type=' + ccom_approval_type.CodeValue
+  ds_1.SyncLoad=true
+  ds_1.Reset()
+  if (ds_1.CountRow == 0) {
+    ds_1.ClearData()
+    ds_1.AddRow()
+    init_move()
+    rd_check()     
+  }  
+  else
+     rd_check()
+  
+}
+//-----------------------------------------------------------------------
+function init_move()   // 초기값.
+//------------------------------------------------------------------------
+{
+  ds_search.DataID=is_ds_search_addr  + gs_empno    // 직위명을 구하기위함. 
+  ds_search.SyncLoad=true
+  ds_search.Reset()
+  
+  ds_1.NameValue(ds_1.RowPosition,'approval_id') = gs_user_id
+  ds_1.NameValue(ds_1.RowPosition,'approval_type') = ccom_approval_type.CodeValue
+  ds_1.NameValue(ds_1.RowPosition,'approval_id_1') = gs_user_id
+  if (ds_search.CountRow == 1) {
+     ds_1.NameValue(ds_1.RowPosition,'approval_jik_1') = ds_search.NameValue(1,'grade_name')
+     ds_1.NameValue(ds_1.RowPosition,'approval_name_1') = ds_search.NameValue(1,'name')
+  }    
+  
+}
+//-----------------------------------------------------------------------
+function rd_check()                       // 경리이전 라디오버튼 check
+//------------------------------------------------------------------------
+{
+  var ls_id,i
+   var il_match=0
+  for (i=1;i<=9;i++) {
+     eval("rd_" + i + ".checked = false")  
+     eval("ls_id = ds_1.NameValue(ds_1.RowPosition,'approval_id_" + i + "')")
+     if (ds_1.NameValue(ds_1.RowPosition,'approval_id_last') == '') continue
+
+     if (ls_id == ds_1.NameValue(ds_1.RowPosition,'approval_id_last')) {
+        il_match=1
+        eval("rd_" + i + ".checked = true")
+        eval("ds_1.NameValue(ds_1.RowPosition,'approval_id_last') = ds_1.NameValue(ds_1.RowPosition,'approval_id_" + i + "')")
+     }   
+  }
+  if (il_match == 0)  // 못찾았을경우 즉 삭제버튼을 눌렀을경우 체크 
+      ds_1.NameValue(ds_1.RowPosition,'approval_id_last') = ''
+}
+
+//-----------------------------------------------------------------------
+function rd_onclick(j)                       // 레디오 클릭 
+//------------------------------------------------------------------------
+{
+   var ls_name,next_j,i,j
+   for (i=1;i<=9;i++) {
+//      if (j == 9) {
+//         alert('최종결재는 선택할수없습니다')
+//         break
+//      }
+      next_j = j + 1
+//      eval("ls_name = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + next_j + "')")  
+//      if (ls_name == '') { 
+//         alert('최종결재는 선택할수없습니다')
+//         break
+//      }
+      if (i == j) {
+         eval("ls_name = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + i + "')")
+         if (ls_name == '') {
+            alert('성명이 선택되어있지않습니다')
+            rd_check()   // 에러임으로 현재의 경리이전값이 있다면 라디오버튼을 on
+            break
+         }   
+         eval("rd_" + i + ".checked = true")
+         eval("ds_1.NameValue(ds_1.RowPosition,'approval_id_last') = ds_1.NameValue(ds_1.RowPosition,'approval_id_" + i + "')")
+      }
+      else {
+         eval("rd_" + i + ".checked = false")
+      }
+   }
+
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+  return
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+  return
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+  return
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+  if (ds_1.NameValue(ds_1.RowPosition,'approval_id_last') == '') {
+     alert('경리전을 반드시 선택하셔야 합니다')
+     return
+  }   
+  if (ds_1.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_1.Post()
+ } 
+}
+
+
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+  ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//---------------------------------------------------------------------------
+function name_rtn(i)                      // 성명 찾기
+//---------------------------------------------------------------------------
+{
+    var j,ls_name
+    if (i !=1 ) {
+      j = i - 1
+      eval("ls_name = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + j + "')")
+      if (ls_name == '') {
+         alert('이전결재자 정보가 없습니다')
+         return
+      }   
+    }
+ 	 var result,row;
+	 var array = new Array();
+	 result = window.showModalDialog(is_authority_user_find_addr,gs_home + "@" ,"dialogWidth:500px;dialogHeight:500px");
+	 if(result == "") return;
+
+	 array = result.split("@");
+    ds_1.NameString(ds_1.RowPosition,"approval_name_" + i)      = array[1];   // 성명  	
+	 ds_1.NameString(ds_1.RowPosition,"approval_jik_" + i) = array[4];   // 직위 
+	 ds_1.NameString(ds_1.RowPosition,"approval_id_" + i) = array[5];   // 유저 아이디  
+	 rd_check()   //성명을 찾기한 그값이 경리전 item이라면 approve_id_last도 동시에 변경하여야하기때문데
+
+}
+//---------------------------------------------------------------------------
+function name_del_rtn(i)                      // 성명 삭제
+//---------------------------------------------------------------------------
+{
+    var j,ls_name
+    if (i !=1 ) {
+      eval("ls_name = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + i + "')")
+      if (ls_name == '') {
+         alert('결재자 정보가 없습니다')
+         return
+      }   
+    }
+   var k
+   for (j=i;j<=9;j++) {
+      eval("ls_name = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + i + "')")
+      if (ls_name == '' || j==9) break
+      k = j + 1
+      ds_1.NameString(ds_1.RowPosition,"approval_name_" + j) = ds_1.NameString(ds_1.RowPosition,"approval_name_" + k)   	
+	   ds_1.NameString(ds_1.RowPosition,"approval_jik_" + j) = ds_1.NameString(ds_1.RowPosition,"approval_jik_" + k)
+	   ds_1.NameString(ds_1.RowPosition,"approval_id_" + j) = 	   ds_1.NameString(ds_1.RowPosition,"approval_id_" + k) 
+   }
+   if (j >= 9) {
+      ds_1.NameString(ds_1.RowPosition,"approval_name_" + 9) = ''
+	   ds_1.NameString(ds_1.RowPosition,"approval_jik_" + 9) = ''
+	   ds_1.NameString(ds_1.RowPosition,"approval_id_" + 9) = ''
+   }   
+	 rd_check()   //성명을 찾기한 그값이 경리전 item이라면 approve_id_last도 동시에 변경하여야하기때문데
+
+}
+//-----------------------------------------------------------------
+function sp_call()               //sp call(결재번호구하기) 
+//------------------------------------------------------------------
+{
+        var ls_code,ls_temp_date,ls_return=''
+        ls_code = is_dept_code.substr(0,2)
+        ls_temp_date = is_date.substr(0,4) + is_date.substr(5,2) + is_date.substr(8,2)
+        ds_update.DataID = 'efin_invoice_approval_procedure.jsp?arg_dept_code=' + ls_code + '&arg_date=' + ls_temp_date +
+                           '&arg_no=' + ls_return 
+        ds_update.SyncLoad = true
+        ds_update.reset()
+        var ls_code,ls_err
+        ls_code = ds_update.ErrorMsg
+        ls_err = ls_code.substr(ls_code.length - 4,4)
+        if (ls_err == 'true') 
+            return ls_code.substr(ls_code.length - 21,17)
+        else
+           return 'false'
+}
+//----------------------------------------------------------------------------
+function d_process_complete()                     // 현재 결재자정보 최종 셋팅(하위단에서 결재정보를얻기위해서 반드시 call해야함)
+//---------------------------------------------------------------------------- 
+{
+ var i
+
+ for (i=1;i<=9;i++) {
+    eval("gd_approval_id_" + i + " = ds_1.NameValue(ds_1.RowPosition,'approval_id_" + i + "')")
+    eval("gd_approval_jik_" + i + " = ds_1.NameValue(ds_1.RowPosition,'approval_jik_" + i + "')")
+    eval("gd_approval_name_" + i + " = ds_1.NameValue(ds_1.RowPosition,'approval_name_" + i + "')")
+    eval("gd_approval_date_" + i + " = ds_1.NameValue(ds_1.RowPosition,'approval_date_" + i + "')")
+    eval("gd_approval_satuse_" + i + " = ds_1.NameValue(ds_1.RowPosition,'approval_status_" + i + "')")
+ }
+
+}
+//---------------------------------------------------------------------------
+function gulje_info()                      // 결제
+//---------------------------------------------------------------------------
+{
+
+
+   var is_ds_x_addr = gs_home + '/const/d_web/01/d_efin_invoice_header_itf_1q.jsp'         
+   var is_tr_x_addr = gs_home + '/const/d_web/01/d_efin_invoice_header_save_itf_1tr.jsp'
+  tr_x.Action = is_tr_x_addr
+  ds_x.DataID = is_ds_x_addr +'?arg_user_id=' +  '0' + '&arg_from_date=1900.01.01' + '&arg_to_date=1900.01.01'
+  ds_x.SyncLoad=true
+  ds_x.Reset()
+  ds_x.ClearData()
+  ds_x.AddRow()
+  d_process_complete()
+  gd_approval_id_last = ds_1.NameValue(ds_1.RowPosition,'approval_id_last')
+  if (gd_approval_id_last == '') {
+     alert('경리전을 반드시 체크해야합니다')
+     return 0
+  }   
+  if (tx_approval_name.value == '') {
+     alert('제목을 반드시 입력하셔야합니다')
+     return 0
+  }   
+  ds_unq.DataID = 'efin_confirm_unq_seq_1q.jsp'
+  ds_unq.SyncLoad=true
+  ds_unq.Reset()  
+  ll_cnt = ds_unq.CountRow
+  if (ll_cnt != 1) {
+     alert('결재번호 복사 번호 생성 오류')
+     return 0
+  }
+
+  ll_temp = ds_unq.NameValue(1,'select_1')  
+  ll_temp = parseInt(ll_temp,10) 
+  ds_x.NameValue(ds_x.RowPosition,'invoice_group_id') = ll_temp    // number 
+  ds_x.NameValue(ds_x.RowPosition,'approval_id_last') = gd_approval_id_last
+  for (i=1;i<=9;i++) {
+    eval("ds_x.NameValue(ds_x.RowPosition,'approval_id_" + i + "') = gd_approval_id_" + i )
+    eval("ds_x.NameValue(ds_x.RowPosition,'approval_jik_" + i + "') = gd_approval_jik_" + i)
+    eval("ds_x.NameValue(ds_x.RowPosition,'approval_name_" + i + "') = gd_approval_name_" + i)
+    eval("ds_x.NameValue(ds_x.RowPosition,'approval_date_" + i + "') = gd_approval_date_" + i )
+    eval("ds_x.NameValue(ds_x.RowPosition,'approval_status_" + i + "') = gd_approval_satuse_" + i)
+ }
+  var ls_ret
+//  ls_ret = sp_call()   //전표번호 구하는로직은 y_sp_d_efin_invoice_copy.sql에 있슴. 
+  ls_ret = ' '
+//  if (ls_ret == 'false') { // 결재번호 에서 
+//     return 0
+//  }   
+  ds_x.NameValue(ds_x.RowPosition,'approval_date_1') = is_date
+  ds_x.NameValue(ds_x.RowPosition,'approval_status_1') = '1'   // 결재 
+  
+  if (ds_x.NameValue(ds_x.RowPosition,'approval_id_1') == gd_approval_id_last || ds_x.NameValue(ds_x.RowPosition,'approval_id_2') == '') {
+      ds_x.NameValue(ds_x.RowPosition,'account_dept_code') = '01'
+  }
+  else
+     ds_x.NameValue(ds_x.RowPosition,'current_approval_id') = ds_x.NameValue(ds_x.RowPosition,'approval_id_2')
+     
+  ds_x.NameValue(ds_x.RowPosition,'complete_flag') = '1'
+  ds_x.NameValue(ds_x.RowPosition,'approval_num') = ls_ret
+  ds_x.NameValue(ds_x.RowPosition,'approval_name') = tx_approval_name.value
+  ds_x.NameValue(ds_x.RowPosition,'creation_date') = f_sysdatehh24mm_pgrm()
+  ds_x.NameValue(ds_x.RowPosition,'created_by') = gs_user_id   // 유저 아이디
+  ds_x.NameValue(ds_x.RowPosition,'created_dept_code') = is_dept_code   // 발의부서
+  ds_x.NameValue(ds_x.RowPosition,'created_dept_name') = is_dept_name   // 발의부서명
+  ds_x.NameValue(ds_x.RowPosition,'last_update_date') = is_date
+  ds_x.NameValue(ds_x.RowPosition,'last_updated_by') = gs_user_id   // 유저 아이디
+  ds_x.NameValue(ds_x.RowPosition,'last_update_login') = gs_user_id   // 유저 아이디
+  ds_x.NameValue(ds_x.RowPosition,'batch_date') = is_date   // 전표일자 y_sp_d_efin_invoice_copy.sql에 있슴
+  ds_x.NameValue(ds_x.RowPosition,'source') = 'A'   // ADD-ON 구분 
+  ds_x.NameValue(ds_x.RowPosition,'attribute1') = em_attribute1.text   // 결재희망일.
+  ds_x.NameValue(ds_x.RowPosition,'attribute2') = is_comp_code   // 사업장코드 
+  is_ret=true
+  tr_x.Post()
+  is_confirm_check = 'yes'
+  il_unq_num = ll_temp
+  if (is_ret) {
+  } 
+  else { 
+     il_unq_num = 0
+     is_confirm_check='no'
+  }   
+
+ window.returnValue = il_unq_num + ""
+ window.close();     
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+
+  if (is_confirm_check == 'no') {
+      window.returnValue = "0"
+      window.close()
+  }    
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   var result;
+   var array = new Array();
+   result = window.dialogArguments;
+   array = result.split("@");		
+   gs_home = array[0]
+   gs_empno = array[1]   //사번 
+   gs_user_id = array[2] // 유저아이디 
+   is_dept_code =  array[3]  //부서코드 
+   is_dept_name =  array[4]  //부서명 
+   tx_approval_name.value = array[6] // 결재명칭
+   
+   if (array.length == 7)
+      is_comp_code = is_dept_code.substr(0,2)
+   else
+      is_comp_code = array[7]
+      
+   is_date = f_sysdate_pgrm()
+   em_attribute1.text = is_date
+
+   is_authority_user_find_addr  = gs_home + '/comm_search/z_authority_user_find_1h.html'
+
+   is_ds_search_addr  = 'z_authority_user_find_initial_1q.jsp?arg_empno='
+   is_ds_1_addr = gs_home + '/const/d_web/01/d_efin_approval_type_itf_1q.jsp?arg_approval_id='         
+   is_tr_1_addr = gs_home + '/const/d_web/01/d_efin_approval_type_itf_1tr.jsp'
+
+  ccom_approval_type.index=0
+  btnquery_onclick()
+  tr_1.Action = is_tr_1_addr
+}
+
+//---------------------------------------------------------------------------
+function f_sysdate_pgrm()                       //현날짜구하기 
+//---------------------------------------------------------------------------
+{
+	var ld_date
+
+	ds_sysdate.DataID = gs_home + "/login/z_sysdate_1q.jsp"
+	ds_sysdate.SyncLoad = true
+	ds_sysdate.reset()
+	ld_date = ds_sysdate.namevalue(1,"sysdate1")
+	return ld_date
+}
+//---------------------------------------------------------------------------
+function f_sysdatehh24mm_pgrm()                       //현날짜구하기 
+//---------------------------------------------------------------------------
+{
+	var ld_date
+
+	ds_sysdate.DataID = gs_home + "/login/z_sysdatehh24mm_1q.jsp"
+	ds_sysdate.SyncLoad = true
+	ds_sysdate.reset()
+	ld_date = ds_sysdate.namevalue(1,"sysdate1")
+	return ld_date
+}
+</SCRIPT>
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+if (kcode == 13) {
+    if (ds_1.RowPosition == ds_1.CountRow)  
+        btnadd_onclick()
+    else     
+        ds_1.RowPosition++
+}
+</script>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_search event=OnLoadError()>
+  alert("Error Code ds_search: " + ds_search.ErrorCode + "\n" + "Error Message : " + ds_search.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ds_update event=OnLoadCompleted(rowcnt)>
+</script>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=ccom_approval_type event=OnCloseUp()>
+  btnquery_onclick()
+</script>
+
+<SCRIPT language=JavaScript for=ds_x event=OnLoadError()>
+  alert("Error Code ds_x: " + ds_x.ErrorCode + "\n" + "Error Message : " + ds_x.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_x event=OnFail()>
+  alert("Error Code tr_x: " + tr_x.ErrorCode + "\n" + "Error Message : " + tr_x.ErrorMsg + "\n");
+  is_ret=false
+</SCRIPT>
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_x 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_x 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:d_efin_invoice_header_save_itf_1tr=ds_x)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_unq
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+<comment id="__NSID__"><OBJECT id=ds_search 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:d_efin_approval_type_itf_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<INPUT id=bt_ok      type=button  style="LEFT: 840px; WIDTH: 65px;  POSITION: absolute; TOP: 25px; HEIGHT:20px;" value=결재하기  onclick=gulje_info()>
+<INPUT id=bt_cancel  type=button  style="LEFT: 840px; WIDTH: 65px;  POSITION: absolute; TOP: 50px; HEIGHT:20px;" value=취소     onclick=window_onunload()>
+<DIV id=div_type 
+         style="LEFT: 30px; WIDTH: 800px; POSITION: absolute; TOP: 5px; HEIGHT:20px; BACKGROUND-COLOR: #FFFFFF">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >결재유형</div></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<comment id="__NSID__"><OBJECT id=ccom_approval_type  
+                         style="WIDTH: 65px"
+					          classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+				     <PARAM NAME="Alignment" VALUE="1">
+				     <param name=Data     value="A^A_TYEP,B^B_TYPE,C^C_TYPE,D^D_TYPE,E^E_TYPE,F^F_TYPE">
+		           <param name=Auto       value=false>
+                 <param name=Enable     value=true>
+				 </OBJECT></comment> <script> __ws__(__NSID__);</script></td>	
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >유형명칭</div></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				 <INPUT id=tx_approval_type_name    size=10></td>			
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_type  type=button style="WIDTH:60px" value=유형저장 onclick=btnsave_onclick()></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >결재희망일</div></td>
+			<td  align="center"   style="COLOR: BLACK " > 
+				 <comment id="__NSID__"><OBJECT id=em_attribute1 
+                    style=" WIDTH: 70px;" 
+                   classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+             	    <PARAM NAME="Alignment" VALUE="1">
+             	    <PARAM NAME="IsComma" VALUE="0">
+             	    <PARAM NAME="MaxLength" VALUE="6">
+             	    <PARAM NAME="Format" VALUE="YYYY.MM.DD">
+                         <param name=ClipMode       value=false>
+             	    <PARAM NAME="Numeric" VALUE="0">
+             	    <PARAM NAME="SelectAll" VALUE="-1">
+             </OBJECT></comment> <script> __ws__(__NSID__);</script></td>			
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >결재제목</div></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				 <INPUT id=tx_approval_name    size=21></td>			
+     </tr>
+  </table>
+</div>     
+<DIV id=div_confirm 
+         style="LEFT: 30px; WIDTH: 800px; POSITION: absolute; TOP: 35px; HEIGHT:100px; BACKGROUND-COLOR: #FFFFFF">
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px">
+		<tr BGCOLOR="white"> 
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >경리전</div></td>
+			<td   align="center" BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_1 type="radio" value="2"  onclick="rd_onclick(1)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_2 type="radio" value="2"  onclick="rd_onclick(2)"></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_3 type="radio" value="2"  onclick="rd_onclick(3)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_4 type="radio" value="2"  onclick="rd_onclick(4)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_5 type="radio" value="2"  onclick="rd_onclick(5)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_6 type="radio" value="2"  onclick="rd_onclick(6)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_7 type="radio" value="2"  onclick="rd_onclick(7)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_8 type="radio" value="2"  onclick="rd_onclick(8)"></td>
+			<td  align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<input id=rd_9 type="radio" value="2"  onclick="rd_onclick(9)"></td>
+	   </tr>
+		<tr BGCOLOR="white"> 
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >직위</div></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_1  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_2  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_3  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_4  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_5  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_6  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_7  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_8  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_jik_9  tabIndex=-1 readonly size=8   ></td>
+	   </tr>
+		<tr BGCOLOR="white"> 
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >성명</div></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_1  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_2  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_3  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_4  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_5  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_6  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_7  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_8  tabIndex=-1 readonly size=8   ></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+			    <INPUT id=tx_approval_name_9  tabIndex=-1 readonly size=8   ></td>
+	   </tr>
+		<tr BGCOLOR="white"> 
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >찾기</div></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_1  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(1)>
+	   			<INPUT id=bt_id_search_del_1  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(1)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_2  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(2)>
+	   			<INPUT id=bt_id_search_del_2  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(2)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_3  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(3)>
+	   			<INPUT id=bt_id_search_del_3  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(3)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_4  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(4)>
+	   			<INPUT id=bt_id_search_del_4  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(4)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_5  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(5)>
+	   			<INPUT id=bt_id_search_del_5  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(5)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_6  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(6)>
+	   			<INPUT id=bt_id_search_del_6  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(6)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_7  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(7)>
+	   			<INPUT id=bt_id_search_del_7  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(7)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_8  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(8)>
+	   			<INPUT id=bt_id_search_del_8  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(8)></td>
+			<td align="center"   BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+	   			<INPUT id=bt_id_search_9  type=button style="FONT-SIZE: 11px"  value='선택' onclick=name_rtn(9)>
+	   			<INPUT id=bt_id_search_del_9  type=button style="FONT-SIZE: 11px"  value='삭제' onclick=name_del_rtn(9)></td>
+	   </tr>
+  </table>
+</div>  
+<comment id="__NSID__"><OBJECT id=bd_data 
+    	style="Z-INDEX: 108; LEFT: 124px; WIDTH: 22px; POSITION: absolute; TOP: -37px; HEIGHT: 18px" 
+    	classid=clsid:9C9AB433-EA85-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="BindInfo" VALUE="
+     <C>Col=approval_type_name     Ctrl=tx_approval_type_name          Param=value Enable=enable</C>        
+     <C>Col=approval_jik_1        Ctrl=tx_approval_jik_1             Param=value Enable=enable</C>
+     <C>Col=approval_name_1       Ctrl=tx_approval_name_1            Param=value Enable=enable</C>
+     <C>Col=approval_jik_2        Ctrl=tx_approval_jik_2             Param=value Enable=enable</C>
+     <C>Col=approval_name_2       Ctrl=tx_approval_name_2            Param=value Enable=enable</C>
+     <C>Col=approval_jik_3        Ctrl=tx_approval_jik_3             Param=value Enable=enable</C>
+     <C>Col=approval_name_3       Ctrl=tx_approval_name_3            Param=value Enable=enable</C>
+     <C>Col=approval_jik_4        Ctrl=tx_approval_jik_4             Param=value Enable=enable</C>
+     <C>Col=approval_name_4       Ctrl=tx_approval_name_4            Param=value Enable=enable</C>
+     <C>Col=approval_jik_5        Ctrl=tx_approval_jik_5             Param=value Enable=enable</C>
+     <C>Col=approval_name_5       Ctrl=tx_approval_name_5            Param=value Enable=enable</C>
+     <C>Col=approval_jik_6        Ctrl=tx_approval_jik_6             Param=value Enable=enable</C>
+     <C>Col=approval_name_6       Ctrl=tx_approval_name_6            Param=value Enable=enable</C>
+     <C>Col=approval_jik_7        Ctrl=tx_approval_jik_7             Param=value Enable=enable</C>
+     <C>Col=approval_name_7       Ctrl=tx_approval_name_7            Param=value Enable=enable</C>
+     <C>Col=approval_jik_8        Ctrl=tx_approval_jik_8             Param=value Enable=enable</C>
+     <C>Col=approval_name_8       Ctrl=tx_approval_name_8            Param=value Enable=enable</C>
+     <C>Col=approval_jik_9        Ctrl=tx_approval_jik_9             Param=value Enable=enable</C>
+     <C>Col=approval_name_9       Ctrl=tx_approval_name_9            Param=value Enable=enable</C>
+	" >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>     
+</BODY></HTML>                   

@@ -1,0 +1,100 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<title>GAUCE Component Sample</title>
+<script language="javascript">
+var alid_sort = "+";
+
+	function On_Load()
+	{
+		imgds_grid.DataID = "image.jsp";
+		imgds_grid.Reset();
+	}
+</script>
+<script language=JavaScript for=imgds_grid event=OnLoadCompleted(rowcnt)>
+	alert("ImgData OnLoadCompleted : "+rowcnt);
+	Fn_Reset();
+</SCRIPT>
+
+<script language=JavaScript for=imgds_grid event=OnLoadError()>
+	 alert(" imgds_grid Error Code = " + imgds_grid.ErrorCode + "\n" + "Error Message = " + imgds_grid.ErrorMsg)
+</SCRIPT>
+
+<script language=JavaScript for=ds_grid event=OnLoadCompleted(rowcnt)>
+	alert("ds_grid OnLoadCompleted : "+rowcnt);
+	//Fn_Reset();
+</SCRIPT>
+
+<script language=JavaScript for=ds_grid event=OnLoadError()>
+	 alert("ds_grid Error Code = " + ds_grid.ErrorCode + "\n" + "Error Message = " + ds_grid.ErrorMsg)
+</SCRIPT>
+
+<script language=JavaScript>
+	function Fn_Reset() {
+		alert("Fn_Reset");
+		
+		ds_grid.DataID = "dataset.csv";
+		ds_grid.Reset();
+	}
+</script>
+
+<!-- Data Sort -->
+<script language=JavaScript for=gauce_grid event=onClick(row,colid)>
+	if (row == 0) {
+		ds_grid.SortExpr = alid_sort + colid;
+		ds_grid.Sort();
+		if(alid_sort == "+") { alid_sort = "-"; }
+		else { alid_sort = "+"; }
+	}
+</script>
+
+
+<!-- Component 선언부 -->
+<object classid="clsid:2506B38B-0FF7-4249-BA3E-8BC1DC399FBB" id="ds_grid">
+</object>
+
+<object classid="clsid:2B0B1D8B-CAAA-4E06-BD9A-A09A916BD67A" id="imgds_grid">
+</object>
+</head>
+
+<body onload="On_Load();" bgcolor="#FFFFFF">
+<table cellpadding="0" cellspacing="0" width="600">
+	<tr>
+		<td width="600">
+			<br>
+			<b>Grid의 Cell에 이미지 표현</b>
+			<br>
+			<br>
+		</td>
+	</tr>
+    <tr>
+        <td width="600" align="center" colspan="2">
+            <p><object classid="clsid:EA8B6EE6-3DD8-4534-B4BB-27148CF0042B" id="gauce_grid" width="560" height="300" style="font-family:굴림; font-size:10pt;">
+					<param name="DataID" 		value="ds_grid">
+					<param name="ImgDataID"		value="imgds_grid">
+					<param name="LineColor"		value="#ffffff">
+					<param name="HeadLineColor"	value="#ffffff">
+	            	<param name="BorderStyle" 		value="1">
+	            	<param name="HeadBorder" 		value="4">
+	            	<param name="TitleHeight" 		value="20">
+	            	<param name="ColSizing" 		value="true">
+	            	<param name="FontSize" 		value="0">
+					<param name="IndWidth" 		value="0">
+					<param name="ViewSummary" 	value="0">
+					<param name="Format"    		value='
+						<F> id={currow}, name=SEQ,width=40,headbgcolor="#2D2478",bgcolor="#2D2478",align="center",headcolor="#F0F8FF", color="#F0F8FF"</F>
+						<F> id=deptnm, name=부서명,width=150, headbgcolor="#2D2478",bgcolor="#C0E0FF",align="left",headcolor="#F0F8FF", suppress=1</F>
+						<C> id=year, name=팀,width=80,headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",headcolor="#F0F8FF"</C>
+						<C> id=imgID,name=마크,width=115,headbgcolor="#2D2478",bgcolor="#C0E0FF",align="center",headcolor="#F0F8FF",imgcol="true",imgfitstyle=1</C>
+						<G> name=성과,headbgcolor="#2D2478",headcolor="#F0F8FF"
+						<C> id=amt1,name=목표치,width=80,headbgcolor="#2D2478",bgcolor="#E8E6FF",color="#0000FF",headcolor="#F0F8FF"</C>
+						<C> id=amt2,name=달성치,width=80,headbgcolor="#2D2478",bgcolor="#FFE8E8",color="#FF0000",headcolor="#F0F8FF"</C></G>
+					'>
+            </object></p>
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : y_cmp_dept_code_1h.html					-->
+<!-- 2. 유형(시나리오): showmodal에서 추가및 삭제 								-->
+<!-- 3. 기 능 정 의   : 																-->
+<!-- 4. 변 경 이 력   :  박두현  작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<TITLE> 비교현장선택  </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+
+var is_ds_1_addr = '/const/y_web/01/y_cmp_dept_code_1q.jsp?arg_dept_code='
+var is_tr_1_addr = '/const/y_web/01/y_cmp_dept_code_1tr.jsp'
+var is_detail_code=""   //표준내역코드
+var is_division=""      //집계분류 
+var is_confirm_check = 'no'
+var is_dept_code
+var is_mat_code
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID = gs_home + is_ds_1_addr + is_dept_code 
+  ds_1.SyncLoad=true
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("no_seq");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+   if (ds_1.IsUpdated){
+       alert("먼저 저장을 하십시요")
+       return
+   }    
+	dept_code_cond_find('')
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	 init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+	if  (is_dept_code == "") {
+		alert("현장을 선택하십시요(검색을 누르십시요)")
+		return
+	}     
+	if  (ds_1.CountRow > 0) { 
+	}    
+	else {
+	}
+	init_move()
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+	var ls_temp
+	  if  (gd_1.MultiRowSelect){               // multi row select 일 경우
+	     for (i=ds_1.CountRow ;i >0 ;i--)
+	     {
+	        if (ds_1.RowMark(i) == 1){
+						ds_1.DeleteRow(i)
+	        }
+	    }   
+	    ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+	   } 
+	  else
+	     ds_1.DeleteRow(ds_1.RowPosition)  
+ }
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+var ls_temp
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")){
+          ll_dup = f_dup_chk("ds_1","cmp_dept_code")
+          if (ll_dup > 0) {
+             alert("동일현장은 선택할수 없습니다\n 삭제하신후 저장하십시요")
+             ds_1.RowPosition = ll_dup
+             return
+          }   
+	       tr_1.Post()
+	    }
+   } 
+}
+//---------------------------------------------------------------------------
+function dept_code_cond_find(data)                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	var is_dept_search_addr = gs_home + '/comm_search/z_dept_cond_find_compare_1h.html'
+
+	var array = new Array();
+
+	result = window.showModalDialog(is_dept_search_addr,gs_home + '@'  + is_detail_code + '@' + is_division + '@' + is_mat_code,
+               	"dialogWidth:910px;dialogHeight:750px");
+
+
+	
+	if(result == "") return false;
+	array = result.split("@");
+	var i,j,k
+	j = array.length - 1
+	j = j / 2
+	k=0
+	for (i=1;i<=j;i++) {
+	   ds_1.AddRow()
+	   
+	   ds_1.NameValue(ds_1.RowPosition,"dept_code") = is_dept_code
+  	   ds_1.NameValue(ds_1.RowPosition,"no_seq") = ds_1.NameValue(ds_1.CountRow - 1,'no_seq') + 1
+
+	   ds_1.NameValue(ds_1.RowPosition,'cmp_dept_code') = array[k]
+	   k++
+	   ds_1.NameValue(ds_1.RowPosition,'long_name') = array[k];
+	   k++
+	}   
+
+	if (ds_1.IsUpdated) {
+      ll_dup = f_dup_chk("ds_1","cmp_dept_code")
+      if (ll_dup > 0) {
+         alert("동일현장은 선택할수 없습니다\n 삭제하신후 저장하십시요")
+         ds_1.RowPosition = ll_dup
+         return
+      }   
+	  	 tr_1.Post()
+	}  	 
+}
+
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+
+	if(result == "") {
+		alert("최소한 홈 디렉토리는 있어야 합니다")
+		Button_close_onclick()
+	}
+
+	array = result.split("@");
+	gs_home = array[0]                  // 0: 홈 디렉토리
+	is_dept_code = array[1] 
+	is_detail_code = array[2]          // 표준내역코드
+	is_division = array[3]             // 집계분류코드
+	is_mat_code = array[4]             // 자재코드
+	tr_1.Action = gs_home + is_tr_1_addr 
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+  if (row == 0) {
+     ds_1.SortExpr = "+" + colid;
+     ds_1.Sort();
+  }   
+</script>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1)  onunload=window_onunload()>
+
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=tr_1 event=OnSuccess()>
+btnquery_onclick()
+</script>
+
+
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=tr_1 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+   <PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:y_cmp_dept_code_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+<BR>    
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; right:30px; WIDTH: 50px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+<input id=bt_query type="button" value="닫기" class="img_btnClose"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=Button_close_onclick()>
+</DIV>
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT:20px; WIDTH: 300px; POSITION: absolute; TOP: 27px; HEIGHT: 20px">
+	<input id=bt_query type="button" value="조회"  class="img_btn2_1"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=btnquery_onclick()>
+	<input id=bt_query type="button" value="추가" class="img_btn2_1"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=btnadd_onclick()>
+	<input id=bt_query type="button" value="삽입" class="img_btn2_1"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=btninsert_onclick()>
+	<input id=bt_query type="button" value="삭제" class="img_btn2_1"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=btndelete_onclick()>
+	<input id=bt_query type="button" value="저장" class="img_btn2_1"
+		onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"   onclick=btnsave_onclick()>
+	
+</DIV>
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="Z-INDEX: 105; LEFT: 10px; WIDTH: 300px; POSITION: absolute; TOP: 45px; HEIGHT: 350px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="AutoInsert" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	 <param name="MultiRowSelect"   value="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='현  장  명'  id=long_name  Edit=None width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+	   ">
+ 	</OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

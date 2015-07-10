@@ -1,0 +1,49 @@
+tr_1.post 하기전에 dup을 체크해야할경우가 많은데
+  이럴경우 아래의 자바스크립트를 이용보십시요.
+사용법:
+   아규먼트1 : dataset명
+   아규먼트2 : 체크하고자하는 컬럼명들
+               다수의 컬럼이 중복되는지 체크를원하시면
+               컬럼과컬럼사이에 @ 이를 붙이십시요.
+  예) var l_row
+      l_row = f_dup_chk('ds_1','id@no')
+      if (l_row) > 0 {
+          alert("중복입니다")
+          ds_1.RowPosition = l_row
+          return
+      }
+
+//----------------------------------------------------------------------------
+function f_dup_chk(arg_ds,arg_col)                     // dup chk
+//---------------------------------------------------------------------------- 
+{
+  // arg_ds = 'ds_1'   dataset 명
+  // arg_col = "colid_1@colid_2")
+  // return값이 0보다 크면 return값이 dup된 row값이며 0이며는 dup이 없슴 
+ var sa_key,after_sa_key,result
+ var ll_count,ll_start_1,ll_start_2,ll_dup,ll_loop,ls_status
+ var array = new Array();
+
+ eval("ll_count = " + arg_ds + ".CountRow")
+
+ array = arg_col.split("@");
+
+ for (ll_start_1 =1 ; ll_start_1 <= ll_count; ll_start_1++) {
+    eval ( "ls_status = " + arg_ds + ".SysStatus(" + ll_start_1 + ")")  
+    if (ls_status == 0) continue
+    sa_key = "" 
+    for (ll_loop=0; ll_loop < array.length; ll_loop++)  {
+         eval("sa_key = sa_key + " + arg_ds + ".NameValue(ll_start_1,'" + array[ll_loop] + "')") 
+    }
+    for (ll_start_2 = 1; ll_start_2 <= ll_count; ll_start_2++) {
+      if (ll_start_1 == ll_start_2) continue
+       after_sa_key = ""
+	    for (ll_loop=0; ll_loop < array.length; ll_loop++)  {
+	         eval("after_sa_key = after_sa_key + " + arg_ds + ".NameValue(ll_start_2,'" + array[ll_loop] + "')") 
+       }
+       if (sa_key == after_sa_key) 
+           return ll_start_1   	   	  
+    }
+ }
+ return 0 
+}

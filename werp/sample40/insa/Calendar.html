@@ -1,0 +1,230 @@
+<script language="JScript"> 
+this.title="달력";
+//var gdCtrl = new Object(); 
+var gcGray = "#808080"; 
+var gcToggle = "EFE2B1"; 
+var gcBG = "#ffffff"; 
+
+var gdCurDate = new Date(); 
+var giYear = gdCurDate.getFullYear(); 
+var giMonth = gdCurDate.getMonth()+1; 
+var giDay = gdCurDate.getDate(); 
+
+
+function onstart() {
+	fSetYearMon(giYear, giMonth); 
+}
+
+function fSetDate(iYear, iMonth, iDay){ 
+  iMonth = gn_lpad(iMonth,0,2);
+  iDay = gn_lpad(iDay,0,2);
+  window.returnValue=iYear+""+iMonth+""+iDay;
+  window.close();
+} 
+
+function gn_lpad(Rstring,pad_str,base_len){
+	 var Rstring = Rstring.toString();
+	 var str_len = Rstring.length;
+	
+	for(  var i=str_len ; i<= base_len; i++){
+	
+	       if (str_len != base_len)  {
+		Rstring = pad_str + Rstring;
+	                str_len = Rstring.length;
+	
+	      } 
+	}
+	
+	return Rstring;
+}
+
+function fSetSelected(aCell){ 
+  var iOffset = 0; 
+  var iYear = parseInt(tbSelYear.value); 
+  var iMonth = parseInt(tbSelMonth.value); 
+
+  aCell.bgColor = gcBG; 
+  with (aCell.children["cellText"]){ 
+          var iDay = parseInt(innerText); 
+        if (color=="#b7b7b7"){ 
+        return;
+        //iOffset = (Victor<10)?-1:1; 
+        
+        //iMonth += iOffset; 
+        }
+        
+        if (iMonth<1) { 
+            iYear--; 
+            iMonth = 12; 
+        }else if (iMonth>12){ 
+                iYear++; 
+                iMonth = 1; 
+        } 
+  } 
+  fSetDate(iYear, iMonth, iDay); 
+} 
+
+
+//날짜 format 만들기
+function fBuildCal(iYear, iMonth) { 
+  var aMonth=new Array(); 
+  for(i=1;i<7;i++) 
+          aMonth[i]=new Array(i); 
+
+  var dCalDate=new Date(iYear, iMonth-1, 1); 
+  var iDayOfFirst=dCalDate.getDay(); 
+  var iDaysInMonth=new Date(iYear, iMonth, 0).getDate(); 
+  var iOffsetLast=new Date(iYear, iMonth-1, 0).getDate()-iDayOfFirst+1; 
+  var iDate = 1; 
+  var iNext = 1; 
+
+  for (d = 0; d < 7; d++) 
+        aMonth[1][d] = (d<iDayOfFirst)?-(iOffsetLast+d):iDate++; 
+  for (w = 2; w < 7; w++) 
+          for (d = 0; d < 7; d++) 
+                aMonth[w][d] = (iDate<=iDaysInMonth)?iDate++:-(iNext++); 
+  return aMonth; 
+} 
+
+
+// 달력 Drawing
+function fDrawCal(iYear, iMonth, iCellWidth, iDateTextSize) { 
+  var WeekDay = new Array("일","월","화","수","목","금","토"); 
+  var selClass = new Array("txt_car03","txt_car01","txt_car01","txt_car01","txt_car01","txt_car01","txt_car02"); 
+  var styleTD = " bgcolor='"+gcBG+"' width='"+iCellWidth+"' bordercolor='"+gcBG+"' valign='middle' align='center'  style='font:bold "+iDateTextSize+" Courier;";            //Coded by Liming Weng(Victor Won)  email:victorwon@netease.com 
+
+  with (document) { 
+        write("<tr align=center>"); 
+        for(i=0; i<7; i++) 
+ //               write("<td height=22 class="+selClass[i]+" align=center><font face=굴림 size=2><b></b></font></td>"); 
+       write("</tr>"); 
+          for (w = 1; w < 7; w++) { 
+                write("<tr align='center'>"); 
+                for (d = 0; d < 7; d++) { 
+                        write("<td height=22 id=calCell "+styleTD+"font-family: '굴림', 'Arial'; font-size: 9pt; font-weight: bold; line-height:15px;cursor:hand;' onMouseOver='this.bgColor=gcToggle' onMouseOut='this.bgColor=gcBG' onclick='fSetSelected(this)' align=center>"); 
+                        write("<font id=cellText> </font>"); 
+                        write("</td>") 
+                } 
+                write("</tr>"); 
+			if((w == 6)&&(d == 7))
+			{
+			}else{
+				write("<td colspan='7' bgcolor='#AAAAAA' height=1><img src='.../images/blank.gif' width='1' height='1'  border='0'></td>");
+			}
+        } 
+  } 
+} 
+
+// 날짜 setting
+function fUpdateCal(iYear, iMonth) { 
+  myMonth = fBuildCal(iYear, iMonth); 
+  var i = 0; 
+  for (w = 0; w < 6; w++) 
+        for (d = 0; d < 7; d++) 
+			with (cellText[(7*w)+d]) { 
+					Victor = i++; 
+					if (myMonth[w+1][d]<0) { 
+							color = "#B7B7B7"; 
+							innerText = -myMonth[w+1][d]; 
+					}else{ 
+							if(d==0)
+							{
+								color="#FF4800";
+							}else if(d==6){
+								color="#0061A3";
+							}else{
+								color="#000000";
+							}
+							innerText = myMonth[w+1][d]; 
+					} 
+			} 
+} 
+
+// 년,월 select  setting
+function fSetYearMon(iYear, iMon){ 
+  tbSelMonth.options[iMon-1].selected = true; 
+  for (i = 0; i < tbSelYear.length; i++) 
+        if (tbSelYear.options[i].value == iYear) 
+                tbSelYear.options[i].selected = true; 
+  fUpdateCal(iYear, iMon); 
+} 
+
+function fPrevMonth(){ 
+  var iMon = tbSelMonth.value; 
+  var iYear = tbSelYear.value; 
+
+  if (--iMon<1) { 
+          iMon = 12; 
+          iYear--; 
+  } 
+
+  fSetYearMon(iYear, iMon); 
+} 
+
+function fNextMonth(){ 
+  var iMon = tbSelMonth.value; 
+  var iYear = tbSelYear.value; 
+  if (++iMon>12) { 
+          iMon = 1; 
+          iYear++; 
+  } 
+
+  fSetYearMon(iYear, iMon); 
+} 
+
+
+var gMonths = new Array("1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"); 
+
+with(document){ 
+write("<title>날짜선택</title>");
+write("<meta http-equiv='Content-Type' content='text/html; charset=euc-kr'>");
+write("<link rel='stylesheet' type='text/css' href='ssmis1.css'>");
+write("<body onload='onstart()' bgcolor='#F5F5F5' leftmargin=1 topmargin=1 marginwidth=0 marginheight=0>");
+write("<table width='210' border='0' cellspacing='0' cellpadding='0'>");
+write("  <tr> ");
+write("    <td valign='bottom'><table width='210' border='0' cellspacing='0' cellpadding='0'>");
+write("        <tr>");
+write("          <td width='100'><img src='../images/cal_img.gif' width='100' height='48'></td>");
+write("          <td><table width='100%' border='0' cellspacing='0' cellpadding='0'>");
+write("              <tr> ");
+write("                <td>&nbsp; </td>");
+write("                <td colspan='2'>");
+write(" <SELECT name='tbSelYear' onChange='fUpdateCal(tbSelYear.value, tbSelMonth.value)' Victor='Won'>"); 
+for(i=eval(giYear-3);i<eval(giYear+28);i++) 
+        write("<OPTION value='"+i+"'>"+i+"년</OPTION>"); 
+write("</SELECT>"); 
+write("				  </td>");
+write("              </tr>");
+write("              <tr> ");
+write("   <td width='20' align='right'><img src='../images/goback.gif',width='15',height='15', OnClick='fPrevMonth();' > ");
+write("</td>");
+write("                <td width='50' align='center'> ");
+write(" <select name='tbSelMonth' onChange='fUpdateCal(tbSelYear.value, tbSelMonth.value)' Victor='Won'>"); 
+for (i=0; i<12; i++) 
+        write("<option value='"+(i+1)+"'>"+gMonths[i]+"</option>"); 
+write("</SELECT>"); 
+write("				  </td>");
+write("   <td width='20' align='right'><img src='../images/go.gif',width='15',height='15', OnClick='fNextMonth();' > ");
+write("</td>");
+write("              </tr>");
+write("            </table></td>");
+write("        </tr>");
+write("      </table> </td>");
+write("  </tr>");
+write("  <tr> ");
+write("    <td height='23'><img src='../images/day.gif' width='210' height='23'></td>");
+write("  </tr>");
+write("</table>"); 
+write("<table width='210' >"); 
+write("<td align='center'>"); 
+write("<DIV style='background-color:#EDF4F4;'><table width='100%' height='100%' border='0' cellspacing='0' cellpadding='0'>"); 
+fDrawCal(giYear, giMonth,35, 12); 
+write("</table></DIV>"); 
+write("</td>"); 
+write("</TR>"); 
+write("</TD></TR>"); 
+write("</TABLE>"); 
+write("</td></tr></table>");
+write("</body>");
+} 
+</script> 

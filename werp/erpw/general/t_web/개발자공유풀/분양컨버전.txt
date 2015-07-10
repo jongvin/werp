@@ -1,0 +1,113 @@
+분양 컨버전 작업 
+1. 기존 자료 삭제 ==> 분양구분이 '1'(아파트 인것만 우선 삭제)
+
+Delete	From	Ths_income_change_list
+Where	housetag = '1'
+/
+commit;
+
+Delete	From	ths_hous_income
+Where	housetag = '1'
+/
+commit;
+Delete	From	ths_income_src_list
+Where	housetag = '1'
+/
+commit;
+Delete	From	ths_hous_adjust
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_selldetail a
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_rate a
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_lend a
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_specialledger a
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_special a
+where	(custcode, seq) in (select custcode,  seq
+                            from ths_hous_sell
+                            where housetag='1')
+/
+commit;
+Delete	From	ths_hous_sell a
+where housetag='1'
+/
+commit;
+
+
+--계약대장 올리기
+기존 템프테이블 삭제
+임시 계약대장 테이블에 자료 올리기
+무결성검사
+
+하이픈 제거
+
+update 분양대장
+set	고객코드 = replace(고객코드,'-','')
+/
+--고객코드 검증
+Select
+	a.현장코드,
+	a.분양코드,
+	a.동,
+	a.호,
+	a.고객코드,
+	a.계약일자
+From 분양대장 a
+where 고객코드 not in (select  custcode
+				   from ths_code_customer);  
+
+Create Table t_contr
+(
+	proj_code		varchar2(10),
+	custcode		varchar2(20),
+	dongho			varchar2(20),
+	degree			varchar2(20),
+	contrdate		date,
+	landamt			number,
+	buildamt		number,
+	vatamt			number,
+	totamt			number,
+	cmpltag			varchar2(10)
+)
+/
+
+Create Table t_income
+(
+	proj_code		varchar2(10),
+	dongho			varchar2(20),
+	custcode		varchar2(20),
+	degree			varchar2(20),
+	acccode			varchar2(30),
+	incomedate		date,
+	incomeamt		number,
+	delayday		number,
+	delayamt		number,
+	incimetag		varchar2(10),
+	disday			number,
+	disamt			number,
+	refundtag		varchar2(10)
+)
+/
+

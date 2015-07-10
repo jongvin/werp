@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : l_labor_etc_1h.html										-->
+<!-- 2. 유형(시나리오): shared window 조회 및 입력								-->
+<!-- 3. 기 능 정 의   : 기타 노무비(기타지급, 기타공제) 등록  				-->
+<!-- 4. 변 경 이 력   : 이 양 헌 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_dept_code = top.frames['security'].gs_dept_code.value
+var is_dept_name = top.frames['security'].gs_dept_name.value
+//var is_work_date = top.frames['security'].gs_sysdate.value
+var is_work_date 
+var is_ds_1_addr = gs_home + '/const/l_web/01/l_labor_etc_1q.jsp?arg_dept='
+var is_close_check
+
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	is_close_check = f_close_chk(is_dept_code,is_work_date,'L')   // 각단위업무마감여부 체크(현장코드,년월,업무구분)
+
+	if (is_close_check) {
+		ds_1.ReadOnly = true
+	   top.frames['main_title'].div_r.style.visibility="visible"
+	   top.frames['main_title'].div_s.style.visibility="hidden"
+	}
+	else {
+		ds_1.ReadOnly = false
+	   top.frames['main_title'].div_s.style.visibility="visible"             
+	   top.frames['main_title'].div_r.style.visibility="hidden"
+	}
+
+	ds_1.DataID = is_ds_1_addr + is_dept_code + '&arg_date=' + is_work_date
+	
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+	gd_1.Focus();
+	gd_1.SetColumn("civil_register_number");
+} 
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+
+}
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+}
+
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+
+}
+//------------------------------------------------------------------------
+function l_etc_insert()                         // 기타 노무비 insert
+//------------------------------------------------------------------------
+{
+	ls_jumin_number = ds_1.NameValue(id_i,"jumin_number")
+
+	// 지급액(보너스, 식대, 퇴직금)
+	ld_bonus_amt  = ds_1.NameValue(id_i,"bonus_amt")
+	ld_meal_amt   = ds_1.NameValue(id_i,"meal_amt")
+	ld_etc_amt    = ds_1.NameValue(id_i,"etc_amt")
+
+	// 공제액(국민연금, 고용보험, 건강보험료, 기타공제액)
+	ld_people_pension  = ds_1.NameValue(id_i,"people_pension")
+	ld_employ_ins      = ds_1.NameValue(id_i,"employ_ins")
+	ld_health_ins      = ds_1.NameValue(id_i,"health_ins")
+	ld_etc_deduct_amt  = ds_1.NameValue(id_i,"etc_deduct_amt")
+
+	  ls_cmd = "INSERT INTO L_LABOR_ETC (dept_code, " + 
+	                                    "civil_register_number, " +
+	                                    "work_date, " + 
+	                      					"bonus_amt, " +
+	                      					"meal_amt, " + 
+	                      					"etc_amt, " +
+	                      					"people_pension, " +
+	                      					"employ_ins, " + 
+	                      					"health_ins, " + 
+	                      					"etc_deduct_amt) " + 
+                     	  "values (" + "'" + is_dept_code + "', " +
+                     			         "'" + ls_jumin_number + "', " +  
+                     			         "'" + is_work_date +  "', " + 
+                     			         ld_bonus_amt + ", " + 
+                     			         ld_meal_amt + ", " + 
+                     			         ld_etc_amt + ", " + 
+                     			         ld_people_pension + ", " + 
+                     			         ld_employ_ins + ", " + 
+                     			         ld_health_ins + ", " + 
+                     			         ld_etc_deduct_amt + ") " ; 
+	  f_update_sql(ls_cmd)
+}
+//------------------------------------------------------------------------
+function l_etc_update()                         // 기타 노무비 update
+//------------------------------------------------------------------------
+{
+	ls_jumin_number = ds_1.NameValue(id_i,"jumin_number")
+	
+	// 지급액(보너스, 식대, 퇴직금)
+	ld_bonus_amt  = ds_1.NameValue(id_i,"bonus_amt")
+	ld_meal_amt   = ds_1.NameValue(id_i,"meal_amt")
+	ld_etc_amt    = ds_1.NameValue(id_i,"etc_amt")
+	
+	// 공제액(국민연금, 고용보험, 건강보험료, 기타공제액)
+	ld_people_pension  = ds_1.NameValue(id_i,"people_pension")
+	ld_employ_ins      = ds_1.NameValue(id_i,"employ_ins")
+	ld_health_ins      = ds_1.NameValue(id_i,"health_ins")
+	ld_etc_deduct_amt  = ds_1.NameValue(id_i,"etc_deduct_amt")
+
+	ls_cmd = "UPDATE L_LABOR_ETC  " +   
+	                 "  SET bonus_amt       = " + ld_bonus_amt + ", " + 
+	                 "      meal_amt        = " + ld_meal_amt + ", " + 
+	                 "      etc_amt         = " + ld_etc_amt + ", " + 
+	                 "      people_pension  = " + ld_people_pension + ", " + 
+	                 "      employ_ins      = " + ld_employ_ins + ", " + 
+	                 "      health_ins      = " + ld_health_ins + ", " + 
+	                 "      etc_deduct_amt  = " + ld_etc_deduct_amt +  
+	                 "  where  dept_code  = '" + is_dept_code + "'  and "   + 
+	                 "         work_date  = '" + is_work_date + "'  and "   + 
+			           "         civil_register_number  = '" + ls_jumin_number + "'"   
+
+	f_update_sql(ls_cmd)
+
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+var ls_chk=0
+sa_position = ds_1.RowPosition
+
+
+	if (ds_1.IsUpdated){
+	   if  (confirm("변경되었습니다 저장하시겠습니까?")) {
+	   
+	   	for (id_i=1; id_i<= ds_1.CountRow; id_i++){
+		   	if (ds_1.SysStatus(id_i) == 0) 
+		   		continue
+	   
+				if(ds_1.NameValue(id_i,"civil_register_number").length < 1) {
+				// insert
+				
+					ds_1.NameValue(id_i,"civil_register_number") = ds_1.NameValue(id_i,"jumin_number")
+					l_etc_insert()
+				}
+				else {
+				// update
+					l_etc_update()
+				}
+				
+	   	}  // end for
+	   	
+			alert("정상 처리 되었습니다")
+			btnquery_onclick()	   
+	   }
+ 	} 
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+
+{
+	btnsave_onclick()  // 수정했으면 저장 처리
+top.frames['main_ct'].location.href(ls_arg)
+top.frames['main_title'].div_r.style.visibility="hidden"             
+top.frames['main_title'].div_u.style.visibility="hidden"             
+
+// top.frames['main_ct'].window.close()     
+}
+
+//---------------------------------------------------------------------------
+function dept_code_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	result = f_dept_code_find(dept_name.value)
+	if (result==false)return
+	
+	is_dept_code = top.frames['security'].gs_dept_code.value
+	is_dept_name = top.frames['security'].gs_dept_name.value
+
+	dept_name.value = is_dept_name
+	btnquery_onclick()
+}     
+
+//-------------------------------------------------------------------------------
+function select_yymm()                  //년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_date = em_select_yymm.text.substr(0,4) + "." + em_select_yymm.text.substr(5,2)  + ".01"
+   ds_1.ClearData()
+   btnquery_onclick()
+
+//   makeCookie("@l_labor_daily_work_1h@",is_work_date)
+ 
+}   
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+	is_work_date = f_sysdate()
+	
+	dept_name.value = is_dept_name
+	em_select_yymm.text = is_work_date
+	
+	select_yymm()
+}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnKeyPress(kcode)>
+//if (kcode == 13) {
+//    if (ds_1.RowPosition == ds_1.CountRow)  
+//        btnadd_onclick()
+//    else     
+//        ds_1.RowPosition++
+//}
+
+var ls_col
+if (kcode == 13) { 
+   gd_1.Focus();
+   ls_ret = f_enter_key(gd_1.GetColumn(),'bonus_amt@meal_amt@etc_amt@people_pension@employ_ins@health_ins@etc_deduct_amt')
+   if (ls_ret == "err") return
+   if (ls_ret == "last") {
+	    if (ds_1.RowPosition == ds_1.CountRow)  
+	        btnadd_onclick()
+	    else     
+	         ds_1.RowPosition++
+	}         
+   if (ls_ret == 'last') ls_ret = 'bonus_amt'
+   gd_1.Setcolumn(ls_ret)       
+}
+
+</SCRIPT>
+
+</HEAD>
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript  event=OnColumnChanged(row,colid) for=ds_1>
+	// 지급액(지급총액, 보너스, 식대, 퇴직금)
+	ld_pay_amt    = ds_1.NameValue(row,"pay_amt")
+	ld_bonus_amt  = ds_1.NameValue(row,"bonus_amt")
+	ld_meal_amt   = ds_1.NameValue(row,"meal_amt")
+	ld_etc_amt    = ds_1.NameValue(row,"etc_amt")
+
+	// 공제액(갑근세, 주민세, 국민연금, 고용보험, 건강보험료, 기타공제액)
+	ld_income_tax      = ds_1.NameValue(row,"income_tax")
+	ld_civil_tax       = ds_1.NameValue(row,"civil_tax")
+	ld_people_pension  = ds_1.NameValue(row,"people_pension")
+	ld_employ_ins      = ds_1.NameValue(row,"employ_ins")
+	ld_health_ins      = ds_1.NameValue(row,"health_ins")
+	ld_etc_deduct_amt  = ds_1.NameValue(row,"etc_deduct_amt")
+
+	// 실지급액 : 지급총액 - 공제액
+	ld_netpay_amt = (ld_pay_amt + ld_bonus_amt  + ld_meal_amt  + ld_etc_amt) 
+             - (ld_income_tax + ld_civil_tax + ld_people_pension + ld_employ_ins + ld_health_ins + ld_etc_deduct_amt)
+
+	ds_1.NameValue(row,"netpay_amt")    = ld_netpay_amt;
+
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+   if (em_select_yymm.Modified){ 
+	   select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>   
+
+<BODY style="FONT-SIZE: 12px" onload=window_onload() oncontextmenu="return false" >
+<OBJECT id=ds_1 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE=""></OBJECT>	
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_close_check 
+    style="Z-INDEX: 108; LEFT: 319px; POSITION: absolute; TOP: 7px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT>
+<DIV id=hdept_page_1 
+         style="Z-INDEX: 111; LEFT: 4px; WIDTH: 255px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">현장명</div></td>
+             <td >
+						<INPUT id=dept_name style=" FONT-SIZE: 12px;" size=25 onkeyDown="keyDown()">
+						<input type="button_query" value=" 검색" 
+					        style="color:#2E4A4A; font-size:13px;  CURSOR: hand; width=40px;
+					        background-color:#E9F5F5; border:1 #A1A9A9 solid; height:20px"   
+					        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+					        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+					        "  onclick=dept_code_find()>
+         </tr>                 
+      </table>
+</DIV>      
+<LABEL id=Label_2  
+    	style="WIDTH: 75px; LEFT: 280px;POSITION: absolute; HEIGHT: 25px; TOP:9px">&nbsp;&nbsp;년월:
+</LABEL>
+<OBJECT id=em_select_yymm 
+       style="Z-INDEX: 101; LEFT: 350px; WIDTH: 80px; POSITION: absolute; TOP: 5px; HEIGHT: 20px" 
+      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+	    <PARAM NAME="Alignment" VALUE="1">
+	    <PARAM NAME="IsComma" VALUE="0">
+	    <PARAM NAME="MaxLength" VALUE="8">
+	    <PARAM NAME="Format" VALUE="YYYY-MM">
+            <param name=ClipMode       value=false>
+	    <PARAM NAME="Numeric" VALUE="0">
+	    <PARAM NAME="SelectAll" VALUE="-1">
+</OBJECT>
+<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+	if(!is_null(result)){ em_select_yymm.text = result.substr(0,8);} ; select_yymm()" 
+       style=" LEFT: 430px; WIDTH: 20px; POSITION: absolute; TOP: 5px; HEIGHT:20px">
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 30px; HEIGHT: 620px" 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AutoInsert" VALUE="-1">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	     <PARAM  NAME="ViewSummary"    value=1>
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <C> Name='출 역 자' ID=labor_name  Edit=None  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=56 
+            SumText='합 계'  SumColor=Black SumBgColor=Pink   </C>
+	  <C> Name='주민번호' ID=jumin_number  Edit=None  Align=Center Mask='XXXXXX-XXXXXXX' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=90 </C>
+	  <C> Name='공수'     ID=dailywork  Edit=None  Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=50 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink  </C>
+	  <G> Name='지급내역' HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+	  <C> Name='임금'   ID=pay_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=80 
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='상여금'   ID=bonus_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='식대'   ID=meal_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='퇴직금'   ID=etc_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=80 
+	  			SumText=@sum  SumColor=Black SumBgColor=Pink  </C>
+	  <G> Name='공제내역' HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+	  <C> Name='소득세'   ID=income_tax  Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=70 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink  </C>
+	  <C> Name='주민세'   ID=civil_tax Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=60 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='국민연금'   ID=people_pension  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='고용보험'   ID=employ_ins  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='건강보험'   ID=health_ins  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='기타공제'   ID=etc_deduct_amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=60 
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  </G>	  			
+	  <C> Name='실지급액' ID=netpay_amt Edit=None  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   BgColor=#F2F2F2 Width=80
+	  			SumText=@sum SumColor=Black SumBgColor=Pink </C>
+	  ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</DIV>
+</BODY></HTML>
+

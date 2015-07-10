@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : r_proj_above_select_1h								-->
+<!-- 2. 유형(시나리오): 조회															-->
+<!-- 3. 기 능 정 의   : 상위부서 찾기 											-->
+<!-- 4. 변 경 이 력   :  박두현 작성																		-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="/erpw/erpw.css">
+<TITLE> 부서 조직도  </TITLE>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var is_ds_1_addr = 'r_proj_above_select_1q.jsp'
+var is_confirm_check = 'no'    //복사할것인지 check no는 복사를 안하겠다.
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+ds_1.SyncLoad=true
+ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+  if  ((ds_1.CountRow == ds_1.RowPosition) ||
+       (ds_1.NameValue(ds_1.RowPosition ,"level1") >= ds_1.NameValue(ds_1.RowPosition + 1,"level1"))){}
+  else {
+      alert("최종 하위조직이 아닙니다. 최종하위조직을 선택하십시요")
+      return       
+  }
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ls_return + ds_1.NameValue(ds_1.RowPosition,'dept_seq_key') + '@' + ds_1.NameValue(ds_1.RowPosition,'title_name') +
+                         '@' + ds_1.NameValue(ds_1.RowPosition,'comp_code') 
+    
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ds_1.DataID = is_ds_1_addr
+
+btnquery_onclick()
+
+}
+
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+</SCRIPT>
+
+<script language=JavaScript for=gd_1 event=OnRButtonDown(row,colid,xpos,ypos)>
+
+</script>
+<script language=JavaScript for=tree_1 event=OnDblClick()>
+Button_confirm_onclick()
+</script>
+
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=window_onload() onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<input type="button" value="확인" 
+       style="color:#2E4A4A; font-size:13px; POSITION: absolute;TOP:5px; LEFT:20px; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+        "  onclick=Button_confirm_onclick()>
+<input type="button" value="닫기" 
+       style="color:#2E4A4A; font-size:13px;POSITION: absolute; TOP:5px; LEFT: 200px; CURSOR: hand;
+        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+         onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+         onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+       "  onclick=Button_close_onclick()>
+    
+<comment id="__NSID__"><OBJECT id=tree_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 104; LEFT: 10px; WIDTH: 260px; POSITION: absolute; TOP: 25px; HEIGHT: 506px"  
+    classid=clsid:4401B994-DD33-11D2-B539-006097ADB678 >
+	<PARAM NAME="DataID" VALUE="ds_1">
+	<PARAM NAME="LinesAtRoot" VALUE="0">
+	<PARAM NAME="SingleExpand" VALUE="-1">
+	<PARAM NAME="TextColumn" VALUE="title_name">
+	<PARAM NAME="TypeColumn" VALUE="1">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="LevelColumn" VALUE="level1">
+	<PARAM NAME="Enable" VALUE="-1">
+	<PARAM NAME="ImgDataID" VALUE="ds_1">
+	<PARAM NAME="BorderStyle" VALUE="2"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+
+</BODY></HTML>

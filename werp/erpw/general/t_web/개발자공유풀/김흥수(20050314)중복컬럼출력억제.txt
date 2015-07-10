@@ -1,0 +1,51 @@
+중복되는 컬럼의 출력을 억제하기 단 분석함수 안쓰고
+
+select
+	x.deptno x_deptno,
+	y.deptno y_deptno,
+	decode(x.deptno,y.deptno,null,x.deptno) deptno,
+	x.empno,
+	x.ename,
+	x.rn,
+	y.rn
+from
+	(
+		select deptno,empno,ename,rownum rn
+		from
+		(
+			select deptno,empno,ename 
+			from emp
+			order by deptno,empno
+		)
+	)	 x,
+	(
+		select deptno,empno,ename,rownum rn
+		from
+		(
+			select deptno,empno,ename 
+			from emp
+			order by deptno,empno
+		)
+	) y
+where	x.rn - 1 = y.rn (+)
+/
+  X_DEPTNO   Y_DEPTNO DEPTNO     EMPNO ENAME      RN     RN
+---------- ---------- ---------------- ------------- ------
+        10            10          7782 CLARK       1
+        10         10             7839 KING        2      1
+        10         10             7934 MILLER      3      2
+        20         10 20          7369 SMITH       4      3
+        20         20             7566 JONES       5      4
+        20         20             7788 SCOTT       6      5
+        20         20             7876 ADAMS       7      6
+        20         20             7902 FORD        8      7
+        30         20 30          7499 ALLEN       9      8
+        30         30             7521 WARD       10      9
+        30         30             7654 MARTIN     11     10
+
+  X_DEPTNO   Y_DEPTNO DEPTNO     EMPNO ENAME      RN     RN
+---------- ---------- ---------------- ------------- ------
+        30         30             7698 BLAKE      12     11
+        30         30             7844 TURNER     13     12
+        30         30             7900 JAMES      14     13
+        

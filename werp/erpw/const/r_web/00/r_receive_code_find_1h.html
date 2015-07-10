@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : r_receive_code_find_1h.html 					-->
+<!-- 2. 유형(시나리오): 입찰정보 찾기							-->
+<!-- 3. 기 능 정 의   : 								-->
+<!-- 4. 변 경 이 력   : 김동우 작성						-->
+<!-- 5. 관련프로그램  :																						-->
+<!-- 6. 특 기 사 항   :																							-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE> 수주코드 찾기 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'r_receive_code_find_1q.jsp'
+var is_confirm_check = 'no'
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript>
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		btnquery_onclick();
+	} 
+}
+
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+  ds_1.DataID =  is_ds_1_addr + "?arg_name=" + Textbox_1.value 
+  ds_1.SyncLoad=true
+  if  (Textbox_1.value == "") {
+//     alert("검색조건을 반드시 입력하십시요")
+     Textbox_1.value=""
+//     return
+  }      
+  ds_1.reset()
+
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //확인
+//--------------------------------------------------------------------
+{
+	if ( ds_1.RowPosition < 1 ) {
+		Button_close_onclick()
+		return
+	}
+  is_confirm_check = 'yes'
+  var ls_return=""
+  ls_return = ds_1.NameValue(ds_1.RowPosition,'receive_code') + '@'  +
+              ds_1.NameValue(ds_1.RowPosition,'name') + '@'  +   
+              ds_1.NameValue(ds_1.RowPosition,'order_name') + '@'  +   
+              ds_1.NameValue(ds_1.RowPosition,'survey_amt') + '@'  +   
+              ds_1.NameValue(ds_1.RowPosition,'tender_date') + '@'
+              
+ window.returnValue = ls_return
+ window.close();
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+ var result;
+ var array = new Array();
+ result = window.dialogArguments;
+ 
+ Textbox_1.value = result         // 0: 찾고자하는 값.
+ //if (result == "") return 
+ btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+	ds_1.RowPosition=row
+	Button_confirm_onclick()
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style="Z-INDEX: 101; LEFT: 156px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 ></OBJECT></comment> <script> __ws__(__NSID__);</script>
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+<BODY style="FONT-SIZE: 12px; margin: 0px;" onload=window_onload()  onunload=window_onunload() oncontextmenu="return false" scroll="no">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLSPACING="0">
+	<TR height="20px">
+		<TD>
+			<table border="0" cellpadding="0" cellspacing="0" class=main_table>
+				<tr>
+					<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="45px">공사명</td>
+					<td width="160px">
+						<INPUT id=Textbox_1 onkeyDown="keyDown()"></td>
+					<td width="70">
+						<INPUT id=Button_query nclick=btnquery_onclick() type=button value='조회' class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+					</td>
+					<td width="*">&nbsp;</td>
+					<td width="150" align="right">
+						<INPUT id=Button_confrim  onclick=Button_confirm_onclick() type=button value='확인' class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+						<INPUT id=Button_close onclick=Button_close_onclick() type=button value='닫기' class=img_btnFind onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;</td>
+				</tr>
+			</table>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+				style="Z-INDEX: 105; LEFT: 10px; width: 100%; height: 100%;" 
+				classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+					<PARAM NAME="AutoInsert"       VALUE="0">
+					<PARAM NAME="AllShowEdit"      VALUE="0">
+					<param name="MultiRowSelect"   value="0">
+					<PARAM NAME="BorderStyle"      VALUE=1>
+					<PARAM NAME="Editable"         VALUE="0">
+					<PARAM NAME="ColSizing"        VALUE="-1">
+					<PARAM NAME="DataID"           VALUE="ds_1">
+					<PARAM NAME="Format"           VALUE="
+						<C> Name='수주코드' ID=receive_code Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+						<C> Name='공사명' ID=name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=190 </C>
+						<C> Name='발주처' ID=order_name HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=180 </C>
+						<C> Name='입찰일자' ID=tender_date Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+						<C> Name='공사위치' ID=const_position HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=200 </C>
+					">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</TD>
+	</TR>
+</TABLE></DIV>
+</BODY></HTML>

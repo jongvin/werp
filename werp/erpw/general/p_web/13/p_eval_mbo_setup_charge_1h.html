@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_eval_mbo_setup_charge_1h.html             	-->
+<!-- 2. 유형(시나리오): 조회 및 입력											-->
+<!-- 3. 기 능 정 의   : MBO 목표수립 현황(담당임원용)	               -->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															   -->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_emp_no = top.frames['security'].empno.value		//1차평가자
+var is_eval_year		//평가년도
+var is_focus_enter='N'
+var is_ds_1_addr = gs_home + '/general/p_web/13/p_eval_mbo_setup_charge_1q.jsp?arg_eval_year='         
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	
+	ds_1.DataID = is_ds_1_addr + is_eval_year  + "&arg_self_dept=" + ccom_dept_code.CodeValue 
+   ds_1.SyncLoad=true
+	ds_1.Reset()
+	
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated) {
+  	 if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+  	    {  //저장 routine
+  	    }   
+  }     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_eval_year = em_select_date.text.substr(0,4) + '.01.01'
+   ds_1.ClearData()
+   btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function name_keyDown()                       //부서 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		dept_code_find();
+	} 
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = 'MBO 목표수립 [' + is_work_date + ']'
+ gd_1.RunExcelSheet(temp_1)
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+  top.frames['main_title'].mouse_over()
+  
+  is_work_date = f_sysdate()
+  em_select_date.text = is_work_date.substr(0,4) 
+  is_eval_year = em_select_date.text + '.01.01'
+
+  ll_cnt = f_ds_select_q("ds_dept","select a.dept_code select_1, b.long_name select_2 " +
+  								           "  from z_code_chg_dept_content a, z_code_dept b " +
+  								           " where a.dept_code = b.dept_code " +
+  								           "   and a.charge_emp_no = '" + is_emp_no + "' " +
+  								           " order by a.dept_code")		//사업체
+
+  btnquery_onclick()
+}
+</SCRIPT>
+<script language=JavaScript for=ccom_dept_code event=onCloseUp()>
+	btnquery_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_date event=onKillFocus()>
+	if (is_focus_enter == em_select_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_date event=onKeyDown(kcode,scode)>
+	if (kcode == 13 ){ 
+	   is_focus_enter=em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnDblClick(row,colid)>
+  var ls_sort
+  if (row == 0) {
+  		if (ls_sort == "+" + colid)
+   	  ds_1.SortExpr = "-" + colid;
+  	   else
+   	  ds_1.SortExpr = "+" + colid;
+   	  
+  	  ls_sort = ds_1.SortExpr;
+  	  ds_1.Sort();
+  	  return
+  }   
+	
+	if  (ds_1.RowPosition < 1) return
+ 	
+ 	var result;
+	var send_arg;
+	var array = new Array();
+	
+	ls_self_evaluator 	= ds_1.NameValue(row,"self_evaluator")	//피평가자
+	ls_self_dept_name 	= ds_1.NameValue(row,"self_dept_name")	//피평가자 부서명
+	ls_self_grade_name 	= ds_1.NameValue(row,"self_grade_name")	//피평가자 직위명
+	ls_fir_agree_yn 		= ds_1.NameValue(row,"fir_agree_yn")			//1차평가자 합의여부
+	
+	if (ls_fir_agree_yn != 'Y'){
+ 		alert('합의된 자료만 확인하실 수 있습니다.')
+ 		return
+ 	}
+
+	send_arg = is_eval_year 		+ '@' + ls_self_evaluator 		+ '@' +
+	           ls_self_dept_name  + '@' + ls_self_grade_name  	+ '@' + 
+				  ls_fir_agree_yn 	+ '@' + gs_home					+ '@' + 
+				  'charge'				+ '@' + ccom_dept_code.CodeValue
+	
+	
+	//1차 평가 이동
+	result = window.showModalDialog(gs_home + "/general/p_web/13/p_eval_mbo_setup_agree_1h.html",
+												send_arg,"dialogWidth:1015px;dialogHeight:680px");													
+	
+</script>
+<BODY  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code ds_update: " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+
+</HEAD>
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+</OBJECT>	
+<OBJECT id=ds_dept
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_select
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=ds_update 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 2px; WIDTH: 500px; POSITION: absolute; TOP: 2px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1" CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="10%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">평가년도</div></td>
+          	 <td width="11%" >
+			       <OBJECT id=em_select_date style="WIDTH: 60px " 
+					      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+						    <PARAM NAME="Alignment" VALUE="1">
+						    <PARAM NAME="IsComma" VALUE="0">
+						    <PARAM NAME="MaxLength" VALUE="4">
+						    <PARAM NAME="Format" VALUE="YYYY">
+					       <param name=ClipMode  value=false>
+						    <PARAM NAME="Numeric" VALUE="0">
+						    <PARAM NAME="SelectAll" VALUE="-1">
+					</OBJECT>
+				 	<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+						if(!is_null(result)){ em_select_date.text = result.substr(0,4);} ; select_yymm()"
+						style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+				<td width="9%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+               <div align="right">&nbsp부서</div></td>
+          	<td width="20%" >
+	       		<OBJECT id=ccom_dept_code style="WIDTH: 250px; color=#CC3333"
+			      	    classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+			       <PARAM NAME="ComboDataID" VALUE="ds_dept">
+		          <PARAM NAME="CodeCColumn" VALUE="select_1">
+		          <PARAM NAME="DataCColumn" VALUE="select_2">
+		          <param name=Auto       value=true>
+		          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></td>		        
+         </tr>                 
+      </table>
+</DIV>
+<DIV id=gd_1_button 
+		style="Z-INDEX: 107; LEFT: 800px; WIDTH: 300px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=button_excel type="button" value="엑셀로 내려받기" 
+        style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';font-size: 10pt; border:1 solid #000000; CURSOR: hand; 
+            border:1 #A1A9A9 solid WIDTH: 70px;"   
+            onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+            onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+           "  onclick=excel_down()>	
+</div>
+<OBJECT id=gd_1 
+    style="FONT-SIZE: 12px; Z-INDEX: 102; LEFT: 2px; WIDTH: 1005px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+	<PARAM NAME="Editable" VALUE="-1">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <FG> Name='피평가자' HeadBgColor=#BBE0F4  HeadColor=BLACK   >		
+		  <FC> Name='피평가자'  id=self_evaluator_name  Edit=None  width=80  BgColor=#ffffcc  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </FC>
+		  <FC> Name='사번'      id=self_evaluator      Edit=None  width=80  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </FC>
+		  <FC> Name='직위'  		id=self_grade_name  Edit=None width=70  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </FC>
+		  <C> Name='부서'  		id=self_dept_name  Edit=None width=100  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='제출여부'  	id=self_present_yn  Edit=None width=60 EditStyle=Combo Data='Y:제출,N:미제출' align=center BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='제출일'  	id=self_present_date  Edit=None width=80 EditStyle=Combo align=center BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		</FG>
+		<G> Name='1차평가자' HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+		  <C> Name='1차평가자' 	id=fir_evaluator_name  Edit=None width=70  BgColor=#ffffcc  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='사번'      id=fir_evaluator      Edit=None  width=80  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='직위' 		id=fir_grade_name  Edit=None width=60  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='부서' 		id=fir_dept_name  Edit=None width=90  BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='합의여부'  	id=fir_agree_yn  Edit=None width=60 EditStyle=Combo Data='Y:합의,N:'',R:반송' align=center BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		  <C> Name='합의일'  	id=fir_agree_date  Edit=None width=80 EditStyle=Combo align=center BgColor=#F2F2F2  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Cursor=Hand </C>
+		</G>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT>
+</BODY></HTML>

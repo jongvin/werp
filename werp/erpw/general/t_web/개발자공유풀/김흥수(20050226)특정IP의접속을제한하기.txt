@@ -1,0 +1,76 @@
+Create Or Replace Procedure KillSession
+(
+	asKill				Varchar2
+)
+Is
+  pragma autonomous_transaction;
+Begin
+	execute immediate ' alter System kill Session '||asKill; 
+End;
+/
+Create Or Replace Procedure ReceiveKillMessage
+Is
+     n NUMBER;
+     chr VARCHAR2(200);   
+Begin
+	Loop
+		n := DBMS_PIPE.RECEIVE_MESSAGE('kill_pipe');
+		DBMS_PIPE.UNPACK_MESSAGE(chr);
+		KillSession(chr);
+	End Loop;
+End;
+/
+Create Or Replace Procedure SendKillMessage
+(
+	asKill				Varchar2
+)
+Is
+     n NUMBER;
+     chr VARCHAR2(200);   
+Begin
+	DBMS_PIPE.PACK_MESSAGE(asKill);
+	n := DBMS_PIPE.SEND_MESSAGE('kill_pipe');
+End;
+/
+
+
+Create Or Replace Trigger user_logon_trg
+after logon
+on database
+Declare
+  liSid			Number;
+  liSerial		Number;
+Begin
+	if user = 'CALLUSER' /*And Ora_Client_Ip_Address() = '' */ Then
+		Select
+			sid,serial#
+		Into
+			liSid,liSerial
+		From	v$Session
+		Where	UserName = User
+		And		audsid = UserEnv('SESSIONID');
+		SendKillMessage(''''||To_Char(liSid)||','||To_Char(liSerial)||'''');
+	End If;
+end;
+/
+grant all on SendKillMessage to calluser;
+create synonym calluser.SendKillMessage for sys.SendKillMessage;
+
+
+
+
+
+
+
+Create Or Replace Trigger user_logon_trg
+after logon
+on database
+Declare
+  liSid			Number;
+  liSerial		Number;
+Begin
+	insert into ip_log(ip_addr) values (Ora_Client_Ip_Address);
+end;
+/
+
+

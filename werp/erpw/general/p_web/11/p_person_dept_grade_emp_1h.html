@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************	-->
+<!-- 1. 프로그램 id   : p_person_dept_grade_1h.html                 	-->
+<!-- 2. 유형(시나리오): 조회														-->
+<!-- 3. 기 능 정 의   : 부서/직위별 인원현황          	    			-->
+<!-- 4. 변 경 이 력   : 장희선 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :																-->
+<!-- *************************************************************	-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+var is_comp_code
+var is_work_date
+var is_dept_code
+var il_nindex = 1
+var is_focus_enter='N'
+var is_ds_1_addr = gs_home + '/general/p_web/11/p_person_dept_grade_emp_1q.jsp?arg_date='
+var is_ds_temp_addr = gs_home + '/general/p_web/11/p_person_dept_grade_emp_1q.jsp?arg_date='
+var is_grade_name = new Array();
+var il_grade_length = new Array();
+//------------------------------------------------------------------------
+function ds_temp_btnquery_1_onclick()                     // 년도별 소계를 구하기위해 header정보 가져오기    
+//------------------------------------------------------------------------
+{
+	if (f_check_date(is_work_date) == false){
+    	alert('기준일이 날짜 형식에 맞지 않습니다')
+   	return
+  	}
+
+	
+	ds_temp.DataID = is_ds_1_addr + is_work_date + "&arg_comp_code=" +'%'
+//	ds_temp.DataID = is_ds_1_addr + '1900.01.01' + "&arg_comp_code=" + '01'
+	ds_temp.SyncLoad=true
+	ds_temp.Reset()
+   
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	if (f_check_date(is_work_date) == false){
+     	alert('기준일이 날짜 형식에 맞지 않습니다')
+   	return
+  	}
+    
+
+	ds_1.DataID = is_ds_1_addr + is_work_date + "&arg_comp_code=" + is_comp_code
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+	if (ds_1.CountRow < 1) {  // 데이타가 없을경우
+	   ds_temp.ClearData()
+	   return
+	}   
+	ds_1_cal()           // 명칭 재조합
+	rds_1.DataID='ds_temp'
+	rds_1.Reset()
+	cal_width_length()   // 직급별 길이조정.
+}
+//------------------------------------------------------------------------
+function ds_1_cal()                     // 명칭 재조합  
+//------------------------------------------------------------------------
+{
+  
+  var sa_dept_code=''
+  var sa_grade_name
+  var cal_emp_name
+  var cal_count
+  ds_temp.ClearData()
+  cal_width=0
+  i=1       // ds_1의 로우를 한로우씩 더함....
+  is_grade_name = new Array();
+  il_grade_length = new Array();
+  // 전체 그룹 전처리 
+  while (sa_dept_code != 'last') {
+      // 그룹 전처리 
+      ds_temp.AddRow()
+      sa_dept_code = ds_1.NameValue(i,'dept_short_name')
+      sa_grade_name = ds_1.NameValue(i,'grade_name')
+      cal_emp_name=''
+      cal_cnt=0         // 동일부서 동일 직급 인원수구하기 
+      cal_length=0      // 한글성명 길이 구하기 
+      
+      while(sa_dept_code == ds_1.NameValue(i,'dept_short_name') &&  sa_grade_name == ds_1.NameValue(i,'grade_name')) {
+         // 그룹 세부처리 
+         ll_temp = ds_1.NameValue(i,'emp_name')        // 순수 한글길이를 구하기위함. 
+         cal_length = cal_length + ll_temp.length            // 순수 한글길이를 구하기위함.
+         cal_emp_name = cal_emp_name + ds_1.NameValue(i,'emp_name') + ','
+         cal_cnt = cal_cnt + 1
+         i++
+         if (i > ds_1.CountRow)  {
+              sa_dept_code = 'last'
+         }     
+       }
+       // 그룹 후처리 
+        cal_emp_name = cal_emp_name.substr(0,cal_emp_name.length - 1)
+          // cross-tab을 width을 재조정하기위해서 각 직급별 최대 길이를 구한다.
+
+         k=0   // is_grade_name array에 존재하는지 (match되었는지) 여부 체크 
+         for (j=0;j<is_grade_name.length;j++) {
+             if (is_grade_name[j] == sa_grade_name) {
+                k=1                              // 존재하면 1로 셋팅 
+                if (cal_length > il_grade_length [j]) {
+                    il_grade_length[j] = cal_length
+                }    
+             }   
+         }
+         if (k == 0) {  // not match
+            is_grade_name[is_grade_name.length] =  sa_grade_name
+            il_grade_length[il_grade_length.length] = cal_length
+         }   
+       
+         ds_temp.NameValue(ds_temp.RowPosition,'comp_code_1')    	=  ds_1.NameValue(i-1,'comp_code_1')
+         ds_temp.NameValue(ds_temp.RowPosition,'dept_code')    	=  ds_1.NameValue(i-1,'dept_code')
+         ds_temp.NameValue(ds_temp.RowPosition,'dept_short_name') =  ds_1.NameValue(i-1,'dept_short_name')
+         ds_temp.NameValue(ds_temp.RowPosition,'dept_name')    	= ds_1.NameValue(i-1,'dept_name')
+         ds_temp.NameValue(ds_temp.RowPosition,'grade_code')    	= ds_1.NameValue(i-1,'grade_code')
+         ds_temp.NameValue(ds_temp.RowPosition,'grade_name')    	= sa_grade_name
+         ds_temp.NameValue(ds_temp.RowPosition,'emp_name')    		= cal_emp_name
+         ds_temp.NameValue(ds_temp.RowPosition,'cnt')    			= cal_cnt
+  }
+  // 전체 그룹 후처리 
+}
+//------------------------------------------------------------------------
+function cal_width_length()   // 직급별 길이조정.  
+//------------------------------------------------------------------------
+{
+   var ls_grade_title
+     for (i=1;i<=200;i++) {          // cross의 해더 정보 셋팅 
+      ls_grade_title = rds_1.NameValue(1,'xkeyname_' +  i )
+      if (ls_grade_title == null) break
+      
+      for (j=0;j<is_grade_name.length;j++) {
+          if (is_grade_name[j] == ls_grade_title) {
+              ll_length = il_grade_length[j] * 15
+              if (ll_length < 65) ll_length = 65
+          	  gd_1.ColumnProp('emp_name_' + i, 'Width') = ll_length 
+          }	  
+      }
+  }   
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_2.IsUpdated){
+    if  (confirm("변경되었습니다 저장하시겠습니까?"))
+        tr_2.Post()
+ } 
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   is_work_date = em_select_date.text
+   btnquery_onclick()
+}   
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = '부서직위별 인원현황 [' + is_work_date + ']'
+ gd_1.RunExcelSheet(temp_1)
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_work_date = f_sysdate()
+	em_select_date.text = is_work_date
+	ll_cnt = f_ds_select_q("ds_select", " select comp_code select_1, comp_name select_2 from z_code_comp order by comp_code")
+	ccom_comp_code.Index = 0
+	is_comp_code = ccom_comp_code.CodeValue
+  
+      ds_temp_btnquery_1_onclick()	
+	  btnquery_onclick()	
+
+
+}
+//---------------------------------------------------------------------
+function get_focus(focus)   // 각각의 gd에 focus를 부여함.
+//---------------------------------------------------------------------
+{
+	il_screen = focus
+}
+</SCRIPT>
+
+<script language=JavaScript for=ccom_comp_code event=onCloseUp()>  // 사업체 변경시 재조회
+   is_comp_code = ccom_comp_code.CodeValue
+  	btnquery_onclick()
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_date event=onKillFocus()>
+	if (is_focus_enter == em_select_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_date event=onKeyDown(kcode,scode)>
+   if (kcode == 13){ 
+		is_focus_enter=em_select_date.text
+		select_yymm()
+	}
+</SCRIPT>   
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code ds_1: " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+        <param name=SortExpr     value="+dept_code+grade_code">
+</OBJECT>
+<OBJECT id=ds_temp 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+        <param name=SortExpr     value="+dept_code+grade_code">
+</OBJECT>
+<OBJECT id=ds_select 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<object classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 id=rds_1>
+    <param name=Logical value=true>
+    <param name=DataID  value="">
+   <param name=GroupExpr    value="dept_code:dept_short_name,grade_name,emp_name:cnt">   
+</object>
+
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 3px; WIDTH: 225px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td  BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="center">&nbsp사업체</div></td>
+          	 <td >
+	       <OBJECT id=ccom_comp_code style="WIDTH: 170px; color=#CC3333"
+	               classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+		       <PARAM NAME="ComboDataID" VALUE="ds_select">
+	          <PARAM NAME="CodeCColumn" VALUE="select_1">
+	          <PARAM NAME="DataCColumn" VALUE="select_2">
+	          <param name=Auto       value=true>
+	          <param name=CodeColumn value=comp_code>
+	          <PARAM NAME="Enable" VALUE="-1" ></OBJECT></td>
+         </tr>                 
+      </table>
+</DIV>      
+<DIV id=hdept_page_2
+         style="Z-INDEX: 111; LEFT: 240px; WIDTH: 160px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">기준일</div></td>
+          	 <td width="63%" >
+		     <OBJECT id=em_select_date style="WIDTH: 80px " 
+		      classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+			    <PARAM NAME="Alignment" VALUE="1">
+			    <PARAM NAME="IsComma" VALUE="0">
+			    <PARAM NAME="MaxLength" VALUE="8">
+			    <PARAM NAME="Format" VALUE="YYYY.MM.DD">
+		            <param name=ClipMode  value=false>
+			    <PARAM NAME="Numeric" VALUE="0">
+			    <PARAM NAME="SelectAll" VALUE="-1">
+		      </OBJECT>
+		      <img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+			if(!is_null(result)){ em_select_date.text = result.substr(0,10);} ; select_yymm()"
+			style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+
+<DIV id=gd_2_button 
+style="Z-INDEX: 107; LEFT: 870px; WIDTH: 100px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+<input id=bt_excel_gd_parent_query type="button" value="엑셀로 내려받기" 
+			style="color:#2E4A4A; font-size:13px;  WIDTH=100px; CURSOR: hand;
+			background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+			onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+			onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+			"  onclick=excel_down()>
+</DIV>
+
+<OBJECT id=gd_1 
+    style="POSITION: absolute; LEFT: 2px;TOP: 35px;  WIDTH: 1005px; POSITION: absolute; HEIGHT: 99%; Z-INDEX: 102;FONT-SIZE: 12px " 
+    classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="-1">
+   <PARAM NAME="BorderStyle"  VALUE=2>
+	<param name="ViewSummary"    value=1>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+	  <FC> Name='부서코드'    id=dept_code  Edit=None width=50  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </FC>
+     <FC> Name='부서'    id=dept_short_name  Edit=None width=200  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+             SumText='합 계'  SumColor=Black SumBgColor=Pink </FC>
+	  <R>	
+             <C>name=$xkeyname_$$ ID=emp_name_$$   Edit=None align=center  width=60  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}    HeadBgColor=#BBE0F4  HeadColor=BLACK
+	              SumText={sum(cnt_$$)}  SumColor=Black SumBgColor=Pink </C>
+     </R>       
+     <C> Name='합계'    id=cnt  value={CrossTabSum(cnt)} align=center width=60  BgColor=silver  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+          SumText={sum(CrossTabSum(cnt))}  SumColor=Black SumBgColor=Pink  </C>
+	  ">
+   <PARAM NAME="DataID" VALUE="rds_1"></OBJECT>
+
+</BODY></HTML>

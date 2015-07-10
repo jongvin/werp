@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : g_efin_eis_project_is_1h.html 	-->
+<!-- 2. 유형(시나리오): 조회										-->
+<!-- 3. 기 능 정 의   : 재무정보) 프로젝트별 손익계산서   	-->
+<!-- 4. 변 경 이 력   :  박두현 작성												-->
+<!-- 5. 관련프로그램  :																-->
+<!-- 6. 특 기 사 항   :															-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = top.frames['security'].gs_home.value
+var is_empno = top.frames['security'].empno.value
+var is_sysdate = top.frames['security'].gs_sysdate.value
+
+var is_ds_1_addr = gs_home + '/const/g_web/05/g_efin_eis_is_ytd_1q.jsp?arg_group_id='         
+var is_proj_code=""
+var is_error_code=""
+var il_group_id=""
+//------------------------------------------------------------------------
+function retrieve()                     // 조회  
+//------------------------------------------------------------------------
+{
+	sp_call()
+ 
+ if (ds_update.CountRow == 0 || ds_update.NameValue(1,'group_id') == 'error') {
+    alert('생성시 에러 발생')
+    return
+ }
+ gd_1.redraw=false
+ ds_1.DataID = is_ds_1_addr + ds_update.NameValue(1,'group_id') 
+ ds_1.SyncLoad=true
+ ds_1.Reset()
+ gd_1.redraw=true
+
+  ll_cnt = f_update_sql("delete from efin_eis_is_ytd where group_id = " + ds_update.NameValue(1,'group_id') + " ")	
+
+}
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+ document.all.LowerFrame.style.visibility="visible"; 
+ //alert('aa')
+ setTimeout('retrieve()',1);
+ 
+}
+//-----------------------------------------------------------------
+function sp_call()               // 프로젝트 손익계산서 생성 프로시져. 
+//------------------------------------------------------------------
+{
+   
+   ds_update.DataID = 'g_efin_eis_is_ytd_proc.jsp?arg_proj_code=' + ccom_corp_code.CodeValue + 
+                      '&arg_yymm=' + em_select_yymm.text
+   ds_update.SyncLoad = true
+   ds_update.reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	  if (ds_1.IsUpdated) {
+     if  (confirm("변경되었습니다 저장하시겠습니까?")) 
+        {  //저장 routine
+        }   
+ 
+   }     
+
+// parent.frames['main_ct'].window.close()     
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   btnquery_onclick()   
+}   
+
+//---------------------------------------------------------------------------
+function proj_unq_key_find()                       //현장 찾기 
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.showModalDialog(gs_home + "/const/r_web/00/r_a_fi_proj_code_find_1h.html", proj_name.value,"dialogWidth:500px;dialogHeight:500px");
+	if(result == "") return;
+
+    array = result.split("@");
+	 is_proj_code = array[0]
+	 proj_name.value = array[1]
+	 ll_cnt = f_ds_select_q("ds_proj","select max(proj_unq_key) select_1 from r_proj where proj_code = '" + is_proj_code + "' ")
+    top.frames['security'].gs_param.value = ds_proj.NameValue(1,'select_1') + '@' + is_proj_code + '@' + proj_name.value
+	 btnquery_onclick()
+}
+//------------------------------------------------------------------------
+function keyDown()                       //검색어 입력후 enter를 쳤을경우
+//------------------------------------------------------------------------
+{
+	if (window.event.keyCode == 13) { 
+		proj_unq_key_find();
+	} 
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return
+   top.frames['main_title'].mouse_over()
+
+   var result=	 top.frames['security'].gs_param.value
+	var array = new Array();
+
+	array = result.split("@");
+  em_select_yymm.text = is_sysdate.substr(0,7)
+  
+	/*if (array.length >= 2) {
+	   il_proj_unq_key = array[0] 
+      is_proj_code    = array[1]
+	   proj_name.value = array[2]
+      btnquery_onclick()
+   }	*/
+
+	
+
+	ll_cnt = f_ds_select_q("ds_corp","select co_code select_1, co_desc select_2 from efin_corp_v  order by co_code")
+
+	//setTimeout('btnquery_onclick() ',1)
+	btnquery_onclick()
+}
+</SCRIPT>
+
+</HEAD>
+<BODY style="FONT-SIZE: 12px"  onload=setTimeout('window_onload()',1) oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+        if (em_select_yymm.Modified){ 
+	   select_yymm()
+	   }
+</SCRIPT>  
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+        if ((em_select_yymm.Modified) && kcode == 13 ){ 
+	   select_yymm()
+	   }
+</SCRIPT>	   
+<script language=JavaScript for=ccom_corp_code event=OnCloseUp()>
+  select_yymm()
+</script>
+
+<comment id="__NSID__"><OBJECT id=ds_1 
+    style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_proj
+    style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_corp
+    style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update 
+    style=" LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=hdept_page_1 
+         style=" LEFT: 4px; WIDTH: 270px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" > 
+             <td   BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+                 <div align="right">사업체명</div></td>
+             <td >
+						<comment id="__NSID__"><OBJECT id=ccom_corp_code  tabIndex=0 
+				       style="WIDTH: 210px"
+				       classid=clsid:FD4C6571-DD20-11D2-973D-00104B15E56F VIEWASTEXT>
+						 <param name=DisabledBackColor         value="#E1E1E1">
+						<PARAM NAME="Alignment" VALUE="1">
+					   <PARAM NAME="ComboDataID" VALUE="ds_corp">
+					   <PARAM NAME="CodeCColumn" VALUE="select_1">
+					   <PARAM NAME="DataCColumn" VALUE="select_2"></OBJECT></comment> <script> __ws__(__NSID__);</script> </td>
+         </tr>                 
+      </table>
+</DIV>      
+
+  <DIV id=div_title
+         style=" LEFT:350px; WIDTH: 110px; POSITION: absolute; TOP: 2px; HEIGHT: 24px;FONT-SIZE: 12px" >
+	<table width="100%"  height="100%" BORDER="1"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px;HEIGHT: 24px">
+		<tr BGCOLOR="white"> 
+			<td   align="center"  BGCOLOR="#BBE0F4" style="COLOR: BLACK "  > 
+				<div >기준월:</div></td>
+			<td   align="center"  style="COLOR: BLACK "  > 
+             <comment id="__NSID__"><OBJECT id=em_select_yymm 
+                    style=" WIDTH: 55px; " 
+                   classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+             	    <PARAM NAME="Alignment" VALUE="1">
+             	    <PARAM NAME="IsComma" VALUE="0">
+             	    <PARAM NAME="MaxLength" VALUE="6">
+             	    <PARAM NAME="Format" VALUE="YYYY-MM">
+                   <param name=ClipMode       value=false>
+             	    <PARAM NAME="Numeric" VALUE="0">
+             	    <PARAM NAME="SelectAll" VALUE="-1">
+             </OBJECT></comment> <script> __ws__(__NSID__);</script></td>
+      </tr>
+   </table>
+ </div>      
+
+<comment id="__NSID__"><OBJECT id=gd_1 
+    style="FONT-SIZE: 12px;  LEFT: 2px; WIDTH: 1010px; POSITION: absolute; TOP: 30px;
+    HEIGHT: 100%" classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+	<PARAM NAME="MultiRowSelect" VALUE="0">
+	<PARAM NAME="AutoInsert" VALUE="0">
+	<PARAM NAME="AllShowEdit" VALUE="0">
+   <PARAM NAME="BorderStyle"  VALUE=4>
+	<PARAM NAME="Editable" VALUE="0">
+	<PARAM NAME="ColSizing" VALUE="-1">
+	<PARAM NAME="Format" VALUE="
+     <C> Name='계 정 과 목'  id=account_name   width=300 BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='당기'  id=cy_amount   width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='전기'  id=py_amount   width=150  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     ">
+	<PARAM NAME="DataID" VALUE="ds_1"></OBJECT></comment> <script> __ws__(__NSID__);</script>
+	<script language="javascript"  for=ds_update event=OnLoadStarted()>
+	   document.all.LowerFrame.style.visibility="visible";
+	</script>
+	<script language="javascript"  for=ds_update event=OnLoadCompleted(rowcount)>
+		document.all.LowerFrame.style.visibility="hidden";
+	</script>
+   
+	<iframe id="LowerFrame" name="work" style=" position:absolute; left:350px; top:150px" FrameBorder="0" src="../../../comm_function/wait.html">
+	</iframe> 
+
+</BODY></HTML>

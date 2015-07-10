@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : m_stock_find_1h.html 					-->
+<!-- 2. 유형(시나리오): 조회							-->
+<!-- 3. 기 능 정 의   : 재고찾기 	                                        -->
+<!-- 4. 변 경 이 력   : 김동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<TITLE>재고 내역 </TITLE>
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+var gs_home
+var is_ds_1_addr = 'm_stock_find_1q.jsp?arg_dept_code='                        //품의 목록 
+var is_ds_seq_addr = gs_home + '/const/m_web/00/m_spec_unq_no_1q.jsp'                 // seq_no구하기 
+var is_dept_code = '',is_sbcr_code,is_inouttypecode
+var id_date
+var ii_seq
+var is_confirm_check = 'no'
+//---------------------------------------------------------------
+function btnquery_onclick()               //조회 
+//---------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code
+	ds_1.SyncLoad=true
+	ds_1.reset()
+}
+//----------------------------------------------------------------
+function Button_close_onclick()               //닫기
+//----------------------------------------------------------------
+{
+ window.returnValue = "";
+ window.close();
+}
+//--------------------------------------------------------------------
+function Button_confirm_onclick()               //복사 버튼
+//--------------------------------------------------------------------
+{
+	is_confirm_check = 'yes'
+	var ls_return="",li_seq
+	var ls_mtrcode,ls_ditag,ll_output_unq_num,ld_qty,ld_amt,ld_unitprice
+
+	for (i=1 ; i <= ds_1.CountRow ;i++){
+		if (ds_1.NameValue(i,"comp_chk") == 'T'){
+			ls_mtrcode	     = ds_1.NameValue(i,"mtrcode")
+			ls_ditag             = ds_1.NameValue(i,"ditag")
+			ld_qty               = ds_1.NameValue(i,"input_qty")
+			ld_unitprice         = ds_1.NameValue(i,"unitprice")
+			ld_amt               = ds_1.NameValue(i,"input_amt")
+			
+			ll_cnt = f_select_q("select nvl(max(detailseq),0) select_1 " +
+				    " from m_output_detail where dept_code = " + "'" + is_dept_code + "'" +
+				    " and yymmdd = " + "'" + id_date + "'" + 
+				    " and seq = " + ii_seq )
+
+			li_seq = parseInt(ds_select.NameValue(ds_select.RowPosition,"select_1")) + 1
+			
+			arg_cmd = "  INSERT INTO m_output_detail  " +
+			     	  "  SELECT " + "'" + is_dept_code + "'" + "," + "'" + id_date + "'" + 
+			     	  "         ," + ii_seq  + ",m_spec_unq_no.nextval," + li_seq +
+			          "	    ,MTRCODE,NAME,SSIZE,UNITCODE,ditag, " + ld_qty + 
+			          "         ," + ld_unitprice + "," + ld_amt + ",0," + 
+			          "'" + is_inouttypecode + "'" + ",0,0,0,0,0,0 " +
+			       	  "   FROM m_currstock " + 
+			      	  "  WHERE ( DEPT_CODE = " + "'" + is_dept_code + "'" + " ) AND  " +
+			          "        ( mtrcode = " + "'" + ls_mtrcode  + "'" + " ) AND  " +
+			          "        ( ditag = " + "'"+ ls_ditag  + "'" + " ) "
+			f_update_sql(arg_cmd)
+		}
+                                                                 
+	}          
+       	ds_spcall.DataID = gs_home + '/const/m_web/03/y_m_output_cmpt_procedure.jsp?arg_dept_code=' + is_dept_code + '&arg_date=' + id_date + '&arg_seq=' + ii_seq
+        ds_spcall.SyncLoad = true
+        ds_spcall.reset()
+	btnquery_onclick()
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+	ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------
+function window_onload()                  // window open event 
+//-----------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	gs_home          = array[0];     
+	is_dept_code     = array[1];
+	id_date          = array[2];
+	ii_seq           = array[3];
+	is_inouttypecode = array[4];
+	btnquery_onclick()
+}
+//-----------------------------------------------------------------
+function window_onunload()     // windoe.close()문장을 만나면 이루틴은 자동으로 수행됨으로 복사여부를 체크.
+//-----------------------------------------------------------------
+{
+  if (is_confirm_check == 'no')
+      window.returnValue = ""
+}
+ 
+</SCRIPT>
+<script language=JavaScript for=gd_1 event=OnClick(row,colid)>
+if (colid == "comp_chk") {
+	if (ds_1.NameValue(row,colid) == 'T')
+		ds_1.NameValue(row,colid) = 'F'
+	else
+		ds_1.NameValue(row,colid) = 'T'    
+}
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_1 event=OnColumnChanged(row,colid)>
+	if (colid == "input_qty" ) {
+        	if (ds_1.NameValue(row,"qty") < ds_1.NameValue(row,"input_qty")) {
+        		alert("품의수량을 초과하여 입력할 수 없습니다...")
+        		ds_1.NameValue(row,"input_qty") = 0
+        		return
+        	}
+        	else {
+	        	if (ds_1.NameValue(row,"qty") == ds_1.NameValue(row,"input_qty")) {
+	        		ds_1.NameValue(row,"input_amt") = ds_1.NameValue(row,"amt")
+	        	}
+	        	else{
+        			ds_1.NameValue(row,"input_amt") = parseInt(ds_1.NameValue(row,"input_qty") * ds_1.NameValue(row,"unitprice"))
+        		}
+        	}
+        	if (ds_1.NameValue(row,"input_qty") == 0 ) {
+        		ds_1.NameValue(row,"comp_chk") = 'F'
+        	}
+        	else {
+        		ds_1.NameValue(row,"comp_chk") = 'T'
+        	}
+        		
+	}   
+	if (colid == "comp_chk") {
+		if (ds_1.NameValue(row,"comp_chk") == 'T' ) {
+	        	if (ds_1.NameValue(row,"input_qty") == 0 ) {
+				ds_1.NameValue(row,"input_qty") = ds_1.NameValue(row,"qty")
+				ds_1.NameValue(row,"input_amt") = ds_1.NameValue(row,"amt")
+			}
+		}
+		else {
+			ds_1.NameValue(row,"input_qty") = 0
+			ds_1.NameValue(row,"input_amt") = 0
+		}
+	}
+</SCRIPT>
+</HEAD>
+<BODY style="FONT-SIZE: 12px" onload=setTimeout('window_onload()',1) onunload=window_onunload() oncontextmenu="return false" >
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_update event=OnLoadError()>
+  alert("Error Code(ds_update) : " + ds_update.ErrorCode + "\n" + "Error Message : " + ds_update.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_select event=OnLoadError()>
+  alert("Error Code : " + ds_select.ErrorCode + "\n" + "Error Message : " + ds_select.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=ds_spcall event=OnLoadError()>
+  alert("Error Code(ds_spcall) : " + ds_spcall.ErrorCode + "\n" + "Error Message : " + ds_spcall.ErrorMsg + "\n");
+</SCRIPT>
+
+<comment id="__NSID__"><Object id=ds_select
+      style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+      classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49> </OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_update
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+    <param name=UseFilter       value=true></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_seq 
+    style="Z-INDEX: 102; LEFT: 244px; POSITION: absolute; TOP: 1px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_spcall 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></OBJECT></comment> <script> __ws__(__NSID__);</script>
+<DIV id=gd_1_button 
+	style="Z-INDEX: 107; LEFT: 700px; WIDTH: 200px; POSITION: absolute; TOP: 5px; HEIGHT: 20px">
+	<input type="button" value="복사하기" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	        onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	        onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	        "  onclick=Button_confirm_onclick()>
+	<input type="button" value="닫기" 
+	       style="color:#2E4A4A; font-size:13px; CURSOR: hand;
+	        background-color:#E9F5F5; border:1 #A1A9A9 solid;   height:17px"   
+	         onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+	         onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+	       "  onclick=Button_close_onclick()>
+</DIV>
+<comment id="__NSID__"><OBJECT id=gd_1 
+         style="Z-INDEX: 110; LEFT: 10px; WIDTH: 970px; POSITION: absolute; TOP: 30px; HEIGHT: 610px" 
+         classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49 >
+	     <PARAM NAME="AutoInsert" VALUE="0">
+	     <PARAM NAME="AllShowEdit" VALUE="-1">
+	     <PARAM NAME="Editable" VALUE="-1">
+        <PARAM NAME="BorderStyle"  VALUE=4>
+        <param name="MultiRowSelect"   value="-1">
+	     <PARAM NAME="ColSizing" VALUE="-1">
+        <param name="ViewSummary"    value=1>
+	     <PARAM NAME="DataID" VALUE="ds_1">
+	     <PARAM NAME="Format" VALUE="
+	        <C> Name='자재코드' ID=mtrcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>
+	        <C> Name='직/간구분' ID=ditag Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 
+	        		EditStyle=Combo Data='1:직접재,2:간접재' </C>
+	        <C> Name='자재명' ID=name Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=180 </C>
+	        <C> Name='규격' ID=ssize Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=150 </C>
+	        <C> Name='단위' ID=unitcode Edit=None Align=Center HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=40 </C>
+	        <G> Name='재고' HeadBgColor=#BBE0F4  HeadColor=BLACK   >
+	        <C> Name='수량' ID=qty Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>
+	        <C> Name='단가' ID=unitprice Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=70 </C>
+	        <C> Name='금액' ID=amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2 Width=80 
+	        			SumText=@sum</C></G>
+	        <C> Name='복사수량' ID=input_qty HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=70 </C>
+	        <C> Name='복사금액' ID=input_amt Edit=None HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK BgColor=#F2F2F2   Width=80 
+	        			SumText=@sum</C>
+	        <C> Name='복사' ID=comp_chk EditStyle=CheckBox HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK   Width=50 </C>
+	        ">
+ 	     </OBJECT></comment> <script> __ws__(__NSID__);</script>
+</BODY></HTML>

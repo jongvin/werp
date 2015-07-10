@@ -1,0 +1,136 @@
+CREATE OR REPLACE PROCEDURE Sp_T_Acc_Slip_No_Chg
+(
+	Ar_Slip_Id NUMBER,
+	Ar_MAKE_Dt VARCHAR2,
+	AR_MODUSERNO VARCHAR2
+)
+IS
+/***************************************************/
+/* 이 프로그램은 대보시스템(주) 의 재산입니다.
+/* 최초작성자 : 김흥수
+/* 최초작성일 : 2004-12-15
+/* 최종수정자 :
+/* 최종수정일 :
+/***************************************************/
+	lrSLIP_HEAD	T_ACC_SLIP_HEAD%ROWTYPE;
+	ln_Ret		T_ACC_MAKE_SLIPNO.Make_Seq%TYPE;
+	lsCLSE_CLS							T_YEAR_CLOSE.CLSE_CLS%TYPE;
+BEGIN
+	IF lrSLIP_HEAD.KEEP_DT IS NOT NULL THEN
+		RAISE_APPLICATION_ERROR	(-20009, '확정정전표입니다.<br>수정할 수 없습니다.');
+	END IF;
+	
+	Sp_T_Check_Slip(Ar_Slip_Id, 'N', 'Y', '1');
+	
+	BEGIN
+		SELECT
+			*
+		INTO
+			lrSLIP_HEAD
+		FROM	T_ACC_SLIP_HEAD a
+		WHERE	a.SLIP_ID = AR_SLIP_ID;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009, '해당 전표를 찾을 수 없습니다.');
+	END;
+	
+	SELECT F_T_Get_New_Make_Seq(lrSLIP_HEAD.MAKE_COMP_CODE,Ar_MAKE_Dt) MAKE_SEQ
+	INTO ln_Ret
+	FROM DUAL;
+	
+	UPDATE T_ACC_SLIP_HEAD
+	SET
+	   MAKE_SLIPNO = F_T_Gen_Make_Slip_No(lrSLIP_HEAD.MAKE_COMP_CODE, Ar_MAKE_Dt, lrSLIP_HEAD.Slip_Kind_Tag, ln_Ret),
+	   MAKE_DT = F_T_Stringtodate(Ar_MAKE_Dt),
+	   MAKE_DT_TRANS = Ar_MAKE_Dt,
+	   MAKE_SEQ = ln_Ret,
+	   MODUSERNO = AR_MODUSERNO,
+	   MODDATE = SYSDATE
+	WHERE SLIP_ID = AR_SLIP_ID;
+	
+	BEGIN
+		SELECT
+			*
+		INTO
+			lrSLIP_HEAD
+		FROM	T_ACC_SLIP_HEAD a
+		WHERE	a.SLIP_ID = AR_SLIP_ID;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009, '해당 전표를 찾을 수 없습니다.');
+	END;
+	
+	--년 마감 검증
+	BEGIN
+		SELECT
+			CLSE_CLS
+		INTO
+			lsCLSE_CLS
+		FROM	T_YEAR_CLOSE
+		WHERE	ACCOUNT_FDT <= lrSLIP_HEAD.MAKE_DT
+		AND		ACCOUNT_EDT >= lrSLIP_HEAD.MAKE_DT
+		AND		COMP_CODE = lrSLIP_HEAD.MAKE_COMP_CODE;
+
+		IF NVL(lsCLSE_CLS,'F') = 'T' THEN
+			RAISE_APPLICATION_ERROR	(-20009,  '변경일의 회기가 이미 마감되었습니다.');
+		END IF;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009,  '변경일의 회기가 등록되지 않았습니다.');
+	END;
+
+	--월 마감 검증
+	BEGIN
+		SELECT
+			CLSE_CLS
+		INTO
+			lsCLSE_CLS
+		FROM	T_MONTH_CLOSE
+		WHERE	CLSE_MONTH = TO_CHAR(lrSLIP_HEAD.MAKE_DT,'YYYYMM')
+		AND		COMP_CODE = lrSLIP_HEAD.MAKE_COMP_CODE;
+
+		IF NVL(lsCLSE_CLS,'F') = 'T' THEN
+			RAISE_APPLICATION_ERROR	(-20009,  '변경월은 이미 마감되었습니다.');
+		END IF;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009,  '변경일의 월마감이 등록되지 않았습니다.');
+	END;
+
+	--일 마감 검증
+	BEGIN
+		SELECT
+			CLSE_CLS
+		INTO
+			lsCLSE_CLS
+		FROM	T_DAY_CLOSE
+		WHERE	CLSE_DAY = lrSLIP_HEAD.MAKE_DT
+		AND		COMP_CODE = lrSLIP_HEAD.MAKE_COMP_CODE;
+
+		IF NVL(lsCLSE_CLS,'F') = 'T' THEN
+			RAISE_APPLICATION_ERROR	(-20009,  '변경일은 이미 마감되었습니다.');
+		END IF;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009,  '변경일의 일마감이 등록되지 않았습니다.');
+	END;
+
+ 	-- 부서 입력기간 체크
+	BEGIN
+		SELECT
+			 CASE
+			 	 WHEN (F_T_Datetostring(lrSLIP_HEAD.MAKE_DT) BETWEEN F_T_Datetostring(NVL(INPUT_DT_F, '19000101')) AND F_T_Datetostring(NVL(INPUT_DT_T, '19000101')) )
+				 THEN 'F' -- 입력기간
+				 ELSE 'T' -- 입력마감
+			END DEPT_CLSE_CLS
+		INTO
+			lsCLSE_CLS
+		FROM
+			T_DEPT_CODE_ORG A
+		WHERE
+			A.COMP_CODE = lrSLIP_HEAD.MAKE_COMP_CODE
+			AND DEPT_CODE = lrSLIP_HEAD.MAKE_DEPT_CODE;
+
+		IF NVL(lsCLSE_CLS,'F') = 'T' THEN
+			RAISE_APPLICATION_ERROR	(-20009,  '부서의 입력기간이 종료되었습니다.');
+		END IF;
+	EXCEPTION WHEN NO_DATA_FOUND THEN
+		RAISE_APPLICATION_ERROR	(-20009,  '부서정보가 등록되지 않았습니다.');
+	END;
+END;
+/

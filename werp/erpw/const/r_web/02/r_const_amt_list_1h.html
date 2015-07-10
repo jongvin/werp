@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- *************************************************************		-->
+<!-- 1. 프로그램 id   :  r_const_amt_list_1h.html   	                 	-->
+<!-- 2. 유형(시나리오):  조회							          		         -->
+<!-- 3. 기 능 정 의   :  수주매출현황조회 	            -->
+<!-- 4. 변 경 이 력   :  황보은영 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_ds_1_addr = gs_home + '/const/r_web/02/r_const_amt_list_1q.jsp?arg_date='          //조회용 
+
+
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{	
+	  ds_1.DataID = is_ds_1_addr + em_select_yymm.text
+	  ds_1.SyncLoad=true
+	  ds_1.Reset()
+	  
+	  gd_1.ColumnProp("plan_year_amt", "Name") = em_select_yymm.text.substr(0,4) + '(계획)'
+	  gd_1.ColumnProp("title", "Name") = em_select_yymm.text.substr(0,4) 
+	  
+	  gd_1.ColumnProp("receive_name","SubSumText") = ' '
+	  gd_1.ColumnProp("pq_name","SubSumText") = '소  계'
+	  
+	  gd_1.ColumnProp("receive_name","SubBgColor") = '#DDDDDD'
+	  gd_1.ColumnProp("pq_name","SubBgColor") = '#DDDDDD'
+	  gd_1.ColumnProp("plan_year_amt","SubBgColor") = '#DDDDDD'
+	  gd_1.ColumnProp('month_plan_amt', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('month_amt', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('plan_sum_amt', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('sum_amt', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('1', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('2', 'SubBgColor') = '#DDDDDD'
+	  gd_1.ColumnProp('bigo', 'SubBgColor') = '#DDDDDD'
+	  
+}
+//------------------------------------------------------------------------
+ function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+}
+
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  	if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+   
+	var work_date = f_sysdate()
+	work_date = work_date.substr(0,7)
+	em_select_yymm.text = work_date
+
+	 btnquery_onclick()
+}
+//---------------------------------------------------------------------
+function window_onunload()
+//---------------------------------------------------------------------
+{
+	
+}
+
+//---------------------------------------------------------------------
+function excel_down()
+//---------------------------------------------------------------------
+{
+   var sheet_name = em_select_yymm.text+'수주매출현황';
+	var file_name = sheet_name+".xls";
+	gd_1.GridToExcel(sheet_name, file_name, 1)
+
+}
+  
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=em_select_yymm event=onKillFocus()>
+	if (em_select_yymm.Modified){ 
+		btnquery_onclick()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_select_yymm event=onKeyDown(kcode,scode)>
+	if ((em_select_yymm.Modified) && kcode == 13 ){ 
+		btnquery_onclick()
+	}
+</SCRIPT>   
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+
+<comment id="__NSID__"><OBJECT id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+	<param name=SubsumExpr	value="1:receive_name">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>
+<comment id="__NSID__"><OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px;  parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT></comment> <script> __ws__(__NSID__);</script>	
+	
+</HEAD>
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= -->
+
+<BODY style="FONT-SIZE: 12px; margin:0;" onload="setTimeout('window_onload()',1)" oncontextmenu="return false">
+<div class=main_div>
+<table width="100%"  height="100%" BORDER="0"    CELLSPACING="0"  align="center"   style="FONT-SIZE: 12px; " >
+	<tr height="23px">
+		<td class=td_green>
+			<table border="0" cellspacing="0" cellpadding="0" class=main_table>
+				<td width="15px"><img src="../../../image/bullet3.gif"></td>
+					<td width="56px" class=font_green_bold>기준년월</td>
+					<td>
+						<comment id="__NSID__"><OBJECT id=em_select_yymm 
+								 style="Z-INDEX: 101; WIDTH: 70px; background: white;" 
+								classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+								 <PARAM NAME="Alignment" VALUE="1">
+								 <PARAM NAME="IsComma" VALUE="0">
+								 <PARAM NAME="MaxLength" VALUE="7">
+								 <PARAM NAME="Format" VALUE="YYYY.mm">
+								 <param name=ClipMode       value=false>
+								 <PARAM NAME="Numeric" VALUE="0">
+								 <PARAM NAME="SelectAll" VALUE="-1">
+						</OBJECT></comment> <script> __ws__(__NSID__);</script>
+					</td>
+					<td width="*">&nbsp;</td>
+<!--					<td align="right">
+						단위:백만원,VAT별도&nbsp;&nbsp;
+						<input type="button" name="bt_excel_down" value="엑셀전환" Onclick="excel_down()" class=img_btn4_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;"> &nbsp;&nbsp;
+					</td>-->
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<comment id="__NSID__"><OBJECT id=gd_1 
+					style="FONT-SIZE: 12px; Z-INDEX: 102; WIDTH: 100%;  HEIGHT: 100%;" 
+					classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+				<PARAM NAME="MultiRowSelect" VALUE="-1">
+				<PARAM NAME="AutoInsert" VALUE="-1">
+				<PARAM NAME="AllShowEdit" VALUE="-1">
+				<PARAM NAME="BorderStyle"  VALUE=1>
+				<PARAM NAME="Editable" VALUE=false>
+				<PARAM NAME="ColSizing" VALUE="-1">
+				<PARAM NAME="SortView"  VALUE="Left">
+				<PARAM NAME="DataID" VALUE="ds_1">
+				<PARAM NAME="Format" VALUE="
+				  <C> Name='수주구분'   ID=receive_name Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 suppress=1</C>
+				  <C> Name='분야구분'   ID=pq_name Align=Center BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=90 suppress=2</C>
+				  <C> Name=''   ID=plan_year_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+				  <G> Name='' ID=title HeadBgColor=#BBE0F4
+					  <C> Name='당월계획'   ID=month_plan_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+					  <C> Name='당월실적'   ID=month_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+					  <C> Name='누계계획'   ID=plan_sum_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100  </C>
+					  <C> Name='누계실적'   ID=sum_amt BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100  </C>
+				  </G>
+				  <G> Name='달성율' HeadBgColor=#BBE0F4
+				  	  <C> Name='계획대비'   ID='1' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+				  	  <C> Name='년간대비'   ID='2' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=100 </C>
+				  </G>
+				  <C> Name=''   ID='bigo' BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=95 </C>
+				">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</td>
+	</tr>
+</table>
+</div>
+</BODY></HTML>
+
+
+

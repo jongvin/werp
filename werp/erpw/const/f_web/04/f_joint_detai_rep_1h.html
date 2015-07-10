@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   :f_joint_1h.html					-->
+<!-- 2. 유형(시나리오): 조회및 입력						-->
+<!-- 3. 기 능 정 의   : 공동도급배분입력  		                      	-->
+<!-- 4. 변 경 이 력   : 김동우 작성						-->
+<!-- 5. 관련프로그램  :								-->
+<!-- 6. 특 기 사 항   :								-->
+<!-- *************************************************************		-->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<LINK rel="stylesheet" type="text/css" href="../../../erpw.css">
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+
+
+<SCRIPT SRC="../../../comm_function/comm_wid.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+// <LINK rel="stylesheet" type="text/css" href="../../../comm_function/env.css">
+var is_dept_code
+var is_work_date
+var is_yymm
+
+var is_ds_1_addr = 'f_joint_detai_rep_1q.jsp?arg_dept_code='
+</script>
+
+<!-- ======================================================================= -->
+<!--                      Function                          -->
+<!-- ======================================================================= -->
+<script language="JavaScript">
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + is_dept_code + "&arg_date=" + is_yymm
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick()                 // 종료 
+//-----------------------------------------------------------------------------
+{
+	window.close()
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기(공종별)      
+//----------------------------------------------------------------
+{var filename = '공동도급배분내역서';
+	var sheet_name = filename+'('+ds_1.NameValue(ds_1.RowPosition,"long_name")+')';
+	file_name = sheet_name+".xls";
+	gd_1.GridToExcel(sheet_name, file_name, 2)
+
+
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+	var result;
+	var array = new Array();
+	result = window.dialogArguments;
+	array = result.split("@");
+	is_dept_code = array[0]    //부서 코드
+	is_yymm      = array[1]    //년월
+	btnquery_onclick()
+}
+</SCRIPT>
+<!-- ======================================================================= -->
+<!--                     Event                          -->
+<!-- ======================================================================= -->
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code(ds_1) : " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<!-- ======================================================================= -->
+<!--                      Component                          -->
+<!-- ======================================================================= -->
+<comment id="__NSID__"><object id=ds_1
+    style="Z-INDEX: 103; LEFT: 169px; POSITION: absolute; TOP: 3px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49></object></comment> <script> __ws__(__NSID__);</script>
+  
+<comment id="__NSID__"><object id=rds_1 classid=CLSID:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 >
+      <param name=Logical value=true>
+      <param name=DataID       value=ds_1>
+      <param name=GroupExpr    value="rqst_date:seq:res_type:rqst_detail:actual_name:amt:vat,cust_name,t_amt:t_vat"></object></comment> <script> __ws__(__NSID__);</script>    
+      
+</HEAD>
+
+<!-- ======================================================================= -->
+<!--                     Body                         -->
+<!-- ======================================================================= --> 
+<BODY style="FONT-SIZE: 12px; margin: 0px" onload=window_onload() oncontextmenu="return false" scroll="no">
+<DIV class=main_div>
+<TABLE BORDER="0" WIDTH="100%" HEIGHT="100%" CELLPADDING="0" CELLSPACING="0">
+	<TR>
+		<TD height="20px" class=td_green align="right">
+			<input type="button" value="닫기" onclick=btnexit_onclick() class=img_btnClose onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">
+			<input id=bt_excel_gd_parent_query type="button" value="엑셀" onclick=excel_down() class=img_btn2_1 onmouseover="this.style.color=MOUSE_OVER;" onmouseout="this.style.color=MOUSE_OUT;">&nbsp;&nbsp;
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<comment id="__NSID__"><OBJECT id=gd_1
+				style="FONT-SIZE: 12px; Z-INDEX: 105; width: 100%; height: 100%;" 
+				classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+					<PARAM NAME="MultiRowSelect" VALUE="-1">
+					<PARAM NAME="AllShowEdit"    VALUE="-1">
+					<PARAM NAME="BorderStyle"    VALUE=1>
+					<PARAM NAME="AutoInsert"     VALUE="-1">
+					<PARAM NAME="Editable"       VALUE="0">
+					<PARAM NAME="ColSizing"      VALUE="-1">
+					<PARAM NAME="ViewSummary"    VALUE=1>
+					<PARAM NAME="DataID"         VALUE="rds_1">
+					<PARAM NAME="Format"         VALUE=" 
+						<C> Name='발생일자' ID=rqst_date Edit=None Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=65 
+							SumText='합 계'  SumColor=Black SumBgColor=Pink</C>
+						<C> Name='순번' ID=seq Edit=None Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=40 </C>
+						<C> Name='비목' ID=res_type Edit=None Align=Center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=70 
+							EditStyle=Combo Data='F:현장관리비,S:안전관리비,C:공사비,L:노무비 '</C>
+						<C> Name='적요' ID=rqst_detail  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=200 </C>
+						<C> Name='공급가' ID=amt  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=90 
+							SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+						<C> Name='부가세' ID=vat  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK  Width=80 
+							SumText=@sum  SumColor=Black SumBgColor=Pink</C>
+						<C> Name='실투입업체' ID=actual_name  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK Width=150 </C>
+							<R>
+								<G>name=$xkeyname_$$     HeadBgColor=#BBE0F4  HeadColor=BLACK  
+									<C>ID=t_amt_$$     name='공급가'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} width=80   HeadBgColor=#BBE0F4  HeadColor=BLACK SumText=@sum  SumColor=Black SumBgColor=Pink</C> 
+									<C>ID=t_vat_$$     name='부가세'   BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')} width=100   HeadBgColor=#BBE0F4  HeadColor=BLACK SumText=@sum  SumColor=Black SumBgColor=Pink</C> 
+								</G>
+							</R>
+						</C>
+					">
+			</OBJECT></comment> <script> __ws__(__NSID__);</script>
+		</TD>
+	</TR>
+</TABLE></DIV>
+</BODY></HTML>

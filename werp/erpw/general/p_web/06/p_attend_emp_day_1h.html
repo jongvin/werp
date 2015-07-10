@@ -1,0 +1,393 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- **************************************************************		-->
+<!-- 1. 프로그램 id   : p_attend_emp_1h.html                       		-->
+<!-- 2. 유형(시나리오):  조회및 입력												-->
+<!-- 3. 기 능 정 의   :  전직원일별근태                       				-->
+<!-- 4. 변 경 이 력   :  장희선 작성												-->
+<!-- 5. 관련프로그램  :																	-->
+<!-- 6. 특 기 사 항   :																	-->
+<!-- *************************************************************		-->
+<HTML>
+<LINK rel="stylesheet" type="text/css" href="/werp/erpw.css">
+<HEAD>
+<META http-equiv=Content-Type content="text/html; charset=ks_c_5601-1987">
+<META content="MSHTML 6.00.2716.2200" name=GENERATOR>
+<SCRIPT SRC="../../../comm_function/comm_calendar.js"></SCRIPT> 
+<SCRIPT SRC="../../../comm_function/comm_function.js"></SCRIPT> 
+<SCRIPT language=JavaScript>
+
+var gs_home = parent.frames['security'].gs_home.value
+
+var is_work_date 
+var is_ds_1_addr = gs_home + '/general/p_web/06/p_attend_emp_day_1q.jsp?arg_attend_date='   //조회용 &arg_bb=
+var is_tr_1_addr = gs_home + '/general/p_web/06/p_attend_emp_1tr.jsp'                   //수정용 
+var is_focus_enter='N'
+//------------------------------------------------------------------------
+function btnquery_onclick()                     // 조회  
+//------------------------------------------------------------------------
+{
+	ds_1.DataID = is_ds_1_addr + em_work_date.text            // jsp와 아규먼트값셋팅 
+	ds_1.SyncLoad=true
+	ds_1.Reset()
+}
+//-----------------------------------------------------------------------
+function Fn_SetColumn()   // 커서위치 세팅
+//-----------------------------------------------------------------------
+{
+    gd_1.Focus();
+    gd_1.SetColumn("annual_day");
+}
+//-----------------------------------------------------------------------
+function init_move()               // 초기값세팅
+//-----------------------------------------------------------------------
+{
+    
+    ds_1.NameValue(ds_1.RowPosition,"attend_date") = em_work_date.text
+    bt_emp_no()
+    Fn_SetColumn()
+ }   
+//-----------------------------------------------------------------------
+function btnadd_onclick()                       // 추가 
+//------------------------------------------------------------------------
+{
+	ds_1.AddRow()
+
+ 	init_move()
+}
+//-----------------------------------------------------------------------
+function btninsert_onclick()                    // 삽입
+//-----------------------------------------------------------------------
+{
+
+	if (ds_1.RowPosition == 0){     //한건도 없을경우는  0 
+	  btnadd_onclick()
+	  return
+	}  
+	ds_1.InsertRow(ds_1.RowPosition)
+
+	init_move()
+
+}
+//------------------------------------------------------------------------
+function btndelete_onclick()                    // 삭제 
+//------------------------------------------------------------------------
+{
+   if (gd_1.MultiRowSelect){               // multi row select 일 경우
+	   for (i=ds_1.CountRow ;i > 0 ;i--) {
+	       if (ds_1.RowMark(i) == 1)
+	       	  ds_1.DeleteRow(i)
+	   }   
+	   ds_1.MarkRows(ds_1.RowPosition,ds_1.RowPosition)  //삭제작업완료후 MARK
+   }
+	   else{ 
+	   ds_1.DeleteRow(ds_1.RowPosition)
+   }
+}
+//---------------------------------------------------------------------------
+function bt_emp_no()                     //사원 찾기
+//---------------------------------------------------------------------------
+{
+
+	var result;
+	var send_arg;
+	var array = new Array();
+	is_comp_code = ""
+	is_emp_no    = ""
+	send_arg = '' + '@' + ds_1.NameValue(ds_1.RowPosition,"emp_name")
+	result = window.showModalDialog(gs_home + "/general/p_web/99/p_emp_no_attend_find_1h.html",send_arg,"dialogWidth:700px;dialogHeight:500px");
+
+	if(result == "") return;
+	array = result.split("@");
+
+ 	ds_1.NameValue(ds_1.RowPosition,"emp_name") 			= array[1]
+ 	ds_1.NameValue(ds_1.RowPosition,"dept_name") 		= array[4]
+ 	ds_1.NameValue(ds_1.RowPosition,"grade_name") 		= array[5]
+ 	ds_1.NameValue(ds_1.RowPosition,"resident_no") 		= array[10]
+}
+//---------------------------------------------------------------------------
+function btnsave_onclick()                       // 저장
+//---------------------------------------------------------------------------
+{
+	if (ds_1.IsUpdated){
+		ll_dup = f_dup_chk("ds_1","resident_no")
+		if (ll_dup > 0) {
+			alert("사원이 중복되었습니다: 확인하여 주십시요")
+			ds_1.RowPosition = ll_dup
+			gd_1.SetColumn("emp_name");
+			return
+		}
+		
+	 	if (confirm("변경되었습니다 저장하시겠습니까?"))
+	   	tr_1.Post()		    
+	}
+}
+//----------------------------------------------------------------------------
+function btncancel_onclick()                     // 취소
+//---------------------------------------------------------------------------- 
+{
+     ds_1.Undo(ds_1.RowPosition)
+}
+//----------------------------------------------------------------------------
+function btnexit_onclick(ls_arg)                 // 종료 
+//-----------------------------------------------------------------------------
+{
+  if (ds_1.IsUpdated){
+		btnsave_onclick() 
+  }
+}
+//-------------------------------------------------------------------------------
+function select_yymm()                  // 년월 선택 
+//--------------------------------------------------------------------------------
+{
+   btnquery_onclick()
+}   
+//----------------------------------------------------------------
+function atnd_apply()                      //출근 일괄적용
+//----------------------------------------------------------------
+{
+	for (i=1;i<=ds_1.CountRow;i++) {
+		ds_1.NameValue(i,"atnd_chk") = 'T'
+	}
+}
+//----------------------------------------------------------------
+function atnd_cancel()                      //출근 일괄취소
+//----------------------------------------------------------------
+{
+	for (i=1;i<=ds_1.CountRow;i++) {
+		ds_1.NameValue(i,"atnd_chk") = 'F'
+	}
+}
+//----------------------------------------------------------------
+function excel_down()                      //엑셀자료 내리기 
+//----------------------------------------------------------------
+{
+ var temp_1
+ temp_1 = '직원일별근태 [' + em_work_date.text + ']'
+ gd_1.GridToExcel(temp_1,'c:\aa.xls',0)
+}
+//---------------------------------------------------------------------------
+function window_onload()                      // window open event
+//---------------------------------------------------------------------------
+{
+  if (f_reject_window()) return 
+   top.frames['main_title'].mouse_over()
+
+	is_work_date = f_sysdate()
+	em_work_date.text = is_work_date
+	
+	tr_1.Action = is_tr_1_addr                   // jsp update용 
+
+	btnquery_onclick()
+
+}
+</SCRIPT>
+<script language=JavaScript for=ds_list event=OnRowPosChanged(row)>
+	is_resident_no = ds_list.NameValue(row,"resident_no")	
+	btnquery_onclick_div()
+</script>
+<script language=JavaScript for=ds_list event=CanRowPosChange(row)>
+	btnsave_onclick()
+</script>
+<script language=JavaScript for=gd_1 event=onClick(row,colid)>
+  
+  // 연차 수정불가
+  if (colid == "annu_chk") {	
+	   return
+  }
+  else{
+  	  	if (colid == 'atnd_chk' || colid == 'late_chk' || colid == "cong_chk" || colid == "outw_chk" || colid =="trip_chk" || colid =="educ_chk" || colid == "etcc_chk" || colid =="abse_chk") {
+			// 한번에 클릭하도록 함...
+		   if (ds_1.NameValue(row,colid) == 'T')
+		       ds_1.NameValue(row,colid) = 'F'
+		   else
+		       ds_1.NameValue(row,colid) = 'T'    
+		
+			// 결근,경조휴가,외근,출장,교육,기타 중복발생 불가
+			if (colid == "abse_chk" && ds_1.NameValue(row,"abse_chk") == 'T'){
+				ds_1.NameValue(row,"cong_chk") = 'F'
+				ds_1.NameValue(row,"outw_chk") = 'F'
+				ds_1.NameValue(row,"trip_chk") = 'F'
+				ds_1.NameValue(row,"educ_chk") = 'F'
+				ds_1.NameValue(row,"etcc_chk") = 'F'
+			}		
+			if (colid == "cong_chk" && ds_1.NameValue(row,"cong_chk") == 'T'){
+				ds_1.NameValue(row,"abse_chk") = 'F'
+				ds_1.NameValue(row,"outw_chk") = 'F'
+				ds_1.NameValue(row,"trip_chk") = 'F'
+				ds_1.NameValue(row,"educ_chk") = 'F'
+				ds_1.NameValue(row,"etcc_chk") = 'F'
+			}
+			if (colid == "outw_chk" && ds_1.NameValue(row,"outw_chk") == 'T'){
+				ds_1.NameValue(row,"abse_chk") = 'F'
+				ds_1.NameValue(row,"cong_chk") = 'F'
+				ds_1.NameValue(row,"trip_chk") = 'F'
+				ds_1.NameValue(row,"educ_chk") = 'F'
+				ds_1.NameValue(row,"etcc_chk") = 'F'
+			}
+			if (colid == "trip_chk" && ds_1.NameValue(row,"trip_chk") == 'T'){
+				ds_1.NameValue(row,"abse_chk") = 'F'
+				ds_1.NameValue(row,"cong_chk") = 'F'
+				ds_1.NameValue(row,"outw_chk") = 'F'
+				ds_1.NameValue(row,"educ_chk") = 'F'
+				ds_1.NameValue(row,"etcc_chk") = 'F'
+			}
+			if (colid == "educ_chk" && ds_1.NameValue(row,"educ_chk") == 'T'){
+				ds_1.NameValue(row,"abse_chk") = 'F'
+				ds_1.NameValue(row,"cong_chk") = 'F'
+				ds_1.NameValue(row,"outw_chk") = 'F'
+				ds_1.NameValue(row,"trip_chk") = 'F'
+				ds_1.NameValue(row,"etcc_chk") = 'F'
+			}		
+			if (colid == "etcc_chk" && ds_1.NameValue(row,"etcc_chk") == 'T'){
+				ds_1.NameValue(row,"abse_chk") = 'F'
+				ds_1.NameValue(row,"cong_chk") = 'F'
+				ds_1.NameValue(row,"outw_chk") = 'F'
+				ds_1.NameValue(row,"trip_chk") = 'F'
+				ds_1.NameValue(row,"educ_chk") = 'F'
+			}
+		}
+  }
+</script>
+<SCRIPT language=JavaScript for=em_work_date event=onKillFocus()>
+   if (is_focus_enter == em_work_date.text) {   // on killfocus에서 enter를 치면 on kill focus가 발생하므로 2번 읽지않기위해서
+		return
+	}   
+   else { 
+	   is_focus_enter = em_work_date.text
+		select_yymm()
+	}
+</SCRIPT>        	
+<SCRIPT language=JavaScript for=em_work_date event=onKeyDown(kcode,scode)>
+	if (kcode == 13 ){ 
+	   is_focus_enter=em_work_date.text
+		select_yymm()
+	}
+</SCRIPT>   
+<SCRIPT language="javascript" for=gd_1 event=OnPopup(row,colid,data)>
+	 if (colid == "emp_name") {
+	    bt_emp_no()
+	    return
+	 }    
+</SCRIPT>
+
+</HEAD>
+
+<BODY style="FONT-SIZE: 12px"  onload=window_onload() oncontextmenu="return false" >
+
+<SCRIPT language=JavaScript for=ds_1 event=OnLoadError()>
+  alert("Error Code ds_1: " + ds_1.ErrorCode + "\n" + "Error Message : " + ds_1.ErrorMsg + "\n");
+</SCRIPT>
+<SCRIPT language=JavaScript for=tr_1 event=OnFail()>
+  alert("Error Code : " + tr_1.ErrorCode + "\n" + "Error Message : " + tr_1.ErrorMsg + "\n");
+</SCRIPT>
+
+<OBJECT id=ds_sysdate 
+    style="Z-INDEX: 101; LEFT: 300px; POSITION: absolute; parent: 20px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49 VIEWASTEXT>
+	<PARAM NAME="DataID" VALUE="">
+</OBJECT>	
+<OBJECT id=ds_1 
+    style="Z-INDEX: 100; LEFT: 339px; POSITION: absolute; TOP: 13px" 
+    classid=clsid:3267EA0D-B5D8-11D2-A4F9-00608CEBEE49>
+</OBJECT>
+<OBJECT id=tr_1 
+    style="Z-INDEX: 103; LEFT: 477px; POSITION: absolute; TOP: 2px" 
+    classid=clsid:0A2233AD-E771-11D2-973D-00104B15E56F VIEWASTEXT>
+	<PARAM NAME="Action" VALUE="">
+	<PARAM NAME="KeyName" VALUE="toinb_dataid4">
+	<PARAM NAME="KeyValue" VALUE="JSP(I:p_attend_emp_1tr=ds_1)">
+	<PARAM NAME="Protocol" VALUE="1"></OBJECT>
+	
+<DIV id=hdept_page_1
+         style="Z-INDEX: 111; LEFT: 3px; WIDTH: 160px; POSITION: absolute; TOP: 4px; HEIGHT: 27px;FONT-SIZE: 12px" >
+      <table width="100%" height="100%"  BORDER="1"  align="center"   CELLSPACING="0" style="FONT-SIZE: 12px">
+         <tr BGCOLOR="white" >
+             <td width="37%" BGCOLOR="#BBE0F4" style="COLOR: BLACK"> 
+	       <div align="right">해당일</div></td>
+	  	<td width="63%" >
+	       <OBJECT id=em_work_date style="WIDTH: 80px " 
+		 classid=clsid:E6876E99-7C28-43AD-9088-315DC302C05F VIEWASTEXT>
+		     <PARAM NAME="Alignment" 	VALUE="1">
+		     <PARAM NAME="IsComma" 	VALUE="0">
+		     <PARAM NAME="MaxLength" 	VALUE="7">
+		     <PARAM NAME="Format" 		VALUE="YYYY.MM.DD">
+	        <param name=ClipMode  	value=false>
+		     <PARAM NAME="Numeric" 	VALUE="0">
+		     <PARAM NAME="SelectAll" 	VALUE="-1">
+		</OBJECT>
+		<img src="../../../image/icon/calender_on.gif"  id=img_fr OnClick="var result = gn_Cal_Yyyymmdd(); 
+				if(!is_null(result)){ em_work_date.text = result.substr(0,10);} ; select_yymm()" 
+				style=" WIDTH: 20px; POSITION: absolute; TOP: 4px; HEIGHT:20px"></td>
+         </tr>                 
+      </table>
+</DIV>      
+
+<DIV id=gd_1_button 
+style="Z-INDEX: 107; LEFT: 650px; WIDTH: 350px; POSITION: absolute; TOP: 7px; HEIGHT: 20px">
+	<input id=bt_excel_copy type="button" value="출근일괄적용" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';
+			 font-size: 10pt; border:1 solid #000000; CURSOR: hand; border:1 #A1A9A9 solid; 
+          onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+          onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=atnd_apply()>	
+	<input id=bt_excel_copy type="button" value="출근일괄취소" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';
+			 font-size: 10pt; border:1 solid #000000; CURSOR: hand; border:1 #A1A9A9 solid; 
+          onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+          onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=atnd_cancel()>	
+	<input id=bt_excel_copy type="button" value="엑셀내리기" 
+			style="filter='progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#C7E2E2, EndColorStr=#FFFFFF)';
+			 font-size: 10pt; border:1 solid #000000; CURSOR: hand; border:1 #A1A9A9 solid; 
+          onmouseover="this.style.backgroundColor='#C0E8DB'; this.style.color='#EF315E'" 
+          onmouseout="this.style.backgroundColor='#E9F5F5'; this.style.color='#0E4433'
+          "  onclick=excel_down()>			
+</DIV>
+
+  <OBJECT id=gd_1 
+      style="POSITION: absolute; LEFT: 3px; TOP: 35px; WIDTH: 1005px; HEIGHT: 99%; Z-INDEX: 102;FONT-SIZE: 12px " 
+      classid=clsid:1F57AEAD-DB12-11D2-A4F9-00608CEBEE49>
+  	<PARAM NAME="MultiRowSelect" VALUE="-1">
+  	<PARAM NAME="AutoInsert" VALUE="-1">
+  	<PARAM NAME="AllShowEdit" VALUE="-1">
+  	<PARAM NAME="Editable" VALUE="-1">
+  	<PARAM NAME="ColSizing" VALUE="-1">
+  	<param name="ViewSummary"    value=1>
+  	<param name=SortView value="Right">
+  	<PARAM NAME="DataID" VALUE="ds_1">
+  	<PARAM NAME="Format" VALUE="
+     <C> Name='성명'  		id=emp_name  		Editstyle=Popup  width=60  sort=true  align=center  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText='인원수'  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='부서'  		id=dept_name 	 	width=100  Edit=None  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK 
+     		SumText=@count  SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='직위'  		id=grade_name		width=50   Edit=None  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+     		SumText=''  SumColor=Black SumBgColor=Pink </C>
+	  <C> Name='출근'  		id=atnd_chk  		width=55   sort=true  EditStyle=CheckBox  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(atnd_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='출근시간'  	id=atnd_time  		width=75	  Edit=None  align=center  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+     		SumText=''  SumColor=Black SumBgColor=Pink </C>
+     <C> Name='연차'  		id=annu_chk  		width=55	  Edit=None  sort=true  EditStyle=CheckBox  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK
+ 			SumText={sum(decode(annu_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='지각'  		id=late_chk  		width=55	  sort=true  EditStyle=CheckBox  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(late_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='결근'  		id=abse_chk  		width=55	  sort=true  EditStyle=CheckBox  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(abse_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='경조휴가'  	id=cong_chk  		width=75	  EditStyle=CheckBox  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(cong_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='출장'  		id=trip_chk  		width=55	  EditStyle=CheckBox  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(trip_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='교육'  		id=educ_chk  		width=55	  EditStyle=CheckBox  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(educ_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='외근'  		id=outw_chk  		width=55	  EditStyle=CheckBox  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(outw_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='기타'  		id=etcc_chk  		width=55	  EditStyle=CheckBox  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK
+ 			SumText={sum(decode(etcc_chk,'T',1,0))}  SumColor=Black SumBgColor=Pink  </C>
+     <C> Name='사유'  		id=reason  			width=150  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#ffffd0  HeadColor=BLACK </C>
+     <C> Name='IP'  			id=ip_addr 			width=100  Edit=None  sort=true  BgColor={decode(currow-tointeger(currow/2)*2,0,'#F4F2D8',1,'ffffff')}  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+
+     <C> Name='승인자'  	id=approv_emp_name		width=60  Edit=None  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+     <C> Name='승인일'		id=approv_date 			width=80  Edit=None  BgColor=@ucolor  HeadAlign=Center HeadBgColor=#BBE0F4  HeadColor=BLACK </C>
+
+     ">
+  </OBJECT>
+</BODY></HTML>
